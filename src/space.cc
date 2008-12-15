@@ -54,7 +54,8 @@ void Space::init_data_tables() {
 		fn_data[idx] = new FaceData;
 	}
 */
-	FOR_ALL_ELEMENTS(idx, mesh){
+
+	FOR_ALL_ELEMENTS(idx, mesh) {
 		if (mesh->elements[idx]->active) {
 			elm_data[idx] = new ElementData;
 			MEM_CHECK(elm_data[idx]);

@@ -147,7 +147,7 @@ MapOrd<TYPE>::~MapOrd() {
 template<class TYPE>
 Word_t MapOrd<TYPE>::count() const {
 	Word_t count;
-	JLC(count, judy_l, 0, -1);
+	JLC(count, judy_l, 1, -1);
 	return count;
 }
 
@@ -224,7 +224,7 @@ bool MapOrd<TYPE>::set(Word_t *key, int length, TYPE item) {
 	JHSG(pval, judy_hs, key, length * sizeof(Word_t));
 	if (pval == NULL) {
 		// add to array
-		Word_t idx = 0;
+		Word_t idx = 1;
 		JLFE(rc, judy_l, idx);
 		if (!rc)
 			return false;
@@ -281,7 +281,7 @@ template<class TYPE>
 void MapOrd<TYPE>::remove_all() {
 	// free associated memory
 	void *pval;
-	Word_t idx = 0;
+	Word_t idx = 1;
 	JLF(pval, judy_l, idx);
 	for (; idx != -1 && pval != NULL; ) {
 		free_item(idx);
@@ -308,7 +308,7 @@ void MapOrd<TYPE>::free_item(Word_t idx) {
 template<class TYPE>
 Word_t MapOrd<TYPE>::first() const {
 	void *pval;
-	Word_t idx = 0;
+	Word_t idx = 1;
 	JLF(pval, judy_l, idx);
 	return pval ? idx : INVALID_IDX;
 }

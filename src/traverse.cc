@@ -539,7 +539,7 @@ Element **Traverse::get_next_state(bool *bnd, FacePos *fp) {
 		// the stack is empty, take next base element
 		if (top <= 0) {
 			// no more base elements? we're finished
-			if (id >= meshes[0]->get_num_base_elements())
+			if (id > meshes[0]->get_num_base_elements())
 				return NULL;
 
 			// push the state of the new base element
@@ -620,7 +620,7 @@ void Traverse::begin(int n, Mesh **meshes, Transformable **fn) {
 	MEM_CHECK(sons);
 	subs = new uint64[num];
 	MEM_CHECK(subs);
-	id = 0;
+	id = 1;				// element IDs start with one
 
 	// TODO: check that meshes are compatible
 }

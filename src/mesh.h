@@ -37,7 +37,7 @@ class MeshLoader;
 /// @param idx  Element hash table index.
 /// @param mesh Pointer to the Mesh object.
 #define FOR_ALL_ELEMENTS(idx, mesh) \
-	for (Word_t (idx) = (mesh)->elements.first(), _max = (mesh)->elements.count(); (idx) < _max && (idx) != INVALID_IDX; (idx) = (mesh)->elements.next((idx))) \
+	for (Word_t (idx) = (mesh)->elements.first(), _max = (mesh)->elements.count(); (idx) <= _max && (idx) != INVALID_IDX; (idx) = (mesh)->elements.next((idx))) \
 		if ((mesh)->elements[idx]->used)
 
 /// Iterates over all active mesh element indices.
@@ -45,7 +45,7 @@ class MeshLoader;
 /// @param idx  Element hash table index.
 /// @param mesh Pointer to the Mesh object.
 #define FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) \
-	for (Word_t (idx) = (mesh)->elements.first(), _max = (mesh)->elements.count(); (idx) < _max && (idx) != INVALID_IDX; (idx) = (mesh)->elements.next((idx))) \
+	for (Word_t (idx) = (mesh)->elements.first(), _max = (mesh)->elements.count(); (idx) <= _max && (idx) != INVALID_IDX; (idx) = (mesh)->elements.next((idx))) \
 		if ((mesh)->elements[idx]->used) \
 			if ((mesh)->elements[idx]->active)
 
@@ -54,7 +54,7 @@ class MeshLoader;
 /// @param idx  Element hash table index.
 /// @param mesh Pointer to the Mesh object.
 #define FOR_ALL_INACTIVE_ELEMENTS(idx, mesh) \
-	for (Word_t (idx) = (mesh)->elements.first(), _max = (mesh)->elements.count(); (idx) < _max && (idx) != INVALID_IDX; (idx) = (mesh)->elements.next((idx))) \
+	for (Word_t (idx) = (mesh)->elements.first(), _max = (mesh)->elements.count(); (idx) <= _max && (idx) != INVALID_IDX; (idx) = (mesh)->elements.next((idx))) \
 		if ((mesh)->elements[idx]->used) \
 			if (!(mesh)->elements[idx]->active)
 
@@ -62,7 +62,7 @@ class MeshLoader;
 /// @param idx  Element hash table index.
 /// @param mesh Pointer to the Mesh object.
 #define FOR_ALL_BASE_ELEMENTS(idx, mesh) \
-	for (Word_t (idx) = (mesh)->elements.first(); (idx) < mesh->get_num_base_elements(); (idx) = (mesh)->elements.next((idx))) \
+	for (Word_t (idx) = (mesh)->elements.first(); (idx) <= mesh->get_num_base_elements(); (idx) = (mesh)->elements.next((idx))) \
 		if ((mesh)->elements[idx]->used)
 
 

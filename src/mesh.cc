@@ -962,13 +962,14 @@ void Mesh::dump() {
 }
 
 Word_t Mesh::add_vertex(double x, double y, double z) {
-	return vertices.add(new Vertex(x, y, z));
+	return vertices.set(vertices.count() + 1, new Vertex(x, y, z));
 }
 
 Tetra *Mesh::create_tetra(Word_t vtcs[]) {
 	Tetra *tetra = new Tetra(vtcs);
 	MEM_CHECK(tetra);
-	Word_t id = elements.add(tetra);
+	Word_t id = elements.count() + 1;
+	elements.set(id, tetra);
 	tetra->id = id;
 
 	tetra->ref_all_nodes();
@@ -1005,7 +1006,8 @@ Hex *Mesh::create_hex(Word_t vtcs[]) {
 	// build up the element
 	Hex *hex = new Hex(vtcs);
 	MEM_CHECK(hex);
-	Word_t id = elements.add(hex);
+	Word_t id = elements.count() + 1;
+	elements.set(id, hex);
 	hex->id = id;
 
 	hex->ref_all_nodes();
@@ -1042,7 +1044,8 @@ Hex *Mesh::add_hex(Word_t vtcs[]) {
 Prism *Mesh::create_prism(Word_t vtcs[]) {
 	Prism *prism = new Prism(vtcs);
 	MEM_CHECK(prism);
-	Word_t id = elements.add(prism);
+	Word_t id = elements.count() + 1;
+	elements.set(id, prism);
 	prism->id = id;
 
 	prism->ref_all_nodes();
@@ -1081,7 +1084,8 @@ Boundary *Mesh::add_tri_boundary(Word_t vtcs[], int marker) {
 	if (facets.lookup(vtcs + 0, Tri::NUM_VERTICES, facet)) {
 		Boundary *bdr = new BoundaryTri(marker);
 		MEM_CHECK(bdr);
-		int pos = boundaries.add(bdr);
+		int pos = boundaries.count() + 1;
+		boundaries.set(pos, bdr);
 		bdr->id = pos;
 
 		facet->type = Facet::OUTER;
@@ -1094,7 +1098,8 @@ Boundary *Mesh::add_quad_boundary(Word_t vtcs[], int marker) {
 	if (facets.lookup(vtcs + 0, Quad::NUM_VERTICES, facet)) {
 		Boundary *bdr = new BoundaryQuad(marker);
 		MEM_CHECK(bdr);
-		int pos = boundaries.add(bdr);
+		int pos = boundaries.count() + 1;
+		boundaries.set(pos, bdr);
 		bdr->id = pos;
 
 		facet->type = Facet::OUTER;

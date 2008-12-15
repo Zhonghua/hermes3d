@@ -159,9 +159,7 @@ bool Mesh3DReader::load(const char *file_name, Mesh *mesh) {
 						throw E_READ_ERROR;
 					}
 
-					for (int i = 0; i < Tetra::NUM_VERTICES; i++) vs[i]--;
 					Tetra *tetra = mesh->add_tetra(vs);
-
 					tetra_count--;
 					if (tetra_count == 0)
 						state = STATE_HEXES_NUM;
@@ -183,9 +181,7 @@ bool Mesh3DReader::load(const char *file_name, Mesh *mesh) {
 							throw E_READ_ERROR;
 						}
 
-						for (int i = 0; i < Hex::NUM_VERTICES; i++) vs[i]--;
 						Hex *hex = mesh->add_hex(vs);
-
 						hex_count--;
 						if (hex_count == 0)
 							state = STATE_PRISMS_NUM;
@@ -206,8 +202,7 @@ bool Mesh3DReader::load(const char *file_name, Mesh *mesh) {
 							ERROR("Invalid vertex index was found in the section defining prisms.");
 							throw E_READ_ERROR;
 						}
-						// add prism
-						for (int i = 0; i < Prism::NUM_VERTICES; i++) vs[i]--;
+
 						Prism *prism = mesh->add_prism(vs);
 						prism_count--;
 						if (prism_count == 0)
@@ -230,7 +225,7 @@ bool Mesh3DReader::load(const char *file_name, Mesh *mesh) {
 							throw E_READ_ERROR;
 						}
 
-						Word_t facet_idxs[Tri::NUM_VERTICES] = {vs[0] - 1, vs[1] - 1, vs[2] - 1};
+						Word_t facet_idxs[Tri::NUM_VERTICES] = { vs[0], vs[1], vs[2] };
 						mesh->add_tri_boundary(facet_idxs, vs[Tri::NUM_VERTICES]);
 						tri_count--;
 						if (tri_count == 0)
@@ -257,7 +252,7 @@ bool Mesh3DReader::load(const char *file_name, Mesh *mesh) {
 							throw E_READ_ERROR;
 						}
 
-						Word_t facet_idxs[Quad::NUM_VERTICES] = { vs[0] - 1, vs[1] - 1, vs[2] - 1, vs[3] - 1 };
+						Word_t facet_idxs[Quad::NUM_VERTICES] = { vs[0], vs[1], vs[2], vs[3] };
 						mesh->add_quad_boundary(facet_idxs, vs[Quad::NUM_VERTICES]);
 						quad_count--;
 						if (quad_count == 0)
@@ -333,8 +328,7 @@ bool Mesh3DReader::save(const char *file_name, Mesh *mesh) {
     for (Word_t i = tet.first(); i != INVALID_IDX; i = tet.next(i)) {
     	Word_t vtcs[Tetra::NUM_VERTICES];
     	tet[i]->get_vertices(vtcs);
-		fprintf(file, "%d %d %d %d\n",
-			vtcs[0] + 1, vtcs[1] + 1, vtcs[2] + 1, vtcs[3] + 1);
+		fprintf(file, "%d %d %d %d\n", vtcs[0], vtcs[1], vtcs[2], vtcs[3]);
     }
 	fprintf(file, "\n");
 
@@ -344,8 +338,7 @@ bool Mesh3DReader::save(const char *file_name, Mesh *mesh) {
     for (Word_t i = hex.first(); i != INVALID_IDX; i = hex.next(i)) {
     	Word_t vtcs[Hex::NUM_VERTICES];
     	hex[i]->get_vertices(vtcs);
-		fprintf(file, "%d %d %d %d %d %d %d %d\n",
-			vtcs[0] + 1, vtcs[1] + 1, vtcs[2] + 1, vtcs[3] + 1, vtcs[4] + 1, vtcs[5] + 1, vtcs[6] + 1, vtcs[7] + 1);
+		fprintf(file, "%d %d %d %d %d %d %d %d\n", vtcs[0], vtcs[1], vtcs[2], vtcs[3], vtcs[4], vtcs[5], vtcs[6], vtcs[7]);
     }
 	fprintf(file, "\n");
 
@@ -355,8 +348,7 @@ bool Mesh3DReader::save(const char *file_name, Mesh *mesh) {
     for (Word_t i = pri.first(); i != INVALID_IDX; i = pri.next(i)) {
     	Word_t vtcs[Prism::NUM_VERTICES];
     	pri[i]->get_vertices(vtcs);
-		fprintf(file, "%d %d %d %d %d %d\n",
-			vtcs[0] + 1, vtcs[1] + 1, vtcs[2] + 1, vtcs[3] + 1, vtcs[4] + 1, vtcs[5] + 1);
+		fprintf(file, "%d %d %d %d %d %d\n", vtcs[0], vtcs[1], vtcs[2], vtcs[3], vtcs[4], vtcs[5]);
     }
 	fprintf(file, "\n");
 
@@ -383,8 +375,7 @@ bool Mesh3DReader::save(const char *file_name, Mesh *mesh) {
     	Word_t vtcs[Tri::NUM_VERTICES];
     	elem->get_face_vertices(facet->left_face_num, vtcs);
 
-		fprintf(file, "%d %d %d     %d\n",
-			vtcs[0] + 1, vtcs[1] + 1, vtcs[2] + 1, bnd->marker);
+		fprintf(file, "%d %d %d     %d\n", vtcs[0], vtcs[1], vtcs[2], bnd->marker);
 	}
 	fprintf(file, "\n");
 
@@ -399,8 +390,7 @@ bool Mesh3DReader::save(const char *file_name, Mesh *mesh) {
     	Word_t vtcs[Quad::NUM_VERTICES];
     	elem->get_face_vertices(facet->left_face_num, vtcs);
 
-		fprintf(file, "%d %d %d %d     %d\n",
-			vtcs[0] + 1, vtcs[1] + 1, vtcs[2] + 1, vtcs[3] + 1, bnd->marker);
+		fprintf(file, "%d %d %d %d     %d\n", vtcs[0], vtcs[1], vtcs[2], vtcs[3], bnd->marker);
 	}
 	fprintf(file, "\n");
 

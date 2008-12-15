@@ -486,7 +486,7 @@ void GmshOutputEngine::out(Mesh *mesh) {
 	fprintf(this->out_file, "%d\n", mesh->vertices.count());
 	FOR_ALL_VERTICES(idx, mesh) {
 		Vertex *v = mesh->vertices[idx];
-		fprintf(this->out_file, "%d %lf %lf %lf\n", idx + 1, v->x, v->y, v->z);
+		fprintf(this->out_file, "%d %lf %lf %lf\n", idx, v->x, v->y, v->z);
 	}
 	fprintf(this->out_file, "$EndNodes\n");
 
@@ -501,15 +501,12 @@ void GmshOutputEngine::out(Mesh *mesh) {
 		switch (element->get_mode()) {
 			case MODE_TETRAHEDRON:
 				fprintf(this->out_file, "%ld 4 0 %d %d %d %d\n",
-					element->id + 1,
-					vtcs[0] + 1, vtcs[1] + 1, vtcs[2] + 1, vtcs[3] + 1);
+					element->id, vtcs[0], vtcs[1], vtcs[2], vtcs[3]);
 				break;
 
 			case MODE_HEXAHEDRON:
 				fprintf(this->out_file, "%ld 5 0 %d %d %d %d %d %d %d %d\n",
-					element->id + 1,
-					vtcs[0] + 1, vtcs[1] + 1, vtcs[2] + 1, vtcs[3] + 1,
-					vtcs[4] + 1, vtcs[5] + 1, vtcs[6] + 1, vtcs[7] + 1);
+					element->id, vtcs[0], vtcs[1], vtcs[2], vtcs[3], vtcs[4], vtcs[5], vtcs[6], vtcs[7]);
 				break;
 
 			case MODE_PRISM:

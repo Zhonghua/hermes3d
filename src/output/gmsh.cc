@@ -572,79 +572,76 @@ void GmshOutputEngine::out_orders(Space *space, const char *name) {
 	fprintf(this->out_file, "%.1lf %d %d\n", 2.0, 0, sizeof(double));
 	fprintf(this->out_file, "$EndMeshFormat\n");
 
+	// HEX specific
+
 	// nodes
 	fprintf(this->out_file, "$Nodes\n");
-	fprintf(this->out_file, "%d\n", mesh->vertices.count() + mesh->get_num_active_elements());
-	FOR_ALL_VERTICES(idx, mesh) {
-		Vertex *v = mesh->vertices[idx];
-		fprintf(this->out_file, "%d %lf %lf %lf\n", idx + 1, v->x, v->y, v->z);
-	}
+	fprintf(this->out_file, "%d\n", mesh->get_num_active_elements() * 15);
+	int id = 1;
 	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
 		Element *element = mesh->elements[idx];
-		Word_t vtcs[element->get_num_of_vertices()];
+		int nv = Hex::NUM_VERTICES;
+		Word_t vtcs[nv];
 		element->get_vertices(vtcs);
+
+		for (int i = 0; i < nv; i++) {
+			Vertex *v = mesh->vertices[vtcs[i]];
+			fprintf(this->out_file, "%d %lf %lf %lf\n", id++, v->x, v->y, v->z);
+		}
+
+		for (int iface = 0; iface < Hex::NUM_FACES; iface++) {
+			Word_t fvtcs[Quad::NUM_VERTICES];
+			element->get_face_vertices(iface, fvtcs);
+			Vertex *v[4] = { mesh->vertices[fvtcs[0]], mesh->vertices[fvtcs[1]], mesh->vertices[fvtcs[2]], mesh->vertices[fvtcs[3]] };
+			Vertex fcenter((v[0]->x + v[2]->x) / 2.0, (v[0]->y + v[2]->y) / 2.0, (v[0]->z + v[2]->z) / 2.0);
+			fprintf(this->out_file, "%d %lf %lf %lf\n", id++, fcenter.x, fcenter.y, fcenter.z);
+		}
 
 		Vertex *v[4] = { mesh->vertices[vtcs[0]], mesh->vertices[vtcs[1]], mesh->vertices[vtcs[3]], mesh->vertices[vtcs[4]] };
 		Vertex center((v[0]->x + v[1]->x) / 2.0, (v[0]->y + v[2]->y) / 2.0, (v[0]->z + v[3]->z) / 2.0);
-
-		fprintf(this->out_file, "%d %lf %lf %lf\n", mesh->vertices.count() + idx, center.x, center.y, center.z);
-
+		fprintf(this->out_file, "%d %lf %lf %lf\n", id++, center.x, center.y, center.z);
 	}
 	fprintf(this->out_file, "$EndNodes\n");
 
 	// elements
 	fprintf(this->out_file, "$Elements\n");
 	// FIXME: hex specific
-	fprintf(this->out_file, "%d\n", mesh->get_num_active_elements() * Hex::NUM_FACES);
+	fprintf(this->out_file, "%d\n", mesh->get_num_active_elements() + (mesh->get_num_active_elements() * Hex::NUM_EDGES));
+	id = 1;
+	// trick: put the elements first so that they will be visible in gmsh
 	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
 		Element *element = mesh->elements[idx];
 		Word_t vtcs[element->get_num_of_vertices()];
 		element->get_vertices(vtcs);
 
-		switch (element->get_mode()) {
-			case MODE_TETRAHEDRON:
-				fprintf(this->out_file, "%ld 4 0 %d %d %d %d\n", element->id, vtcs[0], vtcs[1], vtcs[2], vtcs[3]);
-				break;
-
-			case MODE_HEXAHEDRON:
-//				fprintf(this->out_file, "%ld 5 0 %d %d %d %d %d %d %d %d\n",
-//					element->id + 1,
-//					vtcs[0] + 1, vtcs[1] + 1, vtcs[2] + 1, vtcs[3] + 1,
-//					vtcs[4] + 1, vtcs[5] + 1, vtcs[6] + 1, vtcs[7] + 1);
-				break;
-
-			case MODE_PRISM:
-				EXIT(ERR_NOT_IMPLEMENTED);
-				break;
-
-			default:
-				EXIT(ERR_UNKNOWN_MODE);
-				break;
-		}
+		fprintf(this->out_file, "%ld 5 0 %d %d %d %d %d %d %d %d\n",
+			id++, vtcs[0], vtcs[1], vtcs[2], vtcs[3], vtcs[4], vtcs[5], vtcs[6], vtcs[7]);
 	}
-
 	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
 		Element *element = mesh->elements[idx];
 		Word_t vtcs[element->get_num_of_vertices()];
 		element->get_vertices(vtcs);
 
-		switch (element->get_mode()) {
-			case MODE_HEXAHEDRON: {
-				for (int iface = 0; iface < Hex::NUM_FACES; iface++) {
-					Word_t face_vtcs[Quad::NUM_VERTICES];
-					element->get_face_vertices(iface, face_vtcs);
+		// orders
+		int pyrel[][4] = {
+			{  1,  9,  5, 10 },
+			{  2, 11,  6,  9 },
+			{  7,  8,  3, 11 },
+			{  0, 10,  4,  8 },
+			{  0, 10,  1, 12 },
+			{  1,  9,  2, 12 },
+			{  2, 11,  3, 12 },
+			{  3, 12,  0,  8 },
+			{  4, 10,  5, 13 },
+			{  5,  9,  6, 13 },
+			{  6, 11,  7, 13 },
+			{  7, 13,  4,  8 }
+		};
 
-					fprintf(this->out_file, "%ld 7 0 %d %d %d %d %d\n",
-						mesh->get_num_active_elements() + 1 + (element->id * Hex::NUM_FACES) + iface,
-						face_vtcs[0], face_vtcs[1], face_vtcs[2], face_vtcs[3],
-						mesh->vertices.count() + element->id);
-
-				}
-				} break;
-
-			default:
-				EXIT(ERR_NOT_IMPLEMENTED);
-				break;
+		for (int i = 0; i < Hex::NUM_EDGES; i++) {
+			int base = (idx - 1) * 15;
+			int v[4] = { base + pyrel[i][0] + 1, base + pyrel[i][1] + 1, base + pyrel[i][2] + 1, base + pyrel[i][3] + 1};
+			fprintf(this->out_file, "%ld 3 0 %d %d %d %d\n", id++, v[0], v[1], v[2], v[3]);
 		}
 	}
 	fprintf(this->out_file, "$EndElements\n");
@@ -657,60 +654,24 @@ void GmshOutputEngine::out_orders(Space *space, const char *name) {
 	fprintf(this->out_file, "%d\n", 3);
 	fprintf(this->out_file, "0\n");		// time step (not used, but has to be there)
 	fprintf(this->out_file, "1\n");		// 1 value per node
-	// FIXME: hex-specific
-//	fprintf(this->out_file, "%d\n", mesh->get_num_active_elements() + (mesh->get_num_active_elements() * Hex::NUM_FACES));
-	fprintf(this->out_file, "%d\n", (mesh->get_num_active_elements() * Hex::NUM_FACES));
+	fprintf(this->out_file, "%d\n", (mesh->get_num_active_elements() * Hex::NUM_EDGES));
 
+	id = mesh->get_num_active_elements() + 1;
 	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
 		Element *element = mesh->elements[idx];
 		int mode = element->get_mode();
 		// get order from the space
 		int order = space->get_element_order(idx);
-//		int order;
-//		switch (mode) {
-//			case MODE_TETRAHEDRON: order = o; break;
-//			case MODE_HEXAHEDRON:  order = GET_HEX_ORDER_1(o); break;
-//			case MODE_PRISM: EXIT(ERR_NOT_IMPLEMENTED); break;
-//			default: EXIT(ERR_UNKNOWN_MODE); break;
-//		}
 
-//		int num_pts;
-//		switch (mode) {
-//			case MODE_TETRAHEDRON: num_pts = 4; break;
-//			case MODE_HEXAHEDRON:  num_pts = 8; break;
-//			case MODE_PRISM:       EXIT(ERR_NOT_IMPLEMENTED); break;
-//			default: EXIT(ERR_UNKNOWN_MODE); break;
-//		}
+		for (int i = 0; i < Hex::NUM_EDGES; i++) {
+			int dord;
+			if (i == 0 || i == 1 || i == 2 || i == 3) dord = GET_HEX_ORDER_3(order);
+			else if (i == 4 || i == 6 || i == 8 || i == 10) dord = GET_HEX_ORDER_1(order);
+			else if (i == 5 || i == 7 || i == 9 || i == 11) dord = GET_HEX_ORDER_2(order);
+			else assert(false);
+			fprintf(this->out_file, "%ld 4 %d %d %d %d\n", id++, dord, dord, dord, dord);
+		}
 
-//		// write values
-//		fprintf(this->out_file, "%ld %d", element->id + 1, num_pts);
-//		for (int j = 0; j < num_pts; j++)
-//			fprintf(this->out_file, " %d", order);
-//		fprintf(this->out_file, "\n");
-
-		// pyramids
-		switch (mode) {
-			case MODE_HEXAHEDRON: {
-				for (int iface = 0; iface < Hex::NUM_FACES; iface++) {
-					int dord;
-					if (iface == 0 || iface == 1) dord = GET_HEX_ORDER_1(order);
-					else if (iface == 2 || iface == 3) dord = GET_HEX_ORDER_2(order);
-					else if (iface == 4 || iface == 5) dord = GET_HEX_ORDER_3(order);
-					else assert(false);
-
-					Word_t face_vtcs[Quad::NUM_VERTICES];
-					element->get_face_vertices(iface, face_vtcs);
-
-					fprintf(this->out_file, "%ld 5 %d %d %d %d %d\n",
-						mesh->get_num_active_elements() + 1 + (element->id * Hex::NUM_FACES) + iface,
-						dord, dord, dord, dord, dord);
-
-				}
-				} break;
-
-			default:
-				break;
-		} // switch
 	}
 
 	fprintf(this->out_file, "$EndElementNodeData\n");

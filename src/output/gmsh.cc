@@ -86,15 +86,19 @@ OutputQuadTetra::OutputQuadTetra() {
 	max_order = MAX_QUAD_ORDER;
 
 	tables = new QuadPt3D *[max_order + 1];
+	MEM_CHECK(tables);
 	memset(tables, 0, (max_order + 1) * sizeof(QuadPt3D *));
 
 	np = new int[max_order + 1];
+	MEM_CHECK(np);
 	memset(np, 0, (max_order + 1) * sizeof(int));
 
 	subdiv_num = new int[max_order + 1];
+	MEM_CHECK(subdiv_num);
 	memset(subdiv_num, 0, (max_order + 1) * sizeof(int));
 
 	subdiv_modes = new int *[max_order + 1];
+	MEM_CHECK(subdiv_modes);
 	memset(subdiv_modes, 0, (max_order + 1) * sizeof(int *));
 
 	output_precision = 1;
@@ -137,12 +141,14 @@ void OutputQuadTetra::calculate_view_points(int order) {
 		subdiv_num[order] = (1 << (3 * levels));
 
 		subdiv_modes[order] = new int[subdiv_num[order]];
+		MEM_CHECK(subdiv_modes[order]);
 		// the new subelements are tetrahedra only
 		for (int i = 0; i < subdiv_num[order]; i++)
 			subdiv_modes[order][i] = MODE_TETRAHEDRON;
 
 		// compute the table of points recursively
 		tables[order] = new QuadPt3D[np[order]];
+		MEM_CHECK(tables[order]);
 		int idx = 0;
 		const Point3D *ref_vtcs = RefTetra::get_vertices();
 		recursive_division(ref_vtcs, tables[order], levels, idx);
@@ -222,15 +228,19 @@ OutputQuadHex::OutputQuadHex() {
 	max_order = MAX_QUAD_ORDER;
 
 	tables = new QuadPt3D *[max_order + 1];
+	MEM_CHECK(tables);
 	memset(tables, 0, (max_order + 1) * sizeof(QuadPt3D *));
 
 	np = new int[max_order + 1];
+	MEM_CHECK(np);
 	memset(np, 0, (max_order + 1) * sizeof(int));
 
 	subdiv_num = new int[max_order + 1];
+	MEM_CHECK(subdiv_num);
 	memset(subdiv_num, 0, (max_order + 1) * sizeof(int));
 
 	subdiv_modes = new int *[max_order + 1];
+	MEM_CHECK(subdiv_modes);
 	memset(subdiv_modes, 0, (max_order + 1) * sizeof(int *));
 
 	output_precision = 1;
@@ -261,19 +271,23 @@ void OutputQuadHex::calculate_view_points(int order) {
 	assert(order != 0);
 
 	if (tables[order] == NULL) {
-		int o = get_principal_order(order);
-		int levels = int(log(o) / log(2)) + output_precision;
+//		int o = get_principal_order(order);
+//		int levels = int(log(o) / log(2)) + output_precision;
+		int o = 1;
+		int levels = 1;
 
 		np[o] = (1 << (3 * levels)) * 27;
 		subdiv_num[o] = (1 << (3 * levels));
 
 		subdiv_modes[o] = new int[subdiv_num[o]];
+		MEM_CHECK(subdiv_modes[o]);
 		// the new subelements are hexahedra only
 		for (int i = 0; i < subdiv_num[o]; i++)
 			subdiv_modes[o][i] = MODE_HEXAHEDRON;
 
 		// compute the table of points recursively
 		tables[o] = new QuadPt3D[np[o]];
+		MEM_CHECK(tables[o]);
 		int idx = 0;
 		const Point3D *ref_vtcs = RefHex::get_vertices();
 		recursive_division(ref_vtcs, tables[o], levels, idx);
@@ -518,56 +532,186 @@ void GmshOutputEngine::out(Mesh *mesh) {
 				break;
 		}
 	}
+	fprintf(this->out_file, "$EndElements\n");
 
+	// edges
+	// TODO: do not include edges twice or more
+	// FIXME: Hex-specific
+	fprintf(this->out_file, "$Elements\n");
+	fprintf(this->out_file, "%d\n", mesh->get_num_active_elements() * Hex::NUM_EDGES);
+	FOR_ALL_ELEMENTS(idx, mesh) {
+		Element *element = mesh->elements[idx];
+		Word_t vtcs[Edge::NUM_VERTICES];
+		for (int iedge = 0; iedge < Hex::NUM_EDGES; iedge++) {
+			element->get_edge_vertices(iedge, vtcs);
+			fprintf(this->out_file, "%ld 1 0 %d %d\n", mesh->get_edge_id(vtcs[0], vtcs[1]), vtcs[0], vtcs[1]);
+		}
+	}
+	fprintf(this->out_file, "$EndElements\n");
+
+	// faces
+	// TODO: do not include faces twice
+	fprintf(this->out_file, "$Elements\n");
+	fprintf(this->out_file, "%d\n", mesh->get_num_active_elements() * Hex::NUM_FACES);
+	FOR_ALL_ELEMENTS(idx, mesh) {
+		Element *element = mesh->elements[idx];
+		Word_t vtcs[Quad::NUM_VERTICES];				// FIXME: HEX-specific
+		for (int iface = 0; iface < Hex::NUM_FACES; iface++) {
+			element->get_face_vertices(iface, vtcs);
+			fprintf(this->out_file, "%ld 3 0 %d %d %d %d\n", mesh->get_facet_id(element, iface), vtcs[0], vtcs[1], vtcs[2], vtcs[3]);
+		}
+	}
 	fprintf(this->out_file, "$EndElements\n");
 }
 
 void GmshOutputEngine::out_orders(Space *space, const char *name) {
-	// prepare
-	fprintf(this->out_file, "View \"%s\" {\n", name);
-
 	Mesh *mesh = space->get_mesh();
 
-	Word_t idx;
+	// prepare
+	fprintf(this->out_file, "$MeshFormat\n");
+	fprintf(this->out_file, "%.1lf %d %d\n", 2.0, 0, sizeof(double));
+	fprintf(this->out_file, "$EndMeshFormat\n");
+
+	// nodes
+	fprintf(this->out_file, "$Nodes\n");
+	fprintf(this->out_file, "%d\n", mesh->vertices.count() + mesh->get_num_active_elements());
+	FOR_ALL_VERTICES(idx, mesh) {
+		Vertex *v = mesh->vertices[idx];
+		fprintf(this->out_file, "%d %lf %lf %lf\n", idx + 1, v->x, v->y, v->z);
+	}
+	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
+		Element *element = mesh->elements[idx];
+		Word_t vtcs[element->get_num_of_vertices()];
+		element->get_vertices(vtcs);
+
+		Vertex *v[4] = { mesh->vertices[vtcs[0]], mesh->vertices[vtcs[1]], mesh->vertices[vtcs[3]], mesh->vertices[vtcs[4]] };
+		Vertex center((v[0]->x + v[1]->x) / 2.0, (v[0]->y + v[2]->y) / 2.0, (v[0]->z + v[3]->z) / 2.0);
+
+		fprintf(this->out_file, "%d %lf %lf %lf\n", mesh->vertices.count() + idx, center.x, center.y, center.z);
+
+	}
+	fprintf(this->out_file, "$EndNodes\n");
+
+	// elements
+	fprintf(this->out_file, "$Elements\n");
+	// FIXME: hex specific
+	fprintf(this->out_file, "%d\n", mesh->get_num_active_elements() * Hex::NUM_FACES);
+	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
+		Element *element = mesh->elements[idx];
+		Word_t vtcs[element->get_num_of_vertices()];
+		element->get_vertices(vtcs);
+
+		switch (element->get_mode()) {
+			case MODE_TETRAHEDRON:
+				fprintf(this->out_file, "%ld 4 0 %d %d %d %d\n", element->id, vtcs[0], vtcs[1], vtcs[2], vtcs[3]);
+				break;
+
+			case MODE_HEXAHEDRON:
+//				fprintf(this->out_file, "%ld 5 0 %d %d %d %d %d %d %d %d\n",
+//					element->id + 1,
+//					vtcs[0] + 1, vtcs[1] + 1, vtcs[2] + 1, vtcs[3] + 1,
+//					vtcs[4] + 1, vtcs[5] + 1, vtcs[6] + 1, vtcs[7] + 1);
+				break;
+
+			case MODE_PRISM:
+				EXIT(ERR_NOT_IMPLEMENTED);
+				break;
+
+			default:
+				EXIT(ERR_UNKNOWN_MODE);
+				break;
+		}
+	}
+
+	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
+		Element *element = mesh->elements[idx];
+		Word_t vtcs[element->get_num_of_vertices()];
+		element->get_vertices(vtcs);
+
+		switch (element->get_mode()) {
+			case MODE_HEXAHEDRON: {
+				for (int iface = 0; iface < Hex::NUM_FACES; iface++) {
+					Word_t face_vtcs[Quad::NUM_VERTICES];
+					element->get_face_vertices(iface, face_vtcs);
+
+					fprintf(this->out_file, "%ld 7 0 %d %d %d %d %d\n",
+						mesh->get_num_active_elements() + 1 + (element->id * Hex::NUM_FACES) + iface,
+						face_vtcs[0], face_vtcs[1], face_vtcs[2], face_vtcs[3],
+						mesh->vertices.count() + element->id);
+
+				}
+				} break;
+
+			default:
+				EXIT(ERR_NOT_IMPLEMENTED);
+				break;
+		}
+	}
+	fprintf(this->out_file, "$EndElements\n");
+
+	// node data
+	fprintf(this->out_file, "$ElementNodeData\n");
+	fprintf(this->out_file, "%d\n", 1);
+	fprintf(this->out_file, "\"%s\"\n", name);
+	fprintf(this->out_file, "%d\n", 0);
+	fprintf(this->out_file, "%d\n", 3);
+	fprintf(this->out_file, "0\n");		// time step (not used, but has to be there)
+	fprintf(this->out_file, "1\n");		// 1 value per node
+	// FIXME: hex-specific
+//	fprintf(this->out_file, "%d\n", mesh->get_num_active_elements() + (mesh->get_num_active_elements() * Hex::NUM_FACES));
+	fprintf(this->out_file, "%d\n", (mesh->get_num_active_elements() * Hex::NUM_FACES));
+
 	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
 		Element *element = mesh->elements[idx];
 		int mode = element->get_mode();
 		// get order from the space
-		int o = space->get_element_order(idx);
-		int order;
+		int order = space->get_element_order(idx);
+//		int order;
+//		switch (mode) {
+//			case MODE_TETRAHEDRON: order = o; break;
+//			case MODE_HEXAHEDRON:  order = GET_HEX_ORDER_1(o); break;
+//			case MODE_PRISM: EXIT(ERR_NOT_IMPLEMENTED); break;
+//			default: EXIT(ERR_UNKNOWN_MODE); break;
+//		}
+
+//		int num_pts;
+//		switch (mode) {
+//			case MODE_TETRAHEDRON: num_pts = 4; break;
+//			case MODE_HEXAHEDRON:  num_pts = 8; break;
+//			case MODE_PRISM:       EXIT(ERR_NOT_IMPLEMENTED); break;
+//			default: EXIT(ERR_UNKNOWN_MODE); break;
+//		}
+
+//		// write values
+//		fprintf(this->out_file, "%ld %d", element->id + 1, num_pts);
+//		for (int j = 0; j < num_pts; j++)
+//			fprintf(this->out_file, " %d", order);
+//		fprintf(this->out_file, "\n");
+
+		// pyramids
 		switch (mode) {
-			case MODE_TETRAHEDRON: order = o; break;
-			case MODE_HEXAHEDRON:  order = GET_HEX_ORDER_1(o); break;
-			case MODE_PRISM: EXIT(ERR_NOT_IMPLEMENTED); break;
-			default: EXIT(ERR_UNKNOWN_MODE); break;
-		}
+			case MODE_HEXAHEDRON: {
+				for (int iface = 0; iface < Hex::NUM_FACES; iface++) {
+					int dord;
+					if (iface == 0 || iface == 1) dord = GET_HEX_ORDER_1(order);
+					else if (iface == 2 || iface == 3) dord = GET_HEX_ORDER_2(order);
+					else if (iface == 4 || iface == 5) dord = GET_HEX_ORDER_3(order);
+					else assert(false);
 
-		const char *id;
-		int num_pts;
-		switch (mode) {
-			case MODE_TETRAHEDRON: id = "SS"; num_pts = 4; break;
-			case MODE_HEXAHEDRON:  id = "SH"; num_pts = 8; break;
-			case MODE_PRISM:       ERROR("Unsupported mode."); break;
-			default:               ERROR("Invalid mode."); break;
-		}
+					Word_t face_vtcs[Quad::NUM_VERTICES];
+					element->get_face_vertices(iface, face_vtcs);
 
-		// write id
-		fprintf(this->out_file, "\t%s(", id);
+					fprintf(this->out_file, "%ld 5 %d %d %d %d %d\n",
+						mesh->get_num_active_elements() + 1 + (element->id * Hex::NUM_FACES) + iface,
+						dord, dord, dord, dord, dord);
 
-		// write points
-		for (int j = 0; j < num_pts; j++) {
-			Vertex *vtx = mesh->vertices[element->get_vertex(j)];
-			fprintf(this->out_file, FORMAT ", " FORMAT ", " FORMAT "%s", vtx->x, vtx->y, vtx->z, j == num_pts - 1 ? "" : ", ");
-		}
-		fprintf(this->out_file, ") { ");
-		// write values
-		for (int j = 0; j < num_pts; j++)
-			fprintf(this->out_file, "%d" "%s", order, j == num_pts - 1 ? "" : ", ");
-		// end the row
-		fprintf(this->out_file, " };\n");
+				}
+				} break;
 
+			default:
+				break;
+		} // switch
 	}
 
-	// finalize
-	fprintf(this->out_file, "};\n");
+	fprintf(this->out_file, "$EndElementNodeData\n");
 }

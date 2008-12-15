@@ -1,0 +1,107 @@
+#include <cstdio>
+#include <cstdarg>
+#include <ctime>
+#include <config.h>
+
+#include "trace.h"
+
+// VERBOSE
+
+static int verbose_level = 0;
+
+void set_verbose_level(int lvl) {
+	verbose_level = lvl;
+}
+
+void verbose_printf(int level, char const *fmt, ...) {
+	if (level <= verbose_level) {
+		va_list ap;
+		va_start(ap, fmt);
+		vprintf(fmt, ap);
+		va_end(ap);
+	}
+}
+
+
+// DEBUGGING stuff
+
+#ifdef DEBUG
+
+static int debug_level = 0;
+
+void debug_output_on() {
+	debug_level++;
+}
+
+void debug_output_off() {
+	if (debug_level > 0)
+		debug_level--;
+}
+
+void debug_printf(char const *fmt, ...) {
+	if (debug_level > 0) {
+		va_list ap;
+		va_start(ap, fmt);
+		vfprintf(stderr, fmt, ap);
+		va_end(ap);
+		fflush(stderr);
+	}
+}
+
+#endif
+
+// TRACING stuff
+
+#ifdef TRACING
+
+FILE *trace_file = NULL;
+static int trace_level = 0;
+static int trace_func_level = 0;
+static clock_t trace_time = clock();
+
+// Initialize tracing to the file
+void trace_start(const char *file_name) {
+	trace_file = fopen(file_name, "w");
+	if (trace_file == NULL) {
+		perror("trace_start");
+	}
+
+	trace_on();
+}
+
+// 
+void trace_end() {
+	fclose(trace_file);
+	trace_file = NULL;
+}
+
+void trace_on() {
+	trace_level++;
+}
+
+void trace_off() {
+	if (trace_level > 0)
+		trace_level--;
+}
+
+void trace(int line, const char *func, const char *file, char const *fmt, ...) {
+	static bool warn_trace = false;		// we need to warn the user only once
+
+	if (trace_level > 0) {
+		if (trace_file != NULL) {
+			va_list ap;
+			va_start(ap, fmt);
+			vfprintf(trace_file, fmt, ap);
+			va_end(ap);
+			fflush(stderr);
+		}
+		else {
+			if (!warn_trace)
+				fprintf(stderr, "Warning: TRACING not initialized (call TRACE_START at the beginning of your program).\n");
+			warn_trace = true;
+		}
+	}
+}
+
+#endif
+

@@ -1,0 +1,17 @@
+Vertices (count = 4)
+  id = 0, (x = 0.000000, y = 0.000000, z = 0.000000)
+  id = 1, (x = 2.000000, y = 0.000000, z = 0.000000)
+  id = 2, (x = 0.000000, y = 3.000000, z = 0.000000)
+  id = 3, (x = 0.000000, y = 0.000000, z = 1.000000)
+Elements (count = 1)
+  id = 0, vertices(0, 1, 2, 3)
+Boundaries (count = 4)
+  id = 0, marker = 1
+  id = 1, marker = 2
+  id = 2, marker = 3
+  id = 3, marker = 4
+Facets (count = 4)
+  id = 0, type = OUTER (TRI), [1, 1], left (elem = 0, face = 0),  right (bdr = 0), ref_mask = 0, sons = [-1, -1, -1, -1], no parent
+  id = 1, type = OUTER (TRI), [1, 1], left (elem = 0, face = 1),  right (bdr = 1), ref_mask = 0, sons = [-1, -1, -1, -1], no parent
+  id = 2, type = OUTER (TRI), [1, 1], left (elem = 0, face = 2),  right (bdr = 2), ref_mask = 0, sons = [-1, -1, -1, -1], no parent
+  id = 3, type = OUTER (TRI), [1, 1], left (elem = 0, face = 3),  right (bdr = 3), ref_mask = 0, sons = [-1, -1, -1, -1], no parent

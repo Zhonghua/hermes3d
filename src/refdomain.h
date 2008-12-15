@@ -1,0 +1,164 @@
+#ifndef _REFDOMAIN_H_
+#define _REFDOMAIN_H_
+
+#include "mesh.h"
+
+/// @defgroup ref_domains Reference domains
+///
+/// Reference domains are used... ;)
+///
+
+
+//
+// 1D domains
+//
+
+/// Reference domain for a line (1D)
+///
+/// FIXME: name
+///
+/// @ingroup ref_domains
+class RefLine {
+public:
+	static const Point1D *get_vertices() { return vertices; }
+
+protected:
+	static const Point1D vertices[];
+};
+
+
+//
+// 2D domains
+//
+
+/// Reference domain for triangle (2D)
+///
+/// @ingroup ref_domains
+class RefTri {
+public:
+	static const Point2D *get_vertices() { return vertices; }
+
+	static const int *get_edge_vertices(int edge) { return edge_vtcs[edge]; }
+
+protected:
+	static const Point2D vertices[];
+	static const int2 edge_vtcs[];
+};
+
+
+/// Reference domain for quadrilateral (2D)
+///
+/// @ingroup ref_domains
+class RefQuad {
+public:
+	static const Point2D *get_vertices() { return vertices; }
+
+	static const int *get_edge_vertices(int edge) { return edge_vtcs[edge]; }
+
+protected:
+	static const Point2D vertices[];
+	static const int2 edge_vtcs[];
+};
+
+
+//
+// 3D domains
+//
+
+/// Reference domain for tetrahedron (3D)
+///
+/// @ingroup ref_domains
+class RefTetra {
+public:
+	static const Point3D *get_vertices() { return vertices; }
+
+	static const int *get_edge_vertices(int edge) { return edge_vtcs[edge]; }
+	static const int get_edge_orientations() { return 2; }		// two orientations of an edge
+
+	static const int get_face_num_of_vertices(int face) { return face_nvtcs[face]; }
+	static const int get_face_num_of_edges(int face) { return face_nedges[face]; }
+	static const int *get_face_vertices(int face) { return face_vtcs[face]; }
+	static const int *get_face_edges(int face) { return face_edges[face]; }
+	static const EMode2D get_face_mode(int face) { return face_mode[face]; }
+	static const int get_face_orientations(int face) { return face_orientations[face]; }
+
+protected:
+	static const Point3D vertices[];
+	static const int2 edge_vtcs[];
+	static const int *face_vtcs[];
+	static const int *face_edges[];
+	static const int face_nvtcs[];
+	static const int face_nedges[];
+	static const EMode2D face_mode[];
+	static const int face_orientations[];
+};
+
+
+/// Reference domain for hexahedron (3D)
+///
+/// @ingroup ref_domains
+class RefHex {
+public:
+	static const Point3D *get_vertices() { return vertices; }
+
+	static const int *get_edge_vertices(int edge) { return edge_vtcs[edge]; }
+	static const int get_edge_orientations() { return 2; }		// two orientations of an edge
+
+	static const int get_face_num_of_vertices(int face) { return face_nvtcs[face]; }
+	static const int get_face_num_of_edges(int face) { return face_nedges[face]; }
+	static const int *get_face_vertices(int face) { return face_vtcs[face]; }
+	static const int *get_face_edges(int face) { return face_edges[face]; }
+	static const EMode2D get_face_mode(int face) { return face_mode[face]; }
+	static const int get_face_orientations(int face) { return face_orientations[face]; }
+	/// @param[in] ori - face orientation
+	/// @return orientations of edges on a face
+	/// 	all edges are oriented the same way on all faces, so we do not have to care about face number
+	static const int *get_face_edge_orientation(int ori) { return face_edge_ori[ori]; }
+
+	static const int get_edge_tangent_direction(int edge) { return edge_tangent[edge]; }
+	static const int get_face_tangent_direction(int face, int which) { return face_tangent[face][which]; }
+
+protected:
+	static Point3D vertices[];
+	static const int2 edge_vtcs[];
+	static const int *face_vtcs[];
+	static const int *face_edges[];
+	static const int face_nvtcs[];
+	static const int face_nedges[];
+	static const EMode2D face_mode[];
+	static const int face_orientations[];
+	static const int face_edge_ori[8][2];
+	static const int edge_tangent[];
+	static const int2 face_tangent[];
+};
+
+
+/// Reference domain for prism (3D)
+///
+/// @ingroup ref_domains
+class RefPrism {
+public:
+	static const Point3D *get_vertices() { return vertices; }
+
+	static const int *get_edge_vertices(int edge) { return edge_vtcs[edge]; }
+	static const int get_edge_orientations() { return 2; }		// two orientations of an edge
+
+	static const int get_face_num_of_vertices(int face) { return face_nvtcs[face]; }
+	static const int get_face_num_of_edges(int face) { return face_nedges[face]; }
+	static const int *get_face_vertices(int face) { return face_vtcs[face]; }
+	static const int *get_face_edges(int face) { return face_edges[face]; }
+	static const EMode2D get_face_mode(int face) { return face_mode[face]; }
+	static const int get_face_orientations(int face) { return face_orientations[face]; }
+
+protected:
+	static const Point3D vertices[];
+	static const int2 edge_vtcs[];
+	static const int *face_vtcs[];
+	static const int *face_edges[];
+	static const int face_nvtcs[];
+	static const int face_nedges[];
+	static const EMode2D face_mode[];
+	static const int face_orientations[];
+};
+
+#endif

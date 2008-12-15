@@ -1,0 +1,364 @@
+//
+// filter.cc
+//
+
+#include "config.h"
+#include "common.h"
+#include "filter.h"
+#include "traverse.h"
+
+//// Filter ////////////////////////////////////////////////////////////////////////////////////////
+
+Filter::Filter(MeshFunction *sln1) :
+	MeshFunction(NULL)
+{
+	num = 1;
+	sln[0] = sln1;
+	init();
+}
+
+Filter::Filter(MeshFunction *sln1, MeshFunction *sln2) :
+	MeshFunction(NULL)
+{
+	num = 2;
+	sln[0] = sln1;
+	sln[1] = sln2;
+	init();
+}
+
+Filter::Filter(MeshFunction *sln1, MeshFunction *sln2, MeshFunction *sln3) :
+	MeshFunction(NULL)
+{
+	num = 3;
+	sln[0] = sln1;
+	sln[1] = sln2;
+	sln[2] = sln3;
+	init();
+}
+
+Filter::Filter(MeshFunction *sln1, MeshFunction *sln2, MeshFunction *sln3, MeshFunction *sln4) :
+	MeshFunction(NULL)
+{
+	num = 4;
+	sln[0] = sln1;
+	sln[1] = sln2;
+	sln[2] = sln3;
+	sln[3] = sln4;
+	init();
+}
+
+Filter::~Filter() {
+	free();
+	if (unimesh) {
+		delete mesh;
+		for (int i = 0; i < num; i++)
+			delete [] unidata[i];
+		delete [] unidata;
+	}
+}
+
+void Filter::init() {
+	// construct the union mesh, if necessary
+	Mesh *meshes[4] = {
+		sln[0]->get_mesh(),
+		(num >= 2) ? sln[1]->get_mesh() : NULL,
+		(num >= 3) ? sln[2]->get_mesh() : NULL,
+		(num >= 4) ? sln[3]->get_mesh() : NULL
+	};
+
+	mesh = meshes[0];
+	unimesh = false;
+
+	for (int i = 1; i < num; i++)
+//		if (meshes[i]->get_seq() != mesh->get_seq()) {
+			unimesh = true;
+//			break;
+//		}
+
+	if (unimesh) {
+		Traverse trav;
+		trav.begin(num, meshes);
+		mesh = new Mesh;
+		MEM_CHECK(mesh);
+		unidata = trav.construct_union_mesh(mesh);
+		trav.finish();
+	}
+
+	refmap->set_mesh(mesh);
+
+	// misc init
+	num_components = 1;
+	order = 0;
+	memset(tables, 0, sizeof(tables));
+	memset(sln_sub, 0, sizeof(sln_sub));
+//	set_quad(&g_quad_2d_std);					// FIXME
+}
+
+void Filter::set_quad(Quad3D *quad) {
+	MeshFunction::set_quad(quad);
+	for (int i = 0; i < num; i++)
+		sln[i]->set_quad(quad);
+}
+
+void Filter::set_active_element(Element *e) {
+	MeshFunction::set_active_element(e);
+	if (!unimesh) {
+		for (int i = 0; i < num; i++)
+			sln[i]->set_active_element(e);
+		memset(sln_sub, 0, sizeof(sln_sub));
+	}
+	else {
+		for (int i = 0; i < num; i++) {
+			sln[i]->set_active_element(unidata[i][e->id].e);
+			sln[i]->set_transform(unidata[i][e->id].idx);
+			sln_sub[i] = sln[i]->get_transform();
+		}
+	}
+
+	if (tables[cur_quad] != NULL) free_sub_tables(&(tables[cur_quad]));
+	sub_tables = &(tables[cur_quad]);
+	update_nodes_ptr();
+
+	switch (mode) {
+		case MODE_TETRAHEDRON: order = MAX_QUAD_ORDER_TETRA; break;
+		case MODE_HEXAHEDRON: order = MAKE_HEX_ORDER(MAX_QUAD_ORDER, MAX_QUAD_ORDER, MAX_QUAD_ORDER); break;
+		default: assert(false);
+	}
+}
+
+void Filter::free() {
+	for (int i = 0; i < 4; i++)
+		if (tables[i] != NULL)
+			free_sub_tables(&(tables[i]));
+}
+
+void Filter::push_transform(int son) {
+	MeshFunction::push_transform(son);
+	for (int i = 0; i < num; i++) {
+		// sln_sub[i] contains the value sln[i]->sub_idx, which the Filter thinks
+		// the solution has, or at least had last time. If the filter graph is
+		// cyclic, it could happen that some solutions would get pushed the transform
+		// more than once. This mechanism prevents it. If the filter sees that the
+		// solution already has a different sub_idx than it thinks it should have,
+		// it assumes someone else has already pushed the correct transform. This
+		// is actually the case for cyclic filter graphs and filters used in multi-mesh
+		// computation.
+
+		if (sln[i]->get_transform() == sln_sub[i])
+			sln[i]->push_transform(son);
+		sln_sub[i] = sln[i]->get_transform();
+	}
+}
+
+void Filter::pop_transform() {
+	MeshFunction::pop_transform();
+	for (int i = 0; i < num; i++) {
+		if (sln[i]->get_transform() == sln_sub[i])
+			sln[i]->pop_transform();
+		sln_sub[i] = sln[i]->get_transform();
+	}
+}
+
+
+//// SimpleFilter //////////////////////////////////////////////////////////////////////////////////
+
+SimpleFilter::SimpleFilter(void (*filter_fn)(int n, scalar *val1, scalar *result), MeshFunction *sln1, int item1) :
+	Filter(sln1)
+{
+	item[0] = item1;
+	filter_fn_1 = filter_fn;
+	init_components();
+}
+
+SimpleFilter::SimpleFilter(void (*filter_fn)(int n, scalar *val1, scalar *val2, scalar *result), MeshFunction *sln1, MeshFunction *sln2, int item1, int item2) :
+	Filter(sln1, sln2)
+{
+	item[0] = item1;
+	item[1] = item2;
+	filter_fn_2 = filter_fn;
+	init_components();
+}
+
+SimpleFilter::SimpleFilter(void (*filter_fn)(int n, scalar *val1, scalar *val2, scalar *val3, scalar *result), MeshFunction *sln1, MeshFunction* sln2, MeshFunction* sln3, int item1, int item2, int item3) :
+	Filter(sln1, sln2, sln3)
+{
+	item[0] = item1;
+	item[1] = item2;
+	item[2] = item3;
+	filter_fn_3 = filter_fn;
+	init_components();
+}
+
+void SimpleFilter::init_components() {
+	bool vec1 = false, vec2 = false;
+	for (int i = 0; i < num; i++) {
+		if (sln[i]->get_num_components() > 1) vec1 = true;
+		if ((item[i] & FN_COMPONENT_0) && (item[i] & FN_COMPONENT_1) && (item[i] & FN_COMPONENT_2)) vec2 = true;
+		if (sln[i]->get_num_components() == 1) item[i] &= FN_COMPONENT_0;
+	}
+	num_components = (vec1 && vec2) ? 3 : 1;
+}
+
+void SimpleFilter::precalculate(int order, int mask) {
+	if (mask & (FN_DX | FN_DY | FN_DZ | FN_DXX | FN_DYY | FN_DZZ | FN_DXY | FN_DXZ | FN_DYZ)) {
+		ERROR("Filter not defined for derivatives.");
+		return;
+	}
+
+	Quad3D *quad = quads[cur_quad];
+	int np = quad->get_num_points(order);
+	Node *node = new_node(FN_VAL, np);
+	MEM_CHECK(node);
+
+	// precalculate all solutions
+	for (int i = 0; i < num; i++)
+		sln[i]->set_quad_order(order, item[i]);
+
+	for (int j = 0; j < num_components; j++) {
+		// obtain corresponding tables
+		scalar *tab[3];
+		for (int i = 0; i < num; i++) {
+			int a = 0, b = 0;
+			mask_to_comp_val(item[i], a, b);
+			tab[i] = sln[i]->get_values(num_components == 1 ? a : j, b);
+			if (tab[i] == NULL) {
+				ERROR("'item%d' is incorrect in filter definition.", i + 1);
+				return;
+			}
+		}
+
+		// apply the filter
+		switch (num) {
+			case 1: filter_fn_1(np, tab[0], node->values[j][0]); break;
+			case 2: filter_fn_2(np, tab[0], tab[1], node->values[j][0]); break;
+			case 3: filter_fn_3(np, tab[0], tab[1], tab[2], node->values[j][0]); break;
+			default: assert(false);
+		}
+	}
+
+	// remove the old node and attach the new one
+	replace_cur_node(node);
+}
+
+//// predefined simple filters /////////////////////////////////////////////////////////////////////
+
+static void magnitude_fn_3(int n, scalar *v1, scalar *v2, scalar *v3, scalar *result) {
+	for (int i = 0; i < n; i++)
+		result[i] = sqrt(sqr(v1[i]) + sqr(v2[i]) + sqr(v3[i]));
+}
+
+MagFilter::MagFilter(MeshFunction *sln1, MeshFunction *sln2, MeshFunction *sln3, int item1, int item2, int item3) :
+	SimpleFilter(magnitude_fn_3, sln1, sln2, sln3, item1, item2, item3)
+{
+}
+
+MagFilter::MagFilter(MeshFunction *sln1, int item1) :
+	SimpleFilter(magnitude_fn_3, sln1, sln1, sln1, item1 & FN_COMPONENT_0, item1 & FN_COMPONENT_1, item1 & FN_COMPONENT_2)
+{
+	if (sln1->get_num_components() < 3)
+		ERROR("The single-argument constructor is intended for vector-valued solutions.");
+
+}
+
+static void difference_fn_2(int n, scalar *v1, scalar *v2, scalar *result) {
+	for (int i = 0; i < n; i++)
+		result[i] = v1[i] - v2[i];
+}
+
+DiffFilter::DiffFilter(MeshFunction *sln1, MeshFunction *sln2, int item1, int item2) :
+	SimpleFilter(difference_fn_2, sln1, sln2, item1, item2)
+{
+}
+
+static void sum_fn_2(int n, scalar *v1, scalar *v2, scalar *result) {
+	for (int i = 0; i < n; i++)
+		result[i] = v1[i] + v2[i];
+}
+
+SumFilter::SumFilter(MeshFunction *sln1, MeshFunction *sln2, int item1, int item2) :
+	SimpleFilter(sum_fn_2, sln1, sln2, item1, item2)
+{
+}
+
+static void square_fn_1(int n, scalar *v1, scalar *result) {
+	for (int i = 0; i < n; i++)
+		result[i] = sqr(v1[i]);
+}
+
+SquareFilter::SquareFilter(MeshFunction *sln1, int item1) :
+	SimpleFilter(square_fn_1, sln1, item1)
+{
+}
+
+//// Filters for visualisation of complex solutions
+///////////////////////////////////////////////////////////////////////////////
+static void real_part_1(int n, scalar *v1, scalar *result) {
+	for (int i = 0; i < n; i++)
+		result[i] = REAL(v1[i]);
+}
+
+RealPartFilter::RealPartFilter(MeshFunction *sln1, int item1) :
+		SimpleFilter(real_part_1, sln1, item1)
+{
+}
+
+static void imag_part_1(int n, scalar *v1, scalar *result) {
+	for (int i = 0; i < n; i++)
+		result[i] = IMAG(v1[i]);
+}
+
+ImagPartFilter::ImagPartFilter(MeshFunction *sln1, int item1) :
+		SimpleFilter(imag_part_1, sln1, item1)
+{
+}
+
+
+
+//// VonMisesFilter ///////////////////////////////////////////////////////////////////////////////
+
+#ifndef COMPLEX
+#define getval(exp) (exp)
+#else
+#define getval(exp) (exp.real())
+#endif
+
+void VonMisesFilter::precalculate(int order, int mask) {
+	Quad3D *quad = quads[cur_quad];
+	int np = quad->get_num_points(order);
+	Node *node = new_node(FN_VAL_0, np);
+	MEM_CHECK(node);
+
+	sln[0]->set_quad_order(order, FN_DX | FN_DY | FN_DZ);
+	sln[1]->set_quad_order(order, FN_DX | FN_DY | FN_DZ);
+
+	scalar *dudx, *dudy, *dudz, *dvdx, *dvdy, *dvdz;
+	sln[0]->get_dx_dy_dz_values(dudx, dudy, dudz);
+	sln[1]->get_dx_dy_dz_values(dvdx, dvdy, dvdz);
+
+	for (int i = 0; i < np; i++) {
+		// FIXME: stress tensor
+/*		double tz = lambda*(getval(dudx[i]) + getval(dvdy[i]));
+		double tx = tz + 2*mu*getval(dudx[i]);
+		double ty = tz + 2*mu*getval(dvdy[i]);
+		double txy = mu*(getval(dudy[i]) + getval(dvdx[i]));
+
+		// Von Mises stress
+		node->values[0][0][i] = 1.0/sqrt(2.0) * sqrt(sqr(tx - ty) + sqr(ty - tz) + sqr(tz - tx) + 6
+		    *sqr(txy));
+*/
+	}
+
+	// remove the old node and attach the new one
+	replace_cur_node(node);
+}
+
+// FIXME: port to 3D
+VonMisesFilter::VonMisesFilter(MeshFunction *sln1, MeshFunction *sln2, double lambda, double mu, int cyl, int item1, int item2) :
+	Filter(sln1, sln2)
+{
+	this->mu = mu;
+	this->lambda = lambda;
+	this->cyl = cyl;
+	this->item1 = item1;
+	this->item2 = item2;
+}

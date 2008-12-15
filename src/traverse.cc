@@ -818,7 +818,7 @@ UniData **Traverse::construct_union_mesh(Mesh *unimesh) {
 	uint64 idx[num];
 	memset(idx, 0, sizeof(idx));
 
-	for (id = 0; id < meshes[0]->get_num_base_elements(); id++) {
+	for (id = 1; id <= meshes[0]->get_num_base_elements(); id++) {
 		for (i = 0; i < num; i++) {
 			e[i] = meshes[i]->elements[id];
 			static const Box unity = { 0, ONE, 0, ONE, 0, ONE };

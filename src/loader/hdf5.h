@@ -15,6 +15,9 @@ public:
 	virtual bool save(const char *file_name, Mesh *mesh);
 
 	// TODO: save error code and make it accessible via function
+
+	// Mesh attributes
+	char *description;					// description of the mesh
 };
 
 #endif

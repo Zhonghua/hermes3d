@@ -718,17 +718,17 @@ bool HDF5Reader::save(const char *file_name, Mesh *mesh) {
 	H5Aclose(attr_ver);
 	H5Sclose(dataspace_id);
 
-/*	// description
-	hid_t type = H5Tcopy(H5T_C_S1);
-	status = H5Tset_size(type, H5T_VARIABLE);
-	char *descr = "Test mesh";
-	hid_t dataspace_id2 = H5Screate(H5S_SCALAR);
-	hid_t attr_descr = H5Acreate(mesh_group_id, "description", type, dataspace_id2, H5P_DEFAULT);
-	status = H5Awrite(attr_descr, type, &descr);
-	H5Aclose(attr_descr);
-	H5Tclose(type);
-	H5Sclose(dataspace_id2);
-*/
+	// description
+	if (description != NULL) {
+		hid_t type = H5Tcopy(H5T_C_S1);
+		status = H5Tset_size(type, H5T_VARIABLE);
+		hid_t dataspace_id2 = H5Screate(H5S_SCALAR);
+		hid_t attr_descr = H5Acreate(mesh_group_id, "description", type, dataspace_id2, H5P_DEFAULT);
+		status = H5Awrite(attr_descr, type, &description);
+		H5Aclose(attr_descr);
+		H5Tclose(type);
+		H5Sclose(dataspace_id2);
+	}
 
 	// mesh
 	bool ret =

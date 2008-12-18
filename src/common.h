@@ -7,26 +7,33 @@
 #include <string.h>
 #include <assert.h>
 #include <math.h>
-#include <complex>
 #include <cstdarg>
 #include <algorithm>			// std::min, std::max
 
 #ifdef COMPLEX
-  #define scalar			std::complex<double>
-  #define CONJ(a)			(std::conj(a))
-  #define REAL(a)			(std::real(a))
-  #define IMAG(a)			(std::imag(a))
-  #define ABS(a)			(std::abs(a))
-  #define SCALAR_FMT		"(%lf, %lf)"
-  #define SCALAR(a)			std::real(a), std::imag(a)
+
+#include <complex>
+
+typedef std::complex<double> complex;
+typedef complex scalar;
+typedef complex complex2[2];
+#define CONJ(a)				(std::conj(a))
+#define REAL(a)				(std::real(a))
+#define IMAG(a)				(std::imag(a))
+#define ABS(a)				(std::abs(a))
+#define SCALAR_FMT			"(%lf, %lf)"
+#define SCALAR(a)			std::real(a), std::imag(a)
+
 #else
-  #define scalar			double
-  #define CONJ(a)			(a)
-  #define REAL(a)			(a)
-  #define IMAG(a)			(0)
-  #define ABS(a)			(fabs(a))
-  #define SCALAR_FMT		"%lf"
-  #define SCALAR(a)			(a)
+
+typedef double scalar;
+#define CONJ(a)				(a)
+#define REAL(a)				(a)
+#define IMAG(a)				(0)
+#define ABS(a)				(fabs(a))
+#define SCALAR_FMT			"%lf"
+#define SCALAR(a)			(a)
+
 #endif
 
 #define Order0 int
@@ -36,12 +43,6 @@
 
 
 #define swapint(a,b) {int c_help = (a); (a) = (b); (b) = c_help;}
-
-enum EDirection {
-	DIRECTION_X = 1,
-	DIRECTION_Y = 2,
-	DIRECTION_Z = 3
-};
 
 // node types
 enum ENodeType {
@@ -71,83 +72,18 @@ enum EMode3D {
 // points
 struct Point1D {
 	double x;		// coordinates of a point
-
-//	Point1D(double x) {
-//		this->x = x;
-//	}
 };
 
 struct Point2D {
 	double x, y;		// coordinates of a point
-
-//	Point2D(double x, double y) {
-//		this->x = x;
-//		this->y = y;
-//	}
-
 };
-/*
-struct Pt3D {
-	double x, y, z;		// coordinates of a point
-
-	Pt3D(double ax, double ay, double az) {
-		x = y = z = 0;
-	}
-};
-*/
 
 struct Point3D {
 	double x, y, z;		// coordinates of a point
-
-/*	Point3D() {
-		x = y = z = 0;
-	}
-
-	Point3D(double x, double y, double z) {
-		this->x = x;
-		this->y = y;
-		this->z = z;
-	}
-
-	void set(double x, double y, double z) {
-		this->x = x;
-		this->y = y;
-		this->z = z;
-	}
-
-	double dot_product(Point3D vec2) {return x * vec2.x + y * vec2.y + z * vec2.z;}
-	double norm() { return sqrt(dot_product(*this));};
-	void cross_product(Point3D a, Point3D b) {
-		x = a.y * b.z - a.z * b.y;
-		y = a.z * b.x - a.x * b.z;
-		z = a.x * b.y - a.y * b.x;
-	}
-
-	void plus(Point3D a, Point3D b) {
-		this->x = a.x + b.x;
-		this->y = a.y + b.y;
-		this->z = a.z + b.z;
-	}
-
-	void plus(Point3D a, double coef = 1.) {
-		this->x += coef * a.x;
-		this->y += coef * a.y;
-		this->z += coef * a.z;
-	}
-
-	void normalize() {
-		double n = norm();
-		x /= n;
-		y /= n;
-		z /= n;
-	}
-
-	void out() {
-		printf("(%lf, %lf, %lf)\n", x, y, z);
-	}
-*/
 };
+
 inline double dot_product(const Point3D &a, const Point3D &b) { return a.x * b.x + a.y * b.y + a.z * b.z;}
+
 inline Point3D cross_product(Point3D a, Point3D b) {
 	Point3D r = {
 		a.y * b.z - a.z * b.y,
@@ -167,6 +103,7 @@ inline Point3D lin_comb(Point3D a, double coef_a, Point3D b, double coef_b) {
 }
 
 inline double norm(const Point3D &pt) { return sqrt(dot_product(pt, pt)); }
+
 inline Point3D normalize(const Point3D &pt) {
 	double n = norm(pt);
 	Point3D res = { pt.x / n, pt.y / n, pt.z / n };

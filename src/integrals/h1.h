@@ -8,7 +8,7 @@
 /// @defgroup h1intergrals H1 intergals
 
 #define H1_INTEGRATE_EXPRESSION(exp) \
-	scalar result = 0.0; \
+	double result = 0.0; \
 	QuadPt3D *pt = quad->get_points(o); \
 	int np = quad->get_num_points(o); \
 	if (ru->is_jacobian_const()){ \
@@ -24,7 +24,7 @@
 
 
 #define H1_INTEGRATE_DD_EXPRESSION(exp) \
-	scalar result = 0.0; \
+	double result = 0.0; \
 	{ QuadPt3D *pt = quad->get_points(o); \
 	int np = quad->get_num_points(o); \
 	double3x3 *mv, *mu; \

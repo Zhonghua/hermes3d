@@ -2,7 +2,6 @@
 #define _INTEGRALS_HCURL_H_
 
 #include "refmap.h"
-
 #include <common/trace.h>
 #include <common/error.h>
 

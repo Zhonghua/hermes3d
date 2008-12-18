@@ -221,10 +221,10 @@ public: //remove me
 //						face_baselist[i].face_id, face_baselist[i].ori, face_baselist[i].iface,
 //						face_baselist[i].part.ori, face_baselist[i].part.fpart, face_baselist[i].part.epart,
 //						face_baselist[i].coef);
-					printf(" (face = %d, ori = %d, iface = %d, part = (horz = %d, vert = %d), dir = %d, coef = %lf)",
+					printf(" (face = %d, ori = %d, iface = %d, part = (horz = %d, vert = %d), dir = %d, coef = " SCALAR_FMT ")",
 						face_baselist[i].face_id, face_baselist[i].ori, face_baselist[i].iface,
 						face_baselist[i].part.horz, face_baselist[i].part.vert, face_baselist[i].dir,
-						face_baselist[i].coef);
+						SCALAR(face_baselist[i].coef));
 				}
 			}
 			else {

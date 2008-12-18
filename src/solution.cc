@@ -144,14 +144,10 @@ void Solution::set_active_element(Element *e) {
 
 }
 
-void Solution::precalculate(Qorder order, int mask) {
-	ERROR(ERR_NOT_IMPLEMENTED);
-#if 0
+void Solution::precalculate(Qorder qord, int mask) {
 	int i, j, k, l;
-	Quad3D *quad = quads[cur_quad];
-	int np = quad->get_num_points(order);
 
-	// if we are required to transform vectors, we must precalculate both their components
+	// if we are required to transform vectors, we must precalculate their components
 	const int GRAD = FN_DX_0 | FN_DY_0 | FN_DZ_0;
 	const int GRAD_ALL = FN_DX | FN_DY | FN_DZ;
 	if (transform) {
@@ -168,12 +164,40 @@ void Solution::precalculate(Qorder order, int mask) {
 
 	int oldmask = (cur_node != NULL) ? cur_node->mask : 0;
 	int newmask = mask | oldmask;
+
+	Quad3D *quad = quads[cur_quad];
+	assert(quad != NULL);
+	QuadPt3D *pt = NULL;
+	int np = 0;
+	switch (qord.type) {
+		case QOT_ELEMENT:
+			np = quad->get_num_points(qord.order);
+			pt = quad->get_points(qord.order);
+			break;
+
+		case QOT_FACE:
+			np = quad->get_face_num_points(qord.face, qord.order);
+			pt = quad->get_face_points(qord.face, qord.order);
+			break;
+
+		case QOT_EDGE:
+			np = quad->get_edge_num_points(qord.order);
+			pt = quad->get_edge_points(qord.edge, qord.order);
+			break;
+
+		case QOT_VERTEX:
+			np = quad->get_vertex_num_points();
+			pt = quad->get_vertex_points();
+			break;
+
+		default: assert(false);
+	}
+
 	Node *node = new_node(newmask, np);
 	MEM_CHECK(node);
 
 	// transform integration points by the current matrix
 	scalar x[np], y[np], z[np], tx[np];
-	QuadPt3D *pt = quad->get_points(order);
 	for (i = 0; i < np; i++) {
 		x[i] = pt[i].x * ctm->m[0] + ctm->t[0];
 		y[i] = pt[i].y * ctm->m[1] + ctm->t[1];
@@ -184,10 +208,8 @@ void Solution::precalculate(Qorder order, int mask) {
 	for (j = 0; j < num_components; j++)
 		for (i = 0; i < VALUE_TYPES; i++)
 			if (newmask & idx2mask[i][j])
-				if (oldmask & idx2mask[i][j])
-					memcpy(node->values[j][i], cur_node->values[j][i], np * sizeof(scalar));
-				else
-					memset(node->values[j][i], 0, np * sizeof(scalar));
+				if (oldmask & idx2mask[i][j]) memcpy(node->values[j][i], cur_node->values[j][i], np * sizeof(scalar));
+				else memset(node->values[j][i], 0, np * sizeof(scalar));
 
 	// update ctm, force it to the slave pss
 	slave_pss->force_transform(sub_idx, ctm);
@@ -195,7 +217,7 @@ void Solution::precalculate(Qorder order, int mask) {
 	AsmList *pal = al + cur_elem;
 	for (k = 0; k < pal->cnt; k++) {
 		slave_pss->set_active_shape(pal->idx[k]);
-		slave_pss->set_quad_order(ELEM_QORDER(order), mask);
+		slave_pss->set_quad_order(qord, mask);
 		scalar coef = pal->coef[k] * vec[pal->dof[k] + 1];
 
 		for (j = 0; j < num_components; j++)
@@ -293,36 +315,7 @@ void Solution::precalculate(Qorder order, int mask) {
 
 	// remove the old node and attach the new one
 	replace_cur_node(node);
-#endif
 }
-
-
-/*void Solution::one_shot_get_values(int order, scalar* buffer)
-{
-  int i, j, k, l;
-  Quad2D* quad = quads[cur_quad];
-  quad->set_mode(mode);
-  int np = quad->get_num_points(order);
-
-  // update ctm, force it to the slave pss
-  update_transform();
-  slave_pss->force_transform(sub_idx, ctm);
-
-  // assemble linear combination of the solution
-  AsmList* pal = &(al[cur_elem]);
-  memset(buffer, 0, sizeof(scalar) * np);
-  for (k = 0; k < pal->cnt; k++)
-  {
-    slave_pss->set_active_shape(pal->idx[k]);
-    slave_pss->set_quad_order(order, FN_VAL_MASK);
-    scalar coef = pal->coef[k] * vec[pal->dof[k] + 1];
-
-    scalar* result = buffer;
-    double* val = slave_pss->get_fn_values();
-    for (i = 0; i < np; i++) result[i] += val[i] * coef;
-  }
-}*/
-
 
 scalar Solution::get_sln_value(double x, double y, double z, EValueType which, int component) {
 	Shapeset *shapeset = slave_pss->get_shapeset();
@@ -400,26 +393,72 @@ void ExactSolution::set_active_element(Element *e) {
 }
 
 
-void ExactSolution::precalculate(int order, int mask) {
+void ExactSolution::precalculate(Qorder qord, int mask) {
 	Quad3D *quad = quads[cur_quad];
-//	quad->set_mode(mode);
-	int np = quad->get_num_points(order);
+	assert(quad != NULL);
+	QuadPt3D *pt = NULL;
+	int np = 0;
+	switch (qord.type) {
+		case QOT_ELEMENT:
+			np = quad->get_num_points(qord.order);
+			pt = quad->get_points(qord.order);
+			break;
+
+		case QOT_FACE:
+			np = quad->get_face_num_points(qord.face, qord.order);
+			pt = quad->get_face_points(qord.face, qord.order);
+			break;
+
+		case QOT_EDGE:
+			np = quad->get_edge_num_points(qord.order);
+			pt = quad->get_edge_points(qord.edge, qord.order);
+			break;
+
+		case QOT_VERTEX:
+			np = quad->get_vertex_num_points();
+			pt = quad->get_vertex_points();
+			break;
+
+		default: assert(false);
+	}
 
 	assert(!(mask & ~FN_DEFAULT));
 	mask = FN_DEFAULT;
 	Node *node = new_node(mask, np);
 
     update_refmap();
-	double *x = refmap->get_phys_x(order);
-	double *y = refmap->get_phys_y(order);
-	double *z = refmap->get_phys_z(order);
+    double *x, *y, *z;
+    switch (qord.type) {
+    	case QOT_ELEMENT:
+			x = refmap->get_phys_x(qord.order);
+			y = refmap->get_phys_y(qord.order);
+			z = refmap->get_phys_z(qord.order);
+    		break;
+
+    	case QOT_FACE:
+    		x = refmap->get_face_phys_x(qord.face, qord.order);
+    		y = refmap->get_face_phys_y(qord.face, qord.order);
+    		z = refmap->get_face_phys_z(qord.face, qord.order);
+    		break;
+
+    	case QOT_EDGE:
+			x = refmap->get_edge_phys_x(qord.edge, qord.order);
+			y = refmap->get_edge_phys_y(qord.edge, qord.order);
+			z = refmap->get_edge_phys_z(qord.edge, qord.order);
+    		break;
+
+		case QOT_VERTEX:
+			x = refmap->get_vertex_phys_x();
+			y = refmap->get_vertex_phys_y();
+			z = refmap->get_vertex_phys_z();
+    		break;
+    }
 
 	// evaluate the exact solution
 	for (int j = 0; j < num_components; j++) {
 		for (int i = 0; i < np; i++) {
 			scalar val, dx = 0.0, dy = 0.0, dz = 0.0;
 			val = fn[j](x[i], y[i], z[i], dx, dy, dz);
-//			printf("- ExactS: (% lf, % lf, % lf) = % lf\n", x[i], y[i], z[i], val);
 			node->values[j][FN][i] = val;
 			node->values[j][DX][i] = dx;
 			node->values[j][DY][i] = dy;
@@ -434,6 +473,7 @@ void ExactSolution::precalculate(int order, int mask) {
 //// ConstantSolution //////////////////////////////////////////////////////////////////////////////
 
 void ConstantSolution::precalculate(Qorder order, int mask) {
+	EXIT(ERR_NOT_IMPLEMENTED);
 #if 0
 	Quad3D *quad = quads[cur_quad];
 //	quad->set_mode(mode);

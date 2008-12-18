@@ -22,6 +22,7 @@
 #define __HERMES2D_GRAPH_H
 
 #include <vector>
+#include <string>
 
 ///  Graph is a utility class storing a simple XY graph (eg. a convergence graph).
 ///  One or more data rows can be defined by calling add_row(). The actual data

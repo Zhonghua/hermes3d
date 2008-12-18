@@ -9,6 +9,7 @@
 // - testing specified order
 // - testing dx, dy, dx values
 // - testing different shapesets
+// - test transformations
 //
 
 #include "config.h"

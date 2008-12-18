@@ -144,7 +144,9 @@ void Solution::set_active_element(Element *e) {
 
 }
 
-void Solution::precalculate(int order, int mask) {
+void Solution::precalculate(Qorder order, int mask) {
+	ERROR(ERR_NOT_IMPLEMENTED);
+#if 0
 	int i, j, k, l;
 	Quad3D *quad = quads[cur_quad];
 	int np = quad->get_num_points(order);
@@ -193,7 +195,7 @@ void Solution::precalculate(int order, int mask) {
 	AsmList *pal = al + cur_elem;
 	for (k = 0; k < pal->cnt; k++) {
 		slave_pss->set_active_shape(pal->idx[k]);
-		slave_pss->set_quad_order(order, mask);
+		slave_pss->set_quad_order(ELEM_QORDER(order), mask);
 		scalar coef = pal->coef[k] * vec[pal->dof[k] + 1];
 
 		for (j = 0; j < num_components; j++)
@@ -291,6 +293,7 @@ void Solution::precalculate(int order, int mask) {
 
 	// remove the old node and attach the new one
 	replace_cur_node(node);
+#endif
 }
 
 
@@ -430,7 +433,8 @@ void ExactSolution::precalculate(int order, int mask) {
 
 //// ConstantSolution //////////////////////////////////////////////////////////////////////////////
 
-void ConstantSolution::precalculate(int order, int mask) {
+void ConstantSolution::precalculate(Qorder order, int mask) {
+#if 0
 	Quad3D *quad = quads[cur_quad];
 //	quad->set_mode(mode);
 	int np = quad->get_num_points(order);
@@ -453,5 +457,6 @@ void ConstantSolution::precalculate(int order, int mask) {
 
 	// remove the old node and attach the new one
 	replace_cur_node(node);
+#endif
 }
 

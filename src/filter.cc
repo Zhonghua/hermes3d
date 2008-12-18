@@ -199,12 +199,15 @@ void SimpleFilter::init_components() {
 	num_components = (vec1 && vec2) ? 3 : 1;
 }
 
-void SimpleFilter::precalculate(int order, int mask) {
+void SimpleFilter::precalculate(Qorder order, int mask) {
 	if (mask & (FN_DX | FN_DY | FN_DZ | FN_DXX | FN_DYY | FN_DZZ | FN_DXY | FN_DXZ | FN_DYZ)) {
 		ERROR("Filter not defined for derivatives.");
 		return;
 	}
 
+	EXIT(ERR_NOT_IMPLEMENTED);
+
+/*
 	Quad3D *quad = quads[cur_quad];
 	int np = quad->get_num_points(order);
 	Node *node = new_node(FN_VAL, np);
@@ -238,6 +241,7 @@ void SimpleFilter::precalculate(int order, int mask) {
 
 	// remove the old node and attach the new one
 	replace_cur_node(node);
+*/
 }
 
 //// predefined simple filters /////////////////////////////////////////////////////////////////////
@@ -323,6 +327,8 @@ ImagPartFilter::ImagPartFilter(MeshFunction *sln1, int item1) :
 #endif
 
 void VonMisesFilter::precalculate(int order, int mask) {
+	ERROR(ERR_NOT_IMPLEMENTED);
+#if 0
 	Quad3D *quad = quads[cur_quad];
 	int np = quad->get_num_points(order);
 	Node *node = new_node(FN_VAL_0, np);
@@ -350,6 +356,7 @@ void VonMisesFilter::precalculate(int order, int mask) {
 
 	// remove the old node and attach the new one
 	replace_cur_node(node);
+#endif
 }
 
 // FIXME: port to 3D

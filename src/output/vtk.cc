@@ -330,7 +330,7 @@ void VtkOutputEngine::dump_scalars(const char *name, MeshFunction *fn, int item)
 		Vtk::OutputQuad *quad = output_quad[mode];
 		fn->set_active_element(element);
 		fn->set_quad(quad);
-		fn->set_quad_order(order, item);
+		fn->set_quad_order(ELEM_QORDER(order), item);
 		int a = 0, b = 0;
 		mask_to_comp_val(item, a, b);
 		scalar *val = fn->get_values(a, b);
@@ -373,7 +373,7 @@ void VtkOutputEngine::dump_vectors(const char *name, MeshFunction *fn, int item)
 		Vtk::OutputQuad *quad = output_quad[mode];
 		fn->set_active_element(element);
 		fn->set_quad(quad);
-		fn->set_quad_order(order, item);
+		fn->set_quad_order(ELEM_QORDER(order), item);
 		int a = 0, b = 0;
 		mask_to_comp_val(item, a, b);
 		scalar *val[3];

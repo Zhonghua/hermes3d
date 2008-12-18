@@ -80,7 +80,7 @@ protected:
 	void (*filter_fn_3)(int n, scalar *val1, scalar *val2, scalar *val3, scalar *result);
 
 	void init_components();
-	virtual void precalculate(int order, int mask);
+	virtual void precalculate(Qorder order, int mask);
 
 };
 

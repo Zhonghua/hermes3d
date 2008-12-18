@@ -149,8 +149,8 @@ inline scalar hcurl_int_u_v(RealFunction *fu, RealFunction *fv, RefMap *ru, RefM
 			break;
 	}
 
-	fu->set_quad_order(o);
-	fv->set_quad_order(o);
+	fu->set_quad_order(ELEM_QORDER(o));
+	fv->set_quad_order(ELEM_QORDER(o));
 
 	double *u0 = fu->get_fn_values(0);
 	double *u1 = fu->get_fn_values(1);
@@ -201,8 +201,8 @@ inline scalar hcurl_int_curl_u_curl_v(RealFunction *fu, RealFunction *fv, RefMap
 //	printf("order v %d -> (%d, %d, %d), ", ov, GET_HEX_ORDER_1(ov), GET_HEX_ORDER_2(ov), GET_HEX_ORDER_3(ov));
 //	printf("order %d -> (%d, %d, %d)\n", o, GET_HEX_ORDER_1(o), GET_HEX_ORDER_2(o), GET_HEX_ORDER_3(o));
 
-	fu->set_quad_order(o);
-	fv->set_quad_order(o);
+	fu->set_quad_order(ELEM_QORDER(o));
+	fv->set_quad_order(ELEM_QORDER(o));
 
 	double *du0dx, *du0dy, *du0dz, *du1dx, *du1dy, *du1dz, *du2dx, *du2dy, *du2dz;
 	double *dv0dx, *dv0dy, *dv0dz, *dv1dx, *dv1dy, *dv1dz, *dv2dx, *dv2dy, *dv2dz;
@@ -242,7 +242,7 @@ inline scalar hcurl_int_F_u(scalar (*F)(double x, double y, double z, int comp),
 			break;
 	}
 
-	fu->set_quad_order(o);
+	fu->set_quad_order(ELEM_QORDER(o));
 
 	double *u0 = fu->get_fn_values(0);
 	double *u1 = fu->get_fn_values(1);
@@ -286,12 +286,12 @@ inline scalar hcurl_surf_int_G_v(RealFunction *fv, RefMap *rv, FacePos *fp) {
 			break;
 	}
 
-	int order = MAKE_FACE_ORDER(fp->face, face_order);
+	Qorder qord = FACE_QORDER(fp->face, face_order);
 
 	//just to make macro work
 	RefMap *ru = rv;
 
-	fv->set_quad_order(order, FN_VAL);
+	fv->set_quad_order(qord, FN_VAL);
 
 	double *v0 = fv->get_fn_values(0);
 	double *v1 = fv->get_fn_values(1);
@@ -335,10 +335,10 @@ inline scalar hcurl_surf_int_u_v(RealFunction *fu, RealFunction *fv, RefMap *ru,
 			break;
 	}
 
-	int order = MAKE_FACE_ORDER(fp->face, face_order);
+	Qorder qord = FACE_QORDER(fp->face, face_order);
 
-	fu->set_quad_order(order, FN_VAL);
-	fv->set_quad_order(order, FN_VAL);
+	fu->set_quad_order(qord, FN_VAL);
+	fv->set_quad_order(qord, FN_VAL);
 
 	double *u0 = fu->get_fn_values(0);
 	double *u1 = fu->get_fn_values(1);

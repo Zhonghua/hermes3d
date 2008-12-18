@@ -450,7 +450,7 @@ void GmshOutputEngine::out(MeshFunction *fn, const char *name, int item/* = FN_V
 		double *phys_y = refmap->get_phys_y(order);
 		double *phys_z = refmap->get_phys_z(order);
 
-		fn->set_quad_order(order, item);
+		fn->set_quad_order(ELEM_QORDER(order), item);
 
 		int a = 0, b = 0;
 		mask_to_comp_val(item, a, b);

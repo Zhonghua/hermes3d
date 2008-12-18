@@ -162,7 +162,7 @@ void RefMap::calc_inv_ref_map(int order) {
 	for (int i = 0; i < num_coefs; i++) {
 		double *dx, *dy, *dz;
 		pss->set_active_shape(indices[i]);
-		pss->set_quad_order(order);
+		pss->set_quad_order(ELEM_QORDER(order));
 		pss->get_dx_dy_dz_values(dx, dy, dz);
 		for (int j = 0; j < np; j++) {
 			m[j][0][0] += coefs[i].x * dx[j];
@@ -246,7 +246,7 @@ void RefMap::calc_phys_x(int order) {
 	pss->force_transform(sub_idx, ctm);
 	for (int i = 0; i < num_coefs; i++) {
 		pss->set_active_shape(indices[i]);
-		pss->set_quad_order(order);
+		pss->set_quad_order(ELEM_QORDER(order));
 		double *fn = pss->get_fn_values();
 		for (int j = 0; j < np; j++)
 			x[j] += coefs[i].x * fn[j];
@@ -263,7 +263,7 @@ void RefMap::calc_phys_y(int order) {
 	pss->force_transform(sub_idx, ctm);
 	for (int i = 0; i < num_coefs; i++) {
 		pss->set_active_shape(indices[i]);
-		pss->set_quad_order(order);
+		pss->set_quad_order(ELEM_QORDER(order));
 		double *fn = pss->get_fn_values();
 		for (int j = 0; j < np; j++)
 			y[j] += coefs[i].y * fn[j];
@@ -280,7 +280,7 @@ void RefMap::calc_phys_z(int order) {
 	pss->force_transform(sub_idx, ctm);
 	for (int i = 0; i < num_coefs; i++) {
 		pss->set_active_shape(indices[i]);
-		pss->set_quad_order(order);
+		pss->set_quad_order(ELEM_QORDER(order));
 		double *fn = pss->get_fn_values();
 		for (int j = 0; j < np; j++)
 			z[j] += coefs[i].z * fn[j];
@@ -298,7 +298,7 @@ void RefMap::calc_edge_phys_x(int edge, int order) {
 	pss->force_transform(sub_idx, ctm);
 	for (int i = 0; i < num_coefs; i++) {
 		pss->set_active_shape(indices[i]);
-		pss->set_quad_order(MAKE_EDGE_ORDER(edge, order));
+		pss->set_quad_order(EDGE_QORDER(edge, order));
 		double *fn = pss->get_fn_values();
 		for (int j = 0; j < np; j++)
 			x[j] += coefs[i].x * fn[j];
@@ -314,7 +314,7 @@ void RefMap::calc_edge_phys_y(int edge, int order) {
 	pss->force_transform(sub_idx, ctm);
 	for (int i = 0; i < num_coefs; i++) {
 		pss->set_active_shape(indices[i]);
-		pss->set_quad_order(MAKE_EDGE_ORDER(edge, order));
+		pss->set_quad_order(EDGE_QORDER(edge, order));
 		double *fn = pss->get_fn_values();
 		for (int j = 0; j < np; j++)
 			y[j] += coefs[i].y * fn[j];
@@ -330,7 +330,7 @@ void RefMap::calc_edge_phys_z(int edge, int order) {
 	pss->force_transform(sub_idx, ctm);
 	for (int i = 0; i < num_coefs; i++) {
 		pss->set_active_shape(indices[i]);
-		pss->set_quad_order(MAKE_EDGE_ORDER(edge, order));
+		pss->set_quad_order(EDGE_QORDER(edge, order));
 		double *fn = pss->get_fn_values();
 		for (int j = 0; j < np; j++)
 			z[j] += coefs[i].z * fn[j];
@@ -395,7 +395,7 @@ void RefMap::calc_face_jacobian(int face, int order) {
 	memset(m, 0, np * sizeof(double3x3));
 	const int *face_vertices = RefHex::get_face_vertices(face);
 
-	int surf_order = MAKE_FACE_ORDER(face, order);
+	Qorder surf_order = FACE_QORDER(face, order);
 
 //	pss->force_transform(sub_idx, ctm);		// checkme
 	for (int i = 0; i < RefHex::get_face_num_of_vertices(face); i++) {
@@ -464,7 +464,7 @@ void RefMap::calc_face_inv_ref_map(int face, int order) {
 	for (int i = 0; i < num_coefs; i++) {
 		double *dx, *dy, *dz;
 		pss->set_active_shape(indices[i]);
-		pss->set_quad_order(MAKE_FACE_ORDER(face, order));
+		pss->set_quad_order(FACE_QORDER(face, order));
 		pss->get_dx_dy_dz_values(dx, dy, dz);
 		for (int j = 0; j < np; j++) {
 			m[j][0][0] += vertex[i].x * dx[j];
@@ -518,7 +518,7 @@ void RefMap::calc_face_phys_x(int face, int order) {
 	pss->force_transform(sub_idx, ctm);
 	for (int i = 0; i < num_coefs; i++) {
 		pss->set_active_shape(indices[i]);
-		pss->set_quad_order(MAKE_FACE_ORDER(face, order));
+		pss->set_quad_order(FACE_QORDER(face, order));
 		double *fn = pss->get_fn_values();
 		for (int j = 0; j < np; j++)
 			x[j] += coefs[i].x * fn[j];
@@ -534,7 +534,7 @@ void RefMap::calc_face_phys_y(int face, int order) {
 	pss->force_transform(sub_idx, ctm);
 	for (int i = 0; i < num_coefs; i++) {
 		pss->set_active_shape(indices[i]);
-		pss->set_quad_order(MAKE_FACE_ORDER(face, order));
+		pss->set_quad_order(FACE_QORDER(face, order));
 		double *fn = pss->get_fn_values();
 		for (int j = 0; j < np; j++)
 			y[j] += coefs[i].y * fn[j];
@@ -550,7 +550,7 @@ void RefMap::calc_face_phys_z(int face, int order) {
 	pss->force_transform(sub_idx, ctm);
 	for (int i = 0; i < num_coefs; i++) {
 		pss->set_active_shape(indices[i]);
-		pss->set_quad_order(MAKE_FACE_ORDER(face, order));
+		pss->set_quad_order(FACE_QORDER(face, order));
 		double *fn = pss->get_fn_values();
 		for (int j = 0; j < np; j++)
 			z[j] += coefs[i].z * fn[j];
@@ -600,7 +600,7 @@ void RefMap::calc_vertex_phys() {
 	pss->force_transform(sub_idx, ctm);
 	for (int i = 0; i < num_coefs; i++) {
 		pss->set_active_shape(indices[i]);
-		pss->set_quad_order(MAKE_VERTEX_ORDER());
+		pss->set_quad_order(VTX_QORDER());
 		double *fn = pss->get_fn_values();
 		for (int j = 0; j < nvtx; j++) {
 			x[j] += coefs[i].x * fn[j];

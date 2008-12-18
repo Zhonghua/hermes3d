@@ -69,8 +69,8 @@ double error_fn_h1(MeshFunction *sln1, MeshFunction *sln2, RefMap *ru, RefMap *r
 	// FIXME: mode of the element
 	int o = calc_order(MODE_HEXAHEDRON, std::max(sln1->get_fn_order(), sln2->get_fn_order()), ru->get_inv_ref_order());
 
-	sln1->set_quad_order(o);
-	sln2->set_quad_order(o);
+	sln1->set_quad_order(ELEM_QORDER(o));
+	sln2->set_quad_order(ELEM_QORDER(o));
 
 	scalar *uval, *vval, *dudx, *dudy, *dudz, *dvdx, *dvdy, *dvdz;
 	uval = sln1->get_fn_values();
@@ -89,7 +89,7 @@ double norm_fn_h1(MeshFunction *sln, RefMap *ru) {
 	// FIXME: mode of the element
 	int o = calc_order(MODE_HEXAHEDRON, sln->get_fn_order(), ru->get_inv_ref_order());
 
-	sln->set_quad_order(o);
+	sln->set_quad_order(ELEM_QORDER(o));
 
 	scalar *uval, *dudx, *dudy, *dudz;
 	uval = sln->get_fn_values();
@@ -117,8 +117,8 @@ double error_fn_l2(MeshFunction *sln1, MeshFunction *sln2, RefMap *ru, RefMap *r
 	// FIXME: mode of the element
 	int o = calc_order(MODE_HEXAHEDRON, std::max(sln1->get_fn_order(), sln2->get_fn_order()), ru->get_inv_ref_order());
 
-	sln1->set_quad_order(o);
-	sln2->set_quad_order(o);
+	sln1->set_quad_order(ELEM_QORDER(o));
+	sln2->set_quad_order(ELEM_QORDER(o));
 
 	scalar *uval, *vval;
 	uval = sln1->get_fn_values();
@@ -135,7 +135,7 @@ double norm_fn_l2(MeshFunction *sln, RefMap *ru) {
 
 	// FIXME: mode of the element
 	int o = calc_order(MODE_HEXAHEDRON, sln->get_fn_order(), ru->get_inv_ref_order());
-	sln->set_quad_order(o);
+	sln->set_quad_order(ELEM_QORDER(o));
 	scalar *uval = sln->get_fn_values();
 
 	H1_INTEGRATE_EXPRESSION(sqr(uval[i]));
@@ -170,9 +170,9 @@ double error_fn_hcurl(MeshFunction *sln1, MeshFunction *sln2, RefMap *ru, RefMap
 	// FIXME: mode of the element
 	int o = calc_order(MODE_HEXAHEDRON, std::max(sln1->get_fn_order(), sln2->get_fn_order()), ru->get_inv_ref_order());
 
-	sln1->set_quad_order(o);
-	sln2->set_quad_order(o);
-	
+	sln1->set_quad_order(ELEM_QORDER(o));
+	sln2->set_quad_order(ELEM_QORDER(o));
+
 	scalar *u0, *u1, *u2, *du0dx, *du0dy, *du0dz, *du1dx, *du1dy, *du1dz, *du2dx, *du2dy, *du2dz;
 	u0 = sln1->get_fn_values(0);
 	u1 = sln1->get_fn_values(1);
@@ -202,7 +202,7 @@ double norm_fn_hcurl(MeshFunction *sln, RefMap *ru) {
 	// FIXME: mode of the element
 	int o = calc_order(MODE_HEXAHEDRON, sln->get_fn_order(), ru->get_inv_ref_order());
 
-	sln->set_quad_order(o);
+	sln->set_quad_order(ELEM_QORDER(o));
 
 	scalar *u0, *u1, *u2, *du0dx, *du0dy, *du0dz, *du1dx, *du1dy, *du1dz, *du2dx, *du2dy, *du2dz;
 	u0 = sln->get_fn_values(0);
@@ -213,9 +213,9 @@ double norm_fn_hcurl(MeshFunction *sln, RefMap *ru) {
 	sln->get_dx_dy_dz_values(du2dx, du2dy, du2dz, 2);
 
 	RefMap *rv = ru; //just to make macro work
-	
+
 	HCURL_INTEGRATE_EXPRESSION( REAL(square(T_U_0) + square(T_U_1) + square(T_U_2) + square(U_CURL_0) + square(U_CURL_1) + square(U_CURL_2)) );
-	
+
 	//H1_INTEGRATE_EXPRESSION(sqr(uval[i]) + sqr(dudx[i]) + sqr(dudy[i]) + sqr(dudz[i]));
 	return result;
 }
@@ -238,14 +238,14 @@ double error_fn_l2_hcurl(MeshFunction *sln1, MeshFunction *sln2, RefMap *ru, Ref
 	// FIXME: mode of the element
 	int o = calc_order(MODE_HEXAHEDRON, std::max(sln1->get_fn_order(), sln2->get_fn_order()), ru->get_inv_ref_order());
 
-	sln1->set_quad_order(o);
-	sln2->set_quad_order(o);
+	sln1->set_quad_order(ELEM_QORDER(o));
+	sln2->set_quad_order(ELEM_QORDER(o));
 
 	scalar *u0, *u1, *u2;
 	u0 = sln1->get_fn_values(0);
 	u1 = sln1->get_fn_values(1);
 	u2 = sln1->get_fn_values(2);
-	
+
 	scalar *v0, *v1, *v2;
 	v0 = sln2->get_fn_values(0);
 	v1 = sln2->get_fn_values(1);
@@ -262,15 +262,15 @@ double norm_fn_l2_hcurl(MeshFunction *sln, RefMap *ru) {
 
 	// FIXME: mode of the element
 	int o = calc_order(MODE_HEXAHEDRON, sln->get_fn_order(), ru->get_inv_ref_order());
-	sln->set_quad_order(o);
-	
+	sln->set_quad_order(ELEM_QORDER(o));
+
 	scalar *u0, *u1, *u2;
 	u0 = sln->get_fn_values(0);
 	u1 = sln->get_fn_values(1);
 	u2 = sln->get_fn_values(2);
-	
+
 	RefMap *rv = ru; //just to make macro work
-	
+
 	HCURL_INTEGRATE_EXPRESSION( REAL(square(T_U_0) + square(T_U_1) + square(T_U_2)) );
 	return result;
 }

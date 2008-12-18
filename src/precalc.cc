@@ -96,56 +96,29 @@ void PrecalcShapeset::set_active_element(Element *e) {
 	element = e;
 }
 
-// used in curved.cpp
-/*
-void PrecalcShapeset::set_mode(EMode3D mode) {
-	this->mode = mode;
-//	shapeset->set_mode(mode);
-
-	Quad3D *quad = get_quad();
-//	quad->set_mode(mode);
-//	max_order = quad->get_num_tables()-1;
-	max_order = quad->get_max_order();
-
-//	element = NULL;
-}
-*/
-
-void PrecalcShapeset::precalculate(int order, int mask) {
-//	printf("PrecalcShapeset::precalculate: ctm = %p, m = (%lf, %lf, %lf), t = (%lf, %lf, %lf)\n",
-//		ctm, ctm->m[0], ctm->m[1], ctm->m[2], ctm->t[0], ctm->t[1], ctm->t[2]);
-
+void PrecalcShapeset::precalculate(Qorder qord, int mask) {
 	// initialization
 	Quad3D *quad = get_quad();
-
-	QuadPt3D *pt;
-	int np;
-	EOrderType type = GET_ORDER_TYPE(order);
-	int ef, ef_order;			// edge/face and its order
-	switch (type) {
-		case OT_ELEM:
-//			printf("ooo = %d\n", order);
-			np = quad->get_num_points(order);
-			pt = quad->get_points(order);
+	assert(quad != NULL);
+	QuadPt3D *pt = NULL;
+	int np = 0;
+	switch (qord.type) {
+		case QOT_ELEMENT:
+			np = quad->get_num_points(qord.order);
+			pt = quad->get_points(qord.order);
 			break;
 
-		case OT_FACE:
-			ef = GET_FACE_FROM_ORDER(order);
-			ef_order = GET_ORDER_FROM_ORDER(order);
-
-			np = quad->get_face_num_points(ef, ef_order);
-			pt = quad->get_face_points(ef, ef_order);
+		case QOT_FACE:
+			np = quad->get_face_num_points(qord.face, qord.order);
+			pt = quad->get_face_points(qord.face, qord.order);
 			break;
 
-		case OT_EDGE:
-			ef = GET_EDGE_FROM_ORDER(order);
-			ef_order = GET_ORDER_FROM_ORDER(order);
-
-			np = quad->get_edge_num_points(ef_order);
-			pt = quad->get_edge_points(ef, ef_order);
+		case QOT_EDGE:
+			np = quad->get_edge_num_points(qord.order);
+			pt = quad->get_edge_points(qord.edge, qord.order);
 			break;
 
-		case OT_VERTEX:
+		case QOT_VERTEX:
 			np = quad->get_vertex_num_points();
 			pt = quad->get_vertex_points();
 			break;

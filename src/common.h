@@ -36,6 +36,7 @@ typedef double scalar;
 
 #endif
 
+
 #define Order0 int
 #define Order1 int
 #define Order2 int
@@ -44,12 +45,6 @@ typedef double scalar;
 
 #define swapint(a,b) {int c_help = (a); (a) = (b); (b) = c_help;}
 
-// node types
-enum ENodeType {
-	TYPE_VERTEX = 0,
-	TYPE_EDGE = 1,
-	TYPE_FACE = 2
-};
 
 // 1D element modes
 enum EMode1D {

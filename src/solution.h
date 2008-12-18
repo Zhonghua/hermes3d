@@ -108,7 +108,7 @@ protected:
 	Element *elems[8][NUM_ELEMENTS];
 	int cur_elem, oldest[8];
 
-	virtual void precalculate(int order, int mask);
+	virtual void precalculate(Qorder order, int mask);
 
 	void free_tables();
 };
@@ -151,7 +151,7 @@ public:
 protected:
 	scalar c[COMPONENTS];
 
-	virtual void precalculate(int order, int mask);
+	virtual void precalculate(Qorder order, int mask);
 };
 
 

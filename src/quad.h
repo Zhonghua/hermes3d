@@ -381,28 +381,39 @@ const int prism_base_coding = MAX_QUAD_ORDER_TRI + 1;
 
 // Surface order //////////////////////////////////////////////////////////////////////////////////
 
-enum EOrderType {
-	OT_ELEM = 0,
-	OT_FACE = 1,
-	OT_EDGE = 2,
-	OT_VERTEX = 3
+//// Qorder ////
+//
+// quadrature order
+//
+
+#define QOT_ELEMENT						0
+#define QOT_FACE						1
+#define QOT_EDGE						2
+#define QOT_VERTEX						3
+
+struct Qorder {
+	unsigned type:3;				// QOT_XXX
+	union {
+		unsigned edge: 4;			// the number of the local edge (if type == QOT_EDGE)
+		unsigned face: 4;			// the number of the local face (if type == QOT_FACE)
+	};
+	unsigned order:25;				// order (TODO: )
+
+	Qorder(unsigned type, unsigned ef, unsigned order) {
+		this->type = type;
+		this->edge = ef;
+		this->order = order;
+	}
+
+	operator int() { return (((type << 4) | edge) << 25) | order; }
 };
 
-//  Order: |--|----|--- .. ---|
-//                 ++++++++++++ -- order
-//            +++++             -- face/edge num
-//          ++                  -- order type (EorderType)
+#define ELEM_QORDER(o)				Qorder(QOT_ELEMENT, 0, o)
+#define FACE_QORDER(f, o)			Qorder(QOT_FACE, f, o)
+#define EDGE_QORDER(e, o)			Qorder(QOT_EDGE, e, o)
+#define VTX_QORDER()				Qorder(QOT_VERTEX, 0, 0)
+
 //
-#define MAKE_VOL_ORDER(order) ((order))
-#define MAKE_FACE_ORDER(face, order) ((OT_FACE << 30) | (face << 26) | (order))
-#define MAKE_EDGE_ORDER(edge, order) ((OT_EDGE << 30) | (edge << 26) | (order))
-#define MAKE_VERTEX_ORDER() ((OT_VERTEX << 30))
-
-#define GET_ORDER_TYPE(order) (EOrderType) ((order >> 30) & 0x03)
-#define GET_EDGE_FROM_ORDER(order) ((order >> 26) & 0x0F)
-#define GET_FACE_FROM_ORDER(order) ((order >> 26) & 0x0F)
-#define GET_ORDER_FROM_ORDER(order) (order & 0x1FFFFFF)
-
 
 #ifndef DEBUG_ORDER
 	#define LIMIT_TRI_ORDER(o)

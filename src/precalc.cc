@@ -96,7 +96,7 @@ void PrecalcShapeset::set_active_element(Element *e) {
 	element = e;
 }
 
-void PrecalcShapeset::precalculate(Qorder qord, int mask) {
+void PrecalcShapeset::precalculate(qorder_t qord, int mask) {
 	// initialization
 	Quad3D *quad = get_quad();
 	assert(quad != NULL);

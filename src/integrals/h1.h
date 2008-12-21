@@ -306,7 +306,7 @@ inline scalar surf_int_u_v(RealFunction *fu, RealFunction *fv, RefMap *ru, RefMa
 			break;
 	}
 
-	Qorder qord = FACE_QORDER(fp->face, face_order);
+	qorder_t qord = FACE_QORDER(fp->face, face_order);
 
 	fu->set_quad_order(qord, FN_VAL);
 	fv->set_quad_order(qord, FN_VAL);

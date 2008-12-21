@@ -62,7 +62,7 @@ protected:
 
 	bool is_slave() const { return master_pss != NULL; }
 
-	virtual void precalculate(Qorder order, int mask);
+	virtual void precalculate(qorder_t order, int mask);
 
 	void update_max_index();
 

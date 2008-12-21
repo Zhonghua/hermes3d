@@ -199,7 +199,7 @@ void SimpleFilter::init_components() {
 	num_components = (vec1 && vec2) ? 3 : 1;
 }
 
-void SimpleFilter::precalculate(Qorder order, int mask) {
+void SimpleFilter::precalculate(qorder_t order, int mask) {
 	if (mask & (FN_DX | FN_DY | FN_DZ | FN_DXX | FN_DYY | FN_DZZ | FN_DXY | FN_DXZ | FN_DYZ)) {
 		ERROR("Filter not defined for derivatives.");
 		return;

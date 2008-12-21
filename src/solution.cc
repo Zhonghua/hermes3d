@@ -141,10 +141,9 @@ void Solution::set_active_element(Element *e) {
 	//TODO this is necessery only for Hcurl, where element of order n in each direction
 	//TODO contains functions of polynomial order n+1 in each direction
 	order = add_hex_orders(order, MAKE_HEX_ORDER(1, 1, 1));
-
 }
 
-void Solution::precalculate(Qorder qord, int mask) {
+void Solution::precalculate(qorder_t qord, int mask) {
 	int i, j, k, l;
 
 	// if we are required to transform vectors, we must precalculate their components
@@ -393,7 +392,7 @@ void ExactSolution::set_active_element(Element *e) {
 }
 
 
-void ExactSolution::precalculate(Qorder qord, int mask) {
+void ExactSolution::precalculate(qorder_t qord, int mask) {
 	Quad3D *quad = quads[cur_quad];
 	assert(quad != NULL);
 	QuadPt3D *pt = NULL;
@@ -472,7 +471,7 @@ void ExactSolution::precalculate(Qorder qord, int mask) {
 
 //// ConstantSolution //////////////////////////////////////////////////////////////////////////////
 
-void ConstantSolution::precalculate(Qorder order, int mask) {
+void ConstantSolution::precalculate(qorder_t order, int mask) {
 	EXIT(ERR_NOT_IMPLEMENTED);
 #if 0
 	Quad3D *quad = quads[cur_quad];

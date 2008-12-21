@@ -146,7 +146,7 @@ public:
 	/// \param mask [in] A combination of one or more of the constants FN_VAL, FN_DX, FN_DY, FN_DZ,
 	///   FN_DXX, FN_DYY, FN_DZZ, FN_DXY, FN_DXZ, FN_DYZ specifying the values which should be precalculated.
 	///   The default is FN_VAL | FN_DX | FN_DY. You can also use FN_ALL to precalculate everything.
-	void set_quad_order(Qorder order, int mask = FN_DEFAULT) {
+	void set_quad_order(qorder_t order, int mask = FN_DEFAULT) {
 //		assert(order >= 0 && order <= max_order);
 		pp_cur_node = (void **) JudyLIns(nodes, order, NULL);
 		cur_node = (Node *) *pp_cur_node;
@@ -275,7 +275,7 @@ protected:
 	static const int QUAD_COUNT = 8;
 
 	/// precalculates the current function at the current integration points.
-	virtual void precalculate(Qorder order, int mask) = 0;
+	virtual void precalculate(qorder_t order, int mask) = 0;
 
 	int order;          ///< current function polynomial order
 	int num_components; ///< number of vector components

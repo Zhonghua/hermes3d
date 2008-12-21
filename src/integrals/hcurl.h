@@ -286,7 +286,7 @@ inline scalar hcurl_surf_int_G_v(RealFunction *fv, RefMap *rv, FacePos *fp) {
 			break;
 	}
 
-	Qorder qord = FACE_QORDER(fp->face, face_order);
+	qorder_t qord = FACE_QORDER(fp->face, face_order);
 
 	//just to make macro work
 	RefMap *ru = rv;
@@ -335,7 +335,7 @@ inline scalar hcurl_surf_int_u_v(RealFunction *fu, RealFunction *fv, RefMap *ru,
 			break;
 	}
 
-	Qorder qord = FACE_QORDER(fp->face, face_order);
+	qorder_t qord = FACE_QORDER(fp->face, face_order);
 
 	fu->set_quad_order(qord, FN_VAL);
 	fv->set_quad_order(qord, FN_VAL);

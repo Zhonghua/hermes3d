@@ -391,7 +391,7 @@ const int prism_base_coding = MAX_QUAD_ORDER_TRI + 1;
 #define QOT_EDGE						2
 #define QOT_VERTEX						3
 
-struct Qorder {
+struct qorder_t {
 	unsigned type:3;				// QOT_XXX
 	union {
 		unsigned edge: 4;			// the number of the local edge (if type == QOT_EDGE)
@@ -399,7 +399,7 @@ struct Qorder {
 	};
 	unsigned order:25;				// order (TODO: )
 
-	Qorder(unsigned type, unsigned ef, unsigned order) {
+	qorder_t(unsigned type, unsigned ef, unsigned order) {
 		this->type = type;
 		this->edge = ef;
 		this->order = order;
@@ -408,10 +408,10 @@ struct Qorder {
 	operator int() { return (((type << 4) | edge) << 25) | order; }
 };
 
-#define ELEM_QORDER(o)				Qorder(QOT_ELEMENT, 0, o)
-#define FACE_QORDER(f, o)			Qorder(QOT_FACE, f, o)
-#define EDGE_QORDER(e, o)			Qorder(QOT_EDGE, e, o)
-#define VTX_QORDER()				Qorder(QOT_VERTEX, 0, 0)
+#define ELEM_QORDER(o)				qorder_t(QOT_ELEMENT, 0, o)
+#define FACE_QORDER(f, o)			qorder_t(QOT_FACE, f, o)
+#define EDGE_QORDER(e, o)			qorder_t(QOT_EDGE, e, o)
+#define VTX_QORDER()				qorder_t(QOT_VERTEX, 0, 0)
 
 //
 

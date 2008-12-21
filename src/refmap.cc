@@ -395,7 +395,7 @@ void RefMap::calc_face_jacobian(int face, int order) {
 	memset(m, 0, np * sizeof(double3x3));
 	const int *face_vertices = RefHex::get_face_vertices(face);
 
-	Qorder surf_order = FACE_QORDER(face, order);
+	qorder_t surf_order = FACE_QORDER(face, order);
 
 //	pss->force_transform(sub_idx, ctm);		// checkme
 	for (int i = 0; i < RefHex::get_face_num_of_vertices(face); i++) {

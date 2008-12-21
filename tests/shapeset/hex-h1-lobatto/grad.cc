@@ -17,7 +17,7 @@ void h1_int_vol(RealFunction *fu, double3 result) {
 	// integrate with maximum order
 	int o = quad->get_max_order();
 
-	fu->set_quad_order(o, FN_DX | FN_DY | FN_DZ);
+	fu->set_quad_order(ELEM_QORDER(o), FN_DX | FN_DY | FN_DZ);
 
 	double *dx = fu->get_dx_values();
 	double *dy = fu->get_dy_values();
@@ -51,7 +51,7 @@ void h1_int_surf(RealFunction *fu, double3 result) {
 	for (int face = 0; face < Hex::NUM_FACES; face++) {
 		int face_order = quad->get_face_max_order(face);
 		// integrate with maximum order
-		int surf_order = MAKE_FACE_ORDER(face, face_order);
+		qorder_t surf_order = FACE_QORDER(face, face_order);
 
 		fu->set_quad_order(surf_order, FN_VAL);
 		double *val = fu->get_fn_values();

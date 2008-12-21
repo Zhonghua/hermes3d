@@ -170,7 +170,7 @@ typedef scalar scalar3[3];
 typedef unsigned long long int uint64;
 
 // maximal polynomial order of elements
-#define MAX_ELEMENT_ORDER							9
+#define MAX_ELEMENT_ORDER							10
 
 // Dirichlet lift is a special DOF with nubmer -1
 #define DIRICHLET_DOF								-1

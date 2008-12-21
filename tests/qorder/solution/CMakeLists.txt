@@ -28,8 +28,6 @@ enable_testing()
 
 set(BIN ${PROJECT_BINARY_DIR}/${PROJECT_NAME})
 
-#add_test(qorder-solution-1 ${PROJECT_NAME} fn1 ${MESHES_DIR}/mesh3d/hex1-sc.mesh3d)
-
 add_test(qorder-solution-1 ${PROJECT_NAME} ${MESHES_DIR}/mesh3d/hex1.mesh3d)
 add_test(qorder-solution-2 ${PROJECT_NAME} ${MESHES_DIR}/mesh3d/hex1-sc.mesh3d)
 add_test(qorder-solution-3 ${PROJECT_NAME} ${MESHES_DIR}/mesh3d/hex2.mesh3d)

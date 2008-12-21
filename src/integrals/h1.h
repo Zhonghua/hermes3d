@@ -17,7 +17,7 @@
 		result *= ru->get_const_jacobian(); \
 	} \
 	else { \
-		double *jac = ru->get_jacobian(o); \
+		double *jac = ru->get_jacobian(qord); \
 		for (int i = 0; i < np; i++) \
 			result += pt[i].w * jac[i] * (exp); \
 	}
@@ -36,9 +36,9 @@
 		result *= ru->get_const_jacobian(); \
 	} \
 	else { \
-		mu = ru->get_inv_ref_map(o); \
-		mv = rv->get_inv_ref_map(o); \
-		double *jac = ru->get_jacobian(o); \
+		mu = ru->get_inv_ref_map(qord); \
+		mv = rv->get_inv_ref_map(qord); \
+		double *jac = ru->get_jacobian(qord); \
 		for (int i = 0; i < np; i++, mu++, mv++) \
 			result += pt[i].w * jac[i] * (exp); \
 	}}
@@ -92,7 +92,8 @@ inline scalar int_u(RealFunction *fu, RefMap *ru) {
 			break;
 	}
 
-	fu->set_quad_order(ELEM_QORDER(o));
+	qorder_t qord = ELEM_QORDER(o);
+	fu->set_quad_order(qord);
 
 	double *uval = fu->get_fn_values();
 
@@ -128,8 +129,9 @@ inline scalar int_u_v(RealFunction *fu, RealFunction *fv, RefMap *ru, RefMap *rv
 			break;
 	}
 
-	fu->set_quad_order(ELEM_QORDER(o));
-	fv->set_quad_order(ELEM_QORDER(o));
+	qorder_t qord = ELEM_QORDER(o);
+	fu->set_quad_order(qord);
+	fv->set_quad_order(qord);
 
 	double *uval = fu->get_fn_values();
 	double *vval = fv->get_fn_values();
@@ -160,7 +162,8 @@ inline scalar int_F_u(double (*F)(double x, double y, double z), RealFunction *f
 			break;
 	}
 
-	fu->set_quad_order(ELEM_QORDER(o));
+	qorder_t qord = ELEM_QORDER(o);
+	fu->set_quad_order(qord);
 
 	double *uval = fu->get_fn_values();
 	double *x = ru->get_phys_x(o);
@@ -199,8 +202,9 @@ inline scalar int_grad_u_grad_v(RealFunction *fu, RealFunction *fv, RefMap *ru, 
 			break;
 	}
 
-	fu->set_quad_order(ELEM_QORDER(o));
-	fv->set_quad_order(ELEM_QORDER(o));
+	qorder_t qord = ELEM_QORDER(o);
+	fu->set_quad_order(qord);
+	fv->set_quad_order(qord);
 
 	double *dudx, *dudy, *dudz;
 	fu->get_dx_dy_dz_values(dudx, dudy, dudz);
@@ -238,7 +242,8 @@ inline scalar surf_int_v(RealFunction *fv, RefMap *rv, FacePos *fp) {
 			break;
 	}
 
-	fv->set_quad_order(FACE_QORDER(fp->face, face_order), FN_VAL);
+	qorder_t qord = FACE_QORDER(fp->face, face_order);
+	fv->set_quad_order(qord, FN_VAL);
 
 	double *vval = fv->get_fn_values();
 
@@ -268,7 +273,8 @@ inline scalar surf_int_G_v(RealFunction *fv, RefMap *rv, FacePos *fp) {
 			break;
 	}
 
-	fv->set_quad_order(FACE_QORDER(fp->face, face_order), FN_VAL);
+	qorder_t qord = FACE_QORDER(fp->face, face_order);
+	fv->set_quad_order(qord, FN_VAL);
 
 	double *vval = fv->get_fn_values();
 	double *x = rv->get_face_phys_x(fp->face, face_order);
@@ -407,9 +413,10 @@ inline double int_h1_error(Function<T> *fu, Function<T> *fv, RefMap *ru, RefMap 
 	assert(quad == fv->get_quad());
 
 	// FIXME: mode
-	int o = ELEM_QORDER(calc_order(MODE_HEXAHEDRON, fu->get_fn_order(), fv->get_fn_order(), ru->get_inv_ref_order()));
-	fu->set_quad_order(o);
-	fv->set_quad_order(o);
+	int o = calc_order(MODE_HEXAHEDRON, fu->get_fn_order(), fv->get_fn_order(), ru->get_inv_ref_order());
+	qorder_t qord = ELEM_QORDER(o);
+	fu->set_quad_order(qord);
+	fv->set_quad_order(qord);
 
 	scalar *fnu = fu->get_fn_values();
 	scalar *fnv = fv->get_fn_values();
@@ -430,9 +437,10 @@ inline double int_h1_semi_error(Function<T> *fu, Function<T> *fv, RefMap *ru, Re
 	assert(quad == fv->get_quad());
 
 	// FIXME: mode
-	int o = ELEM_QORDER(calc_order(MODE_HEXAHEDRON, fu->get_fn_order(), fv->get_fn_order(), ru->get_inv_ref_order()));
-	fu->set_quad_order(o);
-	fv->set_quad_order(o);
+	int o = calc_order(MODE_HEXAHEDRON, fu->get_fn_order(), fv->get_fn_order(), ru->get_inv_ref_order());
+	qorder_t qord = ELEM_QORDER(o);
+	fu->set_quad_order(qord);
+	fv->set_quad_order(qord);
 
 	scalar *fnu = fu->get_fn_values();
 	scalar *fnv = fv->get_fn_values();
@@ -450,8 +458,9 @@ inline double int_h1_norm(Function<T> *fu, RefMap *ru) {
 	Quad3D *quad = fu->get_quad();
 
 	// FIXME: mode
-	int o = ELEM_QORDER(calc_order(MODE_HEXAHEDRON, fu->get_fn_order(), ru->get_inv_ref_order()));
-	fu->set_quad_order(o);
+	int o = calc_order(MODE_HEXAHEDRON, fu->get_fn_order(), ru->get_inv_ref_order());
+	qorder_t qord = ELEM_QORDER(o);
+	fu->set_quad_order(qord);
 
 	scalar *fnu = fu->get_fn_values();
 	scalar *dudx, *dudy, *dudz;
@@ -466,8 +475,9 @@ inline double int_h1_seminorm(Function<T> *fu, RefMap *ru) {
 	Quad3D *quad = fu->get_quad();
 
 	// FIXME: mode
-	int o = ELEM_QORDER(calc_order(MODE_HEXAHEDRON, fu->get_fn_order(), ru->get_inv_ref_order()));
-	fu->set_quad_order(o);
+	int o = calc_order(MODE_HEXAHEDRON, fu->get_fn_order(), ru->get_inv_ref_order());
+	qorder_t qord = ELEM_QORDER(o);
+	fu->set_quad_order(qord);
 
 	scalar *fnu = fu->get_fn_values();
 	scalar *dudx, *dudy, *dudz;

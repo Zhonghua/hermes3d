@@ -68,7 +68,7 @@ public:
 	/// \return The jacobian of the reference map precalculated at the integration
 	/// points of the specified order. Intended for non-constant jacobian elements.
 	/// \param order [in] Integration order
-	double *get_jacobian(int order) {
+	double *get_jacobian(qorder_t order) {
 		if (!cur_node->jacobian.exists(order)) calc_inv_ref_map(order);
 		return cur_node->jacobian[order];
 	}
@@ -77,7 +77,7 @@ public:
 	/// integration points of the specified order. Intended for non-constant
 	/// jacobian elements.
 	/// \param order [in] Integration order
-	double3x3 *get_ref_map(int order) {
+	double3x3 *get_ref_map(qorder_t order) {
 		if (!cur_node->inv_ref_map.exists(order)) calc_inv_ref_map(order);
 		return cur_node->ref_map[order];
 	}
@@ -86,7 +86,7 @@ public:
 	/// integration points of the specified order. Intended for non-constant
 	/// jacobian elements.
 	/// \param order [in] Integration order
-	double3x3 *get_inv_ref_map(int order) {
+	double3x3 *get_inv_ref_map(qorder_t order) {
 		assert(cur_node != NULL);
 		if (!cur_node->inv_ref_map.exists(order)) calc_inv_ref_map(order);
 		return cur_node->inv_ref_map[order];
@@ -293,7 +293,7 @@ protected:
 		int nedges, nfaces;
 	};
 
-	void calc_inv_ref_map(int order);
+	void calc_inv_ref_map(qorder_t order);
 	void calc_const_inv_ref_map();
 	int  calc_inv_ref_order();
 

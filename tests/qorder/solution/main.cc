@@ -7,6 +7,7 @@
 //
 // TODO:
 // - more functions
+// - test on vector-valued shapesets
 //
 
 #include "config.h"
@@ -18,7 +19,7 @@
 #define ERROR_FAILURE								-1
 
 // error should be smaller than this epsilon
-#define EPS								10e-14F
+#define EPS								10e-12F
 
 double (*exact_solution)(double x, double y, double z, double &dx, double &dy, double &dz);
 
@@ -73,6 +74,8 @@ bool test_vertex_values(Solution &sln, ExactSolution &ex, Quad3D *&quad) {
 	sln.set_quad_order(VTX_QORDER());
 
 	double *val = sln.get_fn_values();
+	double *sdx, *sdy, *sdz;
+	sln.get_dx_dy_dz_values(sdx, sdy, sdz);
 	int np = quad->get_vertex_num_points();
 
 	RefMap *rm = ex.get_refmap();
@@ -85,7 +88,22 @@ bool test_vertex_values(Solution &sln, ExactSolution &ex, Quad3D *&quad) {
 		double fn = exact_solution(x[k], y[k], z[k], dx, dy, dz);
 
 		if (fabs(fn - val[k]) > EPS) {
-			printf("Inconsistent value at a vertex: diff = % e (k = %d)\n", fabs(val[k] - fn), k);
+			printf("Inconsistent value at vertex %d: diff = % e\n", k, fabs(val[k] - fn));
+			return false;
+		}
+
+		if (fabs(dx - sdx[k]) > EPS) {
+			printf("Inconsistent dx value at vertex %d: diff = % e\n", k, fabs(sdx[k] - dx));
+			return false;
+		}
+
+		if (fabs(dy - sdy[k]) > EPS) {
+			printf("Inconsistent dy value at vertex %d: diff = % e\n", k, fabs(sdy[k] - dy));
+			return false;
+		}
+
+		if (fabs(dz - sdz[k]) > EPS) {
+			printf("Inconsistent dz value at vertex %d: diff = % e\n", k, fabs(sdz[k] - dz));
 			return false;
 		}
 	}
@@ -97,6 +115,8 @@ bool test_edge_values(int edge, int order, Solution &sln, ExactSolution &ex, Qua
 	sln.set_quad_order(EDGE_QORDER(edge, order));
 
 	double *val = sln.get_fn_values();
+	double *sdx, *sdy, *sdz;
+	sln.get_dx_dy_dz_values(sdx, sdy, sdz);
 	int np = quad->get_edge_num_points(order);
 
 	RefMap *rm = ex.get_refmap();
@@ -112,6 +132,21 @@ bool test_edge_values(int edge, int order, Solution &sln, ExactSolution &ex, Qua
 			printf("Inconsistent value on edge %d: diff = % e (k = %d)\n", edge, fabs(val[k] - fn), k);
 			return false;
 		}
+
+		if (fabs(dx - sdx[k]) > EPS) {
+			printf("Inconsistent dx value on edge %d: diff = % e (k = %d)\n", edge, fabs(sdx[k] - dx), k);
+			return false;
+		}
+
+		if (fabs(dy - sdy[k]) > EPS) {
+			printf("Inconsistent dy value on edge %d: diff = % e (k = %d)\n", edge, fabs(sdy[k] - dy), k);
+			return false;
+		}
+
+		if (fabs(dz - sdz[k]) > EPS) {
+			printf("Inconsistent dz value on edge %d: diff = % e (k = %d)\n", edge, fabs(sdz[k] - dz), k);
+			return false;
+		}
 	}
 
 	return true;
@@ -121,6 +156,8 @@ bool test_face_values(int face, int order, Solution &sln, ExactSolution &ex, Qua
 	sln.set_quad_order(FACE_QORDER(face, order));
 
 	double *val = sln.get_fn_values();
+	double *sdx, *sdy, *sdz;
+	sln.get_dx_dy_dz_values(sdx, sdy, sdz);
 	int np = quad->get_face_num_points(face, order);
 
 	RefMap *rm = ex.get_refmap();
@@ -136,6 +173,22 @@ bool test_face_values(int face, int order, Solution &sln, ExactSolution &ex, Qua
 			printf("Inconsistent value on face %d: diff = % e (k = %d)\n", face, fabs(val[k] - fn), k);
 			return false;
 		}
+
+		if (fabs(dx - sdx[k]) > EPS) {
+			printf("Inconsistent dx value on face %d: diff = % e (k = %d)\n", face, fabs(sdx[k] - dx), k);
+			return false;
+		}
+
+		if (fabs(dy - sdy[k]) > EPS) {
+			printf("Inconsistent dy value on face %d: diff = % e (k = %d)\n", face, fabs(sdy[k] - dy), k);
+			return false;
+		}
+
+		if (fabs(dz - sdz[k]) > EPS) {
+			printf("Inconsistent dz value on face %d: diff = % e (k = %d)\n", face, fabs(sdz[k] - dz), k);
+			return false;
+		}
+
 	}
 
 	return true;
@@ -145,6 +198,8 @@ bool test_elem_values(int order, Solution &sln, ExactSolution &ex, Quad3D *&quad
 	sln.set_quad_order(ELEM_QORDER(order));
 
 	double *val = sln.get_fn_values();
+	double *sdx, *sdy, *sdz;
+	sln.get_dx_dy_dz_values(sdx, sdy, sdz);
 	int np = quad->get_num_points(order);
 
 	RefMap *rm = ex.get_refmap();
@@ -158,6 +213,21 @@ bool test_elem_values(int order, Solution &sln, ExactSolution &ex, Quad3D *&quad
 
 		if (fabs(fn - val[k]) > EPS) {
 			printf("Inconsistent value in the interior: diff = % e (k = %d)\n", fabs(val[k] - fn), k);
+			return false;
+		}
+
+		if (fabs(dx - sdx[k]) > EPS) {
+			printf("Inconsistent dx value in the interior: diff = % e (k = %d)\n", fabs(sdx[k] - dx), k);
+			return false;
+		}
+
+		if (fabs(dy - sdy[k]) > EPS) {
+			printf("Inconsistent dy value in the interior: diff = % e (k = %d)\n", fabs(sdy[k] - dy), k);
+			return false;
+		}
+
+		if (fabs(dz - sdz[k]) > EPS) {
+			printf("Inconsistent dz value in the interior: diff = % e (k = %d)\n", fabs(sdz[k] - dz), k);
 			return false;
 		}
 	}
@@ -210,12 +280,12 @@ int main(int argc, char *argv[]) {
 	Solution sln(&mesh);
 	bool solved = d.solve_system(1, &sln);
 
-
 	// test the solution against the exact solution
 	// we do NOT use the norm function to avaoid possible problems in them
 	bool passed = true;
-	for (int o = 1; o < MAX_QUAD_ORDER; o++) {
+	for (int o = 1; o <= MAX_QUAD_ORDER; o++) {
 		int order = MAKE_HEX_ORDER(o, o, o);
+		printf("order = %d\n", o);
 
 		ExactSolution ex_sln(&mesh, fn1_exact_solution);
 		FOR_ALL_ACTIVE_ELEMENTS(idx, &mesh) {

@@ -68,9 +68,9 @@ double error_fn_h1(MeshFunction *sln1, MeshFunction *sln2, RefMap *ru, RefMap *r
 
 	// FIXME: mode of the element
 	int o = calc_order(MODE_HEXAHEDRON, std::max(sln1->get_fn_order(), sln2->get_fn_order()), ru->get_inv_ref_order());
-
-	sln1->set_quad_order(ELEM_QORDER(o));
-	sln2->set_quad_order(ELEM_QORDER(o));
+	qorder_t qord = ELEM_QORDER(o);
+	sln1->set_quad_order(qord);
+	sln2->set_quad_order(qord);
 
 	scalar *uval, *vval, *dudx, *dudy, *dudz, *dvdx, *dvdy, *dvdz;
 	uval = sln1->get_fn_values();
@@ -88,8 +88,8 @@ double norm_fn_h1(MeshFunction *sln, RefMap *ru) {
 
 	// FIXME: mode of the element
 	int o = calc_order(MODE_HEXAHEDRON, sln->get_fn_order(), ru->get_inv_ref_order());
-
-	sln->set_quad_order(ELEM_QORDER(o));
+	qorder_t qord = ELEM_QORDER(o);
+	sln->set_quad_order(qord);
 
 	scalar *uval, *dudx, *dudy, *dudz;
 	uval = sln->get_fn_values();
@@ -116,9 +116,9 @@ double error_fn_l2(MeshFunction *sln1, MeshFunction *sln2, RefMap *ru, RefMap *r
 
 	// FIXME: mode of the element
 	int o = calc_order(MODE_HEXAHEDRON, std::max(sln1->get_fn_order(), sln2->get_fn_order()), ru->get_inv_ref_order());
-
-	sln1->set_quad_order(ELEM_QORDER(o));
-	sln2->set_quad_order(ELEM_QORDER(o));
+	qorder_t qord = ELEM_QORDER(o);
+	sln1->set_quad_order(qord);
+	sln2->set_quad_order(qord);
 
 	scalar *uval, *vval;
 	uval = sln1->get_fn_values();
@@ -135,7 +135,8 @@ double norm_fn_l2(MeshFunction *sln, RefMap *ru) {
 
 	// FIXME: mode of the element
 	int o = calc_order(MODE_HEXAHEDRON, sln->get_fn_order(), ru->get_inv_ref_order());
-	sln->set_quad_order(ELEM_QORDER(o));
+	qorder_t qord = ELEM_QORDER(o);
+	sln->set_quad_order(qord);
 	scalar *uval = sln->get_fn_values();
 
 	H1_INTEGRATE_EXPRESSION(sqr(uval[i]));
@@ -169,9 +170,9 @@ double error_fn_hcurl(MeshFunction *sln1, MeshFunction *sln2, RefMap *ru, RefMap
 
 	// FIXME: mode of the element
 	int o = calc_order(MODE_HEXAHEDRON, std::max(sln1->get_fn_order(), sln2->get_fn_order()), ru->get_inv_ref_order());
-
-	sln1->set_quad_order(ELEM_QORDER(o));
-	sln2->set_quad_order(ELEM_QORDER(o));
+	qorder_t qord = ELEM_QORDER(o);
+	sln1->set_quad_order(qord);
+	sln2->set_quad_order(qord);
 
 	scalar *u0, *u1, *u2, *du0dx, *du0dy, *du0dz, *du1dx, *du1dy, *du1dz, *du2dx, *du2dy, *du2dz;
 	u0 = sln1->get_fn_values(0);
@@ -201,8 +202,8 @@ double norm_fn_hcurl(MeshFunction *sln, RefMap *ru) {
 
 	// FIXME: mode of the element
 	int o = calc_order(MODE_HEXAHEDRON, sln->get_fn_order(), ru->get_inv_ref_order());
-
-	sln->set_quad_order(ELEM_QORDER(o));
+	qorder_t qord = ELEM_QORDER(o);
+	sln->set_quad_order(qord);
 
 	scalar *u0, *u1, *u2, *du0dx, *du0dy, *du0dz, *du1dx, *du1dy, *du1dz, *du2dx, *du2dy, *du2dz;
 	u0 = sln->get_fn_values(0);
@@ -237,9 +238,9 @@ double error_fn_l2_hcurl(MeshFunction *sln1, MeshFunction *sln2, RefMap *ru, Ref
 
 	// FIXME: mode of the element
 	int o = calc_order(MODE_HEXAHEDRON, std::max(sln1->get_fn_order(), sln2->get_fn_order()), ru->get_inv_ref_order());
-
-	sln1->set_quad_order(ELEM_QORDER(o));
-	sln2->set_quad_order(ELEM_QORDER(o));
+	qorder_t qord = ELEM_QORDER(o);
+	sln1->set_quad_order(qord);
+	sln2->set_quad_order(qord);
 
 	scalar *u0, *u1, *u2;
 	u0 = sln1->get_fn_values(0);
@@ -262,7 +263,8 @@ double norm_fn_l2_hcurl(MeshFunction *sln, RefMap *ru) {
 
 	// FIXME: mode of the element
 	int o = calc_order(MODE_HEXAHEDRON, sln->get_fn_order(), ru->get_inv_ref_order());
-	sln->set_quad_order(ELEM_QORDER(o));
+	qorder_t qord = ELEM_QORDER(o);
+	sln->set_quad_order(qord);
 
 	scalar *u0, *u1, *u2;
 	u0 = sln->get_fn_values(0);

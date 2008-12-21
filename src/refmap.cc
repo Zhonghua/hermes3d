@@ -152,8 +152,14 @@ void RefMap::force_transform(uint64 sub_idx, Trf *ctm) {
 
 // helpers
 
-void RefMap::calc_inv_ref_map(int order) {
-	int np = quad->get_num_points(order);
+void RefMap::calc_inv_ref_map(qorder_t qord) {
+	int np;
+	switch (qord.type) {
+		case QOT_ELEMENT: np = quad->get_num_points(qord.order); break;
+		case QOT_EDGE:    np = quad->get_edge_num_points(qord.order); break;
+		case QOT_FACE:    np = quad->get_face_num_points(qord.face, qord.order); break;
+		case QOT_VERTEX:  np = quad->get_vertex_num_points(); break;
+	}
 
 	double3x3 *m = new double3x3[np];
 	MEM_CHECK(m);
@@ -162,7 +168,7 @@ void RefMap::calc_inv_ref_map(int order) {
 	for (int i = 0; i < num_coefs; i++) {
 		double *dx, *dy, *dz;
 		pss->set_active_shape(indices[i]);
-		pss->set_quad_order(ELEM_QORDER(order));
+		pss->set_quad_order(qord);
 		pss->get_dx_dy_dz_values(dx, dy, dz);
 		for (int j = 0; j < np; j++) {
 			m[j][0][0] += coefs[i].x * dx[j];
@@ -201,9 +207,9 @@ void RefMap::calc_inv_ref_map(int order) {
 	    jac[i] *= trj;
 	}
 
-	cur_node->jacobian[order] = jac;
-	cur_node->inv_ref_map[order] = irm;
-	cur_node->ref_map[order] = m;
+	cur_node->jacobian[qord] = jac;
+	cur_node->inv_ref_map[qord] = irm;
+	cur_node->ref_map[qord] = m;
 }
 
 

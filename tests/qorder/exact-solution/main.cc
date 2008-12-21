@@ -7,6 +7,7 @@
 //
 // TODO:
 // - more functions
+// - test on vector-valued shapesets
 //
 
 #include "config.h"

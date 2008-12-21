@@ -20,9 +20,9 @@
 		result *= ru->get_const_jacobian(); \
 	} \
 	else { \
-		mu = ru->get_inv_ref_map(o); \
-		mv = rv->get_inv_ref_map(o); \
-		double *jac = ru->get_jacobian(o); \
+		mu = ru->get_inv_ref_map(qord); \
+		mv = rv->get_inv_ref_map(qord); \
+		double *jac = ru->get_jacobian(qord); \
 		for (int i = 0; i < np; i++, mu++, mv++) \
 			result += pt[i].w * jac[i] * (exp); \
 	}}
@@ -40,9 +40,9 @@
 		result /= ru->get_const_jacobian(); \
 	} \
 	else { \
-		mu = ru->get_ref_map(o); \
-		mv = rv->get_ref_map(o); \
-		double *jac = ru->get_jacobian(o); \
+		mu = ru->get_ref_map(qord); \
+		mv = rv->get_ref_map(qord); \
+		double *jac = ru->get_jacobian(qord); \
 		for (int i = 0; i < np; i++, mu++, mv++) \
 			result += pt[i].w  * (exp) / jac[i]; \
 	}}
@@ -149,8 +149,9 @@ inline scalar hcurl_int_u_v(RealFunction *fu, RealFunction *fv, RefMap *ru, RefM
 			break;
 	}
 
-	fu->set_quad_order(ELEM_QORDER(o));
-	fv->set_quad_order(ELEM_QORDER(o));
+	qorder_t qord = ELEM_QORDER(o);
+	fu->set_quad_order(qord);
+	fv->set_quad_order(qord);
 
 	double *u0 = fu->get_fn_values(0);
 	double *u1 = fu->get_fn_values(1);
@@ -201,8 +202,9 @@ inline scalar hcurl_int_curl_u_curl_v(RealFunction *fu, RealFunction *fv, RefMap
 //	printf("order v %d -> (%d, %d, %d), ", ov, GET_HEX_ORDER_1(ov), GET_HEX_ORDER_2(ov), GET_HEX_ORDER_3(ov));
 //	printf("order %d -> (%d, %d, %d)\n", o, GET_HEX_ORDER_1(o), GET_HEX_ORDER_2(o), GET_HEX_ORDER_3(o));
 
-	fu->set_quad_order(ELEM_QORDER(o));
-	fv->set_quad_order(ELEM_QORDER(o));
+	qorder_t qord = ELEM_QORDER(o);
+	fu->set_quad_order(qord);
+	fv->set_quad_order(qord);
 
 	double *du0dx, *du0dy, *du0dz, *du1dx, *du1dy, *du1dz, *du2dx, *du2dy, *du2dz;
 	double *dv0dx, *dv0dy, *dv0dz, *dv1dx, *dv1dy, *dv1dz, *dv2dx, *dv2dy, *dv2dz;
@@ -242,7 +244,8 @@ inline scalar hcurl_int_F_u(scalar (*F)(double x, double y, double z, int comp),
 			break;
 	}
 
-	fu->set_quad_order(ELEM_QORDER(o));
+	qorder_t qord = ELEM_QORDER(o);
+	fu->set_quad_order(qord);
 
 	double *u0 = fu->get_fn_values(0);
 	double *u1 = fu->get_fn_values(1);

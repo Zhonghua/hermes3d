@@ -137,10 +137,6 @@ void Solution::set_active_element(Element *e) {
 	update_nodes_ptr();
 
 	order = space->get_element_order(e->id);
-
-	//TODO this is necessery only for Hcurl, where element of order n in each direction
-	//TODO contains functions of polynomial order n+1 in each direction
-	order = add_hex_orders(order, MAKE_HEX_ORDER(1, 1, 1));
 }
 
 void Solution::precalculate(qorder_t qord, int mask) {

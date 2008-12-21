@@ -3,13 +3,14 @@
 //
 // Testing if the values calculated by PrecalcShapset class are correct.
 // The purpose is to check if the stuff using Qorder works okey.
+// Using H1 shapeset
 //
+// This is run only with a mesh that is identical to the ref. domain. Otherwise,
+// we whould have to transform derivatives (but we test this in qorder-solution)
 //
 // TODO:
-// - testing specified order
-// - testing dx, dy, dx values
-// - testing different shapesets
 // - test transformations
+// - test on vector-valued shapesets
 //
 
 #include "config.h"
@@ -20,62 +21,117 @@
 #define ERROR_SUCCESS								0
 #define ERROR_FAILURE								-1
 
-void test_vertex_values(PrecalcShapeset &pss, Quad3D *&quad) {
+#define EPS											10e-13
+
+
+bool test_vertex_values(PrecalcShapeset &pss, Quad3D *&quad) {
 	pss.set_quad_order(VTX_QORDER());
+	Shapeset *ss = pss.get_shapeset();
+	int index = pss.get_active_shape();
 
 	double *val = pss.get_fn_values();
+	double *dx = pss.get_dx_values();
+	double *dy = pss.get_dy_values();
+	double *dz = pss.get_dz_values();
 	int np = quad->get_vertex_num_points();
+	QuadPt3D *pt = quad->get_vertex_points();
 
-	printf(" Vertex values:\n");
 	for (int k = 0; k < np; k++) {
-		printf(" % lf", val[k]);
+		if (fabs(val[k] - ss->get_fn_value(index, pt[k].x, pt[k].y, pt[k].z, 0)) > EPS) return false;
+
+		if (fabs(dx[k] - ss->get_dx_value(index, pt[k].x, pt[k].y, pt[k].z, 0)) > EPS) return false;
+		if (fabs(dy[k] - ss->get_dy_value(index, pt[k].x, pt[k].y, pt[k].z, 0)) > EPS) return false;
+		if (fabs(dz[k] - ss->get_dz_value(index, pt[k].x, pt[k].y, pt[k].z, 0)) > EPS) return false;
 	}
-	printf("\n");
+
+	return true;
 }
 
-void test_edge_values(int edge, int order, PrecalcShapeset &pss, Quad3D *&quad) {
+bool test_edge_values(int edge, int order, PrecalcShapeset &pss, Quad3D *&quad) {
 	pss.set_quad_order(EDGE_QORDER(edge, order));
+	Shapeset *ss = pss.get_shapeset();
+	int index = pss.get_active_shape();
 
 	double *val = pss.get_fn_values();
+	double *dx = pss.get_dx_values();
+	double *dy = pss.get_dy_values();
+	double *dz = pss.get_dz_values();
 	int np = quad->get_edge_num_points(order);
+	QuadPt3D *pt = quad->get_edge_points(edge, order);
 
-	printf(" Edge #%d values:\n", edge);
 	for (int k = 0; k < np; k++) {
-		printf(" % lf", val[k]);
+		if (fabs(val[k] - ss->get_fn_value(index, pt[k].x, pt[k].y, pt[k].z, 0)) > EPS) return false;
+
+		if (fabs(dx[k] - ss->get_dx_value(index, pt[k].x, pt[k].y, pt[k].z, 0)) > EPS) return false;
+		if (fabs(dy[k] - ss->get_dy_value(index, pt[k].x, pt[k].y, pt[k].z, 0)) > EPS) return false;
+		if (fabs(dz[k] - ss->get_dz_value(index, pt[k].x, pt[k].y, pt[k].z, 0)) > EPS) return false;
 	}
-	printf("\n");
+
+	return true;
 }
 
-void test_face_values(int face, int order, PrecalcShapeset &pss, Quad3D *&quad) {
+bool test_face_values(int face, int order, PrecalcShapeset &pss, Quad3D *&quad) {
 	pss.set_quad_order(FACE_QORDER(face, order));
+	Shapeset *ss = pss.get_shapeset();
+	int index = pss.get_active_shape();
 
 	double *val = pss.get_fn_values();
+	double *dx = pss.get_dx_values();
+	double *dy = pss.get_dy_values();
+	double *dz = pss.get_dz_values();
 	int np = quad->get_face_num_points(face, order);
+	QuadPt3D *pt = quad->get_face_points(face, order);
 
-	printf(" Face #%d values:\n", face);
 	for (int k = 0; k < np; k++) {
-		printf(" % lf", val[k]);
+		if (fabs(val[k] - ss->get_fn_value(index, pt[k].x, pt[k].y, pt[k].z, 0)) > EPS) return false;
+
+		if (fabs(dx[k] - ss->get_dx_value(index, pt[k].x, pt[k].y, pt[k].z, 0)) > EPS) return false;
+		if (fabs(dy[k] - ss->get_dy_value(index, pt[k].x, pt[k].y, pt[k].z, 0)) > EPS) return false;
+		if (fabs(dz[k] - ss->get_dz_value(index, pt[k].x, pt[k].y, pt[k].z, 0)) > EPS) return false;
 	}
-	printf("\n");
+
+	return true;
 }
 
-void test_elem_values(int order, PrecalcShapeset &pss, Quad3D *&quad) {
+bool test_elem_values(int order, PrecalcShapeset &pss, Quad3D *&quad) {
 	pss.set_quad_order(ELEM_QORDER(order));
+	Shapeset *ss = pss.get_shapeset();
+	int index = pss.get_active_shape();
 
 	double *val = pss.get_fn_values();
+	double *dx = pss.get_dx_values();
+	double *dy = pss.get_dy_values();
+	double *dz = pss.get_dz_values();
 	int np = quad->get_num_points(order);
+	QuadPt3D *pt = quad->get_points(order);
 
-	printf(" Elem values:\n");
 	for (int k = 0; k < np; k++) {
-		printf(" % lf", val[k]);
+		if (fabs(val[k] - ss->get_fn_value(index, pt[k].x, pt[k].y, pt[k].z, 0)) > EPS) return false;
+
+		if (fabs(dx[k] - ss->get_dx_value(index, pt[k].x, pt[k].y, pt[k].z, 0)) > EPS) return false;
+		if (fabs(dy[k] - ss->get_dy_value(index, pt[k].x, pt[k].y, pt[k].z, 0)) > EPS) return false;
+		if (fabs(dz[k] - ss->get_dz_value(index, pt[k].x, pt[k].y, pt[k].z, 0)) > EPS) return false;
 	}
-	printf("\n");
+
+	return true;
+}
+
+bool test_values(int order, PrecalcShapeset &pss, Quad3D *&quad) {
+	// test values
+	if (!test_vertex_values(pss, quad)) return false;
+	for (int iedge = 0; iedge < Hex::NUM_EDGES; iedge++)
+		if (!test_edge_values(iedge, get_hex_edge_order(iedge, order), pss, quad)) return false;
+	for (int iface = 0; iface < Hex::NUM_FACES; iface++)
+		if (!test_face_values(iface, get_hex_face_order(iface, order), pss, quad)) return false;
+	if (!test_elem_values(order, pss, quad)) return false;
+
+	return true;
 }
 
 // Main ////
 
 int main(int argc, char *argv[]) {
-	int ret = ERROR_SUCCESS;
+	int res = ERROR_SUCCESS;
 
 	if (argc < 2) return ERR_NOT_ENOUGH_PARAMS;
 
@@ -89,46 +145,60 @@ int main(int argc, char *argv[]) {
 		return ERR_FAILURE;
 	}
 
-	int order = MAKE_HEX_ORDER(10, 10, 10);
+	// start testing
+	bool passed = true;
+	for (int d = 1; d <= MAX_QUAD_ORDER; d++) {
+		int order = MAKE_HEX_ORDER(d, d, d);			// quad order
+		printf("Order = %d\n", d);
 
-	FOR_ALL_ACTIVE_ELEMENTS(idx, &mesh) {
-		Element *e = mesh.elements[idx];
-		RefMap rm(&mesh);
+		FOR_ALL_ACTIVE_ELEMENTS(idx, &mesh) {
+			Element *e = mesh.elements[idx];
 
-		Quad3D *quad = get_quadrature(e->get_mode());
+			Quad3D *quad = get_quadrature(e->get_mode());
 
-		pss.set_quad(quad);
-		pss.set_active_element(e);
-	    rm.set_active_element(e);
+			pss.set_quad(quad);
+			pss.set_active_element(e);
 
-	    int eorder = get_hex_edge_order(0, order);
-	    int forder = get_hex_face_order(0, order);
-
-	    // functions to test
-	    int indices[] = {
-	    	shapeset.get_vertex_index(0),
-	    	shapeset.get_edge_indices(0, 0, eorder)[0],
-	    	shapeset.get_face_indices(0, 0, forder)[0],
-	    	shapeset.get_bubble_indices(order)[0]
-	    };
-
-	    for (int i = 0; i < countof(indices); i++) {
-	    	int index = indices[i];
-	    	printf("Testing function #%d\n", index);
-
-			pss.set_active_shape(index);
-
-			// test values
-			test_vertex_values(pss, quad);
-			for (int iedge = 0; iedge < Hex::NUM_EDGES; iedge++)
-				test_edge_values(iedge, get_hex_edge_order(iedge, order), pss, quad);
-			for (int iface = 0; iface < Hex::NUM_FACES; iface++)
-				test_face_values(iface, get_hex_face_order(iface, order), pss, quad);
-			test_elem_values(order, pss, quad);
-	    }
+			// vertex functions
+			for (int i = 0; i < Hex::NUM_VERTICES; i++) {
+				int index = shapeset.get_vertex_index(i);
+				pss.set_active_shape(index);
+				if (!(passed &= test_values(order, pss, quad))) goto exit;
+			}
+			// edge functions
+			for (int iedge = 0; iedge < Hex::NUM_EDGES; iedge++) {
+				int eorder = MAX_ELEMENT_ORDER;
+				int *indices = shapeset.get_edge_indices(iedge, 0, eorder);
+				for (int i = 0; i < shapeset.get_num_edge_fns(eorder); i++) {
+					int index = indices[i];
+					pss.set_active_shape(index);
+					if (!(passed &= test_values(order, pss, quad))) goto exit;
+				}
+			}
+			// face functions
+			for (int iface = 0; iface < Hex::NUM_FACES; iface++) {
+				int forder = MAKE_QUAD_ORDER(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER);
+				int *indices = shapeset.get_face_indices(iface, 0, forder);
+				for (int i = 0; i < shapeset.get_num_face_fns(forder); i++) {
+					int index = indices[i];
+					pss.set_active_shape(index);
+					if (!(passed &= test_values(order, pss, quad))) goto exit;
+				}
+			}
+			// bubble functions
+			int o = MAKE_HEX_ORDER(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER);
+			int *indices = shapeset.get_bubble_indices(o);
+			for (int i = 0; i < shapeset.get_num_bubble_fns(o); i++) {
+				int index = indices[i];
+				pss.set_active_shape(index);
+				if (!(passed &= test_values(order, pss, quad))) goto exit;
+			}
+		}
 	}
 
+exit:
+	(passed) ? printf("Ok\n") : printf("Failed\n");
+	if (!passed) res == ERR_FAILURE;
 
-
-	return ret;
+	return res;
 }

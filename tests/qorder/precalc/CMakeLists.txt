@@ -28,6 +28,6 @@ enable_testing()
 
 set(BIN ${PROJECT_BINARY_DIR}/${PROJECT_NAME})
 
-add_test(qorder-precalc-1 sh -c "${BIN} ${MESHES_DIR}/mesh3d/hex1.mesh3d | diff - ${CMAKE_CURRENT_SOURCE_DIR}/dump/hex1")
-add_test(qorder-precalc-2 sh -c "${BIN} ${MESHES_DIR}/mesh3d/hex1-sc.mesh3d | diff - ${CMAKE_CURRENT_SOURCE_DIR}/dump/hex1-sc")
+add_test(qorder-precalc-1 ${PROJECT_NAME} ${MESHES_DIR}/mesh3d/hex1.mesh3d)
+add_test(qorder-precalc-1 ${PROJECT_NAME} ${MESHES_DIR}/mesh3d/hex1-sc.mesh3d)
 

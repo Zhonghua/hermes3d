@@ -30,4 +30,8 @@ set(BIN ${PROJECT_BINARY_DIR}/${PROJECT_NAME})
 
 add_test(qorder-exact-solution-1 ${PROJECT_NAME} ${MESHES_DIR}/mesh3d/hex1.mesh3d)
 add_test(qorder-exact-solution-2 ${PROJECT_NAME} ${MESHES_DIR}/mesh3d/hex1-sc.mesh3d)
+add_test(qorder-exact-solution-3 ${PROJECT_NAME} ${MESHES_DIR}/mesh3d/hex2.mesh3d)
+add_test(qorder-exact-solution-4 ${PROJECT_NAME} ${MESHES_DIR}/mesh3d/hex4.mesh3d)
+add_test(qorder-exact-solution-5 ${PROJECT_NAME} ${MESHES_DIR}/mesh3d/hex8.mesh3d)
+add_test(qorder-exact-solution-6 ${PROJECT_NAME} ${MESHES_DIR}/mesh3d/hex27.mesh3d)
 

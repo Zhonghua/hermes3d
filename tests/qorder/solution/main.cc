@@ -18,7 +18,7 @@
 #define ERROR_FAILURE								-1
 
 // error should be smaller than this epsilon
-#define EPS								10e-10F
+#define EPS								10e-14F
 
 double (*exact_solution)(double x, double y, double z, double &dx, double &dy, double &dz);
 
@@ -214,25 +214,31 @@ int main(int argc, char *argv[]) {
 	// test the solution against the exact solution
 	// we do NOT use the norm function to avaoid possible problems in them
 	bool passed = true;
-	ExactSolution ex_sln(&mesh, fn1_exact_solution);
-	FOR_ALL_ACTIVE_ELEMENTS(idx, &mesh) {
-		Element *e = mesh.elements[idx];
+	for (int o = 1; o < MAX_QUAD_ORDER; o++) {
+		int order = MAKE_HEX_ORDER(o, o, o);
 
-		// use independent ref. map
-		ex_sln.set_active_element(e);
-		sln.set_active_element(e);
+		ExactSolution ex_sln(&mesh, fn1_exact_solution);
+		FOR_ALL_ACTIVE_ELEMENTS(idx, &mesh) {
+			Element *e = mesh.elements[idx];
 
-		Quad3D *quad = get_quadrature(e->get_mode());
-		sln.set_quad(quad);
-		ex_sln.set_quad(quad);
+			// use independent ref. map
+			ex_sln.set_active_element(e);
+			sln.set_active_element(e);
 
-		// test values
-		if (!(passed &= test_vertex_values(sln, ex_sln, quad))) break;
-		for (int iedge = 0; iedge < Hex::NUM_EDGES; iedge++)
-			if (!(passed &= test_edge_values(iedge, get_hex_edge_order(iedge, order), sln, ex_sln, quad))) break;
-		for (int iface = 0; iface < Hex::NUM_FACES; iface++)
-			if (!(passed &= test_face_values(iface, get_hex_face_order(iface, order), sln, ex_sln, quad))) break;
-		if (!(passed &= test_elem_values(order, sln, ex_sln, quad))) break;
+			Quad3D *quad = get_quadrature(e->get_mode());
+			sln.set_quad(quad);
+			ex_sln.set_quad(quad);
+
+			// test values
+			if (!(passed &= test_vertex_values(sln, ex_sln, quad))) break;
+			for (int iedge = 0; iedge < Hex::NUM_EDGES; iedge++)
+				if (!(passed &= test_edge_values(iedge, get_hex_edge_order(iedge, order), sln, ex_sln, quad))) break;
+			for (int iface = 0; iface < Hex::NUM_FACES; iface++)
+				if (!(passed &= test_face_values(iface, get_hex_face_order(iface, order), sln, ex_sln, quad))) break;
+			if (!(passed &= test_elem_values(order, sln, ex_sln, quad))) break;
+		}
+
+		if (!passed) break;
 	}
 
 	(passed) ? printf("Ok\n") : printf("Failed\n");

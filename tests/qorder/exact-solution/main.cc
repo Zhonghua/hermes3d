@@ -140,29 +140,34 @@ int main(int argc, char *argv[]) {
 	// fn1
 	exact_solution = fn1_exact_solution;
 
-	int order = MAKE_HEX_ORDER(4, 4, 4);
-	// test exact solution
 	bool passed = true;
-	ExactSolution ex_sln(&mesh, fn1_exact_solution);
-	FOR_ALL_ACTIVE_ELEMENTS(idx, &mesh) {
-		Element *e = mesh.elements[idx];
+	for (int o = 1; o < MAX_QUAD_ORDER; o++) {
+		int order = MAKE_HEX_ORDER(o, o, o);
+		printf("Order #%d\n", order);
+		// test exact solution
+		ExactSolution ex_sln(&mesh, fn1_exact_solution);
+		FOR_ALL_ACTIVE_ELEMENTS(idx, &mesh) {
+			Element *e = mesh.elements[idx];
 
-		// use independent ref. map
-		RefMap rm(&mesh);
-		rm.set_active_element(e);
+			// use independent ref. map
+			RefMap rm(&mesh);
+			rm.set_active_element(e);
 
-		ex_sln.set_active_element(e);
+			ex_sln.set_active_element(e);
 
-		Quad3D *quad = get_quadrature(e->get_mode());
-		ex_sln.set_quad(quad);
+			Quad3D *quad = get_quadrature(e->get_mode());
+			ex_sln.set_quad(quad);
 
-		// test values
-		if (!(passed &= test_vertex_values(ex_sln, rm, quad))) break;
-		for (int iedge = 0; iedge < Hex::NUM_EDGES; iedge++)
-			if (!(passed &= test_edge_values(iedge, get_hex_edge_order(iedge, order), ex_sln, rm, quad))) break;
-		for (int iface = 0; iface < Hex::NUM_FACES; iface++)
-			if (!(passed &= test_face_values(iface, get_hex_face_order(iface, order), ex_sln, rm, quad))) break;
-		if (!(passed &= test_elem_values(order, ex_sln, rm, quad))) break;
+			// test values
+			if (!(passed &= test_vertex_values(ex_sln, rm, quad))) break;
+			for (int iedge = 0; iedge < Hex::NUM_EDGES; iedge++)
+				if (!(passed &= test_edge_values(iedge, get_hex_edge_order(iedge, order), ex_sln, rm, quad))) break;
+			for (int iface = 0; iface < Hex::NUM_FACES; iface++)
+				if (!(passed &= test_face_values(iface, get_hex_face_order(iface, order), ex_sln, rm, quad))) break;
+			if (!(passed &= test_elem_values(order, ex_sln, rm, quad))) break;
+		}
+
+		if (!passed) break;				// do not continue on the error
 	}
 
 	(passed) ? printf("Ok\n") : printf("Failed\n");

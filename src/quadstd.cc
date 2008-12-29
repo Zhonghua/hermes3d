@@ -4347,15 +4347,12 @@ QuadStdTetra::~QuadStdTetra() {
 
 // QuadStdHex /////////////////////////////////////////////////////////////////
 
-//static double std_3d_hexa_edge_jacobian[] = { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 };
-//static double std_3d_hexa_face_jacobian[] = { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 };
-
 QuadStdHex::QuadStdHex() {
 #ifdef WITH_HEX
 	mode = MODE_HEXAHEDRON;
-	max_order = order3_t(MAX_QUAD_ORDER, MAX_QUAD_ORDER, MAX_QUAD_ORDER);
 	max_edge_order = MAX_QUAD_ORDER;
 	max_face_order = order2_t(MAX_QUAD_ORDER, MAX_QUAD_ORDER);
+	max_order = order3_t(MAX_QUAD_ORDER, MAX_QUAD_ORDER, MAX_QUAD_ORDER);
 
 /*	int num = max_order + 1;
 

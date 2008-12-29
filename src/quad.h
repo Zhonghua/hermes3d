@@ -174,8 +174,8 @@ public:
 	virtual QuadPt3D *get_points(order3_t order) { return tables[order.get_idx()]; }
 	virtual int get_num_points(order3_t order) { return np[order.get_idx()]; }
 
-	virtual QuadPt3D *get_edge_points(int edge, int order) { return edge_tables[edge][order]; }
-	int get_edge_num_points(int order) const { return np_edge[order]; }
+	virtual QuadPt3D *get_edge_points(int edge, order1_t order) { return edge_tables[edge][order]; }
+	int get_edge_num_points(order1_t order) const { return np_edge[order]; }
 
 	virtual QuadPt3D *get_face_points(int face, order2_t order) { return face_tables[face][order.get_idx()]; }
 	int get_face_num_points(int face, order2_t order) const { return np_face[order.get_idx()]; }
@@ -183,9 +183,9 @@ public:
 	virtual QuadPt3D *get_vertex_points() { return vertex_table; }
 	int get_vertex_num_points() const { return np_vertex; }
 
-	order3_t get_max_order() const { return max_order; }
-	int get_edge_max_order(int edge) const { return max_edge_order; }
+	order1_t get_edge_max_order(int edge) const { return max_edge_order; }
 	order2_t get_face_max_order(int face) const { return max_face_order; }
+	order3_t get_max_order() const { return max_order; }
 
 	EMode3D get_mode() const { return mode; }
 
@@ -193,9 +193,9 @@ protected:
 	/// mode of quadratures (MODE_TETRAHEDRON, MODE_HEXAHEDRON, MODE_PRISM)
 	EMode3D mode;
 	/// maximal order for integration (interpretation depeneds on the mode)
-	order3_t max_order;
-	int max_edge_order;
+	order1_t max_edge_order;
 	order2_t max_face_order;
+	order3_t max_order;
 
 	Array<QuadPt3D *> tables;
 	QuadPt3D ***edge_tables;

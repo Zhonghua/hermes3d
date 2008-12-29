@@ -94,7 +94,7 @@ Shapeset::~Shapeset() {
 	free_constrained_combinations();
 }
 
-int Shapeset::get_constrained_edge_index(int edge, int ori, int order, Part part) {
+int Shapeset::get_constrained_edge_index(int edge, int ori, order1_t order, Part part) {
 	CEDKey cedkey(CED_KEY_TYPE_EDGE, edge, order, ori, part);
 	int fn_idx;
 	if (ced_id.lookup(cedkey, fn_idx))
@@ -108,7 +108,7 @@ int Shapeset::get_constrained_edge_index(int edge, int ori, int order, Part part
 	}
 }
 
-int Shapeset::get_constrained_edge_face_index(int edge, int ori, int order, Part part, int dir) {
+int Shapeset::get_constrained_edge_face_index(int edge, int ori, order2_t order, Part part, int dir) {
 	CEDKey ck(CED_KEY_TYPE_EDGE_FACE, edge, order, ori, part, dir);
 	int fn_idx;
 	if (ced_id.lookup(ck, fn_idx))
@@ -122,7 +122,7 @@ int Shapeset::get_constrained_edge_face_index(int edge, int ori, int order, Part
 	}
 }
 
-int Shapeset::get_constrained_face_index(int face, int ori, int order, Part part) {
+int Shapeset::get_constrained_face_index(int face, int ori, order2_t order, Part part) {
 	CEDKey cedkey(CED_KEY_TYPE_FACE, face, order, ori, part);
 	int fn_idx;
 	if (ced_id.lookup(cedkey, fn_idx))

@@ -31,11 +31,11 @@ Space *HCurlSpace::dup(Mesh *mesh) const {
 
 // ndofs ////
 
-int HCurlSpace::get_vertex_ndofs(int order) {
+int HCurlSpace::get_vertex_ndofs() {
 	return 0;
 }
 
-int HCurlSpace::get_edge_ndofs(int order) {
+int HCurlSpace::get_edge_ndofs(order1_t order) {
 	return order + 1;
 }
 

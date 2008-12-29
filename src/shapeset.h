@@ -117,7 +117,7 @@ public:
 	/// @param [in] edge - edge number (local)
 	/// @param [in] ori - orientation of the edge (0 or 1)
 	/// @param [in] order - order on the edge
-	virtual int *get_edge_indices(int edge, int ori, int order) = 0;
+	virtual int *get_edge_indices(int edge, int ori, order1_t order) = 0;
 
 	/// @return indices of face shape functions
 	/// @param [in] face - face number (local)
@@ -129,7 +129,7 @@ public:
 	/// @param order - order of the bubble function
 	virtual int *get_bubble_indices(order3_t order) = 0;
 
-	virtual int get_num_edge_fns(int order) const = 0;
+	virtual int get_num_edge_fns(order1_t order) const = 0;
 
 	virtual int get_num_face_fns(order2_t order) const = 0;
 

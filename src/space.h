@@ -64,7 +64,7 @@ public:
 	void set_bc_types(EBCType (*bc_type_callback)(int marker));
 	void set_bc_values(scalar (*bc_value_callback_by_coord)(int marker, double x, double y, double z, int comp));
 
-	void set_element_order(Word_t id, int order);
+	void set_element_order(Word_t id, order3_t order);
 	order3_t get_element_order(Word_t id) const;
 	void set_uniform_order(order3_t order);
 	void copy_orders(const Space &space, int inc = 0);
@@ -131,7 +131,6 @@ public: //remove me
 		union {
 			/// normal node
 			struct {
-				int order;   						/// polynomial order
 				int dof;
 				int n;								/// number of DOFs
 			};
@@ -164,7 +163,7 @@ public: //remove me
 				printf(" ");
 			}
 			else {
-				printf("order = %d, dof = %d, n = %d", order, dof, n);
+				printf("dof = %d, n = %d", dof, n);
 				printf(", bc_proj = " SCALAR_FMT, SCALAR(bc_proj));
 			}
 			printf("\n");
@@ -176,7 +175,7 @@ public: //remove me
 		union {
 			/// normal node
 			struct {
-				int order;   						/// polynomial order
+				order1_t order;   						/// polynomial order
 				int dof;
 				int n;								/// number of DOFs
 			};
@@ -245,7 +244,7 @@ public: //remove me
 
 	struct FaceData : public NodeData  {
 		unsigned ced:1;							/// 1 = is constrained
-		order2_t order;   						/// polynomial order
+		order2_t order;   							/// polynomial order
 		union {
 			struct {								/// normal node
 				int dof;
@@ -314,8 +313,8 @@ public: // remove me
 
 	void set_order_recurrent(Word_t eid, order3_t order);
 
-	virtual int get_vertex_ndofs(int order) = 0;
-	virtual int get_edge_ndofs(int order) = 0;
+	virtual int get_vertex_ndofs() = 0;
+	virtual int get_edge_ndofs(order1_t order) = 0;
 	virtual int get_face_ndofs(Facet *face, order2_t order) = 0;
 	virtual int get_element_ndofs(Element *elem, order3_t order) = 0;
 

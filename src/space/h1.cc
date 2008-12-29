@@ -31,11 +31,11 @@ Space *H1Space::dup(Mesh *mesh) const {
 
 // ndofs ////
 
-int H1Space::get_vertex_ndofs(int order) {
+int H1Space::get_vertex_ndofs() {
 	return 1;
 }
 
-int H1Space::get_edge_ndofs(int order) {
+int H1Space::get_edge_ndofs(order1_t order) {
 	return order - 1;
 }
 

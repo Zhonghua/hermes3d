@@ -28,28 +28,30 @@ public:
 		return vertex_indices[vertex];
 	}
 
-	virtual int *get_edge_indices(int edge, int ori, int order) {
-		CHECK_EDGE(edge); CHECK_EDGE_ORDER(order);
-		if (order == 0) order = max_edge_order;
+	virtual int *get_edge_indices(int edge, int ori, order1_t order) {
+		CHECK_EDGE(edge);
+		CHECK_EDGE_ORDER(order);
+//		if (order == 0) order = max_edge_order;
 		if (!edge_indices[edge][ori].exists(order)) compute_edge_indices(edge, ori, order);
 		return edge_indices[edge][ori][order];
 	}
 
-	virtual int *get_face_indices(int face, int ori, int order) {
- 		CHECK_FACE(face); CHECK_FACE_ORDER(order);
-		if (order == 0) order = max_face_order;
-		if (!face_indices[face][ori].exists(order)) compute_face_indices(face, ori, order);
-		return face_indices[face][ori][order];
+	virtual int *get_face_indices(int face, int ori, order2_t order) {
+		CHECK_FACE(face);
+//		CHECK_FACE_ORDER(order);
+//		if (order == 0) order = max_face_order;
+		if (!face_indices[face][ori].exists(order.get_idx())) compute_face_indices(face, ori, order);
+		return face_indices[face][ori][order.get_idx()];
 	}
 
-  	virtual int *get_bubble_indices(int order) {
- 		CHECK_ORDER(order);
-		 if (order == 0) order = max_order;
-		if (!bubble_indices.exists(order)) compute_bubble_indices(order);
-		return bubble_indices[order];
+  	virtual int *get_bubble_indices(order3_t order) {
+// 		CHECK_ORDER(order);
+//		 if (order == 0) order = max_order;
+		if (!bubble_indices.exists(order.get_idx())) compute_bubble_indices(order);
+		return bubble_indices[order.get_idx()];
 	}
 
-	virtual int get_num_edge_fns(int order) const {
+	virtual int get_num_edge_fns(order1_t order) const {
 		CHECK_EDGE_ORDER(order);
 		if (order > 1) return (order - 1);
 		else return 0;
@@ -101,7 +103,7 @@ protected:
 	Array<int *> face_indices[Hex::NUM_FACES][NUM_FACE_ORIS];
 	Array<int *> bubble_indices;
 
-	void compute_edge_indices(int edge, int ori, int order);
+	void compute_edge_indices(int edge, int ori, order1_t order);
 	void compute_face_indices(int face, int ori, order2_t order);
 	void compute_bubble_indices(order3_t order);
 
@@ -117,9 +119,9 @@ protected:
 
 
 	/// --- put CED specific stuff here ---
-	virtual CEDComb *calc_constrained_edge_combination(int ori, int order, Part part);
-	virtual CEDComb *calc_constrained_edge_face_combination(int ori, int order, Part part, int dir);
-	virtual CEDComb *calc_constrained_face_combination(int ori, int order, Part part);
+	virtual CEDComb *calc_constrained_edge_combination(int ori, order1_t order, Part part);
+	virtual CEDComb *calc_constrained_edge_face_combination(int ori, order2_t order, Part part, int dir);
+	virtual CEDComb *calc_constrained_face_combination(int ori, order2_t order, Part part);
 };
 
 #undef CHECK_VERTEX

@@ -126,7 +126,7 @@ public:
 	/// variables.
 	/// @param edge [in] Number of edge of the element
 	/// @param order [in] Integration order
-	double *get_edge_phys_x(int edge, int order) {
+	double *get_edge_phys_x(int edge, order1_t order) {
 		if (!cur_node->edge_phys_x[edge].exists(order)) calc_edge_phys_x(edge, order);
 		return cur_node->edge_phys_x[edge].get(order);
 	}
@@ -136,7 +136,7 @@ public:
 	/// variables.
 	/// @param edge [in] Number of edge of the element
 	/// @param order [in] Integration order
-	double *get_edge_phys_y(int edge, int order) {
+	double *get_edge_phys_y(int edge, order1_t order) {
 		if (!cur_node->edge_phys_y[edge].exists(order)) calc_edge_phys_y(edge, order);
 		return cur_node->edge_phys_y[edge].get(order);
 	}
@@ -146,7 +146,7 @@ public:
 	/// variables.
 	/// @param edge [in] Number of edge of the element
 	/// @param order [in] Integration order
-	double *get_edge_phys_z(int edge, int order) {
+	double *get_edge_phys_z(int edge, order1_t order) {
 		if (!cur_node->edge_phys_z[edge].exists(order)) calc_edge_phys_z(edge, order);
 		return cur_node->edge_phys_z[edge].get(order);
 	}
@@ -167,7 +167,7 @@ public:
 		return cur_node->face_jacobian[face].get(order.get_idx());
 	}
 
-	double3x3 *get_face_const_ref_map(int face){
+	double3x3 *get_face_const_ref_map(int face) {
 		EXIT(ERR_NOT_IMPLEMENTED);
 		return NULL;
 	}
@@ -302,9 +302,9 @@ protected:
 	void calc_phys_z(order3_t order);
 //	void calc_tangent(int edge);
 
-	void calc_edge_phys_x(int edge, int order);
-	void calc_edge_phys_y(int edge, int order);
-	void calc_edge_phys_z(int edge, int order);
+	void calc_edge_phys_x(int edge, order1_t order);
+	void calc_edge_phys_y(int edge, order1_t order);
+	void calc_edge_phys_z(int edge, order1_t order);
 
 	void calc_face_const_jacobian(int face);
 	void calc_face_jacobian(int face, order2_t order);

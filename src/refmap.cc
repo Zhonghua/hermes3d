@@ -293,7 +293,7 @@ void RefMap::calc_phys_z(order3_t order) {
 
 // edge related //
 
-void RefMap::calc_edge_phys_x(int edge, int order) {
+void RefMap::calc_edge_phys_x(int edge, order1_t order) {
 	// transform all x coordinates of the integration points
 	int np = quad->get_edge_num_points(order);
 	double *x = cur_node->edge_phys_x[edge][order] = new double[np];
@@ -309,7 +309,7 @@ void RefMap::calc_edge_phys_x(int edge, int order) {
 	}
 }
 
-void RefMap::calc_edge_phys_y(int edge, int order) {
+void RefMap::calc_edge_phys_y(int edge, order1_t order) {
 	// transform all y coordinates of the integration points
 	int np = quad->get_edge_num_points(order);
 	double *y = cur_node->edge_phys_y[edge][order] = new double[np];
@@ -325,7 +325,7 @@ void RefMap::calc_edge_phys_y(int edge, int order) {
 	}
 }
 
-void RefMap::calc_edge_phys_z(int edge, int order) {
+void RefMap::calc_edge_phys_z(int edge, order1_t order) {
 	// transform all z coordinates of the integration points
 	int np = quad->get_edge_num_points(order);
 	double *z = cur_node->edge_phys_z[edge][order] = new double[np];

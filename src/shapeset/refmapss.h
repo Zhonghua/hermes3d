@@ -19,7 +19,7 @@ public:
 	/// @param [in] edge - edge number (local)
 	/// @param [in] ori - orientation of the edge (0 or 1)
 	/// @param [in] order - order on the edge
-	virtual int *get_edge_indices(int edge, int ori, int order) {
+	virtual int *get_edge_indices(int edge, int ori, order1_t order) {
 		EXIT(ERR_NOT_IMPLEMENTED);
 		return NULL;
 	}
@@ -40,7 +40,7 @@ public:
 		return NULL;
 	}
 
-	virtual int get_num_edge_fns(int order) const {
+	virtual int get_num_edge_fns(order1_t order) const {
 		EXIT(ERR_NOT_IMPLEMENTED);
 		return 0;
 	}
@@ -105,7 +105,7 @@ public:
 	/// @param [in] edge - edge number (local)
 	/// @param [in] ori - orientation of the edge (0 or 1)
 	/// @param [in] order - order on the edge
-	virtual int *get_edge_indices(int edge, int ori, int order) {
+	virtual int *get_edge_indices(int edge, int ori, order1_t order) {
 		EXIT(ERR_NOT_IMPLEMENTED);
 		return NULL;
 	}
@@ -126,7 +126,7 @@ public:
 		return NULL;
 	}
 
-	virtual int get_num_edge_fns(int order) const {
+	virtual int get_num_edge_fns(order1_t order) const {
 		EXIT(ERR_NOT_IMPLEMENTED);
 		return 0;
 	}

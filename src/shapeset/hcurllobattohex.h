@@ -30,7 +30,7 @@ public:
 		assert(false); //no vertex functions in hcurl
 	}
 
-	virtual int *get_edge_indices(int edge, int ori, int order) {
+	virtual int *get_edge_indices(int edge, int ori, order1_t order) {
 		CHECK_EDGE(edge); CHECK_EDGE_ORDER(order);
 //		if (order == -1) order = max_edge_order;
 		if (!edge_indices[edge][ori].exists(order)) compute_edge_indices(edge, ori, order);
@@ -51,7 +51,7 @@ public:
 		return bubble_indices[order.get_idx()];
 	}
 
-	virtual int get_num_edge_fns(int order) const {
+	virtual int get_num_edge_fns(order1_t order) const {
 		CHECK_EDGE_ORDER(order);
 		return (order + 1);
 	}
@@ -202,10 +202,10 @@ protected:
 	double get_constrained_face_value(int n, int index, double x, double y, double z, int component);
 
 	/// --- put CED specific stuff here ---
-	virtual CEDComb *calc_constrained_edge_combination(int ori, int order, Part part);
+	virtual CEDComb *calc_constrained_edge_combination(int ori, order1_t order, Part part);
 	// facenf_type - 0 for vectors in first direction, 1 for second
-	virtual CEDComb *calc_constrained_edge_face_combination(int ori, int order, Part part, int facefn_variant);
-	virtual CEDComb *calc_constrained_face_combination(int ori, int order, Part part, int facefn_variant);
+	virtual CEDComb *calc_constrained_edge_face_combination(int ori, order2_t order, Part part, int facefn_variant);
+	virtual CEDComb *calc_constrained_face_combination(int ori, order2_t order, Part part, int facefn_variant);
 };
 
 #undef CHECK_VERTEX

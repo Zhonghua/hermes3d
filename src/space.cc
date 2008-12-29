@@ -85,7 +85,7 @@ void Space::free_data_tables() {
 //// element orders ///////////////////////////////////////////////////////////////////////////////
 
 
-void Space::set_element_order(Word_t id, int order) {
+void Space::set_element_order(Word_t id, order3_t order) {
 	if (id < 0 || id >= mesh->elements.count())
 		EXIT(ERR_FAILURE, "Invalid element id.");
 
@@ -242,7 +242,7 @@ void Space::enforce_minimum_rule() {
 
 void Space::assign_vertex_dofs(Word_t vid) {
 	VertexData *node = vn_data[vid];
-	int ndofs = get_vertex_ndofs(node->order);
+	int ndofs = get_vertex_ndofs();
 	if (node->bc_type == BC_ESSENTIAL) {
 		node->dof = DIRICHLET_DOF;
 	}
@@ -551,7 +551,7 @@ Space::VertexData *Space::create_vertex_node_data(Word_t vid, bool ced) {
 		}
 		else {
 			vd->dof = DOF_UNASSIGNED;
-			vd->order = -1;
+//			vd->order = -1;
 			vd->n = -1;
 		}
 	}

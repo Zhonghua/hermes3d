@@ -769,7 +769,7 @@ double HCurlShapesetLobattoHex::get_constrained_face_value(int n, int index, dou
 //
 // constraints are calculated on egde 0
 //
-CEDComb *HCurlShapesetLobattoHex::calc_constrained_edge_combination(int ori, int order, Part part) {
+CEDComb *HCurlShapesetLobattoHex::calc_constrained_edge_combination(int ori, order1_t order, Part part) {
 	// determine the interval of the edge
 	double hi, lo;
 	get_interval_part(part.part, lo, hi);
@@ -838,132 +838,10 @@ CEDComb *HCurlShapesetLobattoHex::calc_constrained_edge_combination(int ori, int
 	return new CEDComb(n, b);
 }
 
-
-/*
 //
 // constraints are calculated on face 5
 //
-CEDComb *HCurlShapesetLobattoHex::calc_constrained_edge_face_combination(int ori, int order, Part part, int facefn_variant) {
-	// determine the interval of the face
-	double hi, lo;
-	get_interval_part(part.fpart, lo, hi);
-	// determine the position
-	double x0;
-	get_edge_part(part.epart, x0);
-
-	int horder, vorder;
-	if (part.ori == PART_ORI_HORZ) {
-		horder = GET_QUAD_ORDER_1(order);
-		vorder = GET_QUAD_ORDER_2(order);
-	}
-	else {
-		vorder = GET_QUAD_ORDER_1(order);
-		horder = GET_QUAD_ORDER_2(order);
-	}
-
-	printf("horder %d, vorder %d, part.ori %d, facefn_var %d\n", horder, vorder, part.ori, facefn_variant);
-
-	//facefn_variant .. vectors parallel with first or second direction, taken for the face with ori <=3
-	int oriented_facefn_variant = ori <=3 ? facefn_variant : 1-facefn_variant; // orientation taken into account
-
-	if (((part.ori == PART_ORI_HORZ) && (oriented_facefn_variant == 1)) ||
-			  ((part.ori == PART_ORI_VERT)  && (oriented_facefn_variant == 0))){
-		int n_zeros = vorder + 1;
-		double *b = new double[n_zeros];
-		memset(b, 0, n_zeros*sizeof(double));
-		return new CEDComb(n_zeros, b);
-  }
-
-
-	int ind[3], fn_type, unit_index, which_legendre, v_direction;
-	int face_n = get_num_face_fns(order);//MAKE_QUAD_ORDER(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER));	// total number of functions on the face
-	int *face_fn_idx = get_face_indices(5, ori, order);//MAKE_QUAD_ORDER(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER));	// indices of all functions onthe face
-	int cing_idx, i;
-
-//	printf("| v = %d, h = %d\n", vorder, horder);
-	const int *const_edge_ori = RefHex::get_face_edge_orientation(ori, 1234);//TODO nove rozhrani
-	int edge_ori[2] = {const_edge_ori[0], const_edge_ori[1]};
-
-	//fakt nevim....
-	int hdir = 0;
-	int vdir = 1;
-	if(part.ori == 1){  // ori > 3 ?
-		swapint(hdir, vdir);
-		swapint(edge_ori[0], edge_ori[1]);
-	}
-
-	for(i = 0; i < face_n; i++){
-		cing_idx = face_fn_idx[i];
-		check_fn_index(cing_idx, ind, fn_type, unit_index, which_legendre, v_direction);
-		if((ind[hdir] == horder) && (ind[vdir] == vorder) && (get_facefn_variant(cing_idx) == facefn_variant))
-				break;
-	}
-	assert(i < face_n);
-
-	printf("cing index : ");
-	dump_fn_index(cing_idx);
-
-	check_fn_index(cing_idx, ind, fn_type, unit_index, which_legendre, v_direction);
-	int which_lobatto = ind[(which_legendre + 1) % 3] > 1 ? (which_legendre + 1) % 3 : (which_legendre + 2) % 3;
-
-	int n = get_num_edge_fns(ind[which_legendre]);								// total number of functions on the edge
-	int *edge_fn_idx = get_edge_indices(0, edge_ori[0], ind[which_legendre]);		// indices of all functions on the edge
-
-	printf("calc comb which leg %d, ind (%d, %d, %d), n %d\n", which_legendre, ind[0], ind[1], ind[2], n);
-	printf("   orientations %d, %d \n", edge_ori[0], edge_ori[1]);
-
-	assert(v_direction != 1);
-
-//	double f_lo = get_value(FN, edge_fn_idx[n - 1], lo, -1.0, -1.0, v_direction);		// fn. values at endpoints of the part
-//	double f_hi = get_value(FN, edge_fn_idx[n - 1], hi, -1.0, -1.0, v_direction);		// depends on the ref. domain
-
-	double **a = new_matrix<double>(n, n);
-	double *b = new double[n];
-	for (int i = 0; i < n; i++) {
-		// chebyshev point
-		double p = cos((i+1) * M_PI / (n+1));
-		double r = (p + 1.0) * 0.5;
-		double s = 1.0 - r;
-
-		// matrix row
-		for (int j = 0; j < n; j++)
-			a[i][j] = get_value(FN, edge_fn_idx[j], p, -1.0, -1.0, 0);		// depends on the ref. domain
-
-		// rhs
-		b[i] = get_value(FN, edge_fn_idx[n - 1], lo*s + hi*r, -1.0, -1.0, 0); // - f_lo*s - f_hi*r;	// depends on the ref. domain
-	}
-
-	// solve the system
-	double d;
-	int *iperm = new int[n];
-	ludcmp(a, n, iperm, &d);
-	lubksb(a, n, iperm, b);
-
-	int m = get_num_edge_fns(horder);											// total number of functions on the edge
-//	double c = get_value(FN, edge_fn_idx[1][m - 1], x0, -1.0, -1.0, 0);			// depends on the ref. domain
-//	printf("| c = %lf (m = %d)\n", c, m);
-	if(edge_ori[1] == 1)
-		x0 = -x0;
-	double c = lobatto_fn_tab_1d[ind[which_lobatto]](x0);
-//	if(edge_ori[1] == 1)
-//		c = -c;
-	for (int i = 0; i < n; i++)
-		b[i] *= c;
-
-	// cleanup
-	delete [] iperm;
-	delete [] a;
-
-	return new CEDComb(n, b);
-}
-*/
-
-///vzato z davidovy nove implementace (verze mnou zkracena)
-
-//
-// constraints are calculated on face 5
-//
-CEDComb *HCurlShapesetLobattoHex::calc_constrained_edge_face_combination(int ori, int order, Part part, int facefn_variant) {
+CEDComb *HCurlShapesetLobattoHex::calc_constrained_edge_face_combination(int ori, order2_t order, Part part, int facefn_variant) {
 	// determine the interval of the face
 	double hi, lo;
 /*	get_interval_part(part.fpart, lo, hi);
@@ -1124,7 +1002,7 @@ CEDComb *HCurlShapesetLobattoHex::calc_constrained_edge_face_combination(int ori
 				+get_constrained_value(FN, ced_edge_idx[2], xp, yp, 1.0, trans_v_direction) \
 				+get_constrained_value(FN, ced_edge_idx[3], xp, yp, 1.0, trans_v_direction) ;
 
-CEDComb *HCurlShapesetLobattoHex::calc_constrained_face_combination(int ori, int order, Part part, int facefn_variant) {
+CEDComb *HCurlShapesetLobattoHex::calc_constrained_face_combination(int ori, order2_t order, Part part, int facefn_variant) {
 /*
 	// determine the horizontal interval of the face
 	double h_hi, h_lo;

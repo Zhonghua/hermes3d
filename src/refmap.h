@@ -45,10 +45,10 @@ public:
 //	bool is_jacobian_diag() const { return is_diag; }
 
 	/// \return The increase in the integration order due to the reference map.
-	int get_ref_order() const { return ref_order; }
+	order3_t get_ref_order() const { return ref_order; }
 
 	/// \return The increase in the integration order due to the inverse reference map.
-	int get_inv_ref_order() const { return inv_ref_order; }
+	order3_t get_inv_ref_order() const { return inv_ref_order; }
 
 	/// If the jacobian of the reference map is constant, this is the fast
 	/// way to obtain it.
@@ -96,27 +96,27 @@ public:
 	/// physical domain of the element. Intended for integrals containing spatial
 	/// variables.
 	/// \param order [in] Integration order
-	double *get_phys_x(int order) {
-		if (!cur_node->phys_x.exists(order)) calc_phys_x(order);
-		return cur_node->phys_x.get(order);
+	double *get_phys_x(order3_t order) {
+		if (!cur_node->phys_x.exists(order.get_idx())) calc_phys_x(order);
+		return cur_node->phys_x.get(order.get_idx());
 	}
 
 	/// \return The y-coordinates of the integration points transformed to the
 	/// physical domain of the element. Intended for integrals containing spatial
 	/// variables.
 	/// \param order [in] Integration order
-	double *get_phys_y(int order) {
-		if (!cur_node->phys_y.exists(order)) calc_phys_y(order);
-		return cur_node->phys_y.get(order);
+	double *get_phys_y(order3_t order) {
+		if (!cur_node->phys_y.exists(order.get_idx())) calc_phys_y(order);
+		return cur_node->phys_y.get(order.get_idx());
 	}
 
 	/// \return The z-coordinates of the integration points transformed to the
 	/// physical domain of the element. Intended for integrals containing spatial
 	/// variables.
 	/// \param order [in] Integration order
-	double *get_phys_z(int order) {
-		if (!cur_node->phys_z.exists(order)) calc_phys_z(order);
-		return cur_node->phys_z.get(order);
+	double *get_phys_z(order3_t order) {
+		if (!cur_node->phys_z.exists(order.get_idx())) calc_phys_z(order);
+		return cur_node->phys_z.get(order.get_idx());
 	}
 
 	// Edges //////////////////////////////////////////////////////////////////////////////////////
@@ -162,9 +162,9 @@ public:
 		return cur_node->face_const_jacobian[face];
 	}
 
-	double *get_face_jacobian(int face, int order) {
-		if (!cur_node->face_jacobian[face].exists(order)) calc_face_jacobian(face, order);
-		return cur_node->face_jacobian[face].get(order);
+	double *get_face_jacobian(int face, order2_t order) {
+		if (!cur_node->face_jacobian[face].exists(order.get_idx())) calc_face_jacobian(face, order);
+		return cur_node->face_jacobian[face].get(order.get_idx());
 	}
 
 	double3x3 *get_face_const_ref_map(int face){
@@ -172,9 +172,9 @@ public:
 		return NULL;
 	}
 
-	double3x3 *get_face_ref_map(int face, int order) {
-		if (!cur_node->face_ref_map[face].exists(order)) calc_face_inv_ref_map(face, order);
-		return cur_node->face_ref_map[face][order];
+	double3x3 *get_face_ref_map(int face, order2_t order) {
+		if (!cur_node->face_ref_map[face].exists(order.get_idx())) calc_face_inv_ref_map(face, order);
+		return cur_node->face_ref_map[face][order.get_idx()];
 	}
 
 	double3x3 *get_face_const_inv_ref_map(int face){
@@ -182,9 +182,9 @@ public:
 		return NULL;
 	}
 
-	double3x3 *get_face_inv_ref_map(int face, int order) {
-		if (!cur_node->face_inv_ref_map[face].exists(order)) calc_face_inv_ref_map(face, order);
-		return cur_node->face_inv_ref_map[face][order];
+	double3x3 *get_face_inv_ref_map(int face, order2_t order) {
+		if (!cur_node->face_inv_ref_map[face].exists(order.get_idx())) calc_face_inv_ref_map(face, order);
+		return cur_node->face_inv_ref_map[face][order.get_idx()];
 	}
 
 	// outer unit normal to the face (transformed)
@@ -195,24 +195,24 @@ public:
  	}
 
 	//outer unit normal to the face (transformed)
- 	Point3D *get_face_normal(int face, int order) {
- 		if (!cur_node->face_normal[face].exists(order)) calc_face_normal(face, order);
- 		return cur_node->face_normal[face].get(order);
+ 	Point3D *get_face_normal(int face, order2_t order) {
+ 		if (!cur_node->face_normal[face].exists(order.get_idx())) calc_face_normal(face, order);
+ 		return cur_node->face_normal[face].get(order.get_idx());
  	}
 
-	double *get_face_phys_x(int face, int order) {
-		if (!cur_node->face_phys_x[face].exists(order)) calc_face_phys_x(face, order);
-		return cur_node->face_phys_x[face].get(order);
+	double *get_face_phys_x(int face, order2_t order) {
+		if (!cur_node->face_phys_x[face].exists(order.get_idx())) calc_face_phys_x(face, order);
+		return cur_node->face_phys_x[face].get(order.get_idx());
 	}
 
-	double *get_face_phys_y(int face, int order) {
-		if (!cur_node->face_phys_y[face].exists(order)) calc_face_phys_y(face, order);
-		return cur_node->face_phys_y[face].get(order);
+	double *get_face_phys_y(int face, order2_t order) {
+		if (!cur_node->face_phys_y[face].exists(order.get_idx())) calc_face_phys_y(face, order);
+		return cur_node->face_phys_y[face].get(order.get_idx());
 	}
 
-	double *get_face_phys_z(int face, int order) {
-		if (!cur_node->face_phys_z[face].exists(order)) calc_face_phys_z(face, order);
-		return cur_node->face_phys_z[face].get(order);
+	double *get_face_phys_z(int face, order2_t order) {
+		if (!cur_node->face_phys_z[face].exists(order.get_idx())) calc_face_phys_z(face, order);
+		return cur_node->face_phys_z[face].get(order.get_idx());
 	}
 
 	// Vertices /////////
@@ -255,8 +255,8 @@ protected:
 	double3x3 const_inv_ref_map;
 	double3x3 const_ref_map;
 
-	int ref_order;
-	int inv_ref_order;
+	order3_t ref_order;
+	order3_t inv_ref_order;
 
 	struct Node {
 		ArrayPtr<double>    jacobian;
@@ -297,9 +297,9 @@ protected:
 	void calc_const_inv_ref_map();
 	int  calc_inv_ref_order();
 
-	void calc_phys_x(int order);
-	void calc_phys_y(int order);
-	void calc_phys_z(int order);
+	void calc_phys_x(order3_t order);
+	void calc_phys_y(order3_t order);
+	void calc_phys_z(order3_t order);
 //	void calc_tangent(int edge);
 
 	void calc_edge_phys_x(int edge, int order);
@@ -307,12 +307,12 @@ protected:
 	void calc_edge_phys_z(int edge, int order);
 
 	void calc_face_const_jacobian(int face);
-	void calc_face_jacobian(int face, int order);
-	void calc_face_normal(int face, int order);
-	void calc_face_inv_ref_map(int face, int order);
-	void calc_face_phys_x(int face, int order);
-	void calc_face_phys_y(int face, int order);
-	void calc_face_phys_z(int face, int order);
+	void calc_face_jacobian(int face, order2_t order);
+	void calc_face_normal(int face, order2_t order);
+	void calc_face_inv_ref_map(int face, order2_t order);
+	void calc_face_phys_x(int face, order2_t order);
+	void calc_face_phys_y(int face, order2_t order);
+	void calc_face_phys_z(int face, order2_t order);
 
 	void calc_vertex_phys();
 

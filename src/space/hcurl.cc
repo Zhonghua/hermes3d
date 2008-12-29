@@ -31,22 +31,22 @@ Space *HCurlSpace::dup(Mesh *mesh) const {
 
 // ndofs ////
 
-int HCurlSpace::get_vertex_ndofs(Order0 order) {
+int HCurlSpace::get_vertex_ndofs(int order) {
 	return 0;
 }
 
-int HCurlSpace::get_edge_ndofs(Order1 order) {
+int HCurlSpace::get_edge_ndofs(int order) {
 	return order + 1;
 }
 
-int HCurlSpace::get_face_ndofs(Facet *face, Order2 order) {
+int HCurlSpace::get_face_ndofs(Facet *face, order2_t order) {
 	int order1, order2;
 
 	Element *elem = mesh->elements[face->left];
 	switch (elem->get_face_mode(face->left_face_num)) {
 		case MODE_QUAD:
-			order1 = GET_QUAD_ORDER_1(order);
-			order2 = GET_QUAD_ORDER_2(order);
+			order1 = order.x;
+			order2 = order.y;
 			return (order1 + 1) * order2 + order1 * (order2 + 1);
 
 		default:
@@ -54,16 +54,16 @@ int HCurlSpace::get_face_ndofs(Facet *face, Order2 order) {
 	}
 }
 
-int HCurlSpace::get_element_ndofs(Element *elem, Order3 order) {
+int HCurlSpace::get_element_ndofs(Element *elem, order3_t order) {
 	switch (elem->get_mode()) {
 		int order1;
 		int order2;
 		int order3;
 
 		case MODE_HEXAHEDRON:
-			order1 = GET_HEX_ORDER_1(order);
-			order2 = GET_HEX_ORDER_2(order);
-			order3 = GET_HEX_ORDER_3(order);
+			order1 = order.x;
+			order2 = order.y;
+			order3 = order.z;
 			return (order1 + 1) * order2 * order3 + order1 * (order2 + 1) * order3 + order1 * order2 * (order3 + 1);
 
 		default:
@@ -203,7 +203,7 @@ void HCurlSpace::calc_face_boundary_projection(Element *elem, int iface) {
 
 	Quad3D *quad = get_quadrature(elem->get_mode());
 
-	int order_rhs = quad->get_face_max_order(iface);
+	order2_t order_rhs = quad->get_face_max_order(iface);
 	double *face_phys_x = ref_map.get_face_phys_x(iface, order_rhs);
 	double *face_phys_y = ref_map.get_face_phys_y(iface, order_rhs);
 	double *face_phys_z = ref_map.get_face_phys_z(iface, order_rhs);

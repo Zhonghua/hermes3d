@@ -123,17 +123,17 @@ public:
 	/// @param [in] face - face number (local)
 	/// @param [in] ori - orientation of the face
 	/// @param [in] order - order on the face
-	virtual int *get_face_indices(int face, int ori, int order) = 0;
+	virtual int *get_face_indices(int face, int ori, order2_t order) = 0;
 
 	/// @return indices of bubble functions
 	/// @param order - order of the bubble function
-	virtual int *get_bubble_indices(int order) = 0;
+	virtual int *get_bubble_indices(order3_t order) = 0;
 
 	virtual int get_num_edge_fns(int order) const = 0;
 
-	virtual int get_num_face_fns(int order) const = 0;
+	virtual int get_num_face_fns(order2_t order) const = 0;
 
-	virtual int get_num_bubble_fns(int order) const = 0;
+	virtual int get_num_bubble_fns(order3_t order) const = 0;
 
 	/// Get the number of possible orientations on a face
 	///
@@ -147,7 +147,7 @@ public:
 	virtual int get_edge_orientations() const = 0;
 
 
-	virtual int get_order(int index) const = 0;
+	virtual order3_t get_order(int index) const = 0;
 
 	/// Get index of a constrained edge function.
 	/// @return The index of a constrained edge function.
@@ -200,7 +200,7 @@ protected:
 	int num_components;
 
 	/// mapping from index of shape function to its order
-	int *index_to_order;
+	order3_t *index_to_order;
 
 	// FIXME: better name
 	virtual double get_val(int n, int index, double x, double y, double z, int component) = 0;

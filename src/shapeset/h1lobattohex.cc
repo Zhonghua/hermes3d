@@ -230,9 +230,9 @@ H1ShapesetLobattoHex::H1ShapesetLobattoHex() {
 
 	num_components = 1;
 
-	max_edge_order = MAX_ELEMENT_ORDER + 1;
-	max_face_order = MAKE_QUAD_ORDER(MAX_ELEMENT_ORDER + 1, MAX_ELEMENT_ORDER + 1);
-	max_order = MAKE_HEX_ORDER(MAX_ELEMENT_ORDER + 1, MAX_ELEMENT_ORDER + 1, MAX_ELEMENT_ORDER + 1);
+//	max_edge_order = MAX_ELEMENT_ORDER + 1;
+//	max_face_order = MAKE_QUAD_ORDER(MAX_ELEMENT_ORDER + 1, MAX_ELEMENT_ORDER + 1);
+//	max_order = MAKE_HEX_ORDER(MAX_ELEMENT_ORDER + 1, MAX_ELEMENT_ORDER + 1, MAX_ELEMENT_ORDER + 1);
 
 	max_index = MAKE_HEX_IDX(MAX_ELEMENT_ORDER + 1, MAX_ELEMENT_ORDER + 1, MAX_ELEMENT_ORDER + 1, 0);
 
@@ -249,12 +249,12 @@ H1ShapesetLobattoHex::H1ShapesetLobattoHex() {
 	vertex_indices = lobatto_hex_vertex_indices;
 
 	// index to order mapping
-	index_to_order = new int[max_order];
-	MEM_CHECK(index_to_order);
-	for (int i = 0; i <= MAX_ELEMENT_ORDER; i++)
-		for (int j = 0; j <= MAX_ELEMENT_ORDER; j++)
-			for (int k = 0; k <= MAX_ELEMENT_ORDER; k++)
-				index_to_order[MAKE_HEX_IDX(i, j, k, 0) >> 3] = MAKE_HEX_ORDER(index_order[i], index_order[j], index_order[k]);
+//	index_to_order = new int[max_order];
+//	MEM_CHECK(index_to_order);
+//	for (int i = 0; i <= MAX_ELEMENT_ORDER; i++)
+//		for (int j = 0; j <= MAX_ELEMENT_ORDER; j++)
+//			for (int k = 0; k <= MAX_ELEMENT_ORDER; k++)
+//				index_to_order[MAKE_HEX_IDX(i, j, k, 0) >> 3] = MAKE_HEX_ORDER(index_order[i], index_order[j], index_order[k]);
 #else
 	EXIT(ERR_HEX_NOT_COMPILED);
 #endif
@@ -281,12 +281,12 @@ H1ShapesetLobattoHex::~H1ShapesetLobattoHex() {
 #endif
 }
 
-int H1ShapesetLobattoHex::get_order(int index) const {
+order3_t H1ShapesetLobattoHex::get_order(int index) const {
 	if (index >= 0) {
 		int ori = GET_ORI_FROM_INDEX(index);
 		int idx = GET_IDX_FROM_INDEX(index);
 
-		int ord = index_to_order[idx];
+		order3_t ord;// = index_to_order[idx];
 		// face function is turned due to orientation
 		if (ori >= 4) { ord = turn_hex_face_order(ord);/* printf("turn!\n");*/ }
 		return ord;
@@ -297,37 +297,37 @@ int H1ShapesetLobattoHex::get_order(int index) const {
 
 		int order;
 		if (key.type == CED_KEY_TYPE_EDGE || key.type == CED_KEY_TYPE_EDGE_FACE) {
-			if (key.type == CED_KEY_TYPE_EDGE_FACE) order = (key.ori < 4) ? GET_QUAD_ORDER_1(key.order) : GET_QUAD_ORDER_2(key.order);
-			else order = key.order;
+//			if (key.type == CED_KEY_TYPE_EDGE_FACE) order = (key.ori < 4) ? GET_QUAD_ORDER_1(key.order) : GET_QUAD_ORDER_2(key.order);
+//			else order = key.order;
 
-			switch (key.edge) {
-				case  0: order = MAKE_HEX_ORDER(order, 1, 1); break;
-				case  1: order = MAKE_HEX_ORDER(1, order, 1); break;
-				case  2: order = MAKE_HEX_ORDER(order, 1, 1); break;
-				case  3: order = MAKE_HEX_ORDER(1, order, 1); break;
-				case  4: order = MAKE_HEX_ORDER(1, 1, order); break;
-				case  5: order = MAKE_HEX_ORDER(1, 1, order); break;
-				case  6: order = MAKE_HEX_ORDER(1, 1, order); break;
-				case  7: order = MAKE_HEX_ORDER(1, 1, order); break;
-				case  8: order = MAKE_HEX_ORDER(order, 1, 1); break;
-				case  9: order = MAKE_HEX_ORDER(1, order, 1); break;
-				case 10: order = MAKE_HEX_ORDER(order, 1, 1); break;
-				case 11: order = MAKE_HEX_ORDER(1, order, 1); break;
-				default: EXIT(ERR_FAILURE, "Invalid edge number %d. Can be 0 - 11.", key.edge); break;
-			}
+//			switch (key.edge) {
+//				case  0: order = MAKE_HEX_ORDER(order, 1, 1); break;
+//				case  1: order = MAKE_HEX_ORDER(1, order, 1); break;
+//				case  2: order = MAKE_HEX_ORDER(order, 1, 1); break;
+//				case  3: order = MAKE_HEX_ORDER(1, order, 1); break;
+//				case  4: order = MAKE_HEX_ORDER(1, 1, order); break;
+//				case  5: order = MAKE_HEX_ORDER(1, 1, order); break;
+//				case  6: order = MAKE_HEX_ORDER(1, 1, order); break;
+//				case  7: order = MAKE_HEX_ORDER(1, 1, order); break;
+//				case  8: order = MAKE_HEX_ORDER(order, 1, 1); break;
+//				case  9: order = MAKE_HEX_ORDER(1, order, 1); break;
+//				case 10: order = MAKE_HEX_ORDER(order, 1, 1); break;
+//				case 11: order = MAKE_HEX_ORDER(1, order, 1); break;
+//				default: EXIT(ERR_FAILURE, "Invalid edge number %d. Can be 0 - 11.", key.edge); break;
+//			}
 		}
 		else if (key.type == CED_KEY_TYPE_FACE) {
-			int o[] = { GET_QUAD_ORDER_1(key.order), GET_QUAD_ORDER_2(key.order) };
-
-			switch (key.face) {
-				case 0: order = MAKE_HEX_ORDER(1, o[0], o[1]); break;
-				case 1: order = MAKE_HEX_ORDER(1, o[0], o[1]); break;
-				case 2: order = MAKE_HEX_ORDER(o[0], 1, o[1]); break;
-				case 3: order = MAKE_HEX_ORDER(o[0], 1, o[1]); break;
-				case 4: order = MAKE_HEX_ORDER(o[0], o[1], 1); break;
-				case 5: order = MAKE_HEX_ORDER(o[0], o[1], 1); break;
-				default: EXIT(ERR_FAILURE, "Invalid face number %d. Can be 0 - 5.", key.face); break;
-			}
+//			int o[] = { GET_QUAD_ORDER_1(key.order), GET_QUAD_ORDER_2(key.order) };
+//
+//			switch (key.face) {
+//				case 0: order = MAKE_HEX_ORDER(1, o[0], o[1]); break;
+//				case 1: order = MAKE_HEX_ORDER(1, o[0], o[1]); break;
+//				case 2: order = MAKE_HEX_ORDER(o[0], 1, o[1]); break;
+//				case 3: order = MAKE_HEX_ORDER(o[0], 1, o[1]); break;
+//				case 4: order = MAKE_HEX_ORDER(o[0], o[1], 1); break;
+//				case 5: order = MAKE_HEX_ORDER(o[0], o[1], 1); break;
+//				default: EXIT(ERR_FAILURE, "Invalid face number %d. Can be 0 - 5.", key.face); break;
+//			}
 		}
 		if (key.ori >= 4) return turn_hex_face_order(order);
 		else return order;
@@ -362,12 +362,9 @@ void H1ShapesetLobattoHex::compute_edge_indices(int edge, int ori, int order) {
 #endif
 }
 
-void H1ShapesetLobattoHex::compute_face_indices(int face, int ori, int order) {
+void H1ShapesetLobattoHex::compute_face_indices(int face, int ori, order2_t order) {
 #ifdef WITH_HEX
-	int horder, vorder;
-	horder = GET_QUAD_ORDER_1(order);
-	vorder = GET_QUAD_ORDER_2(order);
-
+	int horder = order.x, vorder = order.y;
 	int *indices = new int[(horder - 1) * (vorder - 1)];
 	MEM_CHECK(indices);
 
@@ -414,17 +411,17 @@ void H1ShapesetLobattoHex::compute_face_indices(int face, int ori, int order) {
 			break;
 	}
 
-	face_indices[face][ori][order] = indices;
+	face_indices[face][ori][order.get_idx()] = indices;
 #else
 	EXIT(ERR_HEX_NOT_COMPILED);
 #endif
 }
 
-void H1ShapesetLobattoHex::compute_bubble_indices(int order) {
+void H1ShapesetLobattoHex::compute_bubble_indices(order3_t order) {
 #ifdef WITH_HEX
-	int order1 = GET_HEX_ORDER_1(order);
-	int order2 = GET_HEX_ORDER_2(order);
-	int order3 = GET_HEX_ORDER_3(order);
+	int order1 = order.x;
+	int order2 = order.y;
+	int order3 = order.z;
 	int *indices = new int[(order1 - 1) * (order2 - 1) * (order3 - 1)];
 	MEM_CHECK(indices);
 
@@ -434,7 +431,7 @@ void H1ShapesetLobattoHex::compute_bubble_indices(int order) {
 			for(int k = 2; k <= order3; k++)
 				indices[idx++] = MAKE_HEX_IDX(i, j, k, 0);
 
-	bubble_indices[order] = indices;
+	bubble_indices[order.get_idx()] = indices;
 #else
 	EXIT(ERR_HEX_NOT_COMPILED);
 #endif
@@ -539,8 +536,8 @@ CEDComb *H1ShapesetLobattoHex::calc_constrained_edge_face_combination(int ori, i
 		epart = face_to_edge_part(rp.horz);
 		get_edge_part(epart, x0);
 
-		int horder = GET_QUAD_ORDER_1(order);
-		int vorder = GET_QUAD_ORDER_2(order);
+		int horder = 0;//GET_QUAD_ORDER_1(order);
+		int vorder = 0;//GET_QUAD_ORDER_2(order);
 
 		int n = get_num_edge_fns(vorder);										// total number of functions on the edge
 		int *edge_fn_idx[] = {
@@ -592,8 +589,8 @@ CEDComb *H1ShapesetLobattoHex::calc_constrained_edge_face_combination(int ori, i
 		epart = face_to_edge_part(rp.vert);
 		get_edge_part(epart, x0);
 
-		int horder = GET_QUAD_ORDER_1(order);
-		int vorder = GET_QUAD_ORDER_2(order);
+		int horder = 0;//GET_QUAD_ORDER_1(order);
+		int vorder = 0;//GET_QUAD_ORDER_2(order);
 
 		int n = get_num_edge_fns(horder);										// total number of functions on the edge
 		int *edge_fn_idx[] = {
@@ -671,8 +668,8 @@ CEDComb *H1ShapesetLobattoHex::calc_constrained_face_combination(int ori, int or
 	get_interval_part(rp.vert, v_lo, v_hi);				// determine the vertical interval of the face
 
 	int horder, vorder;
-	horder = GET_QUAD_ORDER_1(order);
-	vorder = GET_QUAD_ORDER_2(order);
+//	horder = GET_QUAD_ORDER_1(order);
+//	vorder = GET_QUAD_ORDER_2(order);
 
 	get_interval_part(rp.horz, h_lo, h_hi);
 	get_interval_part(rp.vert, v_lo, v_hi);
@@ -713,9 +710,9 @@ CEDComb *H1ShapesetLobattoHex::calc_constrained_face_combination(int ori, int or
 
 	//
 	for (int row = 0; row < n; row++) {
-		int face_order = get_hex_face_order(5, get_order(fn_idx[row]));
-		int i = GET_QUAD_ORDER_1(face_order);
-		int j = GET_QUAD_ORDER_2(face_order);
+		int face_order = 0;//get_hex_face_order(5, get_order(fn_idx[row]));
+		int i = 0;//GET_QUAD_ORDER_1(face_order);
+		int j = 0;//GET_QUAD_ORDER_2(face_order);
 
 		double hp = cos((i - 1) * M_PI / horder);
 		double hr = (hp + 1.0) * 0.5;

@@ -55,20 +55,20 @@ public:
 		else return 0;
 	}
 
-	virtual int get_num_face_fns(int order) const {
-		CHECK_FACE_ORDER(order);
-		int order1 = GET_QUAD_ORDER_1(order);
-		int order2 = GET_QUAD_ORDER_2(order);
+	virtual int get_num_face_fns(order2_t order) const {
+//		CHECK_FACE_ORDER(order);
+		int order1 = order.x;
+		int order2 = order.y;
 
 		if (order1 > 1 && order2 > 1) return (order1 - 1) * (order2 - 1);
 		else return 0;
 	}
 
-	virtual int get_num_bubble_fns(int order) const {
-		CHECK_ORDER(order);
-		int order1 = GET_HEX_ORDER_1(order);
-		int order2 = GET_HEX_ORDER_2(order);
-		int order3 = GET_HEX_ORDER_3(order);
+	virtual int get_num_bubble_fns(order3_t order) const {
+//		CHECK_ORDER(order);
+		int order1 = order.x;
+		int order2 = order.y;
+		int order3 = order.z;
 
 		if (order1 > 1 && order2 > 1 && order3 > 1) return (order1 - 1) * (order2 - 1) * (order3 - 1);
 		else return 0;
@@ -78,7 +78,7 @@ public:
 
 	virtual int get_edge_orientations() const { return RefHex::get_edge_orientations(); }
 
-	virtual int get_order(int index) const;
+	virtual order3_t get_order(int index) const;
 
 	virtual int get_shape_type(int index) const {
 		return -1;
@@ -102,8 +102,8 @@ protected:
 	Array<int *> bubble_indices;
 
 	void compute_edge_indices(int edge, int ori, int order);
-	void compute_face_indices(int face, int ori, int order);
-	void compute_bubble_indices(int order);
+	void compute_face_indices(int face, int ori, order2_t order);
+	void compute_bubble_indices(order3_t order);
 
 	virtual double get_val(int n, int index, double x, double y, double z, int component) {
 //		int ori = GET_ORI_FROM_INDEX(index);

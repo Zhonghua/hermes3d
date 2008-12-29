@@ -98,13 +98,13 @@ void Space::set_element_order(Word_t id, int order) {
 	elm_data[id]->order = order;
 }
 
-int Space::get_element_order(Word_t id) const {
+order3_t Space::get_element_order(Word_t id) const {
 	// TODO: check of validity of id
 	assert(elm_data.exists(id));
 	return elm_data[id]->order;
 }
 
-void Space::set_uniform_order(Order3 order) {
+void Space::set_uniform_order(order3_t order) {
 	Word_t elm_idx;
 	FOR_ALL_ACTIVE_ELEMENTS(elm_idx, mesh) {
 		assert(elm_data.exists(elm_idx));
@@ -112,7 +112,7 @@ void Space::set_uniform_order(Order3 order) {
 	}
 }
 
-void Space::set_order_recurrent(Word_t eid, int order) {
+void Space::set_order_recurrent(Word_t eid, order3_t order) {
 	Element *e = mesh->elements[eid];
 	if (e->active) {
 		assert(elm_data.exists(e->id));
@@ -136,21 +136,16 @@ void Space::copy_orders(const Space &space, int inc) {
 	Mesh *cmesh = space.get_mesh();
 	Word_t eid;
 	FOR_ALL_ACTIVE_ELEMENTS(eid, cmesh) {
-		int oo = space.get_element_order(eid);
+		order3_t oo = space.get_element_order(eid);
 		assert(cmesh->elements[eid]->get_mode() == mesh->elements[eid]->get_mode());
 
-		int order = oo, o1, o2, o3;
+		order3_t order;
 		switch (cmesh->elements[eid]->get_mode()) {
-			case MODE_TETRAHEDRON: order = LIMIT_ELEMENT_ORDER(oo + inc); break;
-			case MODE_HEXAHEDRON:
-				o1 = LIMIT_ELEMENT_ORDER(GET_HEX_ORDER_1(oo) + inc);
-				o2 = LIMIT_ELEMENT_ORDER(GET_HEX_ORDER_2(oo) + inc);
-				o3 = LIMIT_ELEMENT_ORDER(GET_HEX_ORDER_3(oo) + inc);
-				order = MAKE_HEX_ORDER(o1, o2, o3);
-				break;
-
+			case MODE_TETRAHEDRON: order = oo + order3_t(inc); break;
+			case MODE_HEXAHEDRON: order = oo + order3_t(inc, inc, inc); break;
 			default: EXIT(ERR_NOT_IMPLEMENTED); break;
 		}
+		order.limit();
 
 		set_order_recurrent(eid, order);
 	}
@@ -162,7 +157,7 @@ void Space::enforce_minimum_rule() {
 	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
 		Element *elem = mesh->elements[idx];
 		ElementData *elem_node = elm_data[idx];
-		int elm_order = elem_node->order;
+		order3_t elm_order = elem_node->order;
 
 		switch (elem->get_mode()) {
 			case MODE_TETRAHEDRON:
@@ -171,8 +166,8 @@ void Space::enforce_minimum_rule() {
 					Word_t fidx = mesh->get_facet_id(elem, i);
 					assert(fn_data.exists(fidx));
 					FaceData *fnode = fn_data[fidx];
-					if (fnode->order == -1 || fnode->order > elem_node->order)
-						fnode->order = elem_node->order;
+//					if (fnode->order == -1 || fnode->order > elem_node->order)
+//						fnode->order = elem_node->order;
 				}
 
 				// on edges
@@ -181,8 +176,8 @@ void Space::enforce_minimum_rule() {
 					assert(en_data.exists(eidx));
 
 					EdgeData *enode = en_data[eidx];
-					if (enode->order == -1 || enode->order > elem_node->order)
-						enode->order = elem_node->order;
+//					if (enode->order == -1 || enode->order > elem_node->order)
+//						enode->order = elem_node->order;
 				}
 				break;
 
@@ -195,27 +190,27 @@ void Space::enforce_minimum_rule() {
 					if (!fnode->ced) {
 						Facet *facet = mesh->facets.get(fidx);
 
-						int face_order = get_hex_face_order(face, elem_node->order);
+						order2_t face_order = elem_node->order.get_face_order(face);
 						int horder, vorder;
 						if (elem->get_face_orientation(face) < 4) {
-							horder = GET_QUAD_ORDER_1(face_order);
-							vorder = GET_QUAD_ORDER_2(face_order);
+							horder = face_order.x;
+							vorder = face_order.y;
 						}
 						else {
-							horder = GET_QUAD_ORDER_2(face_order);
-							vorder = GET_QUAD_ORDER_1(face_order);
+							horder = face_order.y;
+							vorder = face_order.x;
 						}
 
-						if (fnode->order == -1) {
-							fnode->order = MAKE_QUAD_ORDER(horder, vorder);
-						}
-						else {
-							int cur_order[] = { GET_QUAD_ORDER_1(fnode->order), GET_QUAD_ORDER_2(fnode->order) };
-
-							horder = std::min(cur_order[0], horder);
-							vorder = std::min(cur_order[1], vorder);
-							fnode->order = MAKE_QUAD_ORDER(horder, vorder);
-						}
+//						if (fnode->order == -1) {
+							fnode->order = order2_t(horder, vorder);
+//						}
+//						else {
+//							int cur_order[] = { GET_QUAD_ORDER_1(fnode->order), GET_QUAD_ORDER_2(fnode->order) };
+//
+//							horder = std::min(cur_order[0], horder);
+//							vorder = std::min(cur_order[1], vorder);
+//							fnode->order = MAKE_QUAD_ORDER(horder, vorder);
+//						}
 					}
 				}
 
@@ -230,8 +225,8 @@ void Space::enforce_minimum_rule() {
 //							assert(false);
 						}
 						else {
-							if (enode->order == -1 || enode->order > get_hex_edge_order(edge, elem_node->order))
-								enode->order = get_hex_edge_order(edge, elem_node->order);
+//							if (enode->order == -1 || enode->order > get_hex_edge_order(edge, elem_node->order))
+//								enode->order = get_hex_edge_order(edge, elem_node->order);
 						}
 					}
 				}
@@ -334,14 +329,14 @@ void Space::get_edge_assembly_list(Element *elem, int iedge, AsmList *al) {
 			int *indices = shapeset->get_edge_indices(iedge, 0, cng_enode->order);		// iedge bude 0 (?)
 			if (cng_enode->dof >= 0) {
 				for (int j = 0, dof = cng_enode->dof; j < cng_enode->n; j++, dof += stride) {
-					int order = get_hex_edge_order(iedge, shapeset->get_order(indices[j]));
+					int order = shapeset->get_order(indices[j]).get_edge_order(iedge);
 					int idx = shapeset->get_constrained_edge_index(iedge, ecomp->ori, order, ecomp->part);
 					al->add(idx, dof, ecomp->coef);
 				}
 			}
 			else {
 				for (int j = 0; j < cng_enode->n; j++) {
-					int order = get_hex_edge_order(iedge, shapeset->get_order(indices[j]));
+					int order = shapeset->get_order(indices[j]).get_edge_order(iedge);
 					int idx = shapeset->get_constrained_edge_index(iedge, ecomp->ori, order, ecomp->part);
 					al->add(idx, DIRICHLET_DOF, ecomp->coef * cng_enode->bc_proj[j]);
 				}
@@ -362,28 +357,28 @@ void Space::get_edge_assembly_list(Element *elem, int iedge, AsmList *al) {
 			int *indices = shapeset->get_face_indices(fcomp->iface, 0, cng_fnode->order);
 			if (cng_fnode->dof >= 0) {
 				for (int j = 0, dof = cng_fnode->dof; j < cng_fnode->n; j++, dof += stride) {
-					int order;
+					order2_t order;
 					switch (mesh->facets[fcomp->face_id]->mode) {
-						case MODE_HEXAHEDRON: order = get_hex_face_order(fcomp->iface, shapeset->get_order(indices[j])); break;
+						case MODE_HEXAHEDRON: order = shapeset->get_order(indices[j]).get_face_order(fcomp->iface); break;
 						case MODE_TETRAHEDRON:
 						case MODE_PRISM: EXIT(ERR_NOT_IMPLEMENTED); break;
 						default: EXIT(ERR_UNKNOWN_MODE); break;
 					}
-					int idx = shapeset->get_constrained_edge_face_index(iedge, fcomp->ori, order, fcomp->part, fcomp->dir);
-					al->add(idx, dof, fcomp->coef);
+//					int idx = shapeset->get_constrained_edge_face_index(iedge, fcomp->ori, order, fcomp->part, fcomp->dir);
+//					al->add(idx, dof, fcomp->coef);
 				}
 			}
 			else {
 				for (int j = 0; j < cng_fnode->n; j++) {
-					int order;
+					order2_t order;
 					switch (mesh->facets[fcomp->face_id]->mode) {
-						case MODE_HEXAHEDRON: order = get_hex_face_order(fcomp->iface, shapeset->get_order(indices[j])); break;
+						case MODE_HEXAHEDRON: order = shapeset->get_order(indices[j]).get_face_order(fcomp->iface); break;
 						case MODE_TETRAHEDRON:
 						case MODE_PRISM: EXIT(ERR_NOT_IMPLEMENTED); break;
 						default: EXIT(ERR_UNKNOWN_MODE); break;
 					}
-					int idx = shapeset->get_constrained_edge_face_index(iedge, fcomp->ori, order, fcomp->part, fcomp->dir);
-					al->add(idx, DIRICHLET_DOF, fcomp->coef * cng_fnode->bc_proj[j]);
+//					int idx = shapeset->get_constrained_edge_face_index(iedge, fcomp->ori, order, fcomp->part, fcomp->dir);
+//					al->add(idx, DIRICHLET_DOF, fcomp->coef * cng_fnode->bc_proj[j]);
 				}
 			}
 		}
@@ -420,32 +415,32 @@ void Space::get_face_assembly_list(Element *elem, int iface, AsmList *al) {
 			int *indices = shapeset->get_face_indices(iface, 0, cng_fnode->order);
 			if (cng_fnode->dof >= 0) {
 				for (int j = 0, dof = cng_fnode->dof; j < cng_fnode->n; j++, dof += stride) {
-					int order;
+					order2_t order;
 					switch (facet->mode) {
-						case MODE_HEXAHEDRON: order = get_hex_face_order(iface, shapeset->get_order(indices[j])); break;
+						case MODE_HEXAHEDRON: order = shapeset->get_order(indices[j]).get_face_order(iface); break;
 						case MODE_TETRAHEDRON:
 						case MODE_PRISM: EXIT(ERR_NOT_IMPLEMENTED); break;
 						default: EXIT(ERR_UNKNOWN_MODE); break;
 					}
 
-					int idx = shapeset->get_constrained_face_index(iface, fnode->ori, order, fnode->part);
-					assert(dof >= DIRICHLET_DOF && dof < get_dof_count());
-
-					al->add(idx, dof, 1.0);
+//					int idx = shapeset->get_constrained_face_index(iface, fnode->ori, order, fnode->part);
+//					assert(dof >= DIRICHLET_DOF && dof < get_dof_count());
+//
+//					al->add(idx, dof, 1.0);
 				}
 			}
 			else {
 				for (int j = 0; j < cng_fnode->n; j++) {
-					int order;
+					order2_t order;
 					switch (facet->mode) {
-						case MODE_HEXAHEDRON: order = get_hex_face_order(iface, shapeset->get_order(indices[j])); break;
+						case MODE_HEXAHEDRON: order = shapeset->get_order(indices[j]).get_face_order(iface); break;
 						case MODE_TETRAHEDRON:
 						case MODE_PRISM: EXIT(ERR_NOT_IMPLEMENTED); break;
 						default: EXIT(ERR_UNKNOWN_MODE); break;
 					}
 					assert(false);
-					int idx = shapeset->get_constrained_face_index(iface, fnode->ori, order, fnode->part);
-					al->add(idx, DIRICHLET_DOF, cng_fnode->bc_proj[j]);
+//					int idx = shapeset->get_constrained_face_index(iface, fnode->ori, order, fnode->part);
+//					al->add(idx, DIRICHLET_DOF, cng_fnode->bc_proj[j]);
 				}
 			}
 		}
@@ -1207,7 +1202,7 @@ void Space::calc_vertex_edge_ced(Word_t vtx, Word_t eid, int ori, int part) {
 
 			int *indices = shapeset->get_edge_indices(0, ecomp->ori, cng_enode->order);
 			for (int j = 0, dof = cng_enode->dof; j < cng_enode->n; j++, nci++) {
-				int order = get_hex_edge_order(0, shapeset->get_order(indices[j]));
+				int order = shapeset->get_order(indices[j]).get_edge_order(0);
 				int idx = shapeset->get_constrained_edge_index(0, ecomp->ori, order, ecomp->part);
 //				printf("   - dof = %d, coef = % lf, fn = % lf, (order = %d)\n",
 //				       dof, ecomp->coef, shapeset->get_fn_value(idx, 0, -1.0, -1.0, 0), order);
@@ -1249,14 +1244,14 @@ void Space::calc_vertex_edge_ced(Word_t vtx, Word_t eid, int ori, int part) {
 			int *indices = shapeset->get_face_indices(2, fcomp->ori, cng_fnode->order);
 			for (int j = 0, dof = cng_fnode->dof; j < cng_fnode->n; j++, nci++) {
 				// FIXME: Hex-specific
-				int order = get_hex_face_order(2, shapeset->get_order(indices[j]));
-				int idx = shapeset->get_constrained_edge_face_index(0, fcomp->ori, order, fcomp->part, fcomp->dir);
+				order2_t order = shapeset->get_order(indices[j]).get_face_order(2);
+//				int idx = shapeset->get_constrained_edge_face_index(0, fcomp->ori, order, fcomp->part, fcomp->dir);
 
-				PRINTF("   - dof = %d, coef = % lf, fn = % lf, (order = %d)\n",
-				       dof, fcomp->coef, shapeset->get_fn_value(idx, 0, -1.0, -1.0, 0), order);
+//				PRINTF("   - dof = %d, coef = % lf, fn = % lf, (order = %d)\n",
+//				       dof, fcomp->coef, shapeset->get_fn_value(idx, 0, -1.0, -1.0, 0), order);
 
 				baselist[nci].dof = dof;
-				baselist[nci].coef = (fcomp->coef) * shapeset->get_fn_value(idx, 0.0, -1.0, -1.0, 0);
+//				baselist[nci].coef = (fcomp->coef) * shapeset->get_fn_value(idx, 0.0, -1.0, -1.0, 0);
 				if (cng_fnode->dof == DIRICHLET_DOF) baselist[nci].coef *= cng_fnode->bc_proj[j];
 				else dof += stride;
 			}
@@ -1432,13 +1427,13 @@ void Space::calc_mid_vertex_edge_ced(Word_t vtx, Word_t fmp, Word_t eid, int ori
 
 		int *indices = shapeset->get_edge_indices(0, ecomp->ori, cng_enode->order);		// iedge bude 0 (?)
 		for (int j = 0, dof = cng_enode->dof; j < cng_enode->n; j++, nci++) {
-			int order = get_hex_edge_order(0, shapeset->get_order(indices[j]));
-			int idx = shapeset->get_constrained_edge_index(0, ecomp->ori, order, ecomp->part);
-			PRINTF("   - dof = %d, coef = % lf, fn = % lf, (order = %d)\n",
-			       dof, ecomp->coef, shapeset->get_fn_value(idx, 0, -1.0, -1.0, 0), order);
+			int order = shapeset->get_order(indices[j]).get_edge_order(0);
+//			int idx = shapeset->get_constrained_edge_index(0, ecomp->ori, order, ecomp->part);
+//			PRINTF("   - dof = %d, coef = % lf, fn = % lf, (order = %d)\n",
+//			       dof, ecomp->coef, shapeset->get_fn_value(idx, 0, -1.0, -1.0, 0), order);
 
 			baselist[nci].dof = dof;
-			baselist[nci].coef = ecomp->coef * shapeset->get_fn_value(idx, 0, -1.0, -1.0, 0);
+//			baselist[nci].coef = ecomp->coef * shapeset->get_fn_value(idx, 0, -1.0, -1.0, 0);
 			if (cng_enode->dof == DIRICHLET_DOF) baselist[nci].coef *= cng_enode->bc_proj[j];
 			else dof += stride;
 		}
@@ -1467,14 +1462,14 @@ void Space::calc_mid_vertex_edge_ced(Word_t vtx, Word_t fmp, Word_t eid, int ori
 		int *indices = shapeset->get_face_indices(2, fcomp->ori, cng_fnode->order);
 		for (int j = 0, dof = cng_fnode->dof; j < cng_fnode->n; j++, nci++) {
 			// FIXME: Hex-specific
-			int order = get_hex_face_order(2, shapeset->get_order(indices[j]));
-			int idx = shapeset->get_constrained_edge_face_index(0, fcomp->ori, order, fcomp->part, fcomp->dir);
-
-			PRINTF("   - dof = %d, coef = % lf, fn = % lf, (order = %d)\n",
-			       dof, fcomp->coef, shapeset->get_fn_value(idx, 0.0, -1.0, -1.0, 0), order);
+			order2_t order = shapeset->get_order(indices[j]).get_face_order(2);
+//			int idx = shapeset->get_constrained_edge_face_index(0, fcomp->ori, order, fcomp->part, fcomp->dir);
+//
+//			PRINTF("   - dof = %d, coef = % lf, fn = % lf, (order = %d)\n",
+//			       dof, fcomp->coef, shapeset->get_fn_value(idx, 0.0, -1.0, -1.0, 0), order);
 
 			baselist[nci].dof = dof;
-			baselist[nci].coef = fcomp->coef * shapeset->get_fn_value(idx, 0.0, -1.0, -1.0, 0);
+//			baselist[nci].coef = fcomp->coef * shapeset->get_fn_value(idx, 0.0, -1.0, -1.0, 0);
 			if (cng_fnode->dof == DIRICHLET_DOF) baselist[nci].coef *= cng_fnode->bc_proj[j];
 			else dof += stride;
 		}
@@ -1553,14 +1548,14 @@ void Space::calc_vertex_face_ced(Word_t vtx, Word_t fid, int ori, int iface, int
 		int *indices = shapeset->get_face_indices(2, ori, fd->order);
 		for (int j = 0, dof = fd->dof; j < fd->n; j++) {
 			// FIXME: hex-specific
-			int order = get_hex_face_order(2, shapeset->get_order(indices[j]));
+			order2_t order = shapeset->get_order(indices[j]).get_face_order(2);
 			Part part;
 			part.horz = hpart;
 			part.vert = vpart;
-			int idx = shapeset->get_constrained_face_index(2, ori, order, part);
+//			int idx = shapeset->get_constrained_face_index(2, ori, order, part);
 
 			baselist[j].dof = dof;
-			baselist[j].coef = shapeset->get_fn_value(idx, 0.0, -1.0, 0.0,  0);
+//			baselist[j].coef = shapeset->get_fn_value(idx, 0.0, -1.0, 0.0,  0);
 			if (fd->dof == DIRICHLET_DOF) baselist[j].coef *= fd->bc_proj[j];
 			else dof += stride;
 			PRINTF(" - [%d]: dof = %d, coef = %lf\n", j, baselist[j].dof, baselist[j].coef);

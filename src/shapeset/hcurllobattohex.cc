@@ -483,10 +483,10 @@ void HCurlShapesetLobattoHex::compute_edge_indices(int edge, int wanted_ori, int
 	edge_indices[edge][wanted_ori][order] = indices;
 }
 
-void HCurlShapesetLobattoHex::compute_face_indices(int face, int wanted_ori, int order)
+void HCurlShapesetLobattoHex::compute_face_indices(int face, int wanted_ori, order2_t order)
 {
-	int order_1 = GET_QUAD_ORDER_1(order);
-	int order_2 = GET_QUAD_ORDER_2(order);
+	int order_1 = order.x;
+	int order_2 = order.y;
 	int *indices = new int[get_num_face_fns(order)];
 	int position = 0;
 
@@ -540,17 +540,17 @@ void HCurlShapesetLobattoHex::compute_face_indices(int face, int wanted_ori, int
 		}
 	}
 
-	face_indices[face][wanted_ori][order] = indices;
+	face_indices[face][wanted_ori][order.get_idx()] = indices;
 }
 
 //For a given "order" (i.e., three directional orders order_i), this returns the
 //indices of all bubble functions whose directional polynomial degree in
 //axial direction x_i is less or equal to "order_i"
-void HCurlShapesetLobattoHex::compute_bubble_indices(int order)
+void HCurlShapesetLobattoHex::compute_bubble_indices(order3_t order)
 {
-	int order_1 = GET_HEX_ORDER_1(order);
-	int order_2 = GET_HEX_ORDER_2(order);
-	int order_3 = GET_HEX_ORDER_3(order);
+	int order_1 = order.x;
+	int order_2 = order.y;
+	int order_3 = order.z;
 	int *indices = new int[get_num_bubble_fns(order)];
 	int position = 0;
 
@@ -580,11 +580,11 @@ void HCurlShapesetLobattoHex::compute_bubble_indices(int order)
 		}
 	}
 	assert(position == get_num_bubble_fns(order));
-	bubble_indices[order] = indices;
+	bubble_indices[order.get_idx()] = indices;
 }
 
 
-int HCurlShapesetLobattoHex::get_order(int index) const
+order3_t HCurlShapesetLobattoHex::get_order(int index) const
 {
 	int ori = GET_ORI_FROM_INDEX(index);
 	int idx = GET_IDX_FROM_INDEX(index);
@@ -597,7 +597,7 @@ int HCurlShapesetLobattoHex::get_order(int index) const
 
 	if (idx >= 0) {
 		// check_fn_index(idx, indices, fn_type, unit_index, which_legendre, v_direction);
-		ord = index_to_order[index];
+//		ord = index_to_order[index];
 	}
 	else {
 		assert(ced_key.exists(-1 - index));
@@ -623,15 +623,15 @@ HCurlShapesetLobattoHex::HCurlShapesetLobattoHex()
 	num_components = 3;
 
 	//TODO think of those constants. What do they mean?
-	max_edge_order = MAX_ELEMENT_ORDER + 1;
-	max_face_order = MAKE_QUAD_ORDER(MAX_ELEMENT_ORDER + 1, MAX_ELEMENT_ORDER + 1);
-	max_order = MAKE_HEX_ORDER(MAX_ELEMENT_ORDER + 1, MAX_ELEMENT_ORDER + 1, MAX_ELEMENT_ORDER + 1);
+//	max_edge_order = MAX_ELEMENT_ORDER + 1;
+//	max_face_order = MAKE_QUAD_ORDER(MAX_ELEMENT_ORDER + 1, MAX_ELEMENT_ORDER + 1);
+//	max_order = MAKE_HEX_ORDER(MAX_ELEMENT_ORDER + 1, MAX_ELEMENT_ORDER + 1, MAX_ELEMENT_ORDER + 1);
 
-	max_fns_per_edge = get_num_edge_fns(MAX_ELEMENT_ORDER);
-	max_fns_per_face = get_num_face_fns(MAKE_QUAD_ORDER(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER));
-	max_bubble_fns = get_num_bubble_fns(MAKE_HEX_ORDER(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER));
+//	max_fns_per_edge = get_num_edge_fns(MAX_ELEMENT_ORDER);
+//	max_fns_per_face = get_num_face_fns(MAKE_QUAD_ORDER(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER));
+//	max_bubble_fns = get_num_bubble_fns(MAKE_HEX_ORDER(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER));
 
-	printf("max_fns_per_edge %d, face %d, bubble %d\n", max_fns_per_edge, max_fns_per_face, max_bubble_fns);
+//	printf("max_fns_per_edge %d, face %d, bubble %d\n", max_fns_per_edge, max_fns_per_face, max_bubble_fns);
 
 	face_offset = max_fns_per_edge * Hex::NUM_EDGES * 8; //orientations
 	bubble_offset = max_fns_per_face * Hex::NUM_FACES * 8 + face_offset;
@@ -649,7 +649,7 @@ HCurlShapesetLobattoHex::HCurlShapesetLobattoHex()
 	// index to order mapping (determining orders for numerical quadrature)
 	// original H1 code is below
 	// THESE ARRAYS SHOULD BE DECLARED GLOBALLY (AND COMPRESSED?)
-	index_to_order = new int[max_index];
+//	index_to_order = new int[max_index];
 
 	for (int shape_fn_index = 0; shape_fn_index < max_index; shape_fn_index++) {
 		int indices[3];
@@ -662,7 +662,7 @@ HCurlShapesetLobattoHex::HCurlShapesetLobattoHex()
 
 
 		int ori = GET_ORI_FROM_INDEX(shape_fn_index);
-		int order = MAKE_HEX_ORDER(ord[0], ord[1], ord[2]);
+		order3_t order(ord[0], ord[1], ord[2]);
 
 		// abych to nedelal dvakrat...
 //		if(ori > 3)
@@ -675,7 +675,7 @@ HCurlShapesetLobattoHex::HCurlShapesetLobattoHex()
 		if(ord[2] > mo) mo = ord[2];
 		order = MAKE_HEX_ORDER(mo, mo, mo);
 */
-		index_to_order[shape_fn_index] = order;
+//		index_to_order[shape_fn_index] = order;
 	}
 
 }
@@ -743,10 +743,10 @@ double HCurlShapesetLobattoHex::get_constrained_face_value(int n, int index, dou
 	assert(comb != NULL);
 	assert(idx != NULL);
 
-	int horder = GET_QUAD_ORDER_1(key.order);
-	int vorder = GET_QUAD_ORDER_2(key.order);
+//	int horder = GET_QUAD_ORDER_1(key.order);
+//	int vorder = GET_QUAD_ORDER_2(key.order);
 
-	int n_fns = get_num_face_fns(key.order);
+//	int n_fns = get_num_face_fns(key.order);
 	int ind[3], fn_type, unit_index, which_legendre, v_direction;
 	int i, ind_fn;
 

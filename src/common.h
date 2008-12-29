@@ -37,10 +37,10 @@ typedef double scalar;
 #endif
 
 
-#define Order0 int
-#define Order1 int
-#define Order2 int
-#define Order3 int
+//#define Order0 int
+//#define Order1 int
+//#define Order2 int
+//#define Order3 int
 
 
 #define swapint(a,b) {int c_help = (a); (a) = (b); (b) = c_help;}
@@ -63,6 +63,7 @@ enum EMode3D {
 	MODE_HEXAHEDRON = 1,
 	MODE_PRISM = 2
 };
+
 
 // points
 struct Point1D {

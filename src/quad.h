@@ -3,7 +3,9 @@
 
 #include "config.h"
 #include "common.h"
+#include "order.h"
 #include <common/error.h>
+#include <common/array.h>
 
 /// @defgroup quadratures Numerical quadratures
 ///
@@ -137,7 +139,6 @@ public:
 	inline int get_num_points(int order) const { return np[order]; };
 
 	QuadPt2D *get_edge_points(int edge, int order) const { return edge_tables[edge][order]; }
-//	double get_edge_jacobian(int edge) const { return edge_jacobian[edge]; }
 
 	int get_max_order() const { return max_order; }
 
@@ -157,8 +158,6 @@ protected:
 	/// tables with integration points for edges (?)
 	/// indexing: [edge][order][point no.]
 	QuadPt2D ***edge_tables;
-//	/// indexing: [edge]
-//	double *edge_jacobian;
 };
 
 
@@ -172,44 +171,40 @@ protected:
 /// @ingroup quadratures
 class Quad3D {
 public:
-	virtual QuadPt3D *get_points(int order) { return tables[order]; }
-	virtual int get_num_points(int order) { return np[order]; }
+	virtual QuadPt3D *get_points(order3_t order) { return tables[order.get_idx()]; }
+	virtual int get_num_points(order3_t order) { return np[order.get_idx()]; }
 
 	virtual QuadPt3D *get_edge_points(int edge, int order) { return edge_tables[edge][order]; }
 	int get_edge_num_points(int order) const { return np_edge[order]; }
-//	double get_edge_jacobian(int edge) const { return edge_jacobian[edge]; }
 
-	virtual QuadPt3D *get_face_points(int face, int order) { return face_tables[face][order]; }
-	int get_face_num_points(int face, int order) const { return np_face[order]; }
-//	double get_face_jacobian(int face) const { return face_jacobian[face]; }
+	virtual QuadPt3D *get_face_points(int face, order2_t order) { return face_tables[face][order.get_idx()]; }
+	int get_face_num_points(int face, order2_t order) const { return np_face[order.get_idx()]; }
 
 	virtual QuadPt3D *get_vertex_points() { return vertex_table; }
 	int get_vertex_num_points() const { return np_vertex; }
 
-	int get_max_order() const { return max_order; }
+	order3_t get_max_order() const { return max_order; }
 	int get_edge_max_order(int edge) const { return max_edge_order; }
-	int get_face_max_order(int face) const { return max_face_order; }
+	order2_t get_face_max_order(int face) const { return max_face_order; }
 
 	EMode3D get_mode() const { return mode; }
 
 protected:
 	/// mode of quadratures (MODE_TETRAHEDRON, MODE_HEXAHEDRON, MODE_PRISM)
 	EMode3D mode;
-	/// maximal order for integration (interpretation depened on the mode)
-	int max_order;
+	/// maximal order for integration (interpretation depeneds on the mode)
+	order3_t max_order;
 	int max_edge_order;
-	int max_face_order;
+	order2_t max_face_order;
 
-	QuadPt3D **tables;
+	Array<QuadPt3D *> tables;
 	QuadPt3D ***edge_tables;
 	QuadPt3D ***face_tables;
 	QuadPt3D *vertex_table;
-	int *np;
+	Array<int> np;
 	int *np_edge;
 	int *np_face;
 	int np_vertex;
-//	double *edge_jacobian;
-//	double *face_jacobian;
 };
 
 
@@ -223,63 +218,55 @@ Quad3D *get_quadrature(EMode3D mode);
 // Helpers for calculating with orders ////////////////////////////////////////////////////////////
 
 
-// maximal order of quadratures for 1D
-#define MAX_QUAD_ORDER								24
-
-// maximal order of quadratures for triangle
-#define MAX_QUAD_ORDER_TRI							20
-// maximal order of quadratures for tetra
-#define MAX_QUAD_ORDER_TETRA						20
-
 // QUAD specific //////////////////////////////////////////////////////////////////////////////////
 
-const int base_quad_coding = MAX_QUAD_ORDER + 1;
+//const int base_quad_coding = MAX_QUAD_ORDER + 1;
 
-#define MAKE_QUAD_ORDER(h_order, v_order) ((v_order) * (base_quad_coding) + (h_order))
-#define GET_QUAD_ORDER_1(order) ((order) % (base_quad_coding))
-#define GET_QUAD_ORDER_2(order) ((order) / (base_quad_coding))
+//#define MAKE_QUAD_ORDER(h_order, v_order) ((v_order) * (base_quad_coding) + (h_order))
+//#define GET_QUAD_ORDER_1(order) ((order) % (base_quad_coding))
+//#define GET_QUAD_ORDER_2(order) ((order) / (base_quad_coding))
 
-inline Order2 add_quad_orders(Order2 ord1, Order2 ord2) {
-	int o1 = GET_QUAD_ORDER_1(ord1) + GET_QUAD_ORDER_1(ord2);
-	if (o1 > MAX_QUAD_ORDER) o1 = MAX_QUAD_ORDER;
-	int o2 = GET_QUAD_ORDER_2(ord1) + GET_QUAD_ORDER_2(ord2);
-	if (o2 > MAX_QUAD_ORDER) o2 = MAX_QUAD_ORDER;
-	return MAKE_QUAD_ORDER(o1, o2);
-}
+//inline Order2 add_quad_orders(Order2 ord1, Order2 ord2) {
+//	int o1 = GET_QUAD_ORDER_1(ord1) + GET_QUAD_ORDER_1(ord2);
+//	if (o1 > MAX_QUAD_ORDER) o1 = MAX_QUAD_ORDER;
+//	int o2 = GET_QUAD_ORDER_2(ord1) + GET_QUAD_ORDER_2(ord2);
+//	if (o2 > MAX_QUAD_ORDER) o2 = MAX_QUAD_ORDER;
+//	return MAKE_QUAD_ORDER(o1, o2);
+//}
 
-inline void make_quad_debug(Order2 &order) {
-	Order1 o1 = GET_QUAD_ORDER_1(order);
-	Order1 o2 = GET_QUAD_ORDER_2(order);
-	Order1 max = o1 > o2 ? o1 : o2;
-	order = MAKE_QUAD_ORDER(max, max);
-}
+//inline void make_quad_debug(Order2 &order) {
+//	Order1 o1 = GET_QUAD_ORDER_1(order);
+//	Order1 o2 = GET_QUAD_ORDER_2(order);
+//	Order1 max = o1 > o2 ? o1 : o2;
+//	order = MAKE_QUAD_ORDER(max, max);
+//}
 
 // TETRA specific /////////////////////////////////////////////////////////////////////////////////
 
-#ifndef DEBUG_ORDER
-	#define LIMIT_TETRA_ORDER(o) 						if ((o) > MAX_QUAD_ORDER_TETRA) o = MAX_QUAD_ORDER_TETRA;
-#else
-	#define LIMIT_TETRA_ORDER(o) 						o = MAX_QUAD_ORDER_TETRA;
-#endif
+//#ifndef DEBUG_ORDER
+//	#define LIMIT_TETRA_ORDER(o) 						if ((o) > MAX_QUAD_ORDER_TETRA) o = MAX_QUAD_ORDER_TETRA;
+//#else
+//	#define LIMIT_TETRA_ORDER(o) 						o = MAX_QUAD_ORDER_TETRA;
+//#endif
 
 
 // HEX specific ///////////////////////////////////////////////////////////////////////////////////
 
-const int base_hex_coding = MAX_QUAD_ORDER + 1;
+//const int base_hex_coding = MAX_QUAD_ORDER + 1;
 
-#define MAKE_HEX_ORDER(h_order, f_order, v_order) (((v_order) * (base_hex_coding) + (f_order)) * (base_hex_coding) + (h_order))
-#define GET_HEX_ORDER_1(order) ((order) % (base_hex_coding))
-#define GET_HEX_ORDER_2(order) (((order) / (base_hex_coding)) % (base_hex_coding))
-#define GET_HEX_ORDER_3(order) ((order) / ((base_hex_coding) * (base_hex_coding)))
+//#define MAKE_HEX_ORDER(h_order, f_order, v_order) (((v_order) * (base_hex_coding) + (f_order)) * (base_hex_coding) + (h_order))
+//#define GET_HEX_ORDER_1(order) ((order) % (base_hex_coding))
+//#define GET_HEX_ORDER_2(order) (((order) / (base_hex_coding)) % (base_hex_coding))
+//#define GET_HEX_ORDER_3(order) ((order) / ((base_hex_coding) * (base_hex_coding)))
 
-#ifndef DEBUG_ORDER
-	#define LIMIT_HEX_ORDER(o)
-#else
-	#define LIMIT_HEX_ORDER(o) 						o = MAKE_HEX_ORDER(MAX_QUAD_ORDER, MAX_QUAD_ORDER, MAX_QUAD_ORDER);
-#endif
+//#ifndef DEBUG_ORDER
+//	#define LIMIT_HEX_ORDER(o)
+//#else
+//	#define LIMIT_HEX_ORDER(o) 						o = MAKE_HEX_ORDER(MAX_QUAD_ORDER, MAX_QUAD_ORDER, MAX_QUAD_ORDER);
+//#endif
 
 
-
+/*
 inline Order1 get_hex_order_i(Order3 order, int i) {
 	switch (i) {
 		case 1: return GET_HEX_ORDER_1(order);
@@ -364,15 +351,15 @@ inline Order3 make_hex_iso(Order3 order) {
 	Order1 max = (o1 > o2 ? (o1 > o3 ? o1 : o3) : (o2 > o3 ? o2 : o3));
 	return MAKE_HEX_ORDER(max, max, max);
 }
-
+*/
 
 // PRISM specific /////////////////////////////////////////////////////////////////////////////////
 
-const int prism_base_coding = MAX_QUAD_ORDER_TRI + 1;
-
-#define MAKE_PRISM_ORDER(h_order, v_order) ((v_order) * (prism_base_coding) + (h_order))
-#define GET_PRISM_ORDER_1(order) ((order) % (prism_base_coding))
-#define GET_PRISM_ORDER_2(order) ((order) / (prism_base_coding))
+//const int prism_base_coding = MAX_QUAD_ORDER_TRI + 1;
+//
+//#define MAKE_PRISM_ORDER(h_order, v_order) ((v_order) * (prism_base_coding) + (h_order))
+//#define GET_PRISM_ORDER_1(order) ((order) % (prism_base_coding))
+//#define GET_PRISM_ORDER_2(order) ((order) / (prism_base_coding))
 
 // TODO: prism specific macros/functions for faces, etc.
 
@@ -399,19 +386,28 @@ struct qorder_t {
 	};
 	unsigned order:25;				// order (TODO: )
 
-	qorder_t(unsigned type, unsigned ef, unsigned order) {
+	qorder_t(unsigned type) {
+		this->type = type;
+	}
+
+	qorder_t(unsigned type, order3_t order) {
+		this->type = type;
+//		this->order = order;
+	}
+
+	qorder_t(unsigned type, unsigned ef, order2_t order) {
 		this->type = type;
 		this->edge = ef;
-		this->order = order;
+//		this->order = order;
 	}
 
 	operator int() { return (((type << 4) | edge) << 25) | order; }
 };
 
-#define ELEM_QORDER(o)				qorder_t(QOT_ELEMENT, 0, o)
+#define ELEM_QORDER(o)				qorder_t(QOT_ELEMENT, o)
 #define FACE_QORDER(f, o)			qorder_t(QOT_FACE, f, o)
 #define EDGE_QORDER(e, o)			qorder_t(QOT_EDGE, e, o)
-#define VTX_QORDER()				qorder_t(QOT_VERTEX, 0, 0)
+#define VTX_QORDER()				qorder_t(QOT_VERTEX)
 
 //
 

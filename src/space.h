@@ -5,6 +5,7 @@
 #include "shapeset.h"
 #include "asmlist.h"
 #include "quad.h"
+#include "order.h"
 
 #include <common/bitarray.h>
 
@@ -64,8 +65,8 @@ public:
 	void set_bc_values(scalar (*bc_value_callback_by_coord)(int marker, double x, double y, double z, int comp));
 
 	void set_element_order(Word_t id, int order);
-	int  get_element_order(Word_t id) const;
-	void set_uniform_order(Order3 order);
+	order3_t get_element_order(Word_t id) const;
+	void set_uniform_order(order3_t order);
 	void copy_orders(const Space &space, int inc = 0);
 
 	virtual void enforce_minimum_rule();
@@ -244,9 +245,9 @@ public: //remove me
 
 	struct FaceData : public NodeData  {
 		unsigned ced:1;							/// 1 = is constrained
+		order2_t order;   						/// polynomial order
 		union {
 			struct {								/// normal node
-				int order;   						/// polynomial order
 				int dof;
 				int n;								/// number of DOFs
 			};
@@ -273,7 +274,7 @@ public: //remove me
 				printf("part = (%d, %d), ori = %d, facet_id = %d", part.horz, part.vert, ori, facet_id);
 			}
 			else {
-				printf("order = %d, dof = %d, n = %d", order, dof, n);
+				printf("order = %s, dof = %d, n = %d", order.str(), dof, n);
 				if (bc_proj != NULL) {
 					printf(", bc_proj = (");
 					for (int i = 0; i < n; i++) {
@@ -288,7 +289,7 @@ public: //remove me
 	};
 
 	struct ElementData {
-		int order;									/// Polynomial degree associated to the element node (interior).
+		order3_t order;									/// Polynomial degree associated to the element node (interior).
 		int dof;									/// The number of the first degree of freedom belonging to the node.
 		int n;										/// Total number of degrees of freedom belonging to the node.
 
@@ -300,7 +301,7 @@ public: //remove me
 
 		void dump(int id) {
 			printf("elem #%d: ", id);
-			printf("order = %d, dof = %d, n = %d", order, dof, n);
+			printf("order = %s, dof = %d, n = %d", order.str(), dof, n);
 			printf("\n");
 		}
 	};
@@ -311,12 +312,12 @@ public: // remove me
 	ArrayPtr<FaceData> fn_data;						/// Face node hash table
 	ArrayPtr<ElementData> elm_data;					/// Element node hash table
 
-	void set_order_recurrent(Word_t eid, int order);
+	void set_order_recurrent(Word_t eid, order3_t order);
 
-	virtual int get_vertex_ndofs(Order0 order) = 0;
-	virtual int get_edge_ndofs(Order1 order) = 0;
-	virtual int get_face_ndofs(Facet *face, Order2 order) = 0;
-	virtual int get_element_ndofs(Element *elem, Order3 order) = 0;
+	virtual int get_vertex_ndofs(int order) = 0;
+	virtual int get_edge_ndofs(int order) = 0;
+	virtual int get_face_ndofs(Facet *face, order2_t order) = 0;
+	virtual int get_element_ndofs(Element *elem, order3_t order) = 0;
 
 	virtual void assign_vertex_dofs(Word_t vid);
 	virtual void assign_edge_dofs(Word_t eid);

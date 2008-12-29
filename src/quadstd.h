@@ -43,7 +43,7 @@ public:
 // 3D numeric quadrature //////////////////////////////////////////////////////
 //
 
-/// Numerical quadrature for 3D hexahedron 
+/// Numerical quadrature for 3D hexahedron
 ///
 /// @ingroup quadrature
 class QuadStdHex : public Quad3D {
@@ -51,21 +51,21 @@ public:
 	QuadStdHex();
 	~QuadStdHex();
 
-	virtual QuadPt3D *get_points(int order) {
-		if (tables[order] == NULL) calc_table(order);
-		return tables[order]; 
+	virtual QuadPt3D *get_points(order3_t order) {
+		if (tables[order.get_idx()] == NULL) calc_table(order);
+		return tables[order.get_idx()];
 	}
 
-	virtual QuadPt3D *get_face_points(int face, int order) {
-		if (face_tables[face][order] == NULL) calc_face_table(face, order);
-		return face_tables[face][order]; 
+	virtual QuadPt3D *get_face_points(int face, order2_t order) {
+		if (face_tables[face][order.get_idx()] == NULL) calc_face_table(face, order);
+		return face_tables[face][order.get_idx()];
 	}
 
 protected:
-	void calc_table(int order);
-	void calc_face_table(int face, int order);
+	void calc_table(order3_t order);
+	void calc_face_table(int face, order2_t order);
 	///
-	Order3 lower_order_same_accuracy(Order3 ord);
+	order3_t lower_order_same_accuracy(order3_t ord);
 };
 
 

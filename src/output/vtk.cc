@@ -76,7 +76,7 @@ protected:
 OutputQuadHex::OutputQuadHex() {
 #ifdef WITH_HEX
 	mode = MODE_HEXAHEDRON;
-	max_order = MAKE_HEX_ORDER(MAX_QUAD_ORDER, MAX_QUAD_ORDER, MAX_QUAD_ORDER);
+/*	max_order = MAKE_HEX_ORDER(MAX_QUAD_ORDER, MAX_QUAD_ORDER, MAX_QUAD_ORDER);
 	max_edge_order = 0;				// not used
 	max_face_order = 0;				// not used
 
@@ -98,12 +98,13 @@ OutputQuadHex::OutputQuadHex() {
 			}
 		}
 	}
+*/
 #endif
 }
 
 OutputQuadHex::~OutputQuadHex() {
 #ifdef WITH_HEX
-	// free hexa points
+/*	// free hexa points
 	for (int i = 0; i <= MAX_QUAD_ORDER; i++) {
 		for (int j = 0; j <= MAX_QUAD_ORDER; j++) {
 			for (int o = 0; o <= MAX_QUAD_ORDER; o++) {
@@ -114,12 +115,13 @@ OutputQuadHex::~OutputQuadHex() {
 	}
 	delete [] tables;
 	delete [] np;
+*/
 #endif
 }
 
 void OutputQuadHex::calc_table(int order) {
 #ifdef WITH_HEX
-	tables[order] = new QuadPt3D[np[order]];
+/*	tables[order] = new QuadPt3D[np[order]];
 	int i, j, o;
 	i = GET_HEX_ORDER_1(order);
 	j = GET_HEX_ORDER_2(order);
@@ -140,6 +142,7 @@ void OutputQuadHex::calc_table(int order) {
 			}
 		}
 	}
+*/
 #else
 	EXIT(ERR_HEX_NOT_COMPILED);
 #endif
@@ -190,9 +193,9 @@ void VtkOutputEngine::dump_points(MeshFunction *fn) {
 		int mode = element->get_mode();
 
 		// FIXME: get order from the space and set sufficient division
-		int order;
+		order3_t order;
 		switch (mode) {
-			case MODE_HEXAHEDRON: order = MAKE_HEX_ORDER(8, 8, 8); break;
+			case MODE_HEXAHEDRON: order = order3_t(8, 8, 8); break;
 		}
 
 		Vtk::OutputQuad *quad = output_quad[mode];
@@ -219,9 +222,9 @@ void VtkOutputEngine::dump_points(MeshFunction *fn) {
 		switch (mode) {
 			case MODE_HEXAHEDRON: {
 				int size_i, size_j, size_o;
-				size_i = GET_HEX_ORDER_1(order);
-				size_j = GET_HEX_ORDER_2(order);
-				size_o = GET_HEX_ORDER_3(order);
+				size_i = order.x;
+				size_j = order.y;
+				size_o = order.z;
 
 				for (int i = 0; i < size_i; i++) {
 					for (int j = 0; j < size_j; j++) {
@@ -314,7 +317,7 @@ void VtkOutputEngine::dump_scalars(const char *name, MeshFunction *fn, int item)
 		int mode = element->get_mode();
 
 		// FIXME: get order from the space and set sufficient division
-		int order = MAKE_HEX_ORDER(8, 8, 8);
+		order3_t order(8, 8, 8);
 
 		switch (mode) {
 			// FIXME
@@ -357,7 +360,7 @@ void VtkOutputEngine::dump_vectors(const char *name, MeshFunction *fn, int item)
 		int mode = element->get_mode();
 
 		// FIXME: get order from the space and set sufficient division
-		int order = MAKE_HEX_ORDER(8, 8, 8);
+		order3_t order(8, 8, 8);
 
 		switch (mode) {
 			// FIXME

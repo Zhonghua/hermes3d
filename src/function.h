@@ -4,6 +4,7 @@
 #include "common.h"
 #include "mesh.h"
 #include "quad.h"
+#include "order.h"
 #include "transform.h"
 #include <common/error.h>
 
@@ -135,7 +136,7 @@ public:
 	virtual ~Function();
 
 	/// \return The polynomial degree of the function currently being represented by the class.
-	int get_fn_order() const { return order; }
+	order3_t get_fn_order() const { return order; }
 
 	/// \return The number of vector components of the function being represented by the class.
 	int get_num_components() const { return num_components; }
@@ -277,8 +278,8 @@ protected:
 	/// precalculates the current function at the current integration points.
 	virtual void precalculate(qorder_t order, int mask) = 0;
 
-	int order;          ///< current function polynomial order
-	int num_components; ///< number of vector components
+	order3_t order;			///< current function polynomial order
+	int num_components; 	///< number of vector components
 
 	struct Node {
 		int mask;                               ///< a combination of FN_XXX: specifies which tables are present

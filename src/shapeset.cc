@@ -164,17 +164,17 @@ CEDComb *Shapeset::get_ced_comb(const CEDKey &key) {
 
 int *Shapeset::get_ced_indices(const CEDKey &key) {
 	int *idx;
-	if (key.type == CED_KEY_TYPE_EDGE)
-		idx = get_edge_indices(key.edge, key.ori, key.order);
+	if (key.type == CED_KEY_TYPE_EDGE) ;
+//		idx = get_edge_indices(key.edge, key.ori, key.order);
 	else if (key.type == CED_KEY_TYPE_EDGE_FACE) {
 		// HEX specific
 		int dir = key.dir;
 		const int *eori = RefHex::get_face_edge_orientation(key.ori);
 		if (key.ori >= 4) dir = (key.dir == PART_ORI_VERT) ? PART_ORI_HORZ : PART_ORI_VERT; 			// turned face
-		idx = (dir == PART_ORI_HORZ) ? get_edge_indices(key.edge, eori[0], GET_QUAD_ORDER_1(key.order)) : get_edge_indices(key.edge, eori[1], GET_QUAD_ORDER_2(key.order));
+//		idx = (dir == PART_ORI_HORZ) ? get_edge_indices(key.edge, eori[0], GET_QUAD_ORDER_1(key.order)) : get_edge_indices(key.edge, eori[1], GET_QUAD_ORDER_2(key.order));
 	}
-	else if (key.type == CED_KEY_TYPE_FACE)
-		idx = get_face_indices(key.face, key.ori, key.order);
+	else if (key.type == CED_KEY_TYPE_FACE) ;
+//		idx = get_face_indices(key.face, key.ori, key.order);
 	else
 		EXIT(ERR_FAILURE, "Unknown type of CED key.");
 

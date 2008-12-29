@@ -203,11 +203,9 @@ void OutputQuadTetra::recursive_division(const Point3D *tv, QuadPt3D *table, int
 
 //// OutputQuadHex ////////////////////////////////////////////////////////////////////////////////
 
-int get_principal_order(Order3 order) {
-	int o1 = GET_HEX_ORDER_1(order);
-	int o2 = GET_HEX_ORDER_2(order);
-	int o3 = GET_HEX_ORDER_3(order);
-	return (o1 > o2 ? (o1 > o3 ? o1 : o3) : (o2 > o3 ? o2 : o3));
+int get_principal_order(order3_t order) {
+	assert(order.type == MODE_HEXAHEDRON);
+	return std::max(order.x, std::max(order.y, order.z));
 }
 
 /// Quadrature for visualizing the solution on hexahedron
@@ -227,7 +225,7 @@ OutputQuadHex::OutputQuadHex() {
 #ifdef WITH_HEX
 	max_order = MAX_QUAD_ORDER;
 
-	tables = new QuadPt3D *[max_order + 1];
+/*	tables = new QuadPt3D *[max_order + 1];
 	MEM_CHECK(tables);
 	memset(tables, 0, (max_order + 1) * sizeof(QuadPt3D *));
 
@@ -242,7 +240,7 @@ OutputQuadHex::OutputQuadHex() {
 	subdiv_modes = new int *[max_order + 1];
 	MEM_CHECK(subdiv_modes);
 	memset(subdiv_modes, 0, (max_order + 1) * sizeof(int *));
-
+*/
 	output_precision = 1;
 #else
 	EXIT(ERR_HEX_NOT_COMPILED);
@@ -251,7 +249,7 @@ OutputQuadHex::OutputQuadHex() {
 
 OutputQuadHex::~OutputQuadHex() {
 #ifdef WITH_HEX
-	for (int i = 0; i < max_order + 1; i++)
+/*	for (int i = 0; i < max_order + 1; i++)
 		delete [] tables[i];
 	delete [] tables;
 
@@ -261,6 +259,7 @@ OutputQuadHex::~OutputQuadHex() {
 		delete [] subdiv_modes[i];
 	delete [] subdiv_modes;
 	delete [] subdiv_num;
+*/
 #else
 	EXIT(ERR_HEX_NOT_COMPILED);
 #endif
@@ -269,7 +268,7 @@ OutputQuadHex::~OutputQuadHex() {
 void OutputQuadHex::calculate_view_points(int order) {
 #ifdef WITH_HEX
 	assert(order != 0);
-
+/*
 	if (tables[order] == NULL) {
 //		int o = get_principal_order(order);
 //		int levels = int(log(o) / log(2)) + output_precision;
@@ -292,6 +291,7 @@ void OutputQuadHex::calculate_view_points(int order) {
 		const Point3D *ref_vtcs = RefHex::get_vertices();
 		recursive_division(ref_vtcs, tables[o], levels, idx);
 	}
+*/
 #else
 	EXIT(ERR_HEX_NOT_COMPILED);
 #endif
@@ -299,6 +299,7 @@ void OutputQuadHex::calculate_view_points(int order) {
 
 void OutputQuadHex::recursive_division(const Point3D *tv, QuadPt3D *table, int levels, int &idx) {
 #ifdef WITH_HEX
+/*
 	if (levels == 0) {
 		// vertices
 		for (int i = 0; i < Hex::NUM_VERTICES; i++) {
@@ -354,6 +355,7 @@ void OutputQuadHex::recursive_division(const Point3D *tv, QuadPt3D *table, int l
 		for (int i = 0; i < 8; i++)
 			recursive_division(div_vtcs[i], table, levels - 1, idx);
 	}
+*/
 #else
 	EXIT(ERR_HEX_NOT_COMPILED);
 #endif
@@ -661,13 +663,13 @@ void GmshOutputEngine::out_orders(Space *space, const char *name) {
 		Element *element = mesh->elements[idx];
 		int mode = element->get_mode();
 		// get order from the space
-		int order = space->get_element_order(idx);
+		order3_t order = space->get_element_order(idx);
 
 		for (int i = 0; i < Hex::NUM_EDGES; i++) {
 			int dord;
-			if (i == 0 || i == 1 || i == 2 || i == 3) dord = GET_HEX_ORDER_3(order);
-			else if (i == 4 || i == 6 || i == 8 || i == 10) dord = GET_HEX_ORDER_1(order);
-			else if (i == 5 || i == 7 || i == 9 || i == 11) dord = GET_HEX_ORDER_2(order);
+			if (i == 0 || i == 1 || i == 2 || i == 3) dord = order.z;
+			else if (i == 4 || i == 6 || i == 8 || i == 10) dord = order.x;
+			else if (i == 5 || i == 7 || i == 9 || i == 11) dord = order.y;
 			else assert(false);
 			fprintf(this->out_file, "%ld 4 %d %d %d %d\n", id++, dord, dord, dord, dord);
 		}

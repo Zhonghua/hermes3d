@@ -111,16 +111,14 @@ void RefMap::set_active_element(Element *e) {
 
 	// calculate the order of the reference map
 	switch (mode) {
-		case MODE_TETRAHEDRON: ref_order = 0; break;
-		case MODE_PRISM:       ref_order = MAKE_PRISM_ORDER(1, 1); break;
-		case MODE_HEXAHEDRON:  ref_order = MAKE_HEX_ORDER(1, 1, 1); break;
+		case MODE_TETRAHEDRON: ref_order = order3_t(0); break;
+		case MODE_HEXAHEDRON:  ref_order = order3_t(1, 1, 1); break;
 	}
 
 	// calculate the order of the inverse reference map
 	switch (mode) {
-		case MODE_TETRAHEDRON: inv_ref_order = 0; break;
-		case MODE_PRISM:       inv_ref_order = MAKE_PRISM_ORDER(1, 1); break;
-		case MODE_HEXAHEDRON:  inv_ref_order = MAKE_HEX_ORDER(1, 1, 1); break;
+		case MODE_TETRAHEDRON: inv_ref_order = order3_t(0); break;
+		case MODE_HEXAHEDRON:  inv_ref_order = order3_t(1, 1, 1); break;
 	}
 
 	// constant inverse reference map
@@ -243,10 +241,10 @@ void RefMap::calc_const_inv_ref_map() {
 }
 
 
-void RefMap::calc_phys_x(int order) {
+void RefMap::calc_phys_x(order3_t order) {
 	// transform all x coordinates of the integration points
 	int np = quad->get_num_points(order);
-	double *x = cur_node->phys_x[order] = new double[np];
+	double *x = cur_node->phys_x[order.get_idx()] = new double[np];
 	MEM_CHECK(x);
 	memset(x, 0, np * sizeof(double));
 	pss->force_transform(sub_idx, ctm);
@@ -260,10 +258,10 @@ void RefMap::calc_phys_x(int order) {
 }
 
 
-void RefMap::calc_phys_y(int order) {
+void RefMap::calc_phys_y(order3_t order) {
 	// transform all y coordinates of the integration points
 	int np = quad->get_num_points(order);
-	double *y = cur_node->phys_y[order] = new double[np];
+	double *y = cur_node->phys_y[order.get_idx()] = new double[np];
 	MEM_CHECK(y);
 	memset(y, 0, np * sizeof(double));
 	pss->force_transform(sub_idx, ctm);
@@ -277,10 +275,10 @@ void RefMap::calc_phys_y(int order) {
 }
 
 
-void RefMap::calc_phys_z(int order) {
+void RefMap::calc_phys_z(order3_t order) {
 	// transform all z coordinates of the integration points
 	int np = quad->get_num_points(order);
-	double *z = cur_node->phys_z[order] = new double[np];
+	double *z = cur_node->phys_z[order.get_idx()] = new double[np];
 	MEM_CHECK(z);
 	memset(z, 0, np * sizeof(double));
 	pss->force_transform(sub_idx, ctm);
@@ -389,7 +387,7 @@ void RefMap::calc_face_const_jacobian(int face) {
 }
 
 
-void RefMap::calc_face_jacobian(int face, int order) {
+void RefMap::calc_face_jacobian(int face, order2_t order) {
 //	TODO: ERROR("RefMap::calc_face_jacobian: FIXME: Transformation not called");
 
 	assert(mesh != NULL);
@@ -451,13 +449,13 @@ void RefMap::calc_face_jacobian(int face, int order) {
 		jac[i] = norm(vec_product);
 	}
 
-	cur_node->face_jacobian[face][order] = jac;
+	cur_node->face_jacobian[face][order.get_idx()] = jac;
 	delete [] m;
 }
 
 // this is in fact identical to calc_inv_ref_map
 // the only difference is, that everything is calculated in integration points on given face
-void RefMap::calc_face_inv_ref_map(int face, int order) {
+void RefMap::calc_face_inv_ref_map(int face, order2_t order) {
 //	TODO: ERROR("RefMap::calc_face_inv_ref_map: FIXME: Transformation not called");
 
 	int np = quad->get_face_num_points(face, order);
@@ -506,8 +504,8 @@ void RefMap::calc_face_inv_ref_map(int face, int order) {
 		irm[i][2][2] = (m[i][0][0] * m[i][1][1] - m[i][0][1] * m[i][1][0]) * ij;
 	}
 
-	cur_node->face_inv_ref_map[face][order] = irm;
-	cur_node->face_ref_map[face][order] = m;
+	cur_node->face_inv_ref_map[face][order.get_idx()] = irm;
+	cur_node->face_ref_map[face][order.get_idx()] = m;
 
 	// jac is jacobian of 3d map, evaluated in face integration points (2d)
 	// it is NOT face jacobian, since face jacobian is jacobian of 2d map ( R^2 -> R^2 )
@@ -515,10 +513,10 @@ void RefMap::calc_face_inv_ref_map(int face, int order) {
 	delete [] jac;
 }
 
-void RefMap::calc_face_phys_x(int face, int order) {
+void RefMap::calc_face_phys_x(int face, order2_t order) {
 	// transform all x coordinates of the integration points
 	int np = quad->get_face_num_points(face, order);
-	double *x = cur_node->face_phys_x[face][order] = new double[np];
+	double *x = cur_node->face_phys_x[face][order.get_idx()] = new double[np];
 	MEM_CHECK(x);
 	memset(x, 0, np * sizeof(double));
 	pss->force_transform(sub_idx, ctm);
@@ -531,10 +529,10 @@ void RefMap::calc_face_phys_x(int face, int order) {
 	}
 }
 
-void RefMap::calc_face_phys_y(int face, int order) {
+void RefMap::calc_face_phys_y(int face, order2_t order) {
 	// transform all y coordinates of the integration points
 	int np = quad->get_face_num_points(face, order);
-	double *y = cur_node->face_phys_y[face][order] = new double[np];
+	double *y = cur_node->face_phys_y[face][order.get_idx()] = new double[np];
 	MEM_CHECK(y);
 	memset(y, 0, np * sizeof(double));
 	pss->force_transform(sub_idx, ctm);
@@ -547,10 +545,10 @@ void RefMap::calc_face_phys_y(int face, int order) {
 	}
 }
 
-void RefMap::calc_face_phys_z(int face, int order) {
+void RefMap::calc_face_phys_z(int face, order2_t order) {
 	// transform all z coordinates of the integration points
 	int np = quad->get_face_num_points(face, order);
-	double *z = cur_node->face_phys_z[face][order] = new double[np];
+	double *z = cur_node->face_phys_z[face][order.get_idx()] = new double[np];
 	MEM_CHECK(z);
 	memset(z, 0, np * sizeof(double));
 	pss->force_transform(sub_idx, ctm);
@@ -563,7 +561,7 @@ void RefMap::calc_face_phys_z(int face, int order) {
 	}
 }
 
-void RefMap::calc_face_normal(int face, int order) {
+void RefMap::calc_face_normal(int face, order2_t order) {
 //	TODO: ERROR("RefMap::calc_face_normal: FIXME: Transformation not called");
 
 	assert(mesh != NULL);
@@ -590,7 +588,7 @@ void RefMap::calc_face_normal(int face, int order) {
 		normalize(normal[i]);
 	}
 
-	cur_node->face_normal[face][order] = normal;
+	cur_node->face_normal[face][order.get_idx()] = normal;
 }
 
 void RefMap::calc_vertex_phys() {

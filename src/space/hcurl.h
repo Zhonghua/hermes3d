@@ -18,10 +18,10 @@ public:
 	virtual void get_boundary_assembly_list(Element *e, int face, AsmList *al);
 
 protected:
-	virtual int get_vertex_ndofs(Order0 order);
-	virtual int get_edge_ndofs(Order1 order);
-	virtual int get_face_ndofs(Facet *face, Order2 order);
-	virtual int get_element_ndofs(Element *elem, Order3 order);
+	virtual int get_vertex_ndofs(int order);
+	virtual int get_edge_ndofs(int order);
+	virtual int get_face_ndofs(Facet *face, order2_t order);
+	virtual int get_element_ndofs(Element *elem, order3_t order);
 
 	virtual int assign_dofs_internal(int first_dof = 0, int strid = 1);
 

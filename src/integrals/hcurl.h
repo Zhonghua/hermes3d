@@ -126,29 +126,7 @@
 inline scalar hcurl_int_u_v(RealFunction *fu, RealFunction *fv, RefMap *ru, RefMap *rv) {
 	Quad3D *quad = fu->get_quad();
 
-	int o = 0;
-	switch (quad->get_mode()) {
-		case MODE_TETRAHEDRON:
-			o = fu->get_fn_order() + fv->get_fn_order() + ru->get_inv_ref_order();
-			LIMIT_TETRA_ORDER(o);
-			break;
-
-		case MODE_HEXAHEDRON:
-			// limit of the order is handled in add_hex_orders function
-			o = add_hex_orders(fu->get_fn_order(), fv->get_fn_order());
-			o = add_hex_orders(o, ru->get_inv_ref_order());
-
-//			o = add_hex_orders(o, ru->get_inv_ref_order());
-//			o = add_hex_orders(o, ru->get_inv_ref_order());
-
-			LIMIT_HEX_ORDER(o);
-			break;
-
-		case MODE_PRISM:
-			EXIT(ERR_NOT_IMPLEMENTED);
-			break;
-	}
-
+	order3_t o = fu->get_fn_order() + fv->get_fn_order() + ru->get_inv_ref_order();
 	qorder_t qord = ELEM_QORDER(o);
 	fu->set_quad_order(qord);
 	fv->set_quad_order(qord);
@@ -170,38 +148,7 @@ inline scalar hcurl_int_u_v(RealFunction *fu, RealFunction *fv, RefMap *ru, RefM
 inline scalar hcurl_int_curl_u_curl_v(RealFunction *fu, RealFunction *fv, RefMap *ru, RefMap *rv) {
 	Quad3D *quad = fu->get_quad();
 
-	int o = 0;
-	switch (quad->get_mode()) {
-		case MODE_TETRAHEDRON:
-			o = fu->get_fn_order() + fv->get_fn_order() + ru->get_ref_order();
-			LIMIT_TETRA_ORDER(o);
-			break;
-
-		case MODE_HEXAHEDRON:
-			// limit of the order is handled in add_hex_orders function
-			o = add_hex_orders(fu->get_fn_order(), fv->get_fn_order());
-			o = add_hex_orders(o, ru->get_ref_order());
-			LIMIT_HEX_ORDER(o);
-			break;
-
-		case MODE_PRISM:
-			EXIT(ERR_NOT_IMPLEMENTED);
-			break;
-	}
-
-	int ou = fu->get_fn_order();
-	int ov = fv->get_fn_order();
-
-
-// 	o = add_hex_orders(o, ru->get_ref_order());
-// 	o = add_hex_orders(o, ru->get_ref_order());
-// 	o = add_hex_orders(o, ru->get_ref_order());
-// 	o = add_hex_orders(o, ru->get_ref_order());
-
-//	printf("order u %d -> (%d, %d, %d), ", ou, GET_HEX_ORDER_1(ou), GET_HEX_ORDER_2(ou), GET_HEX_ORDER_3(ou));
-//	printf("order v %d -> (%d, %d, %d), ", ov, GET_HEX_ORDER_1(ov), GET_HEX_ORDER_2(ov), GET_HEX_ORDER_3(ov));
-//	printf("order %d -> (%d, %d, %d)\n", o, GET_HEX_ORDER_1(o), GET_HEX_ORDER_2(o), GET_HEX_ORDER_3(o));
-
+	order3_t o = fu->get_fn_order() + fv->get_fn_order() + ru->get_ref_order();
 	qorder_t qord = ELEM_QORDER(o);
 	fu->set_quad_order(qord);
 	fv->set_quad_order(qord);
@@ -218,8 +165,6 @@ inline scalar hcurl_int_curl_u_curl_v(RealFunction *fu, RealFunction *fv, RefMap
 	fv->get_dx_dy_dz_values(dv2dx, dv2dy, dv2dz, 2);
 
 	HCURL_INTEGRATE_CURL_EXPRESSION(T_U_CURL_0 * T_V_CURL_0 + T_U_CURL_1 * T_V_CURL_1 + T_U_CURL_2 * T_V_CURL_2);
-
-//	printf("integral .... %lf\n", result);
 	return result;
 }
 
@@ -229,21 +174,8 @@ inline scalar hcurl_int_curl_u_curl_v(RealFunction *fu, RealFunction *fv, RefMap
 inline scalar hcurl_int_F_u(scalar (*F)(double x, double y, double z, int comp), RealFunction *fu, RefMap *ru) {
 	Quad3D *quad = fu->get_quad();
 
-	int o = quad->get_max_order();
-	switch (quad->get_mode()) {
-		case MODE_TETRAHEDRON:
-			LIMIT_TETRA_ORDER(o);
-			break;
-
-		case MODE_HEXAHEDRON:
-			LIMIT_HEX_ORDER(o);
-			break;
-
-		case MODE_PRISM:
-			EXIT(ERR_NOT_IMPLEMENTED);
-			break;
-	}
-
+	order3_t o;
+	o.set_maximal();
 	qorder_t qord = ELEM_QORDER(o);
 	fu->set_quad_order(qord);
 
@@ -273,22 +205,9 @@ inline scalar hcurl_int_F_u(scalar (*F)(double x, double y, double z, int comp),
 inline scalar hcurl_surf_int_G_v(RealFunction *fv, RefMap *rv, FacePos *fp) {
 	Quad3D *quad = fv->get_quad();
 
-	int face_order = quad->get_max_order();
-	switch (quad->get_mode()) {
-		case MODE_TETRAHEDRON:
-			LIMIT_TETRA_ORDER(face_order);
-			break;
-
-		case MODE_HEXAHEDRON:
-			LIMIT_HEX_ORDER(face_order);
-			face_order = get_hex_face_order(fp->face, face_order);
-			break;
-
-		case MODE_PRISM:
-			EXIT(ERR_NOT_IMPLEMENTED);
-			break;
-	}
-
+	order3_t order;
+	order.set_maximal();
+	order2_t face_order = order.get_face_order(fp->face);
 	qorder_t qord = FACE_QORDER(fp->face, face_order);
 
 	//just to make macro work
@@ -318,26 +237,8 @@ inline scalar hcurl_surf_int_G_v(RealFunction *fv, RefMap *rv, FacePos *fp) {
 inline scalar hcurl_surf_int_u_v(RealFunction *fu, RealFunction *fv, RefMap *ru, RefMap *rv, FacePos *fp) {
 	Quad3D *quad = fu->get_quad();
 
-	int face_order = 0;
-	switch (quad->get_mode()) {
-		case MODE_TETRAHEDRON:
-			face_order = fu->get_fn_order() + fv->get_fn_order() + ru->get_inv_ref_order();
-			LIMIT_TETRA_ORDER(face_order);
-			break;
-
-		case MODE_HEXAHEDRON:
-			// limit of the order is handled in add_hex_orders function
-			face_order = add_hex_orders(fu->get_fn_order(), fv->get_fn_order());
-			face_order = add_hex_orders(face_order, ru->get_inv_ref_order());
-			LIMIT_HEX_ORDER(face_order);
-			face_order = get_hex_face_order(fp->face, face_order);
-			break;
-
-		case MODE_PRISM:
-			EXIT(ERR_NOT_IMPLEMENTED);
-			break;
-	}
-
+	order3_t order = fu->get_fn_order() + fv->get_fn_order() + ru->get_inv_ref_order();
+	order2_t face_order = order.get_face_order(fp->face);
 	qorder_t qord = FACE_QORDER(fp->face, face_order);
 
 	fu->set_quad_order(qord, FN_VAL);
@@ -351,7 +252,6 @@ inline scalar hcurl_surf_int_u_v(RealFunction *fu, RealFunction *fv, RefMap *ru,
 	double *v2 = fv->get_fn_values(2);
 
 	HCURL_INTEGRATE_SURF_EXPRESSION(N_X_U_X_N_0 * N_X_V_X_N_0 + N_X_U_X_N_1 * N_X_V_X_N_1 + N_X_U_X_N_2 * N_X_V_X_N_2);
-
 	return result;
 }
 

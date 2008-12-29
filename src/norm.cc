@@ -5,6 +5,7 @@
 #include "config.h"
 #include "common.h"
 #include "norm.h"
+#include "quad.h"
 #include "discretization.h"
 #include "refmap.h"
 #include "integrals/h1.h"
@@ -66,8 +67,7 @@ double calc_norm(double (*fn)(MeshFunction*, RefMap*), MeshFunction *sln) {
 double error_fn_h1(MeshFunction *sln1, MeshFunction *sln2, RefMap *ru, RefMap *rv) {
 	Quad3D *quad = sln1->get_quad();
 
-	// FIXME: mode of the element
-	int o = calc_order(MODE_HEXAHEDRON, std::max(sln1->get_fn_order(), sln2->get_fn_order()), ru->get_inv_ref_order());
+	order3_t o = max(sln1->get_fn_order(), sln2->get_fn_order()) + ru->get_inv_ref_order();
 	qorder_t qord = ELEM_QORDER(o);
 	sln1->set_quad_order(qord);
 	sln2->set_quad_order(qord);
@@ -86,8 +86,7 @@ double error_fn_h1(MeshFunction *sln1, MeshFunction *sln2, RefMap *ru, RefMap *r
 double norm_fn_h1(MeshFunction *sln, RefMap *ru) {
 	Quad3D *quad = sln->get_quad();
 
-	// FIXME: mode of the element
-	int o = calc_order(MODE_HEXAHEDRON, sln->get_fn_order(), ru->get_inv_ref_order());
+	order3_t o = sln->get_fn_order() + ru->get_inv_ref_order();
 	qorder_t qord = ELEM_QORDER(o);
 	sln->set_quad_order(qord);
 
@@ -114,8 +113,7 @@ double h1_norm(MeshFunction *sln) {
 double error_fn_l2(MeshFunction *sln1, MeshFunction *sln2, RefMap *ru, RefMap *rv) {
 	Quad3D *quad = sln1->get_quad();
 
-	// FIXME: mode of the element
-	int o = calc_order(MODE_HEXAHEDRON, std::max(sln1->get_fn_order(), sln2->get_fn_order()), ru->get_inv_ref_order());
+	order3_t o = max(sln1->get_fn_order(), sln2->get_fn_order()) + ru->get_inv_ref_order();
 	qorder_t qord = ELEM_QORDER(o);
 	sln1->set_quad_order(qord);
 	sln2->set_quad_order(qord);
@@ -133,8 +131,7 @@ double error_fn_l2(MeshFunction *sln1, MeshFunction *sln2, RefMap *ru, RefMap *r
 double norm_fn_l2(MeshFunction *sln, RefMap *ru) {
 	Quad3D *quad = sln->get_quad();
 
-	// FIXME: mode of the element
-	int o = calc_order(MODE_HEXAHEDRON, sln->get_fn_order(), ru->get_inv_ref_order());
+	order3_t o = sln->get_fn_order() + ru->get_inv_ref_order();
 	qorder_t qord = ELEM_QORDER(o);
 	sln->set_quad_order(qord);
 	scalar *uval = sln->get_fn_values();
@@ -168,8 +165,7 @@ double l2_norm(MeshFunction *sln) {
 double error_fn_hcurl(MeshFunction *sln1, MeshFunction *sln2, RefMap *ru, RefMap *rv) {
 	Quad3D *quad = sln1->get_quad();
 
-	// FIXME: mode of the element
-	int o = calc_order(MODE_HEXAHEDRON, std::max(sln1->get_fn_order(), sln2->get_fn_order()), ru->get_inv_ref_order());
+	order3_t o = max(sln1->get_fn_order(), sln2->get_fn_order()) + ru->get_inv_ref_order();
 	qorder_t qord = ELEM_QORDER(o);
 	sln1->set_quad_order(qord);
 	sln2->set_quad_order(qord);
@@ -191,8 +187,6 @@ double error_fn_hcurl(MeshFunction *sln1, MeshFunction *sln2, RefMap *ru, RefMap
 	sln2->get_dx_dy_dz_values(dv2dx, dv2dy, dv2dz, 2);
 
 	HCURL_INTEGRATE_EXPRESSION( REAL(square(T_U_0 - T_V_0) + square(T_U_1 - T_V_1) + square(T_U_2 - T_V_2) + square(U_CURL_0 - V_CURL_0) + square(U_CURL_1 - V_CURL_1) + square(U_CURL_2 - V_CURL_2)) );
-
-//	H1_INTEGRATE_EXPRESSION(sqr(uval[i] - vval[i]) + sqr(dudx[i] - dvdx[i]) + sqr(dudy[i] - dvdy[i]) + sqr(dudz[i] - dvdz[i]));
 	return result;
 }
 
@@ -200,8 +194,7 @@ double error_fn_hcurl(MeshFunction *sln1, MeshFunction *sln2, RefMap *ru, RefMap
 double norm_fn_hcurl(MeshFunction *sln, RefMap *ru) {
 	Quad3D *quad = sln->get_quad();
 
-	// FIXME: mode of the element
-	int o = calc_order(MODE_HEXAHEDRON, sln->get_fn_order(), ru->get_inv_ref_order());
+	order3_t o = sln->get_fn_order() + ru->get_inv_ref_order();
 	qorder_t qord = ELEM_QORDER(o);
 	sln->set_quad_order(qord);
 
@@ -216,8 +209,6 @@ double norm_fn_hcurl(MeshFunction *sln, RefMap *ru) {
 	RefMap *rv = ru; //just to make macro work
 
 	HCURL_INTEGRATE_EXPRESSION( REAL(square(T_U_0) + square(T_U_1) + square(T_U_2) + square(U_CURL_0) + square(U_CURL_1) + square(U_CURL_2)) );
-
-	//H1_INTEGRATE_EXPRESSION(sqr(uval[i]) + sqr(dudx[i]) + sqr(dudy[i]) + sqr(dudz[i]));
 	return result;
 }
 
@@ -236,8 +227,7 @@ double hcurl_norm(MeshFunction *sln) {
 double error_fn_l2_hcurl(MeshFunction *sln1, MeshFunction *sln2, RefMap *ru, RefMap *rv) {
 	Quad3D *quad = sln1->get_quad();
 
-	// FIXME: mode of the element
-	int o = calc_order(MODE_HEXAHEDRON, std::max(sln1->get_fn_order(), sln2->get_fn_order()), ru->get_inv_ref_order());
+	order3_t o = max(sln1->get_fn_order(), sln2->get_fn_order()) + ru->get_inv_ref_order();
 	qorder_t qord = ELEM_QORDER(o);
 	sln1->set_quad_order(qord);
 	sln2->set_quad_order(qord);
@@ -261,8 +251,7 @@ double error_fn_l2_hcurl(MeshFunction *sln1, MeshFunction *sln2, RefMap *ru, Ref
 double norm_fn_l2_hcurl(MeshFunction *sln, RefMap *ru) {
 	Quad3D *quad = sln->get_quad();
 
-	// FIXME: mode of the element
-	int o = calc_order(MODE_HEXAHEDRON, sln->get_fn_order(), ru->get_inv_ref_order());
+	order3_t o = sln->get_fn_order() + ru->get_inv_ref_order();
 	qorder_t qord = ELEM_QORDER(o);
 	sln->set_quad_order(qord);
 

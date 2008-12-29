@@ -28,6 +28,7 @@
 #include "space/h1.h"
 #include "space/hcurl.h"
 
+#include "order.h"
 // quadrature
 #include "quad.h"
 #include "quadstd.h"

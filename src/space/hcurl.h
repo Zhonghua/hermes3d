@@ -23,7 +23,7 @@ protected:
 	virtual int get_face_ndofs(order2_t order);
 	virtual int get_element_ndofs(order3_t order);
 
-	virtual int assign_dofs_internal(int first_dof = 0, int strid = 1);
+	virtual int assign_dofs_internal();
 
 	// for now we do not implement boundary projections of nonzero functions
 	// it does not have much physical sense (even though some artifical situations

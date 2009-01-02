@@ -55,7 +55,7 @@ int H1Space::get_element_ndofs(order3_t order) {
 	}
 }
 
-int H1Space::assign_dofs_internal(int first_dof/* = 0*/, int strid/* = 1*/) {
+int H1Space::assign_dofs_internal() {
 	BitArray init_vertices;
 	BitArray init_edges;
 	BitArray init_faces;

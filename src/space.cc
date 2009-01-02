@@ -2430,7 +2430,7 @@ int Space::assign_dofs(int first_dof, int stride) {
 	enforce_minimum_rule();
 	set_bc_information();
 
-	assign_dofs_internal(first_dof, stride);
+	assign_dofs_internal();
 //	free_extra_data();
 //	calc_boundary_projections();
 	update_constraints();

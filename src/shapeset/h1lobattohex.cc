@@ -23,7 +23,7 @@ struct hex_index_t {
 		this->x = (idx >> 16) & 0x0F;
 		this->y = (idx >>  8) & 0x0F;
 		this->z = (idx >>  0) & 0x0F;
-		this->ori = (idx >> 19) & 0x03;
+		this->ori = (idx >> 24) & 0x07;
 	}
 
 	hex_index_t(int x, int y, int z, int ori = 0) {
@@ -33,7 +33,7 @@ struct hex_index_t {
 		this->ori = ori;
 	}
 
-	operator int() { return (((((ori << 3) | x) << 8) | y) << 8) | z; }
+	operator int() { return (((((ori << 8) | x) << 8) | y) << 8) | z; }
 };
 
 

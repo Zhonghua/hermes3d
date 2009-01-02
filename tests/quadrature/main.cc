@@ -18,7 +18,7 @@
 #define ERROR_SUCCESS								0
 #define ERROR_FAILURE								-1
 
-#define EPSILON										10e-10
+#define EPSILON										10e-12
 
 #define countof(a) 									(sizeof(a)/sizeof(a[0]))
 
@@ -99,7 +99,7 @@ int test_quadrature_3d_tetra(fn3d_t fn, double exact, int min_order, const char 
 		double err = fabs(exact - integral);
 		if (err >= EPSILON) {
 			printf(" ... failed for order %d, integral = %lf, expected = %lf\n", order, integral, exact);
-//			return ERROR_FAILURE;
+			return ERROR_FAILURE;
 		}
 	}
 
@@ -129,8 +129,8 @@ int test_quadrature_3d_hex(fn3d_t fn, double exact, int min_h, int min_v, int mi
 				double err = fabs(exact - integral);
 //				printf("  * order (h = %d, v = %d, u = %d)", horder, vorder, uorder);
 				if (err >= EPSILON) {
-					printf(" ... failed for order (h = %d, v = %d, u = %d), integral = %lf, expected = %lf\n",
-						horder, vorder, uorder, integral, exact);
+					printf(" ... failed for order (h = %d, v = %d, u = %d), integral = %lf, expected = %lf (diff = %e)\n",
+						horder, vorder, uorder, integral, exact, fabs(integral - exact));
 					return ERROR_FAILURE;
 				}
 			}
@@ -172,8 +172,8 @@ int test_quadrature_3d_hex_surf(fn3d_t fn, double exact, int min_h, int min_v, i
 				double err = fabs(exact - integral);
 //				printf("  * order (h = %d, v = %d, u = %d)", horder, vorder, uorder);
 				if (err >= EPSILON) {
-					printf(" ... failed for order (h = %d, v = %d, u = %d), integral = %lf, expected = %lf\n",
-						horder, vorder, uorder, integral, exact);
+					printf(" ... failed for order (h = %d, v = %d, u = %d), integral = %lf, expected = %lf (diff = %e)\n",
+						horder, vorder, uorder, integral, exact, fabs(integral - exact));
 					return ERROR_FAILURE;
 				}
 			}

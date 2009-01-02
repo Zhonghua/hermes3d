@@ -202,8 +202,8 @@ RefMapShapesetHex::RefMapShapesetHex() {
 
 	// vertices
 	vertex_indices = refmap_hex_vertex_indices;
-
-//	index_to_order = refmap_hex_index_to_order;
+	order = order3_t(1, 1, 1);
+	index_to_order = NULL;
 #else
 	EXIT(ERR_TETRA_NOT_COMPILED);
 #endif

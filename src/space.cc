@@ -15,6 +15,14 @@
 #define PRINTF(...)
 //#define PRINTF printf
 
+#define INVALID_EDGE_ORDER						-1
+
+#define CHECK_ELEMENT_ID(id) \
+	if ((id) < 1 || (id) > mesh->elements.count())\
+		EXIT(ERR_FAILURE, "Invalid element id (eid = %d).", id);\
+	assert(mesh->elements.exists(id));
+
+
 Space::Space(Mesh *mesh, Shapeset *shapeset) :
 	mesh(mesh), shapeset(shapeset)
 {
@@ -38,22 +46,6 @@ Space::~Space() {
 
 void Space::init_data_tables() {
 	assert(mesh != NULL);
-/*
-	FOR_ALL_VERTICES(idx, mesh) {
-		vn_data[idx] = new VertexData;
-	}
-
-	FOR_ALL_EDGES(idx, mesh) {
-//		if (mesh->is_edge_active(idx))
-		en_data[idx] = new EdgeData;
-	}
-
-	FOR_ALL_FACETS(idx, mesh) {
-		Facet *facet = mesh->facets.get(idx);
-		if (facet->ractive || facet->lactive)
-		fn_data[idx] = new FaceData;
-	}
-*/
 
 	FOR_ALL_ELEMENTS(idx, mesh) {
 		if (mesh->elements[idx]->active) {
@@ -85,30 +77,30 @@ void Space::free_data_tables() {
 //// element orders ///////////////////////////////////////////////////////////////////////////////
 
 
-void Space::set_element_order(Word_t id, order3_t order) {
-	if (id < 0 || id >= mesh->elements.count())
-		EXIT(ERR_FAILURE, "Invalid element id.");
+void Space::set_element_order(Word_t eid, order3_t order) {
+	CHECK_ELEMENT_ID(eid);
 
 	// TODO: check for validity of order
-	if (!elm_data.exists(id)) {
-		elm_data[id] = new ElementData;
-		MEM_CHECK(elm_data[id]);
+	if (!elm_data.exists(eid)) {
+		elm_data[eid] = new ElementData;
+		MEM_CHECK(elm_data[eid]);
 	}
 
-	elm_data[id]->order = order;
+	elm_data[eid]->order = order;
 }
 
-order3_t Space::get_element_order(Word_t id) const {
-	// TODO: check of validity of id
-	assert(elm_data.exists(id));
-	return elm_data[id]->order;
+order3_t Space::get_element_order(Word_t eid) const {
+	CHECK_ELEMENT_ID(eid);
+	assert(elm_data.exists(eid));
+	assert(elm_data[eid] != NULL);
+	return elm_data[eid]->order;
 }
 
 void Space::set_uniform_order(order3_t order) {
-	Word_t elm_idx;
-	FOR_ALL_ACTIVE_ELEMENTS(elm_idx, mesh) {
-		assert(elm_data.exists(elm_idx));
-		elm_data[elm_idx]->order = order;
+	FOR_ALL_ACTIVE_ELEMENTS(eid, mesh) {
+		assert(elm_data.exists(eid));
+		assert(elm_data[eid] != NULL);
+		elm_data[eid]->order = order;
 	}
 }
 
@@ -116,6 +108,7 @@ void Space::set_order_recurrent(Word_t eid, order3_t order) {
 	Element *e = mesh->elements[eid];
 	if (e->active) {
 		assert(elm_data.exists(e->id));
+		assert(elm_data[e->id] != NULL);
 		elm_data[e->id]->order = order;
 	}
 	else {
@@ -162,71 +155,56 @@ void Space::enforce_minimum_rule() {
 		switch (elem->get_mode()) {
 			case MODE_TETRAHEDRON:
 				// on faces
-				for (int i = 0; i < elem->get_num_of_faces(); i++) {
-					Word_t fidx = mesh->get_facet_id(elem, i);
+				for (int iface = 0; iface < elem->get_num_of_faces(); iface++) {
+					Word_t fidx = mesh->get_facet_id(elem, iface);
 					assert(fn_data.exists(fidx));
 					FaceData *fnode = fn_data[fidx];
-//					if (fnode->order == -1 || fnode->order > elem_node->order)
-//						fnode->order = elem_node->order;
+					order2_t forder = elem_node->order.get_face_order(iface);
+					if (fnode->order.invalid() || forder.order < fnode->order.order)
+						fnode->order = forder;
 				}
 
 				// on edges
-				for (int i = 0; i < elem->get_num_of_edges(); i++) {
-					Word_t eidx = mesh->get_edge_id(elem, i);
+				for (int iedge = 0; iedge < elem->get_num_of_edges(); iedge++) {
+					Word_t eidx = mesh->get_edge_id(elem, iedge);
 					assert(en_data.exists(eidx));
 
 					EdgeData *enode = en_data[eidx];
-//					if (enode->order == -1 || enode->order > elem_node->order)
-//						enode->order = elem_node->order;
+					order1_t eorder = elem_node->order.get_edge_order(iedge);
+					if (enode->order == INVALID_EDGE_ORDER || eorder < enode->order)
+						enode->order = eorder;
 				}
 				break;
 
 			case MODE_HEXAHEDRON:
 				// on faces
-				for (int face = 0; face < elem->get_num_of_faces(); face++) {
-					Word_t fidx = mesh->get_facet_id(elem, face);
+				for (int iface = 0; iface < elem->get_num_of_faces(); iface++) {
+					Word_t fidx = mesh->get_facet_id(elem, iface);
 					FaceData *fnode = fn_data[fidx];
 
 					if (!fnode->ced) {
 						Facet *facet = mesh->facets.get(fidx);
 
-						order2_t face_order = elem_node->order.get_face_order(face);
-						int horder, vorder;
-						if (elem->get_face_orientation(face) < 4) {
-							horder = face_order.x;
-							vorder = face_order.y;
-						}
-						else {
-							horder = face_order.y;
-							vorder = face_order.x;
-						}
+						order2_t forder = elem_node->order.get_face_order(iface);
+						if (elem->get_face_orientation(iface) >= 4) forder = order2_t(forder.y, forder.x);		// switch h- and v- order
 
-//						if (fnode->order == -1) {
-							fnode->order = order2_t(horder, vorder);
-//						}
-//						else {
-//							int cur_order[] = { GET_QUAD_ORDER_1(fnode->order), GET_QUAD_ORDER_2(fnode->order) };
-//
-//							horder = std::min(cur_order[0], horder);
-//							vorder = std::min(cur_order[1], vorder);
-//							fnode->order = MAKE_QUAD_ORDER(horder, vorder);
-//						}
+						if (fnode->order.invalid())
+							fnode->order = forder;
+						else
+							fnode->order = order2_t(std::min(fnode->order.x, forder.x), std::min(fnode->order.y, forder.y));
 					}
 				}
 
 				// on edges
-				for (int edge = 0; edge < elem->get_num_of_edges(); edge++) {
-					Word_t eidx = mesh->get_edge_id(elem, edge);
+				for (int iedge = 0; iedge < elem->get_num_of_edges(); iedge++) {
+					Word_t eidx = mesh->get_edge_id(elem, iedge);
 					assert(eidx != INVALID_IDX);
 					if (mesh->edges[eidx].is_active()) {
 						EdgeData *enode = en_data[eidx];
-						if (enode->ced) {
-//							printf("elem = %d, iedge = %d, %d\n", elem->id, edge, eidx);
-//							assert(false);
-						}
-						else {
-//							if (enode->order == -1 || enode->order > get_hex_edge_order(edge, elem_node->order))
-//								enode->order = get_hex_edge_order(edge, elem_node->order);
+						if (!enode->ced) {
+							order1_t eorder = elem_node->order.get_edge_order(iedge);
+							if (enode->order == INVALID_EDGE_ORDER || eorder < enode->order)
+								enode->order = eorder;
 						}
 					}
 				}
@@ -600,7 +578,7 @@ Space::EdgeData *Space::create_edge_node_data(Word_t eid, bool ced) {
 			ed->face_ncomponents = 0;
 		}
 		else {
-			ed->order = -1;
+			ed->order = INVALID_EDGE_ORDER;
 			ed->dof = DOF_UNASSIGNED;
 			ed->n = -1;
 		}
@@ -658,7 +636,7 @@ Space::FaceData *Space::create_face_node_data(Word_t fid, bool ced) {
 			fd->part.vert = 0;
 		}
 		else {
-			fd->order = -1;
+//			fd->order = -1;
 			fd->dof = DOF_UNASSIGNED;
 			fd->n = -1;
 		}

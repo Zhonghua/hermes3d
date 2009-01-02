@@ -64,8 +64,8 @@ public:
 	void set_bc_types(EBCType (*bc_type_callback)(int marker));
 	void set_bc_values(scalar (*bc_value_callback_by_coord)(int marker, double x, double y, double z, int comp));
 
-	void set_element_order(Word_t id, order3_t order);
-	order3_t get_element_order(Word_t id) const;
+	void set_element_order(Word_t eid, order3_t order);
+	order3_t get_element_order(Word_t eid) const;
 	void set_uniform_order(order3_t order);
 	void copy_orders(const Space &space, int inc = 0);
 

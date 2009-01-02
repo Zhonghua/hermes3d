@@ -52,12 +52,12 @@ public:
 	~QuadStdHex();
 
 	virtual QuadPt3D *get_points(order3_t order) {
-		if (tables[order.get_idx()] == NULL) calc_table(order);
+		if (!tables.exists(order.get_idx())) calc_table(order);
 		return tables[order.get_idx()];
 	}
 
 	virtual QuadPt3D *get_face_points(int face, order2_t order) {
-		if (face_tables[face][order.get_idx()] == NULL) calc_face_table(face, order);
+		if (!face_tables[face].exists(order.get_idx())) calc_face_table(face, order);
 		return face_tables[face][order.get_idx()];
 	}
 

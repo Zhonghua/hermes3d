@@ -68,6 +68,7 @@ double error_fn_h1(MeshFunction *sln1, MeshFunction *sln2, RefMap *ru, RefMap *r
 	Quad3D *quad = sln1->get_quad();
 
 	order3_t o = max(sln1->get_fn_order(), sln2->get_fn_order()) + ru->get_inv_ref_order();
+	o.limit();
 	qorder_t qord = ELEM_QORDER(o);
 	sln1->set_quad_order(qord);
 	sln2->set_quad_order(qord);
@@ -87,6 +88,7 @@ double norm_fn_h1(MeshFunction *sln, RefMap *ru) {
 	Quad3D *quad = sln->get_quad();
 
 	order3_t o = sln->get_fn_order() + ru->get_inv_ref_order();
+	o.limit();
 	qorder_t qord = ELEM_QORDER(o);
 	sln->set_quad_order(qord);
 
@@ -114,6 +116,7 @@ double error_fn_l2(MeshFunction *sln1, MeshFunction *sln2, RefMap *ru, RefMap *r
 	Quad3D *quad = sln1->get_quad();
 
 	order3_t o = max(sln1->get_fn_order(), sln2->get_fn_order()) + ru->get_inv_ref_order();
+	o.limit();
 	qorder_t qord = ELEM_QORDER(o);
 	sln1->set_quad_order(qord);
 	sln2->set_quad_order(qord);
@@ -132,6 +135,7 @@ double norm_fn_l2(MeshFunction *sln, RefMap *ru) {
 	Quad3D *quad = sln->get_quad();
 
 	order3_t o = sln->get_fn_order() + ru->get_inv_ref_order();
+	o.limit();
 	qorder_t qord = ELEM_QORDER(o);
 	sln->set_quad_order(qord);
 	scalar *uval = sln->get_fn_values();
@@ -166,6 +170,7 @@ double error_fn_hcurl(MeshFunction *sln1, MeshFunction *sln2, RefMap *ru, RefMap
 	Quad3D *quad = sln1->get_quad();
 
 	order3_t o = max(sln1->get_fn_order(), sln2->get_fn_order()) + ru->get_inv_ref_order();
+	o.limit();
 	qorder_t qord = ELEM_QORDER(o);
 	sln1->set_quad_order(qord);
 	sln2->set_quad_order(qord);
@@ -195,6 +200,7 @@ double norm_fn_hcurl(MeshFunction *sln, RefMap *ru) {
 	Quad3D *quad = sln->get_quad();
 
 	order3_t o = sln->get_fn_order() + ru->get_inv_ref_order();
+	o.limit();
 	qorder_t qord = ELEM_QORDER(o);
 	sln->set_quad_order(qord);
 
@@ -228,6 +234,7 @@ double error_fn_l2_hcurl(MeshFunction *sln1, MeshFunction *sln2, RefMap *ru, Ref
 	Quad3D *quad = sln1->get_quad();
 
 	order3_t o = max(sln1->get_fn_order(), sln2->get_fn_order()) + ru->get_inv_ref_order();
+	o.limit();
 	qorder_t qord = ELEM_QORDER(o);
 	sln1->set_quad_order(qord);
 	sln2->set_quad_order(qord);
@@ -252,6 +259,7 @@ double norm_fn_l2_hcurl(MeshFunction *sln, RefMap *ru) {
 	Quad3D *quad = sln->get_quad();
 
 	order3_t o = sln->get_fn_order() + ru->get_inv_ref_order();
+	o.limit();
 	qorder_t qord = ELEM_QORDER(o);
 	sln->set_quad_order(qord);
 

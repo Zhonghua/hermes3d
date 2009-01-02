@@ -30,7 +30,7 @@ public:
 
 	virtual int *get_edge_indices(int edge, int ori, order1_t order) {
 		CHECK_EDGE(edge);
-		CHECK_EDGE_ORDER(order);
+//		CHECK_EDGE_ORDER(order);
 //		if (order == 0) order = max_edge_order;
 		if (!edge_indices[edge][ori].exists(order)) compute_edge_indices(edge, ori, order);
 		return edge_indices[edge][ori][order];
@@ -52,7 +52,7 @@ public:
 	}
 
 	virtual int get_num_edge_fns(order1_t order) const {
-		CHECK_EDGE_ORDER(order);
+//		CHECK_EDGE_ORDER(order);
 		if (order > 1) return (order - 1);
 		else return 0;
 	}

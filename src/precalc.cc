@@ -72,7 +72,7 @@ void PrecalcShapeset::set_active_shape(int index) {
 	// understood by the base class and indexed by order. The component and
 	// val/d/dd indices are used directly in the Node structure.
 
-	assert(max_index >= index);
+//	assert(max_index >= index);
 
 	unsigned key = ((unsigned) (max_index - index) << 3) | cur_quad;
 //	unsigned key = cur_quad | (mode << 3) | ((unsigned) (max_index[mode] - index) << 4);

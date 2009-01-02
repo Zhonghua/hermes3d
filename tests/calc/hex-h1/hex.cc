@@ -84,12 +84,11 @@ int main(int argc, char **args) {
 	H1Space space(&mesh, &shapeset);
 	space.set_bc_types(bc_types);
 
-	int order;
-	sscanf(args[2], "%d", &order);
-	int dir_x = order, dir_y = order, dir_z = order;
-	int o = MAKE_HEX_ORDER(dir_x, dir_y, dir_z);
-	printf("  - Setting uniform order to (%d, %d, %d)\n", dir_x, dir_y, dir_z);
-	space.set_uniform_order(o);
+	int o;
+	sscanf(args[2], "%d", &o);
+	order3_t order(o, o, o);
+	printf("  - Setting uniform order to %s\n", order.str());
+	space.set_uniform_order(order);
 
 	int ndofs = space.assign_dofs();
 	printf("  - Number of DOFs: %d\n", ndofs);

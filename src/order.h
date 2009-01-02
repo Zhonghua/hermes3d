@@ -22,7 +22,7 @@ typedef
 
 // 2D polynomial order
 struct order2_t {
-	order2_t() { type = MODE_TRIANGLE; order = 0; }
+	order2_t() { type = 1; order = -1; }
 	order2_t(int order) { type = MODE_TRIANGLE; this->order = order; }
 	order2_t(int x, int y) { type = MODE_QUAD; this->x = x; this->y = y; }
 
@@ -39,6 +39,8 @@ struct order2_t {
 			unsigned y:10;
 		};
 	};
+
+	bool invalid() { return (type == 1) && (order == 0x7fffffff); }
 
 	// Operators
 
@@ -132,7 +134,7 @@ struct order2_t {
 //	}
 };
 
-order2_t max(order2_t a, order2_t b) {
+inline order2_t max(order2_t a, order2_t b) {
 	assert(a.type == b.type);
 	switch (a.type) {
 		case MODE_TRIANGLE: return order2_t(std::max(a.order, b.order));
@@ -143,8 +145,11 @@ order2_t max(order2_t a, order2_t b) {
 
 
 // 3D polynomial order
+//
+// all 1s mean invalid (not set) - see default ctor
+//
 struct order3_t {
-	order3_t() { type = MODE_TETRAHEDRON; order = 0; }
+	order3_t() { type = 3; order = -1; }
 	order3_t(int order) { type = MODE_TETRAHEDRON; this->order = order; }
 	order3_t(int x, int y, int z) { type = MODE_HEXAHEDRON; this->x = x; this->y = y; this->z = z; }
 
@@ -162,6 +167,8 @@ struct order3_t {
 			unsigned z:10;
 		};
 	};
+
+	bool invalid() { return (type == 3) && (order == 0x7fffffff); }
 
 	// Operators
 
@@ -248,7 +255,7 @@ struct order3_t {
 		}
 	}
 
-	int get_edge_order(int edge) {
+	order1_t get_edge_order(int edge) {
 		switch (type) {
 			case MODE_TETRAHEDRON: return this->order;
 			case MODE_HEXAHEDRON:
@@ -304,7 +311,7 @@ struct order3_t {
 	}
 };
 
-order3_t max(order3_t a, order3_t b) {
+inline order3_t max(order3_t a, order3_t b) {
 	assert(a.type == b.type);
 	switch (a.type) {
 		case MODE_TETRAHEDRON: return order3_t(std::max(a.order, b.order));

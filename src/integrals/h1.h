@@ -114,7 +114,7 @@ inline scalar int_u_v(RealFunction *fu, RealFunction *fv, RefMap *ru, RefMap *rv
 inline scalar int_F_u(double (*F)(double x, double y, double z), RealFunction *fu, RefMap *ru) {
 	Quad3D *quad = fu->get_quad();
 
-	order3_t o;
+	order3_t o(0, 0, 0);
 	o.set_maximal();
 	qorder_t qord = ELEM_QORDER(o);
 	fu->set_quad_order(qord);
@@ -179,7 +179,7 @@ inline scalar surf_int_v(RealFunction *fv, RefMap *rv, FacePos *fp) {
 inline scalar surf_int_G_v(RealFunction *fv, RefMap *rv, FacePos *fp) {
 	Quad3D *quad = fv->get_quad();
 
-	order3_t o;
+	order3_t o(0, 0, 0);
 	o.set_maximal();
 	order2_t face_order = o.get_face_order(fp->face);
 	qorder_t qord = FACE_QORDER(fp->face, face_order);

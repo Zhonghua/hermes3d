@@ -172,7 +172,6 @@ void H1Space::calc_vertex_boundary_projection(Element *elem, int ivertex) {
 void H1Space::calc_edge_boundary_projection(Element *elem, int iedge) {
 	Word_t edge_id = mesh->get_edge_id(elem, iedge);
 	EdgeData *enode = en_data[edge_id];
-//	printf(" -----[%d], %d, %p\n", edge_id, enode->bc_type == BC_ESSENTIAL, enode->bc_proj);
 	if (enode->bc_type != BC_ESSENTIAL) return;			// process only Dirichlet BC
 	if (enode->bc_proj != NULL) return;					// projection already calculated
 
@@ -185,16 +184,11 @@ void H1Space::calc_edge_boundary_projection(Element *elem, int iedge) {
 	else {
 		num_fns = enode->n;
 	}
-//	printf("num_fns = %d\n", num_fns);
 
-
-//	double **proj_mat = new_matrix<double>(enode->n, enode->n);
 	double **proj_mat = new_matrix<double>(num_fns, num_fns);
 	if (proj_mat == NULL) EXIT(ERR_OUT_OF_MEMORY);
-//	double *proj_rhs = new double[enode->n];
 	double *proj_rhs = new double[num_fns];
 	if (proj_rhs == NULL) EXIT(ERR_OUT_OF_MEMORY);
-//	memset(proj_rhs, 0, sizeof(double) * enode->n);
 	memset(proj_rhs, 0, sizeof(double) * num_fns);
 
 	RefMap ref_map(mesh);
@@ -209,24 +203,16 @@ void H1Space::calc_edge_boundary_projection(Element *elem, int iedge) {
 	int vtx_fn_idx[] = { shapeset->get_vertex_index(local_edge_vtx[0]), shapeset->get_vertex_index(local_edge_vtx[1]) };
 	// function values at vertices
 	double vtx_fn_coef[] = { vn_data[edge_vtx[0]]->bc_proj, vn_data[edge_vtx[1]]->bc_proj };
-//	printf("%d => %lf\n", edge_vtx[0], vtx_fn_coef[0]);
-//	printf("%d => %lf\n", edge_vtx[1], vtx_fn_coef[1]);
-
 	int *edge_fn_idx = new int[num_fns];
 	if (enode->ced && enode->edge_ncomponents > 0) {
-//		printf("!!!!!!!!!!!!!!! [%d]\n", edge_id);
 		BaseEdgeComponent *ecomp = enode->edge_baselist + 0;
 		EdgeData *cng_enode = en_data[ecomp->edge_id]; 						// constraining edge node
 
-//		printf("n = %d\n", cng_enode->n);
 		int *indices = shapeset->get_edge_indices(iedge, ecomp->ori, cng_enode->order);
 		for (int j = 0; j < cng_enode->n; j++) {
 			int order = shapeset->get_order(indices[j]).get_edge_order(iedge);
-//			printf("order = %d, ", order);
 			edge_fn_idx[j] = shapeset->get_constrained_edge_index(iedge, ecomp->ori, order, ecomp->part);
-//			printf("%d, ", edge_fn_idx[j]);
 		}
-//		printf("\n");
 	}
 	else {
 		int ori = elem->get_edge_orientation(iedge);								// edge orientation
@@ -239,12 +225,9 @@ void H1Space::calc_edge_boundary_projection(Element *elem, int iedge) {
 		int iidx = edge_fn_idx[i];
 		for (int j = i; j < num_fns; j++) {
 			int jidx = edge_fn_idx[j];
-//			printf("(%d, %d) = %d, %d\n", i, j, iidx, jidx);
 
 			order3_t order = shapeset->get_order(iidx) + shapeset->get_order(jidx);
 			int edge_order = order.get_edge_order(iedge);
-//			printf("iedge = %d, order = %d\n", iedge, order);
-
 			QuadPt3D *pt = quad->get_edge_points(iedge, edge_order);
 			double value = 0.0;
 			for (int k = 0; k < quad->get_edge_num_points(edge_order); k++)
@@ -253,8 +236,6 @@ void H1Space::calc_edge_boundary_projection(Element *elem, int iedge) {
 					shapeset->get_fn_value(jidx, pt[k].x, pt[k].y, pt[k].z, 0);
 			proj_mat[i][j] += value;
 		}
-
-//		printf("a\n");
 
 		int order_rhs = quad->get_edge_max_order(iedge);
 		double *edge_phys_x = ref_map.get_edge_phys_x(iedge, order_rhs);
@@ -267,34 +248,22 @@ void H1Space::calc_edge_boundary_projection(Element *elem, int iedge) {
 			scalar g =
 				vtx_fn_coef[0] * shapeset->get_fn_value(vtx_fn_idx[0], pt[k].x, pt[k].y, pt[k].z, 0) +
 				vtx_fn_coef[1] * shapeset->get_fn_value(vtx_fn_idx[1], pt[k].x, pt[k].y, pt[k].z, 0);
-//			printf("iidx = %d, marker = %d\n", iidx, enode->marker);
 			value += pt[k].w *
 				shapeset->get_fn_value(iidx, pt[k].x, pt[k].y, pt[k].z, 0) *
 				(bc_value_callback_by_coord(enode->marker, edge_phys_x[k], edge_phys_y[k], edge_phys_z[k], 0) - g);
-
-//			printf(" ***** (% lf, % lf, % lf), (% lf, % lf, % lf)\n", pt[k].x, pt[k].y, pt[k].z, edge_phys_x[k], edge_phys_y[k], edge_phys_z[k]);
 		}
 		proj_rhs[i] += value;
-
-//		printf("b\n");
 	}
 
-	// solve the system using a precalculated Cholesky decomposed projection matrix
-//	double *chol_p = new double[enode->n];
 	double *chol_p = new double[num_fns];
 	choldc(proj_mat, num_fns, chol_p);
 	cholsl(proj_mat, num_fns, chol_p, proj_rhs, proj_rhs);
-//	choldc(proj_mat, enode->n, chol_p);
-//	cholsl(proj_mat, enode->n, chol_p, proj_rhs, proj_rhs);
 	delete [] chol_p;
 
 	enode->bc_proj = proj_rhs;
 
 	delete [] proj_mat;
-
 	delete [] edge_fn_idx;
-
-//	printf("c\n");
 }
 
 void H1Space::calc_face_boundary_projection(Element *elem, int iface) {
@@ -407,10 +376,11 @@ void H1Space::calc_face_boundary_projection(Element *elem, int iface) {
 
 			QuadPt3D *pt = quad->get_face_points(iface, face_order);
 			double value = 0.0;
-			for (int k = 0; k < quad->get_face_num_points(iface, face_order); k++)
+			for (int k = 0; k < quad->get_face_num_points(iface, face_order); k++) {
 				value += pt[k].w *
 					shapeset->get_fn_value(iidx, pt[k].x, pt[k].y, pt[k].z, 0) *
 					shapeset->get_fn_value(jidx, pt[k].x, pt[k].y, pt[k].z, 0);
+			}
 			proj_mat[i][j] += value;
 		}
 

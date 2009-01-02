@@ -13,20 +13,43 @@
 
 #ifdef WITH_HEX
 
-static const int base_coding = MAX_ELEMENT_ORDER + 1;		// order: 0..10
+struct hex_index_t {
+	unsigned ori:3;
+	unsigned x:8;
+	unsigned y:8;
+	unsigned z:8;
+
+	hex_index_t(int idx) {
+		this->x = (idx >> 16) & 0x0F;
+		this->y = (idx >>  8) & 0x0F;
+		this->z = (idx >>  0) & 0x0F;
+		this->ori = (idx >> 19) & 0x03;
+	}
+
+	hex_index_t(int x, int y, int z, int ori = 0) {
+		this->x = x;
+		this->y = y;
+		this->z = z;
+		this->ori = ori;
+	}
+
+	operator int() { return (((((ori << 3) | x) << 8) | y) << 8) | z; }
+};
+
+/*static const int base_coding = MAX_ELEMENT_ORDER + 1;		// order: 0..10
 
 #define MAKE_HEX_IDX(h, f, v, ori) (((((v) * (base_coding) + (f)) * (base_coding) + (h)) << 3) | ori)
 
 #define GET_HEX_IDX_1(order) ((order) % (base_coding))
 #define GET_HEX_IDX_2(order) (((order) / (base_coding)) % (base_coding))
 #define GET_HEX_IDX_3(order) ((order) / ((base_coding) * (base_coding)))
-
+*/
 //#define MAKE_FACE_IDX(h, v) (((v) * (base_coding) + (h)) << 3)
 
 
 static int lobatto_hex_vertex_indices[] = {
-	MAKE_HEX_IDX(0, 0, 0, 0), MAKE_HEX_IDX(1, 0, 0, 0), MAKE_HEX_IDX(1, 1, 0, 0), MAKE_HEX_IDX(0, 1, 0, 0),
-	MAKE_HEX_IDX(0, 0, 1, 0), MAKE_HEX_IDX(1, 0, 1, 0), MAKE_HEX_IDX(1, 1, 1, 0), MAKE_HEX_IDX(0, 1, 1, 0)
+	hex_index_t(0, 0, 0), hex_index_t(1, 0, 0), hex_index_t(1, 1, 0), hex_index_t(0, 1, 0),
+	hex_index_t(0, 0, 1), hex_index_t(1, 0, 1), hex_index_t(1, 1, 1), hex_index_t(0, 1, 1)
 };
 
 static int index_order[] = { 1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
@@ -53,36 +76,36 @@ static void find_permutation(int *indices, int *permut, int &num_01) {
 }
 
 
-static void decompose(int index, int ori, int indices[3], int oris[3], bool swapori = true) {
+static void decompose(hex_index_t index, int indices[3], int ori[3], bool swapori = true) {
 	int permut[3];
 	int num_01;
 
 	// get order in each direction
-	indices[0] = GET_HEX_IDX_1(index);
-	indices[1] = GET_HEX_IDX_2(index);
-	indices[2] = GET_HEX_IDX_3(index);
+	indices[0] = index.x;
+	indices[1] = index.y;
+	indices[2] = index.z;
 
 	find_permutation(indices, permut, num_01);
 
-	oris[0] = oris[1] = oris[2] = 0;
+	ori[0] = ori[1] = ori[2] = 0;
 	if (num_01 == 2) {
 		// edge function
-		assert(ori == 0 || ori == 1);
-		oris[permut[2]] = ori;
+		assert(index.ori == 0 || index.ori == 1);
+		ori[permut[2]] = index.ori;
 	}
 	else if (num_01 == 1) {
 		// face function
-		assert(ori >= 0 && ori < 8);
-		if (ori % 2 == 1) oris[permut[1]] = 1;
-		if (ori % 4 >= 2) oris[permut[2]] = 1;
-		if (ori >= 4) {
+		assert(index.ori >= 0 && index.ori < 8);
+		if (index.ori % 2 == 1) ori[permut[1]] = 1;
+		if (index.ori % 4 >= 2) ori[permut[2]] = 1;
+		if (index.ori >= 4) {
 			swapint(indices[permut[1]], indices[permut[2]]);
-			if (swapori) swapint(oris[permut[1]], oris[permut[2]]);
+			if (swapori) swapint(ori[permut[1]], ori[permut[2]]);
 		}
 	}
 	else {
 		// vertex or bubble function
-		assert(ori == 0);
+		assert(index.ori == 0);
 	}
 
 /*
@@ -136,13 +159,13 @@ static void decompose(int index, int ori, int indices[3], int oris[3], bool swap
 // -- functions that calculate values of fn, dx, dy, dz on the fly -- //
 
 static double calc_fn_value(int index, double x, double y, double z, int component) {
-	int ori = GET_ORI_FROM_INDEX(index);
-	int idx = GET_IDX_FROM_INDEX(index);
-
+	hex_index_t idx(index);
+//	int ori = GET_ORI_FROM_INDEX(index);
+//	int idx = GET_IDX_FROM_INDEX(index);
 	int indices[3];
 	int oris[3];
 
-	decompose(idx, ori, indices, oris);
+	decompose(idx, indices, oris);
 
 	if (oris[0] == 1) x = -x;
 	if (oris[1] == 1) y = -y;
@@ -153,13 +176,13 @@ static double calc_fn_value(int index, double x, double y, double z, int compone
 
 
 static double calc_dx_value(int index, double x, double y, double z, int component) {
-	int ori = GET_ORI_FROM_INDEX(index);
-	int idx = GET_IDX_FROM_INDEX(index);
-
+	hex_index_t idx(index);
+//	int ori = GET_ORI_FROM_INDEX(index);
+//	int idx = GET_IDX_FROM_INDEX(index);
 	int indices[3];
 	int oris[3];
 
-	decompose(idx, ori, indices, oris);
+	decompose(idx, indices, oris);
 
 	for (int i = 0; i < 3; i++)
 		assert((oris[i] == 0) || (indices[i] >= 2));
@@ -176,13 +199,13 @@ static double calc_dx_value(int index, double x, double y, double z, int compone
 
 
 static double calc_dy_value(int index, double x, double y, double z, int component) {
-	int ori = GET_ORI_FROM_INDEX(index);
-	int idx = GET_IDX_FROM_INDEX(index);
-
+	hex_index_t idx(index);
+//	int ori = GET_ORI_FROM_INDEX(index);
+//	int idx = GET_IDX_FROM_INDEX(index);
 	int indices[3];
 	int oris[3];
 
-	decompose(idx, ori, indices, oris);
+	decompose(idx, indices, oris);
 
 	for (int i = 0; i < 3; i++)
 		assert((oris[i] == 0) || (indices[i] >= 2));
@@ -199,13 +222,13 @@ static double calc_dy_value(int index, double x, double y, double z, int compone
 
 
 static double calc_dz_value(int index, double x, double y, double z, int component) {
-	int ori = GET_ORI_FROM_INDEX(index);
-	int idx = GET_IDX_FROM_INDEX(index);
-
+	hex_index_t idx(index);
+//	int ori = GET_ORI_FROM_INDEX(index);
+//	int idx = GET_IDX_FROM_INDEX(index);
 	int indices[3];
 	int oris[3];
 
-	decompose(idx, ori, indices, oris);
+	decompose(idx, indices, oris);
 
 	for (int i = 0; i < 3; i++)
 		assert((oris[i] == 0) || (indices[i] >= 2));
@@ -233,8 +256,7 @@ H1ShapesetLobattoHex::H1ShapesetLobattoHex() {
 //	max_edge_order = MAX_ELEMENT_ORDER + 1;
 //	max_face_order = MAKE_QUAD_ORDER(MAX_ELEMENT_ORDER + 1, MAX_ELEMENT_ORDER + 1);
 //	max_order = MAKE_HEX_ORDER(MAX_ELEMENT_ORDER + 1, MAX_ELEMENT_ORDER + 1, MAX_ELEMENT_ORDER + 1);
-
-	max_index = MAKE_HEX_IDX(MAX_ELEMENT_ORDER + 1, MAX_ELEMENT_ORDER + 1, MAX_ELEMENT_ORDER + 1, 0);
+//	max_index = MAKE_HEX_IDX(MAX_ELEMENT_ORDER + 1, MAX_ELEMENT_ORDER + 1, MAX_ELEMENT_ORDER + 1, 0);
 
 	// fn, dx, dy, dz will be calculated on-the-fly
 	shape_table_deleg[FN]  = calc_fn_value;
@@ -249,6 +271,7 @@ H1ShapesetLobattoHex::H1ShapesetLobattoHex() {
 	vertex_indices = lobatto_hex_vertex_indices;
 
 	// index to order mapping
+	index_to_order = NULL;
 //	index_to_order = new int[max_order];
 //	MEM_CHECK(index_to_order);
 //	for (int i = 0; i <= MAX_ELEMENT_ORDER; i++)
@@ -283,12 +306,12 @@ H1ShapesetLobattoHex::~H1ShapesetLobattoHex() {
 
 order3_t H1ShapesetLobattoHex::get_order(int index) const {
 	if (index >= 0) {
-		int ori = GET_ORI_FROM_INDEX(index);
-		int idx = GET_IDX_FROM_INDEX(index);
+		hex_index_t idx(index);
+//		int ori = GET_ORI_FROM_INDEX(index);
+//		int idx = GET_IDX_FROM_INDEX(index);
 
-		order3_t ord;// = index_to_order[idx];
-		// face function is turned due to orientation
-		if (ori >= 4) { ord = turn_hex_face_order(ord);/* printf("turn!\n");*/ }
+		order3_t ord(index_order[idx.x], index_order[idx.y], index_order[idx.z]);
+		if (idx.ori >= 4) ord = turn_hex_face_order(ord);		// face function is turned due to orientation
 		return ord;
 	}
 	else {
@@ -341,18 +364,18 @@ void H1ShapesetLobattoHex::compute_edge_indices(int edge, int ori, order1_t orde
 
 	int idx = 0;
 	switch (edge) {
-		case  0: for (int i = 2; i <= order; i++) indices[idx++] = MAKE_HEX_IDX(i, 0, 0, ori); break;
-		case  1: for (int i = 2; i <= order; i++) indices[idx++] = MAKE_HEX_IDX(1, i, 0, ori); break;
-		case  2: for (int i = 2; i <= order; i++) indices[idx++] = MAKE_HEX_IDX(i, 1, 0, ori); break;
-		case  3: for (int i = 2; i <= order; i++) indices[idx++] = MAKE_HEX_IDX(0, i, 0, ori); break;
-		case  4: for (int i = 2; i <= order; i++) indices[idx++] = MAKE_HEX_IDX(0, 0, i, ori); break;
-		case  5: for (int i = 2; i <= order; i++) indices[idx++] = MAKE_HEX_IDX(1, 0, i, ori); break;
-		case  6: for (int i = 2; i <= order; i++) indices[idx++] = MAKE_HEX_IDX(1, 1, i, ori); break;
-		case  7: for (int i = 2; i <= order; i++) indices[idx++] = MAKE_HEX_IDX(0, 1, i, ori); break;
-		case  8: for (int i = 2; i <= order; i++) indices[idx++] = MAKE_HEX_IDX(i, 0, 1, ori); break;
-		case  9: for (int i = 2; i <= order; i++) indices[idx++] = MAKE_HEX_IDX(1, i, 1, ori); break;
-		case 10: for (int i = 2; i <= order; i++) indices[idx++] = MAKE_HEX_IDX(i, 1, 1, ori); break;
-		case 11: for (int i = 2; i <= order; i++) indices[idx++] = MAKE_HEX_IDX(0, i, 1, ori); break;
+		case  0: for (int i = 2; i <= order; i++) indices[idx++] = hex_index_t(i, 0, 0, ori); break;
+		case  1: for (int i = 2; i <= order; i++) indices[idx++] = hex_index_t(1, i, 0, ori); break;
+		case  2: for (int i = 2; i <= order; i++) indices[idx++] = hex_index_t(i, 1, 0, ori); break;
+		case  3: for (int i = 2; i <= order; i++) indices[idx++] = hex_index_t(0, i, 0, ori); break;
+		case  4: for (int i = 2; i <= order; i++) indices[idx++] = hex_index_t(0, 0, i, ori); break;
+		case  5: for (int i = 2; i <= order; i++) indices[idx++] = hex_index_t(1, 0, i, ori); break;
+		case  6: for (int i = 2; i <= order; i++) indices[idx++] = hex_index_t(1, 1, i, ori); break;
+		case  7: for (int i = 2; i <= order; i++) indices[idx++] = hex_index_t(0, 1, i, ori); break;
+		case  8: for (int i = 2; i <= order; i++) indices[idx++] = hex_index_t(i, 0, 1, ori); break;
+		case  9: for (int i = 2; i <= order; i++) indices[idx++] = hex_index_t(1, i, 1, ori); break;
+		case 10: for (int i = 2; i <= order; i++) indices[idx++] = hex_index_t(i, 1, 1, ori); break;
+		case 11: for (int i = 2; i <= order; i++) indices[idx++] = hex_index_t(0, i, 1, ori); break;
 		default: EXIT(ERR_FAILURE, "Invalid edge number %d. Can be 0 - 11.", edge); break;
 	}
 
@@ -373,37 +396,37 @@ void H1ShapesetLobattoHex::compute_face_indices(int face, int ori, order2_t orde
 		case 0:
 			for(int i = 2; i <= horder; i++)
 				for(int j = 2; j <= vorder; j++)
-					indices[idx++] = MAKE_HEX_IDX(0, i, j, ori);
+					indices[idx++] = hex_index_t(0, i, j, ori);
 			break;
 
 		case 1:
 			for(int i = 2; i <= horder; i++)
 				for(int j = 2; j <= vorder; j++)
-					indices[idx++] = MAKE_HEX_IDX(1, i, j, ori);
+					indices[idx++] = hex_index_t(1, i, j, ori);
 			break;
 
 		case 2:
 			for(int i = 2; i <= horder; i++)
 				for(int j = 2; j <= vorder; j++)
-					indices[idx++] = MAKE_HEX_IDX(i, 0, j, ori);
+					indices[idx++] = hex_index_t(i, 0, j, ori);
 			break;
 
 		case 3:
 			for(int i = 2; i <= horder; i++)
 				for(int j = 2; j <= vorder; j++)
-					indices[idx++] = MAKE_HEX_IDX(i, 1, j, ori);
+					indices[idx++] = hex_index_t(i, 1, j, ori);
 			break;
 
 		case 4:
 			for(int i = 2; i <= horder; i++)
 				for(int j = 2; j <= vorder; j++)
-					indices[idx++] = MAKE_HEX_IDX(i, j, 0, ori);
+					indices[idx++] = hex_index_t(i, j, 0, ori);
 			break;
 
 		case 5:
 			for(int i = 2; i <= horder; i++)
 				for(int j = 2; j <= vorder; j++)
-					indices[idx++] = MAKE_HEX_IDX(i, j, 1, ori);
+					indices[idx++] = hex_index_t(i, j, 1, ori);
 			break;
 
 		default:
@@ -419,17 +442,14 @@ void H1ShapesetLobattoHex::compute_face_indices(int face, int ori, order2_t orde
 
 void H1ShapesetLobattoHex::compute_bubble_indices(order3_t order) {
 #ifdef WITH_HEX
-	int order1 = order.x;
-	int order2 = order.y;
-	int order3 = order.z;
-	int *indices = new int[(order1 - 1) * (order2 - 1) * (order3 - 1)];
+	int *indices = new int[(order.x - 1) * (order.y - 1) * (order.z - 1)];
 	MEM_CHECK(indices);
 
 	int idx = 0;
-	for (int i = 2; i <= order1; i++)
-		for(int j = 2; j <= order2; j++)
-			for(int k = 2; k <= order3; k++)
-				indices[idx++] = MAKE_HEX_IDX(i, j, k, 0);
+	for (int i = 2; i <= order.x; i++)
+		for(int j = 2; j <= order.y; j++)
+			for(int k = 2; k <= order.z; k++)
+				indices[idx++] = hex_index_t(i, j, k, 0);
 
 	bubble_indices[order.get_idx()] = indices;
 #else

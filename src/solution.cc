@@ -380,7 +380,11 @@ void ExactSolution::set_active_element(Element *e) {
 	sub_tables = &(tables[cur_quad]);
 	update_nodes_ptr();
 
-	order.set_maximal();
+	switch (e->get_mode()) {
+		case MODE_TETRAHEDRON: order = order3_t(MAX_QUAD_ORDER_TETRA); break;
+		case MODE_HEXAHEDRON: order = order3_t(MAX_QUAD_ORDER, MAX_QUAD_ORDER, MAX_QUAD_ORDER); break;
+		default: break;
+	}
 }
 
 

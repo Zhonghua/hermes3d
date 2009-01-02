@@ -137,9 +137,6 @@ int main(int argc, char **args) {
 			printf(" x[% 3d] = % lf\n", i, s[i]);
 		}
 
-//		s[1] = 4.166667e-02;
-//		s[2] = s[3] = -1.701035e-02;
-
 		ExactSolution ex_sln(&mesh, exact_solution);
 
 		// norm
@@ -160,22 +157,21 @@ int main(int argc, char **args) {
 
 #ifdef OUTPUT_DIR
 		// output
-		char *of_name = OUTPUT_DIR "/solution.pos";
+		const char *of_name = OUTPUT_DIR "/solution.pos";
 		FILE *ofile = fopen(of_name, "w");
 		if (ofile != NULL) {
 			ExactSolution ex_sln(&mesh, exact_solution);
-			DiffFilter eh(&mesh, &sln, &ex_sln);
+//			DiffFilter eh(&sln, &ex_sln);
 //			DiffFilter eh_dx(&mesh, &sln, &ex_sln, FN_DX, FN_DX);
 //			DiffFilter eh_dy(&mesh, &sln, &ex_sln, FN_DY, FN_DY);
 //			DiffFilter eh_dz(&mesh, &sln, &ex_sln, FN_DZ, FN_DZ);
 
-			GmshOutputEngine out_eng(ofile);
-			Output output(&out_eng);
+			GmshOutputEngine output(ofile);
 			output.out(&sln, "Uh");
 //			output.out(&sln, "Uh dx", FN_DX_0);
 //			output.out(&sln, "Uh dy", FN_DY_0);
 //			output.out(&sln, "Uh dz", FN_DZ_0);
-			output.out(&eh, "Eh");
+//			output.out(&eh, "Eh");
 //			output.out(&eh_dx, "Eh dx");
 //			output.out(&eh_dy, "Eh dy");
 //			output.out(&eh_dz, "Eh dz");

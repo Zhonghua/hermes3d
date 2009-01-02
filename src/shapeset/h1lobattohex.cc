@@ -107,61 +107,12 @@ static void decompose(hex_index_t index, int indices[3], int ori[3], bool swapor
 		// vertex or bubble function
 		assert(index.ori == 0);
 	}
-
-/*
-	int flags[8][3] = {
-		{ 0, 0, 0 }, { 1, 0, 0 }, { 0, 1, 0 }, { 1, 1, 0 }, { 0, 0, 1 }, { 1, 0, 1 }, { 0, 1, 1 }, { 1, 1, 1 }
-	};
-
-	oris[0] = oris[1] = oris[2] = 0;
-
-	int num = 0;
-	if (indices[0] < 2) num++;
-	if (indices[1] < 2) num++;
-	if (indices[2] < 2) num++;
-
-	if (num == 2) {
-		// edge function
-		assert(ori == 0 || ori == 1);
-		if (indices[0] >= 2) oris[0] = ori;
-		else if (indices[1] >= 2) oris[1] = ori;
-		else if (indices[2] >= 2) oris[2] = ori;
-	}
-	else if (num == 1) {
-		// face function
-		assert(ori >= 0 && ori < 8);
-		if (indices[0] < 2) {
-			oris[1] = flags[ori][0];
-			oris[2] = flags[ori][1];
-			if (ori >= 4) swapint(indices[1], indices[2]);
-			if (ori >= 4) swapint(oris[1], oris[2]);
-		}
-		else if (indices[1] < 2) {
-			oris[0] = flags[ori][0];
-			oris[2] = flags[ori][1];
-			if (ori >= 4) swapint(indices[0], indices[2]);
-			if (ori >= 4) swapint(oris[0], oris[2]);
-		}
-		else if (indices[2] < 2) {
-			oris[0] = flags[ori][0];
-			oris[1] = flags[ori][1];
-			if (ori >= 4) swapint(indices[0], indices[1]);
-			if (ori >= 4) swapint(oris[0], oris[1]);
-		}
-	}
-	else {
-		// vertex or bubble function
-		assert(ori == 0);
-	}
-*/
 }
 
 // -- functions that calculate values of fn, dx, dy, dz on the fly -- //
 
 static double calc_fn_value(int index, double x, double y, double z, int component) {
 	hex_index_t idx(index);
-//	int ori = GET_ORI_FROM_INDEX(index);
-//	int idx = GET_IDX_FROM_INDEX(index);
 	int indices[3];
 	int oris[3];
 
@@ -177,8 +128,6 @@ static double calc_fn_value(int index, double x, double y, double z, int compone
 
 static double calc_dx_value(int index, double x, double y, double z, int component) {
 	hex_index_t idx(index);
-//	int ori = GET_ORI_FROM_INDEX(index);
-//	int idx = GET_IDX_FROM_INDEX(index);
 	int indices[3];
 	int oris[3];
 
@@ -200,8 +149,6 @@ static double calc_dx_value(int index, double x, double y, double z, int compone
 
 static double calc_dy_value(int index, double x, double y, double z, int component) {
 	hex_index_t idx(index);
-//	int ori = GET_ORI_FROM_INDEX(index);
-//	int idx = GET_IDX_FROM_INDEX(index);
 	int indices[3];
 	int oris[3];
 
@@ -223,8 +170,6 @@ static double calc_dy_value(int index, double x, double y, double z, int compone
 
 static double calc_dz_value(int index, double x, double y, double z, int component) {
 	hex_index_t idx(index);
-//	int ori = GET_ORI_FROM_INDEX(index);
-//	int idx = GET_IDX_FROM_INDEX(index);
 	int indices[3];
 	int oris[3];
 
@@ -272,12 +217,6 @@ H1ShapesetLobattoHex::H1ShapesetLobattoHex() {
 
 	// index to order mapping
 	index_to_order = NULL;
-//	index_to_order = new int[max_order];
-//	MEM_CHECK(index_to_order);
-//	for (int i = 0; i <= MAX_ELEMENT_ORDER; i++)
-//		for (int j = 0; j <= MAX_ELEMENT_ORDER; j++)
-//			for (int k = 0; k <= MAX_ELEMENT_ORDER; k++)
-//				index_to_order[MAKE_HEX_IDX(i, j, k, 0) >> 3] = MAKE_HEX_ORDER(index_order[i], index_order[j], index_order[k]);
 #else
 	EXIT(ERR_HEX_NOT_COMPILED);
 #endif
@@ -307,9 +246,6 @@ H1ShapesetLobattoHex::~H1ShapesetLobattoHex() {
 order3_t H1ShapesetLobattoHex::get_order(int index) const {
 	if (index >= 0) {
 		hex_index_t idx(index);
-//		int ori = GET_ORI_FROM_INDEX(index);
-//		int idx = GET_IDX_FROM_INDEX(index);
-
 		order3_t ord(index_order[idx.x], index_order[idx.y], index_order[idx.z]);
 		if (idx.ori >= 4) ord = turn_hex_face_order(ord);		// face function is turned due to orientation
 		return ord;

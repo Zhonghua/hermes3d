@@ -12,7 +12,6 @@
 #include <errno.h>
 
 // size of the buffer that is used for copying files
-#define BUFLEN							8192
 #define FORMAT							"%.17g"
 
 ///
@@ -27,27 +26,27 @@ namespace Gmsh {
 /// @ingroup visualization
 class OutputQuad : public Quad3D {
 public:
-	virtual QuadPt3D *get_points(int order) {
-		if (tables[order] == NULL) calculate_view_points(order);
-		return tables[order];
+	virtual QuadPt3D *get_points(order3_t order) {
+		if (!tables.exists(order.get_idx())) calculate_view_points(order);
+		return tables[order.get_idx()];
 	}
 
-	virtual int get_num_points(int order) {
-		if (np[order] == 0) calculate_view_points(order);
-		return np[order];
+	virtual int get_num_points(order3_t order) {
+		if (!np.exists(order.get_idx())) calculate_view_points(order);
+		return np[order.get_idx()];
 	}
 
-	virtual int *get_subdiv_modes(int order) {
-		if (subdiv_modes[order] == NULL) calculate_view_points(order);
-		return subdiv_modes[order];
+	virtual int *get_subdiv_modes(order3_t order) {
+		if (!subdiv_modes.exists(order.get_idx())) calculate_view_points(order);
+		return subdiv_modes[order.get_idx()];
 	}
 
-	virtual int get_subdiv_num(int order) {
-		if (subdiv_num[order] == 0) calculate_view_points(order);
-		return subdiv_num[order];
+	virtual int get_subdiv_num(order3_t order) {
+		if (!subdiv_num.exists(order.get_idx())) calculate_view_points(order);
+		return subdiv_num[order.get_idx()];
 	}
 
-	virtual QuadPt3D *get_face_points(int face, int order) {
+	virtual QuadPt3D *get_face_points(int face, order2_t order) {
 		EXIT(ERR_NOT_IMPLEMENTED);
 		return NULL;
 	}
@@ -55,11 +54,11 @@ public:
 	virtual void set_output_precision(int p) { output_precision = p; }
 
 protected:
-	int  *subdiv_num;
-	int **subdiv_modes;
+	Array<int> subdiv_num;
+	Array<int *> subdiv_modes;
 	int output_precision;
 
-	virtual void calculate_view_points(int order) = 0;
+	virtual void calculate_view_points(order3_t order) = 0;
 	virtual void recursive_division(const Point3D *ref_vtcs, QuadPt3D *table, int levels, int &idx) = 0;
 };
 
@@ -75,7 +74,7 @@ public:
 	virtual ~OutputQuadTetra();
 
 protected:
-	virtual void calculate_view_points(int order);
+	virtual void calculate_view_points(order3_t order);
 	virtual void recursive_division(const Point3D *ref_vtcs, QuadPt3D *table, int levels, int &idx);
 };
 
@@ -125,7 +124,7 @@ OutputQuadTetra::~OutputQuadTetra() {
 }
 
 
-void OutputQuadTetra::calculate_view_points(int order) {
+void OutputQuadTetra::calculate_view_points(order3_t order) {
 #ifdef WITH_TETRA
 	if (tables[order] == NULL) {
 		// check if the order is greater than 0, because we are taking log(o)
@@ -217,30 +216,13 @@ public:
 	virtual ~OutputQuadHex();
 
 protected:
-	virtual void calculate_view_points(int order);
+	virtual void calculate_view_points(order3_t order);
 	virtual void recursive_division(const Point3D *tv, QuadPt3D *table, int levels, int &idx);
 };
 
 OutputQuadHex::OutputQuadHex() {
 #ifdef WITH_HEX
 	max_order = MAX_QUAD_ORDER;
-
-/*	tables = new QuadPt3D *[max_order + 1];
-	MEM_CHECK(tables);
-	memset(tables, 0, (max_order + 1) * sizeof(QuadPt3D *));
-
-	np = new int[max_order + 1];
-	MEM_CHECK(np);
-	memset(np, 0, (max_order + 1) * sizeof(int));
-
-	subdiv_num = new int[max_order + 1];
-	MEM_CHECK(subdiv_num);
-	memset(subdiv_num, 0, (max_order + 1) * sizeof(int));
-
-	subdiv_modes = new int *[max_order + 1];
-	MEM_CHECK(subdiv_modes);
-	memset(subdiv_modes, 0, (max_order + 1) * sizeof(int *));
-*/
 	output_precision = 1;
 #else
 	EXIT(ERR_HEX_NOT_COMPILED);
@@ -249,49 +231,40 @@ OutputQuadHex::OutputQuadHex() {
 
 OutputQuadHex::~OutputQuadHex() {
 #ifdef WITH_HEX
-/*	for (int i = 0; i < max_order + 1; i++)
+	for (Word_t i = tables.first(); i != INVALID_IDX; i = tables.next(i))
 		delete [] tables[i];
-	delete [] tables;
 
-	delete [] np;
-
-	for (int i = 0; i < max_order + 1; i++)
+	for (Word_t i = subdiv_modes.first(); i != INVALID_IDX; i = subdiv_modes.next(i))
 		delete [] subdiv_modes[i];
-	delete [] subdiv_modes;
-	delete [] subdiv_num;
-*/
 #else
 	EXIT(ERR_HEX_NOT_COMPILED);
 #endif
 }
 
-void OutputQuadHex::calculate_view_points(int order) {
+void OutputQuadHex::calculate_view_points(order3_t order) {
 #ifdef WITH_HEX
-	assert(order != 0);
-/*
-	if (tables[order] == NULL) {
-//		int o = get_principal_order(order);
-//		int levels = int(log(o) / log(2)) + output_precision;
-		int o = 1;
-		int levels = 1;
 
-		np[o] = (1 << (3 * levels)) * 27;
-		subdiv_num[o] = (1 << (3 * levels));
+//	int o = get_principal_order(order);
+//	int levels = int(log(o) / log(2)) + output_precision;
+	int o = order.get_idx();
+	int levels = 1;
 
-		subdiv_modes[o] = new int[subdiv_num[o]];
-		MEM_CHECK(subdiv_modes[o]);
-		// the new subelements are hexahedra only
-		for (int i = 0; i < subdiv_num[o]; i++)
-			subdiv_modes[o][i] = MODE_HEXAHEDRON;
+	np[o] = (1 << (3 * levels)) * 27;
+	subdiv_num[o] = (1 << (3 * levels));
 
-		// compute the table of points recursively
-		tables[o] = new QuadPt3D[np[o]];
-		MEM_CHECK(tables[o]);
-		int idx = 0;
-		const Point3D *ref_vtcs = RefHex::get_vertices();
-		recursive_division(ref_vtcs, tables[o], levels, idx);
-	}
-*/
+	subdiv_modes[o] = new int[subdiv_num[o]];
+	MEM_CHECK(subdiv_modes[o]);
+	// the new subelements are hexahedra only
+	for (int i = 0; i < subdiv_num[o]; i++)
+		subdiv_modes[o][i] = MODE_HEXAHEDRON;
+
+	// compute the table of points recursively
+	tables[o] = new QuadPt3D[np[o]];
+	MEM_CHECK(tables[o]);
+	int idx = 0;
+	const Point3D *ref_vtcs = RefHex::get_vertices();
+	recursive_division(ref_vtcs, tables[o], levels, idx);
+
 #else
 	EXIT(ERR_HEX_NOT_COMPILED);
 #endif
@@ -299,7 +272,6 @@ void OutputQuadHex::calculate_view_points(int order) {
 
 void OutputQuadHex::recursive_division(const Point3D *tv, QuadPt3D *table, int levels, int &idx) {
 #ifdef WITH_HEX
-/*
 	if (levels == 0) {
 		// vertices
 		for (int i = 0; i < Hex::NUM_VERTICES; i++) {
@@ -355,7 +327,6 @@ void OutputQuadHex::recursive_division(const Point3D *tv, QuadPt3D *table, int l
 		for (int i = 0; i < 8; i++)
 			recursive_division(div_vtcs[i], table, levels - 1, idx);
 	}
-*/
 #else
 	EXIT(ERR_HEX_NOT_COMPILED);
 #endif
@@ -428,15 +399,11 @@ void GmshOutputEngine::out(MeshFunction *fn, const char *name, int item/* = FN_V
 		Element *element = mesh->elements[idx];
 		int mode = element->get_mode();
 		// FIXME: get order from the space
-		int order;
+		order3_t order;
 		switch (mode) {
-			// FIXME
-			case MODE_TETRAHEDRON: order = 1; break;
-			case MODE_HEXAHEDRON: order = 1; /*MAKE_HEX_ORDER(1, 1, 1);*/ break;
-				break;
-/*			case MODE_TETRAHEDRON: order = space->get_element_order(idx); break;
-			case MODE_HEXAHEDRON: order = get_principal_order(space->get_element_order(idx)); break;
-*/			case MODE_PRISM: EXIT(ERR_NOT_IMPLEMENTED); break;
+			case MODE_TETRAHEDRON: order = order3_t(1); break;
+			case MODE_HEXAHEDRON: order = order3_t(1, 1, 1); break;
+			case MODE_PRISM: EXIT(ERR_NOT_IMPLEMENTED); break;
 			default: EXIT(ERR_UNKNOWN_MODE); break;
 		}
 

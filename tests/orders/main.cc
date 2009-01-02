@@ -106,6 +106,7 @@ int test_order_hex() {
 	printf("test_order_hex\n");
 
 	order3_t a(1, 2, 3), b(3, 4, 2);
+	order3_t x;
 
 	// +
 	order3_t c = a + b;
@@ -126,6 +127,11 @@ int test_order_hex() {
 	// max
 	order3_t m = max(b, e);
 	if (m.x != e.x || m.y != e.y || m.z != e.z) return ERR_FAILURE;
+
+	order3_t z(2, 1, 4);
+	x = a + b + z;
+	if (x.x != 6 || x.y != 7 || x.z != 9) return ERR_FAILURE;
+
 
 	// TODO: get_edge/face_order
 

@@ -97,16 +97,16 @@ public: //remove me
 	struct BaseEdgeComponent {
 		Word_t edge_id;							/// ID of the constraining edge
 		int ori;								/// the orientation of the constraining edge
-		Part part;								/// part of the edge that is constrained
+		Part part;							/// part of the edge that is constrained
 		scalar coef;
 	};
 
 	struct BaseFaceComponent {
 		Word_t face_id;							/// ID of a constraining face
-		int ori;								/// the orientation of constraining face
-		int dir;								/// the orientation of constraining face
-		int iface;								/// local number of constraining face
-		Part part;								/// part of the face that is constrained
+		unsigned ori:3;						/// the orientation of constraining face
+		unsigned dir:1;						/// the orientation of ???
+		unsigned iface:4;						/// local number of constraining face
+		Part part;							/// part of the face that is constrained
 		scalar coef;
 
 		BaseFaceComponent() {

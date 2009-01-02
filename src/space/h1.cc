@@ -134,25 +134,18 @@ int H1Space::assign_dofs_internal(int first_dof/* = 0*/, int strid/* = 1*/) {
 
 void H1Space::get_element_assembly_list(Element *e, AsmList *al) {
 	al->clear();
-
-	for (int i = 0; i < e->get_num_of_vertices(); i++)
-		get_vertex_assembly_list(e, i, al);
-	for (int i = 0; i < e->get_num_of_edges(); i++)
-		get_edge_assembly_list(e, i, al);
-	for (int i = 0; i < e->get_num_of_faces(); i++)
-		get_face_assembly_list(e, i, al);
+	for (int i = 0; i < e->get_num_of_vertices(); i++) get_vertex_assembly_list(e, i, al);
+	for (int i = 0; i < e->get_num_of_edges(); i++) get_edge_assembly_list(e, i, al);
+	for (int i = 0; i < e->get_num_of_faces(); i++) get_face_assembly_list(e, i, al);
 	get_bubble_assembly_list(e, al);
 }
 
 void H1Space::get_boundary_assembly_list(Element *e, int face, AsmList *al) {
 	al->clear();
-
 	const int *face_vtcs = e->get_face_vertices(face);
-	for (int i = 0; i < e->get_face_num_of_vertices(face); i++)
-		get_vertex_assembly_list(e, face_vtcs[i], al);
 	const int *face_edges = e->get_face_edges(face);
-	for (int i = 0; i < e->get_face_num_of_edges(face); i++)
-		get_edge_assembly_list(e, face_edges[i], al);
+	for (int i = 0; i < e->get_face_num_of_vertices(face); i++) get_vertex_assembly_list(e, face_vtcs[i], al);
+	for (int i = 0; i < e->get_face_num_of_edges(face); i++) get_edge_assembly_list(e, face_edges[i], al);
 	get_face_assembly_list(e, face, al);
 }
 

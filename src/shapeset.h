@@ -13,6 +13,15 @@ enum EPartOri {
 	PART_ORI_VERT = 1
 };
 
+typedef int EdgePart;
+
+struct FacePart {
+	// version for quadrilaterals
+	unsigned horz:16;		// horizontal part (stripe)
+	unsigned vert:16;		// vertical part (stripe)
+
+	int to_int() { return horz << 16 | vert; }
+};
 
 struct Part {
 	// quad part
@@ -26,7 +35,6 @@ struct Part {
 		};
 	};
 };
-
 
 void get_interval_part(int part, double &lo, double &hi);
 void get_edge_part(int part, double &x);
@@ -55,6 +63,22 @@ enum ECedKeyType {
 };
 
 
+struct CEDEdgeKey {
+	unsigned ori:1;
+	unsigned edge:4;
+	order1_t order;
+	EdgePart part;
+};
+
+struct CEDFaceKey {
+	unsigned ori:3;
+	unsigned face:3;
+	unsigned face_var:1;
+	unsigned dir:1;
+	order2_t order;
+	FacePart part;
+};
+
 /// constrained key
 struct CEDKey {
 	unsigned type:2;			// see enum ECedKeyType
@@ -63,22 +87,27 @@ struct CEDKey {
 		unsigned face:4;		// index of a face
 		unsigned edge:4;		// index of an edge
 	};
-	unsigned order:21;			// order of an edge/face function
 	unsigned dir:1;
+	int order;					// order of an edge/face function
 	Part part;					// part of the edge/face
 
 	CEDKey() {
 	}
 
 	CEDKey(unsigned type, unsigned edge, order1_t order, unsigned ori, Part part) {
-
+		this->type = type;
+		this->ori = ori;
+		this->edge = edge;
+		this->order = order;
+		this->part = part;
+		this->dir = dir;
 	}
 
 	CEDKey(unsigned type, unsigned num, order2_t order, unsigned ori, Part part, int dir = 0) {
 		this->type = type;
 		this->ori = ori;
 		this->face = num;
-//		this->order = order;
+		this->order = order.get_idx();
 		this->part = part;
 		this->dir = dir;
 	}
@@ -212,9 +241,9 @@ protected:
 	// CED
 	double get_constrained_value(int n, int index, double x, double y, double z, int component);
 
-	virtual CEDComb *calc_constrained_edge_combination(int ori, order1_t order, Part part) { return NULL; }
-	virtual CEDComb *calc_constrained_edge_face_combination(int ori, order2_t order, Part part, int dir) { return NULL; }
-	virtual CEDComb *calc_constrained_face_combination(int ori, order2_t order, Part part) { return NULL; }
+	virtual CEDComb *calc_constrained_edge_combination(int ori, order1_t order, EdgePart part) { return NULL; }
+	virtual CEDComb *calc_constrained_edge_face_combination(int ori, order2_t order, FacePart part, int dir) { return NULL; }
+	virtual CEDComb *calc_constrained_face_combination(int ori, order2_t order, FacePart part) { return NULL; }
 	void free_constrained_combinations();
 
 	Map<CEDKey, CEDComb *> ced_comb;			// mapping: CEDKey => CEDComb

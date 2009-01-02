@@ -74,7 +74,6 @@ int HCurlSpace::get_element_ndofs(Element *elem, order3_t order) {
 //
 
 int HCurlSpace::assign_dofs_internal(int first_dof/* = 0*/, int strid/* = 1*/) {
-	BitArray init_vertices;
 	BitArray init_edges;
 	BitArray init_faces;
 
@@ -116,24 +115,15 @@ int HCurlSpace::assign_dofs_internal(int first_dof/* = 0*/, int strid/* = 1*/) {
 
 void HCurlSpace::get_element_assembly_list(Element *e, AsmList *al) {
 	al->clear();
-
-	// edges of the element
-	for (int i = 0; i < e->get_num_of_edges(); i++)
-		get_edge_assembly_list(e, i, al);
-	// faces of the element
-	for (int i = 0; i < e->get_num_of_faces(); i++)
-		get_face_assembly_list(e, i, al);
-	// inside the element
+	for (int i = 0; i < e->get_num_of_edges(); i++) get_edge_assembly_list(e, i, al);
+	for (int i = 0; i < e->get_num_of_faces(); i++) get_face_assembly_list(e, i, al);
 	get_bubble_assembly_list(e, al);
 }
 
 void HCurlSpace::get_boundary_assembly_list(Element *e, int face, AsmList *al) {
 	al->clear();
-	// edges on the face
 	const int *face_edges = e->get_face_edges(face);
-	for (int i = 0; i < e->get_face_num_of_edges(face); i++)
-		get_edge_assembly_list(e, face_edges[i], al);
-	// face
+	for (int i = 0; i < e->get_face_num_of_edges(face); i++) get_edge_assembly_list(e, face_edges[i], al);
 	get_face_assembly_list(e, face, al);
 }
 

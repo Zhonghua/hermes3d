@@ -99,6 +99,19 @@ struct order2_t {
 		return *this;
 	}
 
+	order2_t operator=(const int o) {
+		this->type = (o >> 31);
+		switch (this->type) {
+			case MODE_TRIANGLE: this->order = o & 0x7fffffff; break;
+			case MODE_QUAD:
+				this->x = (o >> 10) & 0x3FF;
+				this->y = o & 0x3FF;
+				break;
+			default: assert(false);
+		}
+		return *this;
+	}
+
 //	operator const char *() {
 	const char *str() {
 		static char s[64];
@@ -119,8 +132,8 @@ struct order2_t {
 //	}
 	int get_idx() {
 		switch (type) {
-			case MODE_TRIANGLE: return this->order;
-			case MODE_QUAD: return (this->x << 10) | this->y;
+			case MODE_TRIANGLE: return (this->type << 31) | this->order;
+			case MODE_QUAD: return (((this->type << 11) | this->x) << 10) | this->y;
 			default: assert(false);
 		}
 	}

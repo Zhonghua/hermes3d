@@ -201,11 +201,10 @@ void SimpleFilter::precalculate(qorder_t order, int mask) {
 		return;
 	}
 
-	EXIT(ERR_NOT_IMPLEMENTED);
-
-/*
 	Quad3D *quad = quads[cur_quad];
-	int np = quad->get_num_points(order);
+
+	assert(order.type == QOT_ELEMENT);
+	int np = quad->get_num_points(order.order);
 	Node *node = new_node(FN_VAL, np);
 	MEM_CHECK(node);
 
@@ -237,7 +236,6 @@ void SimpleFilter::precalculate(qorder_t order, int mask) {
 
 	// remove the old node and attach the new one
 	replace_cur_node(node);
-*/
 }
 
 //// predefined simple filters /////////////////////////////////////////////////////////////////////

@@ -3,45 +3,6 @@
 
 #include "quad.h"
 
-//
-// 1D numeric quadrature //////////////////////////////////////////////////////
-//
-
-/// Numerical quadrature for 1D
-///
-/// @ingroup quadrature
-class Quad1DStd : public Quad1D {
-public:
-	Quad1DStd();
-};
-
-
-//
-// 2D numeric quadrature //////////////////////////////////////////////////////
-//
-
-/// Numeric quadrature for 2D triangle
-///
-/// @ingroup quadrature
-class QuadStdTri : public Quad2D {
-public:
-	QuadStdTri();
-	~QuadStdTri();
-};
-
-/// Numerical quadrature for 2D quadrilateral
-///
-/// @ingroup quadrature
-class QuadStdQuad : public Quad2D {
-public:
-	QuadStdQuad();
-	~QuadStdQuad();
-};
-
-
-//
-// 3D numeric quadrature //////////////////////////////////////////////////////
-//
 
 /// Numerical quadrature for 3D hexahedron
 ///

@@ -246,8 +246,7 @@ void Space::assign_edge_dofs(Word_t idx) {
 
 void Space::assign_face_dofs(Word_t idx) {
 	FaceData *node = fn_data[idx];
-	Facet *face = mesh->facets.get(idx);
-	int ndofs = get_face_ndofs(face, node->order);
+	int ndofs = get_face_ndofs(node->order);
 	if (node->bc_type == BC_ESSENTIAL) {
 		node->dof = DIRICHLET_DOF;
 	}
@@ -260,8 +259,7 @@ void Space::assign_face_dofs(Word_t idx) {
 
 void Space::assign_bubble_dofs(Word_t idx) {
 	ElementData *enode = elm_data[idx];
-	Element *elem = mesh->elements[idx];
-	int ndofs = get_element_ndofs(elem, enode->order);
+	int ndofs = get_element_ndofs(enode->order);
 	enode->n = ndofs;
 	enode->dof = next_dof;
 	next_dof += ndofs * stride;

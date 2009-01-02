@@ -315,8 +315,8 @@ public: // remove me
 
 	virtual int get_vertex_ndofs() = 0;
 	virtual int get_edge_ndofs(order1_t order) = 0;
-	virtual int get_face_ndofs(Facet *face, order2_t order) = 0;
-	virtual int get_element_ndofs(Element *elem, order3_t order) = 0;
+	virtual int get_face_ndofs(order2_t order) = 0;
+	virtual int get_element_ndofs(order3_t order) = 0;
 
 	virtual void assign_vertex_dofs(Word_t vid);
 	virtual void assign_edge_dofs(Word_t eid);

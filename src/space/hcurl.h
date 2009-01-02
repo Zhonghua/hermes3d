@@ -20,8 +20,8 @@ public:
 protected:
 	virtual int get_vertex_ndofs();
 	virtual int get_edge_ndofs(order1_t order);
-	virtual int get_face_ndofs(Facet *face, order2_t order);
-	virtual int get_element_ndofs(Element *elem, order3_t order);
+	virtual int get_face_ndofs(order2_t order);
+	virtual int get_element_ndofs(order3_t order);
 
 	virtual int assign_dofs_internal(int first_dof = 0, int strid = 1);
 

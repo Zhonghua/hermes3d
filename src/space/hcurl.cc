@@ -39,35 +39,17 @@ int HCurlSpace::get_edge_ndofs(order1_t order) {
 	return order + 1;
 }
 
-int HCurlSpace::get_face_ndofs(Facet *face, order2_t order) {
-	int order1, order2;
-
-	Element *elem = mesh->elements[face->left];
-	switch (elem->get_face_mode(face->left_face_num)) {
-		case MODE_QUAD:
-			order1 = order.x;
-			order2 = order.y;
-			return (order1 + 1) * order2 + order1 * (order2 + 1);
-
-		default:
-			EXIT(ERR_UNKNOWN_MODE);
+int HCurlSpace::get_face_ndofs(order2_t order) {
+	switch (order.type) {
+		case MODE_QUAD: return (order.x + 1) * order.y + order.x * (order.y + 1);
+		default: EXIT(ERR_NOT_IMPLEMENTED);
 	}
 }
 
-int HCurlSpace::get_element_ndofs(Element *elem, order3_t order) {
-	switch (elem->get_mode()) {
-		int order1;
-		int order2;
-		int order3;
-
-		case MODE_HEXAHEDRON:
-			order1 = order.x;
-			order2 = order.y;
-			order3 = order.z;
-			return (order1 + 1) * order2 * order3 + order1 * (order2 + 1) * order3 + order1 * order2 * (order3 + 1);
-
-		default:
-			EXIT(ERR_UNKNOWN_MODE);
+int HCurlSpace::get_element_ndofs(order3_t order) {
+	switch (order.type) {
+		case MODE_HEXAHEDRON: return (order.x + 1) * order.y * order.z + order.x * (order.y + 1) * order.z + order.x * order.y * (order.z + 1);
+		default: EXIT(ERR_NOT_IMPLEMENTED);
 	}
 }
 

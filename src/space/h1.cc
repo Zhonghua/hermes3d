@@ -39,40 +39,19 @@ int H1Space::get_edge_ndofs(order1_t order) {
 	return order - 1;
 }
 
-int H1Space::get_face_ndofs(Facet *face, order2_t order) {
-	int order1, order2;
-
-	switch (face->mode) {
-		case MODE_TRIANGLE:
-			return (order.order - 1) * (order.order - 2) / 2;
-
-		case MODE_QUAD:
-			order1 = order.x;
-			order2 = order.y;
-			return (order1 - 1) * (order2 - 1);
-
-		default:
-			EXIT(ERR_UNKNOWN_MODE);
+int H1Space::get_face_ndofs(order2_t order) {
+	switch (order.type) {
+		case MODE_TRIANGLE: return (order.order - 1) * (order.order - 2) / 2;
+		case MODE_QUAD: return (order.x - 1) * (order.y - 1);
+		default: EXIT(ERR_UNKNOWN_MODE);
 	}
 }
 
-int H1Space::get_element_ndofs(Element *elem, order3_t order) {
-	switch (elem->get_mode()) {
-		int order1;
-		int order2;
-		int order3;
-
-		case MODE_TETRAHEDRON:
-			return (order.order - 1) * (order.order - 2) * (order.order - 3) / 6;
-
-		case MODE_HEXAHEDRON:
-			order1 = order.x;
-			order2 = order.y;
-			order3 = order.z;
-			return (order1 - 1) * (order2 - 1) * (order3 - 1);
-
-		default:
-			EXIT(ERR_UNKNOWN_MODE);
+int H1Space::get_element_ndofs(order3_t order) {
+	switch (order.type) {
+		case MODE_TETRAHEDRON: return (order.order - 1) * (order.order - 2) * (order.order - 3) / 6;
+		case MODE_HEXAHEDRON: return (order.x - 1) * (order.y - 1) * (order.z - 1);
+		default: EXIT(ERR_UNKNOWN_MODE);
 	}
 }
 

@@ -36,16 +36,6 @@ struct hex_index_t {
 	operator int() { return (((((ori << 3) | x) << 8) | y) << 8) | z; }
 };
 
-/*static const int base_coding = MAX_ELEMENT_ORDER + 1;		// order: 0..10
-
-#define MAKE_HEX_IDX(h, f, v, ori) (((((v) * (base_coding) + (f)) * (base_coding) + (h)) << 3) | ori)
-
-#define GET_HEX_IDX_1(order) ((order) % (base_coding))
-#define GET_HEX_IDX_2(order) (((order) / (base_coding)) % (base_coding))
-#define GET_HEX_IDX_3(order) ((order) / ((base_coding) * (base_coding)))
-*/
-//#define MAKE_FACE_IDX(h, v) (((v) * (base_coding) + (h)) << 3)
-
 
 static int lobatto_hex_vertex_indices[] = {
 	hex_index_t(0, 0, 0), hex_index_t(1, 0, 0), hex_index_t(1, 1, 0), hex_index_t(0, 1, 0),

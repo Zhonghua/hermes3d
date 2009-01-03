@@ -1,8 +1,8 @@
 /*
  * zero.cc
- * 
+ *
  * testing zero functions values at vertices, on edges and faces
- * 
+ *
  */
 
 #include "config.h"
@@ -67,7 +67,7 @@ bool test_zero_values_of_vertex_fns(Shapeset *shapeset) {
 
 		// edges
 		for (int i = 0; i < num_edges; i++) {
-			int max_order = quad->get_edge_max_order(edges[vtx][i]);
+			order1_t max_order = quad->get_edge_max_order(edges[vtx][i]);
 			QuadPt3D *pts = quad->get_edge_points(edges[vtx][i], max_order);
 			for (int j = 0; j < quad->get_edge_num_points(max_order); j++) {
 				if (shapeset->get_fn_value(fn_idx, pts[j].x, pts[j].y, pts[j].z, 0) > EPS) {
@@ -79,7 +79,7 @@ bool test_zero_values_of_vertex_fns(Shapeset *shapeset) {
 
 		// faces
 		for (int i = 0; i < num_faces; i++) {
-			int max_order = quad->get_face_max_order(faces[vtx][i]);
+			order2_t max_order = quad->get_face_max_order(faces[vtx][i]);
 			QuadPt3D *pts = quad->get_face_points(faces[vtx][i], max_order);
 			for (int j = 0; j < quad->get_face_num_points(faces[vtx][i], max_order); j++) {
 				if (shapeset->get_fn_value(fn_idx, pts[j].x, pts[j].y, pts[j].z, 0) > EPS) {
@@ -148,7 +148,7 @@ bool test_zero_values_of_edge_fns(Shapeset *shapeset) {
 			int order = MAX_ELEMENT_ORDER;
 			int n_fns = shapeset->get_num_edge_fns(order);
 			int *edge_fn = shapeset->get_edge_indices(edge, ori, order);
-		
+
 			for (int fn = 0; fn < n_fns; fn++) {
 				printf("  * Edge fn #%d (edge = %d, ori = %d) ", edge_fn[fn], edge, ori);
 
@@ -164,7 +164,7 @@ bool test_zero_values_of_edge_fns(Shapeset *shapeset) {
 
 				// edges
 				for (int i = 0; i < num_edges; i++) {
-					int max_order = quad->get_edge_max_order(edges[edge][i]);
+					order1_t max_order = quad->get_edge_max_order(edges[edge][i]);
 					QuadPt3D *pts = quad->get_edge_points(edges[edge][i], max_order);
 					for (int j = 0; j < quad->get_edge_num_points(max_order); j++) {
 						if (shapeset->get_fn_value(edge_fn[fn], pts[j].x, pts[j].y, pts[j].z, 0) > EPS) {
@@ -176,7 +176,7 @@ bool test_zero_values_of_edge_fns(Shapeset *shapeset) {
 
 				// faces
 				for (int i = 0; i < num_faces; i++) {
-					int max_order = quad->get_face_max_order(faces[edge][i]);
+					order2_t max_order = quad->get_face_max_order(faces[edge][i]);
 					QuadPt3D *pts = quad->get_face_points(faces[edge][i], max_order);
 					for (int j = 0; j < quad->get_face_num_points(faces[edge][i], max_order); j++) {
 						if (shapeset->get_fn_value(edge_fn[fn], pts[j].x, pts[j].y, pts[j].z, 0) > EPS) {
@@ -231,12 +231,12 @@ bool test_zero_values_of_face_fns(Shapeset *shapeset) {
 	Quad3D *quad = get_quadrature(MODE);
 	for (int face = 0; face < Hex::NUM_FACES; face++) {
 		for (int ori = 0; ori < 8; ori++) {
-			int order = MAKE_QUAD_ORDER(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER);
+			order2_t order(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER);
 
 			int n_fns = shapeset->get_num_face_fns(order);
 			int *face_fn = shapeset->get_face_indices(face, ori, order);
-		
-			for (int fn = 0; fn < n_fns; fn++) {						
+
+			for (int fn = 0; fn < n_fns; fn++) {
 				printf("  * Face fn #%d (face = %d, ori = %d) ", face_fn[fn], face, ori);
 
 				// vertices
@@ -251,7 +251,7 @@ bool test_zero_values_of_face_fns(Shapeset *shapeset) {
 
 				// edges
 				for (int i = 0; i < num_edges; i++) {
-					int max_order = quad->get_edge_max_order(edges[face][i]);
+					order1_t max_order = quad->get_edge_max_order(edges[face][i]);
 					QuadPt3D *pts = quad->get_edge_points(edges[face][i], max_order);
 					for (int j = 0; j < quad->get_edge_num_points(max_order); j++) {
 						if (shapeset->get_fn_value(face_fn[fn], pts[j].x, pts[j].y, pts[j].z, 0) > EPS) {
@@ -263,7 +263,7 @@ bool test_zero_values_of_face_fns(Shapeset *shapeset) {
 
 				// faces
 				for (int i = 0; i < num_faces; i++) {
-					int max_order = quad->get_face_max_order(faces[face][i]);
+					order2_t max_order = quad->get_face_max_order(faces[face][i]);
 					QuadPt3D *pts = quad->get_face_points(faces[face][i], max_order);
 					for (int j = 0; j < quad->get_face_num_points(faces[face][i], max_order); j++) {
 						if (shapeset->get_fn_value(face_fn[fn], pts[j].x, pts[j].y, pts[j].z, 0) > EPS) {
@@ -286,8 +286,8 @@ bool test_zero_values_of_bubble_fns(Shapeset *shapeset) {
 
 	Quad3D *quad = get_quadrature(MODE);
 
-	int order = MAKE_HEX_ORDER(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER);
-	
+	order3_t order(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER);
+
 	int n_fns = shapeset->get_num_bubble_fns(order);
 	int *bubble_fn = shapeset->get_bubble_indices(order);
 
@@ -305,7 +305,7 @@ bool test_zero_values_of_bubble_fns(Shapeset *shapeset) {
 
 		// edges
 		for (int i = 0; i < Hex::NUM_EDGES; i++) {
-			int max_order = quad->get_edge_max_order(i);
+			order1_t max_order = quad->get_edge_max_order(i);
 			QuadPt3D *pts = quad->get_edge_points(i, max_order);
 			for (int j = 0; j < quad->get_edge_num_points(max_order); j++) {
 				if (shapeset->get_fn_value(bubble_fn[fn], pts[j].x, pts[j].y, pts[j].z, 0) > EPS) {
@@ -317,7 +317,7 @@ bool test_zero_values_of_bubble_fns(Shapeset *shapeset) {
 
 		// faces
 		for (int i = 0; i < Hex::NUM_FACES; i++) {
-			int max_order = quad->get_face_max_order(i);
+			order2_t max_order = quad->get_face_max_order(i);
 			QuadPt3D *pts = quad->get_face_points(i, max_order);
 			for (int j = 0; j < quad->get_face_num_points(i, max_order); j++) {
 				if (shapeset->get_fn_value(bubble_fn[fn], pts[j].x, pts[j].y, pts[j].z, 0) > EPS) {
@@ -329,7 +329,7 @@ bool test_zero_values_of_bubble_fns(Shapeset *shapeset) {
 
 		printf("... ok\n");
 	}
-	
+
 	return true;
 }
 

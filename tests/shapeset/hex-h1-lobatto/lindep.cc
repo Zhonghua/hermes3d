@@ -16,7 +16,7 @@ double l2_product(RealFunction *fu, RealFunction *fv) {
 	Quad3D *quad = fu->get_quad();
 
 	// integrate with maximum order
-	int o = quad->get_max_order();
+	order3_t o = quad->get_max_order();
 
 	fu->set_quad_order(ELEM_QORDER(o));
 	fv->set_quad_order(ELEM_QORDER(o));
@@ -47,8 +47,8 @@ bool test_lin_indep(Shapeset *shapeset) {
 	int n =
 		Hex::NUM_VERTICES * 1 +			// 1 vertex fn
 		Hex::NUM_EDGES * shapeset->get_num_edge_fns(MAX_ELEMENT_ORDER) +
-		Hex::NUM_FACES * shapeset->get_num_face_fns(MAKE_QUAD_ORDER(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER)) +
-		shapeset->get_num_bubble_fns(MAKE_HEX_ORDER(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER));
+		Hex::NUM_FACES * shapeset->get_num_face_fns(order2_t(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER)) +
+		shapeset->get_num_bubble_fns(order3_t(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER));
 
 	printf("number of functions = %d\n", n);
 
@@ -66,13 +66,13 @@ bool test_lin_indep(Shapeset *shapeset) {
 	}
 	// face fns
 	for (int i = 0; i < Hex::NUM_FACES; i++) {
-		int order = MAKE_QUAD_ORDER(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER);
+		order2_t order(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER);
 		int *face_idx = shapeset->get_face_indices(i, 0, order);
 		for (int j = 0; j < shapeset->get_num_face_fns(order); j++, m++)
 			fn_idx[m] = face_idx[j];
 	}
 	// bubble
-	int order = MAKE_HEX_ORDER(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER);
+	order3_t order(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER);
 	int *bubble_idx = shapeset->get_bubble_indices(order);
 	for (int j = 0; j < shapeset->get_num_bubble_fns(order); j++, m++)
 		fn_idx[m] = bubble_idx[j];

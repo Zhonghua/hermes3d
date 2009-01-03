@@ -48,14 +48,15 @@ int main(int argc, char *argv[]) {
 		// IV. gradients
 		if (!test_gradients(&shapeset))
 			throw ERR_FAILURE;
-		
+
 		// V. computes gradients numericaly from fn values and compares
 		if (!test_gradients_directly(&shapeset))
 			throw ERR_FAILURE;
-		
+
 		printf("Shapeset OK\n");
 	}
 	catch (int e) {
+		printf("Failed\n");
 		res = e;
 	}
 

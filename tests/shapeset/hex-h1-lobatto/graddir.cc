@@ -17,9 +17,9 @@ double dif, maxdif;
 bool test(Shapeset *ss, int fnum)
 {
 	scalar val, valph, valder;
-	
+
 	bool passed = true;
-	
+
 	for(int point = 0; point < np; point++){
 		for(int comp = 0; comp < ss->get_num_components(); comp++){
 			// dx
@@ -33,7 +33,7 @@ bool test(Shapeset *ss, int fnum)
 			}
 			if (dif > maxdif)
 				maxdif = dif;
-					
+
 			// dy
 			val = ss->get_fn_value(fnum, ptx[point], pty[point], ptz[point], comp);
 			valph = ss->get_fn_value(fnum, ptx[point], pty[point] + hh, ptz[point], comp);
@@ -45,7 +45,7 @@ bool test(Shapeset *ss, int fnum)
 			}
 			if (dif > maxdif)
 				maxdif = dif;
-					
+
 			// dz
 			val = ss->get_fn_value(fnum, ptx[point], pty[point], ptz[point], comp);
 			valph = ss->get_fn_value(fnum, ptx[point], pty[point], ptz[point] + hh, comp);
@@ -57,7 +57,7 @@ bool test(Shapeset *ss, int fnum)
 			}
 			if (dif > maxdif)
 				maxdif = dif;
-			
+
 		}
 	}
 	return passed;
@@ -70,41 +70,41 @@ bool test_gradients_directly(Shapeset *ss)
 	maxdif = 0.;
 	bool passed = true;
 	int index, *indices, ii;
-	
-	for(int iv = 0; iv < 8; iv++){
+
+	for (int iv = 0; iv < 8; iv++) {
 		index = ss->get_vertex_index(iv);
-		if(! test(ss, index)) 
+		if (!test(ss, index))
 			passed = false;
 	}
-	
-	int order = MAX_ELEMENT_ORDER;
-	for(int ie = 0; ie < 12; ie++){
-		for(int ori = 0; ori < 2; ori++){ 
-			indices = ss->get_edge_indices(ie, ori, order);
-			for(ii = 0; ii < ss->get_num_edge_fns(order); ii++)
-				if(! test(ss, indices[ii]))
+
+	order1_t eorder = MAX_ELEMENT_ORDER;
+	for (int ie = 0; ie < 12; ie++) {
+		for (int ori = 0; ori < 2; ori++) {
+			indices = ss->get_edge_indices(ie, ori, eorder);
+			for (ii = 0; ii < ss->get_num_edge_fns(eorder); ii++)
+				if (!test(ss, indices[ii]))
 					passed = false;
 		}
 	}
-	
-	order = MAKE_QUAD_ORDER(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER);
-	for(int ic = 0; ic < 6; ic++){
-		for(int ori = 0; ori < 8; ori++){ 
-			indices = ss->get_face_indices(ic, ori, order);
-			for(ii = 0; ii < ss->get_num_face_fns(order); ii++)
-				if(! test(ss, indices[ii]))
+
+	order2_t forder(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER);
+	for (int ic = 0; ic < 6; ic++) {
+		for (int ori = 0; ori < 8; ori++) {
+			indices = ss->get_face_indices(ic, ori, forder);
+			for (ii = 0; ii < ss->get_num_face_fns(forder); ii++)
+				if (!test(ss, indices[ii]))
 					passed = false;
 		}
 	}
-	
-	order = MAKE_HEX_ORDER(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER);
+
+	order3_t order(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER);
 	indices = ss->get_bubble_indices(order);
-	for(ii = 0; ii < ss->get_num_bubble_fns(order); ii++)
-		if(! test(ss, indices[ii]))
+	for (ii = 0; ii < ss->get_num_bubble_fns(order); ii++)
+		if (!test(ss, indices[ii]))
 			passed = false;
-	
+
 	printf("maximal difference is %g, which is %g * h^2\n", maxdif, maxdif/hh/hh);
-	
+
 	return passed;
 }
 

@@ -15,7 +15,7 @@ void h1_int_vol(RealFunction *fu, double3 result) {
 	Quad3D *quad = fu->get_quad();
 
 	// integrate with maximum order
-	int o = quad->get_max_order();
+	order3_t o = quad->get_max_order();
 
 	fu->set_quad_order(ELEM_QORDER(o), FN_DX | FN_DY | FN_DZ);
 
@@ -49,7 +49,7 @@ void h1_int_surf(RealFunction *fu, double3 result) {
 	// integrating over reference brick -> jacobian is 1.0 (we do not have to bother with refmap)
 	result[0] = result[1] = result[2] = 0.0;
 	for (int face = 0; face < Hex::NUM_FACES; face++) {
-		int face_order = quad->get_face_max_order(face);
+		order2_t face_order = quad->get_face_max_order(face);
 		// integrate with maximum order
 		qorder_t surf_order = FACE_QORDER(face, face_order);
 
@@ -123,7 +123,7 @@ bool test_gradients(Shapeset *shapeset) {
 	// face fns
 	printf("\n* Face functions\n");
 	for (int i = 0; i < Hex::NUM_FACES; i++) {
-		int order = MAKE_QUAD_ORDER(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER);
+		order2_t order(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER);
 		for (int ori = 0; ori < RefHex::get_face_orientations(i); ori++) {
 			int *face_idx = shapeset->get_face_indices(i, ori, order);
 			for (int j = 0; j < shapeset->get_num_face_fns(order); j++) {
@@ -135,12 +135,14 @@ bool test_gradients(Shapeset *shapeset) {
 
 	// bubble
 	printf("\n* Bubble functions\n");
-	int order = MAKE_HEX_ORDER(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER);
+	order3_t order(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER);
 	int *bubble_idx = shapeset->get_bubble_indices(order);
 	for (int j = 0; j < shapeset->get_num_bubble_fns(order); j++) {
 		if (!test_grad(bubble_idx[j], shapeset))
 			return false;
 	}
+
+	printf("\n");
 
 	return true;
 }

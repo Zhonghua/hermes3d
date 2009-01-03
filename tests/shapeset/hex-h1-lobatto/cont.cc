@@ -331,8 +331,8 @@ bool test_cont_values_of_vertex_fns(Mesh *mesh, int pos0, int pos1, Shapeset *sh
 
 	// elements
 	Element *hex[] = {
-		mesh->elements[0],
-		mesh->elements[1]
+		mesh->elements[1],
+		mesh->elements[2]
 	};
 
 	// vertex functions on both faces
@@ -386,7 +386,7 @@ bool test_cont_values_of_vertex_fns(Mesh *mesh, int pos0, int pos1, Shapeset *sh
 	get_face_perm_ori(pos0, perm0, c0);
 	get_face_perm_ori(pos1, perm1, c1);
 
-	int face_order = quad->get_face_max_order(face_no[0][pos0]);
+	order2_t face_order = quad->get_face_max_order(face_no[0][pos0]);
 //	int face_order = MAKE_QUAD_ORDER(4, 3);
 	QuadPt3D *face_pts[] = {
 		quad->get_face_points(face_no[0][pos0], face_order),
@@ -419,7 +419,7 @@ bool test_cont_values_of_vertex_fns(Mesh *mesh, int pos0, int pos1, Shapeset *sh
 	}
 
 	// on edges
-	int edge_order = MAX_QUAD_ORDER;
+	order1_t edge_order = MAX_QUAD_ORDER;
 //	int edge_order = 4;
 
 	// on H edge
@@ -536,8 +536,8 @@ bool test_cont_values_of_edge_fns(Mesh *mesh, int pos0, int pos1, Shapeset *shap
 
 	// elements
 	Element *hex[] = {
-		mesh->elements[0],
-		mesh->elements[1]
+		mesh->elements[1],
+		mesh->elements[2]
 	};
 
 	// orientations of both edge functions
@@ -556,7 +556,7 @@ bool test_cont_values_of_edge_fns(Mesh *mesh, int pos0, int pos1, Shapeset *shap
 	get_face_perm_ori(pos1, perm1, c1);
 
 	// on face
-	int face_order = quad->get_face_max_order(face_no[0][pos0]);
+	order2_t face_order = quad->get_face_max_order(face_no[0][pos0]);
 //	int face_order = MAKE_QUAD_ORDER(4, 3);
 	QuadPt3D *face_pts[] = {
 		quad->get_face_points(face_no[0][pos0], face_order),
@@ -654,13 +654,13 @@ bool test_cont_values_of_face_fns(Mesh *mesh, int pos0, int pos1, Shapeset *shap
 	double c1[] = { 1, 1, 1 };
 
 	// functions up to the order 'order' are tested
-	int order = MAKE_QUAD_ORDER(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER);
+	order2_t order(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER);
 //	int order = MAKE_QUAD_ORDER(4, 3);
 
 	// elements
 	Element *hex[] = {
-		mesh->elements[0],
-		mesh->elements[1]
+		mesh->elements[1],
+		mesh->elements[2]
 	};
 
 	// face
@@ -681,7 +681,7 @@ bool test_cont_values_of_face_fns(Mesh *mesh, int pos0, int pos1, Shapeset *shap
 	get_face_perm_ori(pos1, perm1, c1);
 
 //	int face_order = MAKE_QUAD_ORDER(4, 3);
-	int face_order = quad->get_face_max_order(face_no[0][pos0]);
+	order2_t face_order = quad->get_face_max_order(face_no[0][pos0]);
 	QuadPt3D *face_pts[] = {
 		quad->get_face_points(face_no[0][pos0], face_order),
 		quad->get_face_points(face_no[1][pos1], face_order)

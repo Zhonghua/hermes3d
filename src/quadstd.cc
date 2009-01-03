@@ -3499,9 +3499,9 @@ QuadStdHex::QuadStdHex() {
 	// element points
 	for (int i = 0; i <= MAX_QUAD_ORDER; i++)
 		for (int j = 0; j <= MAX_QUAD_ORDER; j++)
-			for (int o = 0; o <= MAX_QUAD_ORDER; o++) {
-				order3_t m(i, j, o);
-				np[m.get_idx()] = std_np_1d[i] * std_np_1d[j] * std_np_1d[o];
+			for (int k = 0; k <= MAX_QUAD_ORDER; k++) {
+				order3_t m(i, j, k);
+				np[m.get_idx()] = std_np_1d[i] * std_np_1d[j] * std_np_1d[k];
 			}
 
 	// faces
@@ -3522,10 +3522,7 @@ QuadStdHex::QuadStdHex() {
 	for (int iedge = 0; iedge < Hex::NUM_EDGES; iedge++) {
 		const int *hex_edge_vtcs = RefHex::get_edge_vertices(iedge);
 		assert(hex_edge_vtcs != NULL);
-//		edge_tables[iedge] = new QuadPt3D *[MAX_QUAD_ORDER + 1];
-//		MEM_CHECK(edge_tables[iedge]);
 		for (int order = 0; order <= MAX_QUAD_ORDER; order++) {
-//			np_edge[order] = std_np_1d[order];
 			edge_tables[iedge][order] = new QuadPt3D[np_edge[order]];
 			MEM_CHECK(edge_tables[iedge][order]);
 			QuadPt1D *pts1d = std_tables_1d[order];
@@ -3540,83 +3537,6 @@ QuadStdHex::QuadStdHex() {
 		}
 	}
 
-//	np_edge = new int [MAX_QUAD_ORDER + 1];
-
-
-/*	int num = max_order + 1;
-
-	// allocate memory for tables (tables are calculated on demand)
-	tables = new QuadPt3D *[num];
-	MEM_CHECK(tables);
-	memset(tables, 0, num * sizeof(QuadPt3D *));
-
-	// number of integration points
-	np = new int [num];
-	MEM_CHECK(np);
-	memset(np, 0, num * sizeof(int));
-
-	for (int i = 0; i <= MAX_QUAD_ORDER; i++) {
-		for (int j = 0; j <= MAX_QUAD_ORDER; j++) {
-			for (int o = 0; o <= MAX_QUAD_ORDER; o++) {
-				order3_t m(i, j, o);
-				np[m.get_idx()] = std_np_1d[i] * std_np_1d[j] * std_np_1d[o];
-			}
-		}
-	}
-
-	// calcuate edge points
-	int nedges = Hex::NUM_EDGES;
-	const Point3D *ref_vtcs = RefHex::get_vertices();
-	assert(ref_vtcs != NULL);
-	edge_tables = new QuadPt3D **[nedges];
-	MEM_CHECK(edge_tables);
-	np_edge = new int [MAX_QUAD_ORDER + 1];
-	MEM_CHECK(np_edge);
-	for (int edge = 0; edge < nedges; edge++) {
-		const int *hex_edge_vtcs = RefHex::get_edge_vertices(edge);
-		assert(hex_edge_vtcs != NULL);
-		edge_tables[edge] = new QuadPt3D *[MAX_QUAD_ORDER + 1];
-		MEM_CHECK(edge_tables[edge]);
-		for (int order = 0; order <= MAX_QUAD_ORDER; order++) {
-			np_edge[order] = std_np_1d[order];
-			edge_tables[edge][order] = new QuadPt3D[np_edge[order]];
-			MEM_CHECK(edge_tables[edge][order]);
-			QuadPt1D *pts1d = std_tables_1d[order];
-			for (int p = 0; p < np_edge[order]; p++) {
-				double t = (pts1d[p].x + 1.0) * 0.5;
-				double s = 1.0 - t;
-				edge_tables[edge][order][p].x = ref_vtcs[hex_edge_vtcs[0]].x * s + ref_vtcs[hex_edge_vtcs[1]].x * t;
-				edge_tables[edge][order][p].y = ref_vtcs[hex_edge_vtcs[0]].y * s + ref_vtcs[hex_edge_vtcs[1]].y * t;
-				edge_tables[edge][order][p].z = ref_vtcs[hex_edge_vtcs[0]].z * s + ref_vtcs[hex_edge_vtcs[1]].z * t;
-				edge_tables[edge][order][p].w = pts1d[p].w;
-			}
-		}
-	}
-//	edge_jacobian = std_3d_hexa_edge_jacobian;
-
-	// calculate face points
-	num = MAKE_QUAD_ORDER(MAX_QUAD_ORDER, MAX_QUAD_ORDER) + 1;
-	// allocate memory
-	// tables for face points are calculated on demand
-	face_tables = new QuadPt3D **[Hex::NUM_FACES];
-	MEM_CHECK(face_tables);
-	for (int i = 0; i < Hex::NUM_FACES; i++) {
-		face_tables[i] = new QuadPt3D *[num];
-		MEM_CHECK(face_tables[i]);
-		memset(face_tables[i], 0, num * sizeof(QuadPt3D *));
-	}
-	np_face = new int [num];
-	MEM_CHECK(np_face);
-	memset(np_face, 0, num * sizeof(int));
-
-	for (int i = 0; i <= MAX_QUAD_ORDER; i++) {
-		for (int j = 0; j <= MAX_QUAD_ORDER; j++) {
-			order2_t m(i, j);
-			np_face[m] = std_np_1d[i] * std_np_1d[j];
-		}
-	}
-//	face_jacobian = std_3d_hexa_face_jacobian;
-*/
 	// vertex points
 	np_vertex = Hex::NUM_VERTICES;
 	const Point3D *vtx_pt = RefHex::get_vertices();
@@ -3633,47 +3553,9 @@ QuadStdHex::QuadStdHex() {
 
 QuadStdHex::~QuadStdHex() {
 #ifdef WITH_HEX
-/*	// free hexa points
-	for (int i = 0; i <= MAX_QUAD_ORDER; i++) {
-		for (int j = 0; j <= MAX_QUAD_ORDER; j++) {
-			for (int o = 0; o <= MAX_QUAD_ORDER; o++) {
-				order3_t m(i, j, o);
-				delete [] tables[m];
-			}
-		}
-	}
-	delete [] tables;
-	delete [] np;
-
-	// free face points
-	for (int face = 0; face < Hex::NUM_FACES; face++) {
-		for (int i = 0; i <= MAX_QUAD_ORDER; i++) {
-			for (int j = 0; j <= MAX_QUAD_ORDER; j++) {
-				order2_t m(i, j);
-				delete [] face_tables[face][m];
-			}
-		}
-		delete [] face_tables[face];
-	}
-	delete [] face_tables;
-	delete [] np_face;
-
-	// free edge points
-	for (int edge = 0; edge < Hex::NUM_EDGES; edge++) {
-		for (int order = 0; order <= MAX_QUAD_ORDER; order++)
-			delete [] edge_tables[edge][order];
-		delete [] edge_tables[edge];
-	}
-	delete [] edge_tables;
-	delete [] np_edge;
-
-	delete [] vertex_table;
-*/
 	// element
 	for (Word_t idx = tables.first(); idx != INVALID_IDX; idx = tables.next(idx))
 		delete [] tables[idx];
-//	for (Word_t idx = np.first(); idx != INVALID_IDX; idx = np.next(idx))
-//		delete [] np[idx];
 	// face
 	for (int iface = 0; iface < Hex::NUM_FACES; iface++) {
 		for (Word_t idx = face_tables[iface].first(); idx != INVALID_IDX; idx = face_tables[iface].next(idx))

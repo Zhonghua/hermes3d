@@ -104,7 +104,7 @@ public:
 protected:
 	/// mode of quadratures (MODE_TETRAHEDRON, MODE_HEXAHEDRON, MODE_PRISM)
 	EMode3D mode;
-	/// maximal order for integration (interpretation depeneds on the mode)
+	/// maximal order for integration (interpretation depends on the mode)
 	order1_t max_edge_order;
 	order2_t max_face_order;
 	order3_t max_order;

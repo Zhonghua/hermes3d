@@ -163,7 +163,6 @@ inline scalar surf_int_v(RealFunction *fv, RefMap *rv, FacePos *fp) {
 	order3_t order = fv->get_fn_order() + rv->get_inv_ref_order();
 	order.limit();
 	order2_t face_order = order.get_face_order(fp->face);
-
 	qorder_t qord = FACE_QORDER(fp->face, face_order);
 	fv->set_quad_order(qord, FN_VAL);
 
@@ -219,93 +218,12 @@ inline scalar surf_int_u_v(RealFunction *fu, RealFunction *fv, RefMap *ru, RefMa
 
 // TODO: merge this and things in norm.cc
 
-// works only with hex
-//inline int max_order(int order1, int order2) {
-//	int a[] = { GET_HEX_ORDER_1(order1), GET_HEX_ORDER_2(order1), GET_HEX_ORDER_3(order1) };
-//	int b[] = { GET_HEX_ORDER_1(order2), GET_HEX_ORDER_2(order2), GET_HEX_ORDER_3(order2) };
-//
-//	return MAKE_HEX_ORDER(std::max(a[0], b[0]), std::max(a[1], b[1]), std::max(a[2], b[2]));
-//}
-
-/*
-inline int calc_order(EMode3D mode, int fu_order, int fv_order, int inv_ref_order) {
-	int o;
-	switch (mode) {
-		case MODE_TETRAHEDRON:
-			o = fu_order + fv_order + inv_ref_order;
-			LIMIT_TETRA_ORDER(o);
-			break;
-
-		case MODE_HEXAHEDRON:
-			o = add_hex_orders(fu_order, fv_order);
-			o = add_hex_orders(o, inv_ref_order);
-			LIMIT_HEX_ORDER(o);
-			break;
-
-		default:
-		case MODE_PRISM:
-			EXIT(ERR_NOT_IMPLEMENTED);
-			break;
-	}
-
-	return o;
-}
-
-inline int calc_order(EMode3D mode, int fu_order, int inv_ref_order) {
-	int o;
-	switch (mode) {
-		case MODE_TETRAHEDRON:
-			o = fu_order + inv_ref_order;
-			LIMIT_TETRA_ORDER(o);
-			break;
-
-		case MODE_HEXAHEDRON:
-			o = add_hex_orders(fu_order, inv_ref_order);
-			LIMIT_HEX_ORDER(o);
-			break;
-
-		default:
-		case MODE_PRISM:
-			EXIT(ERR_NOT_IMPLEMENTED);
-			break;
-	}
-
-	return o;
-}
-*/
-
-/*
-inline int calc_order(EMode3D mode, int fn_order, int inv_ref_order) {
-	int o;
-	switch (mode) {
-		case MODE_TETRAHEDRON:
-			o = 2 * fn_order + inv_ref_order;
-			LIMIT_TETRA_ORDER(o);
-			break;
-
-		case MODE_HEXAHEDRON:
-			o = mul_hex_orders(fn_order, 2);
-			o = add_hex_orders(o, inv_ref_order);
-			LIMIT_HEX_ORDER(o);
-			break;
-
-		default:
-		case MODE_PRISM:
-			EXIT(ERR_NOT_IMPLEMENTED);
-			break;
-	}
-
-	return o;
-}
-*/
-
 template<typename T>
 inline double int_h1_error(Function<T> *fu, Function<T> *fv, RefMap *ru, RefMap *rv) {
 	Quad3D *quad = fu->get_quad();
 	Quad3D *quadv = fv->get_quad();
 	assert(quad == fv->get_quad());
 
-	// FIXME: mode
 	order3_t o = fu->get_fn_order() + fv->get_fn_order() + ru->get_inv_ref_order();
 	qorder_t qord = ELEM_QORDER(o);
 	fu->set_quad_order(qord);
@@ -329,7 +247,6 @@ inline double int_h1_semi_error(Function<T> *fu, Function<T> *fv, RefMap *ru, Re
 	Quad3D *quadv = fv->get_quad();
 	assert(quad == fv->get_quad());
 
-	// FIXME: mode
 	order3_t o = fu->get_fn_order() + fv->get_fn_order() + ru->get_inv_ref_order();
 	qorder_t qord = ELEM_QORDER(o);
 	fu->set_quad_order(qord);
@@ -350,7 +267,6 @@ template<typename T>
 inline double int_h1_norm(Function<T> *fu, RefMap *ru) {
 	Quad3D *quad = fu->get_quad();
 
-	// FIXME: mode
 	order3_t o = fu->get_fn_order() + ru->get_inv_ref_order();
 	qorder_t qord = ELEM_QORDER(o);
 	fu->set_quad_order(qord);

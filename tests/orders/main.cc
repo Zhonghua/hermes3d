@@ -132,8 +132,26 @@ int test_order_hex() {
 	x = a + b + z;
 	if (x.x != 6 || x.y != 7 || x.z != 9) return ERR_FAILURE;
 
+	// relation operators
+	// TODO: try tetrahedral orders
+	if (c == order3_t(4, 6, 5)) ;
+	else return ERR_FAILURE;
 
-	// TODO: get_edge/face_order
+	if (c != order3_t(4, 6, 5)) return ERR_FAILURE;
+
+	// get_edge_order
+	order1_t edge_ref_order[] = { 3, 4, 3, 4, 2, 2, 2, 2, 3, 4, 3, 4 };
+	for (int iedge = 0; iedge < Hex::NUM_EDGES; iedge++) {
+		if (b.get_edge_order(iedge) != edge_ref_order[iedge]) return ERR_FAILURE;
+	}
+
+	// get_face_order
+	order2_t face_ref_order[] = {
+		order2_t(4, 2), order2_t(4, 2), order2_t(3, 2), order2_t(3, 2), order2_t(3, 4), order2_t(3, 4)
+	};
+	for (int iface = 0; iface < Hex::NUM_FACES; iface++) {
+		if (b.get_face_order(iface) != face_ref_order[iface]) return ERR_FAILURE;
+	}
 
 	// TODO: get_idx()
 

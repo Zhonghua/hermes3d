@@ -132,17 +132,17 @@ void PrecalcShapeset::precalculate(qorder_t qord, int mask) {
 	MEM_CHECK(node);
 
 	// precalculate all required tables
-	for (int j = 0; j < num_components; j++) {
-		for (int k = 0; k < VALUE_TYPES; k++) {
-			if (newmask & idx2mask[k][j]) {
-				if (oldmask & idx2mask[k][j])
-					memcpy(node->values[j][k], cur_node->values[j][k], np * sizeof(double));
+	for (int ic = 0; ic < num_components; ic++) {
+		for (int j = 0; j < VALUE_TYPES; j++) {
+			if (newmask & idx2mask[j][ic]) {
+				if (oldmask & idx2mask[j][ic])
+					memcpy(node->values[ic][j], cur_node->values[ic][j], np * sizeof(double));
 				else
-					for (int i = 0; i < np; i++)
-						node->values[j][k][i] = shapeset->get_value(k, index,
-								ctm->m[0] * pt[i].x + ctm->t[0],
-								ctm->m[1] * pt[i].y + ctm->t[1],
-								ctm->m[2] * pt[i].z + ctm->t[2], j);
+					for (int k = 0; k < np; k++)
+						node->values[ic][j][k] = shapeset->get_value(j, index,
+								ctm->m[0] * pt[k].x + ctm->t[0],
+								ctm->m[1] * pt[k].y + ctm->t[1],
+								ctm->m[2] * pt[k].z + ctm->t[2], ic);
 			}
 		}
 	}

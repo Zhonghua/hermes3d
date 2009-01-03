@@ -99,6 +99,25 @@ struct order2_t {
 		return *this;
 	}
 
+	// relation operators
+	bool operator==(const order2_t &o) {
+		if (this->type != o.type) return false;
+		switch (this->type) {
+			case MODE_TRIANGLE: return this->order == o.order;
+			case MODE_QUAD: return (this->x == o.x) && (this->y == o.y);
+			default: assert(false);
+		}
+	}
+
+	bool operator!=(const order2_t &o) {
+		if (this->type != o.type) return true;
+		switch (this->type) {
+			case MODE_TRIANGLE: return this->order != o.order;
+			case MODE_QUAD: return (this->x != o.x) || (this->y != o.y);
+			default: assert(false);
+		}
+	}
+
 	order2_t operator=(const int o) {
 		this->type = (o >> 31);
 		switch (this->type) {
@@ -133,7 +152,7 @@ struct order2_t {
 	int get_idx() {
 		switch (type) {
 			case MODE_TRIANGLE: return (this->type << 31) | this->order;
-			case MODE_QUAD: return (((this->type << 11) | this->x) << 10) | this->y;
+			case MODE_QUAD: return (((this->type << 11) | this->y) << 10) | this->x;
 			default: assert(false);
 		}
 	}
@@ -240,6 +259,25 @@ struct order3_t {
 		return *this;
 	}
 
+	// relation operators
+	bool operator==(const order3_t &o) {
+		if (this->type != o.type) return false;
+		switch (this->type) {
+			case MODE_TETRAHEDRON: return this->order == o.order;
+			case MODE_HEXAHEDRON: return (this->x == o.x) && (this->y == o.y) && (this->z == o.z);
+			default: assert(false);
+		}
+	}
+
+	bool operator!=(const order3_t &o) {
+		if (this->type != o.type) return true;
+		switch (this->type) {
+			case MODE_TETRAHEDRON: return this->order != o.order;
+			case MODE_HEXAHEDRON: return (this->x != o.x) || (this->y != o.y) || (this->z != o.z);
+			default: assert(false);
+		}
+	}
+
 //	operator const char *() {
 	const char *str() {
 		static char s[64];
@@ -261,9 +299,10 @@ struct order3_t {
 //	}
 
 	int get_idx() {
+		assert(!invalid());
 		switch (type) {
 			case MODE_TETRAHEDRON: return this->order;
-			case MODE_HEXAHEDRON: return (((this->x << 10) | this->y) << 10) | this->z;
+			case MODE_HEXAHEDRON: return (((this->z << 10) | this->y) << 10) | this->x;
 			default: assert(false);
 		}
 	}

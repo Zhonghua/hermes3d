@@ -23,22 +23,22 @@
 int m, n, o;
 
 double fnc(double x, double y, double z) {
-  return pow(x, m) * pow(y, n) * pow(z, o) + pow(x, 2) * pow(y, 3) - pow(x, 3) * z + pow(z, 4);
+	return pow(x, m) * pow(y, n) * pow(z, o) + pow(x, 2) * pow(y, 3) - pow(x, 3) * z + pow(z, 4);
 }
 
 double dfnc(double x, double y, double z) {
-  double ddxx = m*(m-1) * pow(x, m-2) * pow(y, n) * pow(z, o) + 2 * pow(y, 3) - 6 * x * z;
-  double ddyy = n*(n-1) * pow(x, m) * pow(y, n-2) * pow(z, o) + 6 * pow(x, 2) * y;
-  double ddzz = o*(o-1) * pow(x, m) * pow(y, n) * pow(z, o-2) + 12 * pow(z, 2);
+	double ddxx = m*(m-1) * pow(x, m-2) * pow(y, n) * pow(z, o) + 2 * pow(y, 3) - 6 * x * z;
+	double ddyy = n*(n-1) * pow(x, m) * pow(y, n-2) * pow(z, o) + 6 * pow(x, 2) * y;
+	double ddzz = o*(o-1) * pow(x, m) * pow(y, n) * pow(z, o-2) + 12 * pow(z, 2);
 
-  return -(ddxx + ddyy + ddzz) + fnc(x, y, z);
+	return -(ddxx + ddyy + ddzz) + fnc(x, y, z);
 }
 
 // needed for calculation norms and used by visualizator
 double exact_solution(double x, double y, double z, double &dx, double &dy, double &dz) {
-  dx = m * pow(x, m-1) * pow(y, n) * pow(z, o) + 2 * x * pow(y, 3) - 3 * pow(x, 2) * z;
-  dy = n * pow(x, m) * pow(y, n-1) * pow(z, o) + 3 * pow(x, 2) * pow(y, 2);
-  dz = o * pow(x, m) * pow(y, n) * pow(z, o-1) - pow(x, 3) + 4 * pow(z, 3);
+	dx = m * pow(x, m-1) * pow(y, n) * pow(z, o) + 2 * x * pow(y, 3) - 3 * pow(x, 2) * z;
+	dy = n * pow(x, m) * pow(y, n-1) * pow(z, o) + 3 * pow(x, 2) * pow(y, 2);
+	dz = o * pow(x, m) * pow(y, n) * pow(z, o-1) - pow(x, 3) + 4 * pow(z, 3);
 
 	return fnc(x, y, z);
 }
@@ -52,12 +52,12 @@ EBCType bc_types(int marker) {
 double bc_values(int marker, double x, double y, double z, int comp) {
 	switch (marker) {
 		case 1: return -(m * pow(x, m-1) * pow(y, n) * pow(z, o) + 2 * x * pow(y, 3) - 3 * pow(x, 2) * z);
-		case 2: return  m * pow(x, m-1) * pow(y, n) * pow(z, o) + 2 * x * pow(y, 3) - 3 * pow(x, 2) * z;
+		case 2: return   m * pow(x, m-1) * pow(y, n) * pow(z, o) + 2 * x * pow(y, 3) - 3 * pow(x, 2) * z;
 		case 3: return -(n * pow(x, m) * pow(y, n-1) * pow(z, o) + 3 * pow(x, 2) * pow(y, 2));
-		case 4: return  n * pow(x, m) * pow(y, n-1) * pow(z, o) + 3 * pow(x, 2) * pow(y, 2);
+		case 4: return   n * pow(x, m) * pow(y, n-1) * pow(z, o) + 3 * pow(x, 2) * pow(y, 2);
 		case 5: return -(o * pow(x, m) * pow(y, n) * pow(z, o-1) - pow(x, 3) + 4 * pow(z, 3));
-		case 6: return  o * pow(x, m) * pow(y, n) * pow(z, o-1) - pow(x, 3) + 4 * pow(z, 3);
-		defualt: EXIT(ERR_FACE_INDEX_OUT_OF_RANGE);
+		case 6: return   o * pow(x, m) * pow(y, n) * pow(z, o-1) - pow(x, 3) + 4 * pow(z, 3);
+		default: EXIT(ERR_FACE_INDEX_OUT_OF_RANGE);
 	}
 }
 
@@ -112,7 +112,7 @@ int main(int argc, char **args) {
 	space.set_bc_values(bc_values);
 
 	int mx = maxn(4, m, n, o, 4);
-	int order = MAKE_HEX_ORDER(mx, mx, mx);
+	order3_t order(mx, mx, mx);
 	printf("  - Setting uniform order to (%d, %d, %d)\n", mx, mx, mx);
 	space.set_uniform_order(order);
 

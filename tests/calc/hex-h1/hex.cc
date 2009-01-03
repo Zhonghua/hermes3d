@@ -80,6 +80,16 @@ int main(int argc, char **args) {
 		return ERR_FAILURE;
 	}
 
+	FOR_ALL_ELEMENTS(idx, &mesh) {
+		Element *e = mesh.elements[idx];
+
+		printf("elem = %d:", idx);
+		for (int iface = 0; iface < 6; iface++) {
+			printf(" %d,", e->get_face_orientation(iface));
+		}
+		printf("\n");
+	}
+
 	printf("* Setting the space up\n");
 	H1Space space(&mesh, &shapeset);
 	space.set_bc_types(bc_types);

@@ -101,7 +101,7 @@ int main(int argc, char **args) {
 	space.set_bc_values(bc_values);
 
 	int mx = maxn(4, m, n, o, 4);
-	int order = MAKE_HEX_ORDER(mx, mx, mx);
+	order3_t order(mx, mx, mx);
 	printf("  - Setting uniform order to (%d, %d, %d)\n", mx, mx, mx);
 	space.set_uniform_order(order);
 

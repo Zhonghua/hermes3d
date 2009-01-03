@@ -3,7 +3,7 @@
  *
  * exhaustive testing of HERMES3D with newton boundary condition
  *
- * //TODO: skontrolovat rovnicu a okraj. podmienku
+ * // TODO: check the equation and the boundary condition
  * -\Delta u = f in Omega
  * du/dn + u = g on dOmega
  *
@@ -11,6 +11,9 @@
  */
 
 #include "config.h"
+#ifdef USE_PETSC
+#include <petsc.h>
+#endif
 #include <math.h>
 #include <hermes3d.h>
 #include <common/trace.h>
@@ -52,20 +55,13 @@ EBCType bc_types(int marker) {
 
 double bc_values(int marker, double x, double y, double z, int comp) {
 	switch (marker) {
-		case 1:
-			return -(m * pow(x, m-1) * pow(y, n) * pow(z, o) + 2 * x * pow(y, 3) - 3 * pow(x, 2) * z) + fnc(x, y, z);
-		case 2:
-			return m * pow(x, m-1) * pow(y, n) * pow(z, o) + 2 * x * pow(y, 3) - 3 * pow(x, 2) * z + fnc(x, y, z);
-		case 3:
-			return -(n * pow(x, m) * pow(y, n-1) * pow(z, o) + 3 * pow(x, 2) * pow(y, 2)) + fnc(x, y, z);
-		case 4:
-			return n * pow(x, m) * pow(y, n-1) * pow(z, o) + 3 * pow(x, 2) * pow(y, 2) + fnc(x, y, z);
-		case 5:
-			return -(o * pow(x, m) * pow(y, n) * pow(z, o-1) - pow(x, 3) + 4 * pow(z, 3)) + fnc(x, y, z);
-		case 6:
-			return o * pow(x, m) * pow(y, n) * pow(z, o-1) - pow(x, 3) + 4 * pow(z, 3) + fnc(x, y, z);
-		default:
-			EXIT(ERR_FACE_INDEX_OUT_OF_RANGE);
+		case 1: return -(m * pow(x, m-1) * pow(y, n) * pow(z, o) + 2 * x * pow(y, 3) - 3 * pow(x, 2) * z) + fnc(x, y, z);
+		case 2: return   m * pow(x, m-1) * pow(y, n) * pow(z, o) + 2 * x * pow(y, 3) - 3 * pow(x, 2) * z + fnc(x, y, z);
+		case 3: return -(n * pow(x, m) * pow(y, n-1) * pow(z, o) + 3 * pow(x, 2) * pow(y, 2)) + fnc(x, y, z);
+		case 4: return   n * pow(x, m) * pow(y, n-1) * pow(z, o) + 3 * pow(x, 2) * pow(y, 2) + fnc(x, y, z);
+		case 5: return -(o * pow(x, m) * pow(y, n) * pow(z, o-1) - pow(x, 3) + 4 * pow(z, 3)) + fnc(x, y, z);
+		case 6: return   o * pow(x, m) * pow(y, n) * pow(z, o-1) - pow(x, 3) + 4 * pow(z, 3) + fnc(x, y, z);
+		default: EXIT(ERR_FACE_INDEX_OUT_OF_RANGE);
 	}
 }
 
@@ -124,7 +120,7 @@ int main(int argc, char **args) {
 	space.set_bc_values(bc_values);
 
 	int mx = maxn(4, m, n, o, 4);
-	int order = MAKE_HEX_ORDER(mx, mx, mx);
+	order3_t order(mx, mx, mx);
 	printf("  - Setting uniform order to (%d, %d, %d)\n", mx, mx, mx);
 	space.set_uniform_order(order);
 
@@ -177,8 +173,8 @@ int main(int argc, char **args) {
 			printf(" x[% 3d] = % lf\n", i, s[i]);
 		}
 
-		ExactSolution ex_sln(&mesh, exact_solution);
 		// norm
+		ExactSolution ex_sln(&mesh, exact_solution);
 		double h1_sln_norm = h1_norm(&sln);
 		double h1_err_norm = h1_error(&sln, &ex_sln);
 		printf(" - H1 solution norm:   % le\n", h1_sln_norm);
@@ -201,10 +197,10 @@ int main(int argc, char **args) {
 		FILE *ofile = fopen(of_name, "w");
 		if (ofile != NULL) {
 			ExactSolution ex_sln(&mesh, exact_solution);
-			DiffFilter eh(&mesh, &sln, &ex_sln);
-//			DiffFilter eh_dx(&mesh, &sln, &ex_sln, FN_DX, FN_DX);
-//			DiffFilter eh_dy(&mesh, &sln, &ex_sln, FN_DY, FN_DY);
-//			DiffFilter eh_dz(&mesh, &sln, &ex_sln, FN_DZ, FN_DZ);
+			DiffFilter eh(&sln, &ex_sln);
+//			DiffFilter eh_dx(mesh, &sln, &ex_sln, FN_DX, FN_DX);
+//			DiffFilter eh_dy(mesh, &sln, &ex_sln, FN_DY, FN_DY);
+//			DiffFilter eh_dz(mesh, &sln, &ex_sln, FN_DZ, FN_DZ);
 
 			GmshOutputEngine output(ofile);
 			output.out(&sln, "Uh");

@@ -27,7 +27,7 @@ configure_file(
 enable_testing()
 
 set(BIN ${PROJECT_BINARY_DIR}/${PROJECT_NAME})
-add_test(calc-hex-hcurl-1 ${BIN} ${MESHES_DIR}/mesh3d/cube1.mesh3d 4)
-add_test(calc-hex-hcurl-2 ${BIN} ${MESHES_DIR}/mesh3d/cube8-ori.mesh3d 3)
-add_test(calc-hex-hcurl-3 ${BIN} ${MESHES_DIR}/mesh3d/cube8.mesh3d 3)
+add_test(calc-hex-hcurl-1 ${BIN} ${MESHES_DIR}/mesh3d/hex1.mesh3d 4)
+#add_test(calc-hex-hcurl-2 ${BIN} ${MESHES_DIR}/mesh3d/cube8-ori.mesh3d 3)
+add_test(calc-hex-hcurl-3 ${BIN} ${MESHES_DIR}/mesh3d/hex8.mesh3d 3)
 

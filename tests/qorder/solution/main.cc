@@ -111,7 +111,7 @@ bool test_vertex_values(Solution &sln, ExactSolution &ex, Quad3D *&quad) {
 	return true;
 }
 
-bool test_edge_values(int edge, int order, Solution &sln, ExactSolution &ex, Quad3D *&quad) {
+bool test_edge_values(int edge, order1_t order, Solution &sln, ExactSolution &ex, Quad3D *&quad) {
 	sln.set_quad_order(EDGE_QORDER(edge, order));
 
 	double *val = sln.get_fn_values();
@@ -152,7 +152,7 @@ bool test_edge_values(int edge, int order, Solution &sln, ExactSolution &ex, Qua
 	return true;
 }
 
-bool test_face_values(int face, int order, Solution &sln, ExactSolution &ex, Quad3D *&quad) {
+bool test_face_values(int face, order2_t order, Solution &sln, ExactSolution &ex, Quad3D *&quad) {
 	sln.set_quad_order(FACE_QORDER(face, order));
 
 	double *val = sln.get_fn_values();
@@ -194,7 +194,7 @@ bool test_face_values(int face, int order, Solution &sln, ExactSolution &ex, Qua
 	return true;
 }
 
-bool test_elem_values(int order, Solution &sln, ExactSolution &ex, Quad3D *&quad) {
+bool test_elem_values(order3_t order, Solution &sln, ExactSolution &ex, Quad3D *&quad) {
 	sln.set_quad_order(ELEM_QORDER(order));
 
 	double *val = sln.get_fn_values();
@@ -257,7 +257,7 @@ int main(int argc, char *argv[]) {
 	space.set_bc_types(fn1_bc_types);
 	space.set_bc_values(fn1_bc_values);
 
-	int order = MAKE_HEX_ORDER(4, 4, 4);
+	order3_t order(4, 4, 4);
 	space.set_uniform_order(order);
 	int ndofs = space.assign_dofs();
 
@@ -284,7 +284,7 @@ int main(int argc, char *argv[]) {
 	// we do NOT use the norm function to avaoid possible problems in them
 	bool passed = true;
 	for (int o = 1; o <= MAX_QUAD_ORDER; o++) {
-		int order = MAKE_HEX_ORDER(o, o, o);
+		order3_t order(o, o, o);
 		printf("order = %d\n", o);
 
 		ExactSolution ex_sln(&mesh, fn1_exact_solution);
@@ -302,9 +302,9 @@ int main(int argc, char *argv[]) {
 			// test values
 			if (!(passed &= test_vertex_values(sln, ex_sln, quad))) break;
 			for (int iedge = 0; iedge < Hex::NUM_EDGES; iedge++)
-				if (!(passed &= test_edge_values(iedge, get_hex_edge_order(iedge, order), sln, ex_sln, quad))) break;
+				if (!(passed &= test_edge_values(iedge, order.get_edge_order(iedge), sln, ex_sln, quad))) break;
 			for (int iface = 0; iface < Hex::NUM_FACES; iface++)
-				if (!(passed &= test_face_values(iface, get_hex_face_order(iface, order), sln, ex_sln, quad))) break;
+				if (!(passed &= test_face_values(iface, order.get_face_order(iface), sln, ex_sln, quad))) break;
 			if (!(passed &= test_elem_values(order, sln, ex_sln, quad))) break;
 		}
 

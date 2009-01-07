@@ -1,4 +1,4 @@
-project(hex-hcurl-cplx)
+project(calc-hex-hcurl-cplx)
 
 include(CMake.vars)
 
@@ -27,5 +27,5 @@ configure_file(
 enable_testing()
 
 set(BIN ${PROJECT_BINARY_DIR}/${PROJECT_NAME})
-add_test(calc-hex-hcurl-cplx-1 ${BIN} ${MESHES_DIR}/mesh3d/cube8.mesh3d 3)
+add_test(${PROJECT_NAME}-1 ${BIN} ${MESHES_DIR}/mesh3d/cube8.mesh3d 3)
 

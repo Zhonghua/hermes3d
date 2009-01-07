@@ -1,4 +1,4 @@
-project(tetra-h1)
+project(calc-tetra-h1)
 
 include(CMake.vars)
 
@@ -28,7 +28,7 @@ configure_file(
 enable_testing()
 
 set(BIN ${PROJECT_BINARY_DIR}/${PROJECT_NAME})
-add_test(tetra-h1-1  ${BIN} ${MESHES_DIR}/mesh3d/tetra1-ref.mesh3d 4)
-#add_test(tetra-h1-2  ${BIN} ${MESHES_DIR}/mesh3d/tetra2.mesh3d 3)
-#add_test(tetra-h1-4  ${BIN} ${MESHES_DIR}/mesh3d/tetra4.mesh3d 2)
-#add_test(tetra-h1-8  ${BIN} ${MESHES_DIR}/mesh3d/tetra8.mesh3d 1)
+add_test(${PROJECT_NAME}-1  ${BIN} ${MESHES_DIR}/mesh3d/tetra1-ref.mesh3d 4)
+#add_test(${PROJECT_NAME}-2  ${BIN} ${MESHES_DIR}/mesh3d/tetra2.mesh3d 3)
+#add_test(${PROJECT_NAME}-4  ${BIN} ${MESHES_DIR}/mesh3d/tetra4.mesh3d 2)
+#add_test(${PROJECT_NAME}-8  ${BIN} ${MESHES_DIR}/mesh3d/tetra8.mesh3d 1)

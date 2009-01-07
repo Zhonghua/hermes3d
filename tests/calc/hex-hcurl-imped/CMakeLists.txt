@@ -1,4 +1,4 @@
-project(hex-hcurl-imped)
+project(calc-hex-hcurl-imped)
 
 include(CMake.vars)
 
@@ -27,4 +27,4 @@ configure_file(
 enable_testing()
 
 set(BIN ${PROJECT_BINARY_DIR}/${PROJECT_NAME})
-add_test(hex-hcurl-imped-1 ${BIN} ${MESHES_DIR}/mesh3d/cube8-neum.mesh3d 3)
+add_test(${PROJECT_NAME}-1 ${BIN} ${MESHES_DIR}/mesh3d/cube8-neum.mesh3d 3)

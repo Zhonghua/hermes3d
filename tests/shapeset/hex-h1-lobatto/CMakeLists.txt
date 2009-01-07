@@ -1,4 +1,4 @@
-project(hex-h1-lobatto-shapeset)
+project(shapeset-hex-h1-lobatto)
 
 include(CMake.vars)
 
@@ -34,7 +34,7 @@ configure_file(
 enable_testing()
 
 set(BIN ${PROJECT_BINARY_DIR}/${PROJECT_NAME})
-add_test(hex-h1-lobbatto-shapeset-1 ${BIN})
+add_test(${PROJECT_NAME}-1 ${BIN})
 
 endif(WITH_HEX)
 

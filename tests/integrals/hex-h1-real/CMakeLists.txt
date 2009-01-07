@@ -1,10 +1,10 @@
-project(h1-hex-int)
+project(intgrl-hex-h1-real)
 
 include(CMake.vars)
 
 add_executable(${PROJECT_NAME}
-	h1-hex-int.cc
-	${HERMES_COMMON_DIR}/timer.cc
+	h1-hex-real.cc
+	${HERMES_COMMON_DIR}/trace.cc
 	${HERMES_COMMON_DIR}/error.cc
 )
 
@@ -26,6 +26,8 @@ configure_file(
 
 enable_testing()
 
-set(BIN ${PROJECT_BINARY_DIR}/${PROJECT_NAME})
+add_test(${PROJECT_NAME}-1 ${PROJECT_NAME} ${MESHES_DIR}/mesh3d/hex1.mesh3d)
+add_test(${PROJECT_NAME}-2 ${PROJECT_NAME} ${MESHES_DIR}/mesh3d/hex2.mesh3d)
+add_test(${PROJECT_NAME}-3 ${PROJECT_NAME} ${MESHES_DIR}/mesh3d/hex4.mesh3d)
+add_test(${PROJECT_NAME}-4 ${PROJECT_NAME} ${MESHES_DIR}/mesh3d/hex8.mesh3d)
 
-add_test(h1-hex-int-1 ${BIN} ${MESHES_DIR}/mesh3d/hex1-sc.mesh3d)

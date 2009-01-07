@@ -26,5 +26,8 @@ configure_file(
 
 enable_testing()
 
-add_test(${PROJECT_NAME}-1 ${PROJECT_NAME})
+add_test(${PROJECT_NAME}-1 ${PROJECT_NAME} ${MESHES_DIR}/mesh3d/hex1.mesh3d)
+add_test(${PROJECT_NAME}-2 ${PROJECT_NAME} ${MESHES_DIR}/mesh3d/hex2.mesh3d)
+add_test(${PROJECT_NAME}-3 ${PROJECT_NAME} ${MESHES_DIR}/mesh3d/hex4.mesh3d)
+add_test(${PROJECT_NAME}-4 ${PROJECT_NAME} ${MESHES_DIR}/mesh3d/hex8.mesh3d)
 

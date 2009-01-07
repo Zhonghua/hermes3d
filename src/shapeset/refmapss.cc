@@ -48,7 +48,7 @@ static shape_fn_t refmap_tetra_dy[] = {
 
 // DZ /////////////////////////////////////////////////////////////////////////////////////////////
 
-double refmap_tetra_dz_f0(double x, double y, double z) { return lambda1dz(x, y, z);
+double refmap_tetra_dz_f0(double x, double y, double z) { return lambda1dz(x, y, z); }
 double refmap_tetra_dz_f1(double x, double y, double z) { return lambda2dz(x, y, z); }
 double refmap_tetra_dz_f2(double x, double y, double z) { return lambda0dz(x, y, z); }
 double refmap_tetra_dz_f3(double x, double y, double z) { return lambda3dz(x, y, z); }
@@ -60,7 +60,6 @@ static shape_fn_t refmap_tetra_dz[] = {
 //
 
 static int refmap_tetra_vertex_indices[] = { 0, 1, 2, 3 };
-static int refmap_tetra_index_to_order[] = { 1, 1, 1, 1 };
 
 static shape_fn_t *refmap_tetra_fn_table[] = { refmap_tetra_fn };
 static shape_fn_t *refmap_tetra_dx_table[] = { refmap_tetra_dx };
@@ -88,8 +87,6 @@ RefMapShapesetTetra::RefMapShapesetTetra() {
 	shape_table[DYZ] = NULL;
 
 	vertex_indices = refmap_tetra_vertex_indices;
-
-	index_to_order = refmap_tetra_index_to_order;
 #else
 	EXIT(ERR_TETRA_NOT_COMPILED);
 #endif
@@ -202,8 +199,6 @@ RefMapShapesetHex::RefMapShapesetHex() {
 
 	// vertices
 	vertex_indices = refmap_hex_vertex_indices;
-	order = order3_t(1, 1, 1);
-	index_to_order = NULL;
 #else
 	EXIT(ERR_TETRA_NOT_COMPILED);
 #endif

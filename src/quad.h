@@ -49,8 +49,28 @@ struct QuadPt1D {
 	}
 };
 
-
 /// Quadrature point in 2D
+///
+/// @ingroup quadratures
+struct QuadPt2D {
+	double x, y;		// x and y-coordinate
+	double w;			// weight
+
+	QuadPt2D() { }		// default c-tor
+	QuadPt2D(double x, double y, double w) {
+		this->x = x;
+		this->y = y;
+		this->w = w;
+	}
+
+	double operator[](int idx) const {
+		if (idx == 0) return this->x;
+		else if (idx == 1) return this->y;
+		else { ERROR("Index out of bounds"); return 0; }
+	}
+};
+
+/// Quadrature point in 3D
 ///
 /// @ingroup quadratures
 struct QuadPt3D {
@@ -73,6 +93,40 @@ struct QuadPt3D {
 	}
 };
 
+
+///
+/// 2D quadratures
+///
+
+/// Numerical quadratures in 2D
+///
+/// @ingroup quadratures
+class Quad2D {
+public:
+	QuadPt2D *get_points(int order) const { return tables[order]; }
+	inline int get_num_points(int order) const { return np[order]; };
+
+	QuadPt2D *get_edge_points(int edge, int order) const { return edge_tables[edge][order]; }
+
+	int get_max_order() const { return max_order; }
+
+	EMode2D get_mode() const { return mode; }
+
+protected:
+	/// mode of quadratures (MODE_TRIANGLE, MODE_QUAD)
+	EMode2D mode;
+	/// maximal order for integration (interpretation depened on the mode)
+	int max_order;
+	/// number of integration points
+	/// indexing: [order]
+	int *np;
+	/// tables with integration points
+	/// indexing: [order][point no.]
+	QuadPt2D **tables;
+	/// tables with integration points for edges (?)
+	/// indexing: [edge][order][point no.]
+	QuadPt2D ***edge_tables;
+};
 
 //
 // 3D quadratures

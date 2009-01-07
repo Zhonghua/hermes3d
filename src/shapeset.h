@@ -232,8 +232,8 @@ protected:
 	int max_index;
 	int num_components;
 
-	/// mapping from index of shape function to its order
-	order3_t *index_to_order;
+//	// mapping from index of shape function to its order
+//	order3_t *index_to_order;
 
 	// FIXME: better name
 	virtual double get_val(int n, int index, double x, double y, double z, int component) = 0;

@@ -698,8 +698,6 @@ HCurlShapesetLobattoHex::~HCurlShapesetLobattoHex()
 
 	for (Word_t idx = bubble_indices.first(); idx != INVALID_IDX; idx = bubble_indices.next(idx))
 		delete [] bubble_indices[idx];
-
-	delete [] index_to_order;
 }
 
 ///

@@ -61,7 +61,7 @@ public:
 
 	virtual order3_t get_order(int index) const {
 		CHECK_INDEX(index);
-		return index_to_order[index];
+		return order3_t(1);
 	}
 
 	virtual int get_shape_type(int index) const {
@@ -147,7 +147,7 @@ public:
 
 	virtual order3_t get_order(int index) const {
 		CHECK_INDEX(index);
-		return order;
+		return order3_t(1, 1, 1);
 	}
 
 	virtual int get_shape_type(int index) const {
@@ -162,7 +162,6 @@ public:
 
 protected:
 	shape_fn_t **shape_table[VALUE_TYPES];
-	order3_t order;
 
 	/// Indices of vertex shape functions on reference element, indexing: [vertex shape fn index]
 	int  *vertex_indices;

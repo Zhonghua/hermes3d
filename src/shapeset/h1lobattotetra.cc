@@ -6,6 +6,7 @@
 #include "../config.h"
 #include "common.h"
 #include "h1lobattotetra.h"
+#include "lobatto.h"
 #include <common/error.h>
 
 #ifdef WITH_TETRA
@@ -4806,7 +4807,7 @@ H1ShapesetLobattoTetra::H1ShapesetLobattoTetra() {
 	bubble_count = lobatto_tetra_bubble_count;
 //	bubble_total_count = lobatto_tetra_total_bubble_count;
 
-	index_to_order = lobatto_tetra_index_to_order;
+//	index_to_order = lobatto_tetra_index_to_order;
 //	index_to_ori_variants = lobatto_tetra_index_to_ori_variants;
 #else
 	EXIT(ERR_TETRA_NOT_COMPILED);
@@ -4819,6 +4820,10 @@ H1ShapesetLobattoTetra::~H1ShapesetLobattoTetra() {
 #else
 	EXIT(ERR_TETRA_NOT_COMPILED);
 #endif
+}
+
+order3_t H1ShapesetLobattoTetra::get_order(int index) const {
+	return order3_t(lobatto_tetra_index_to_order[index]);
 }
 
 /// --- CED specific stuff ---

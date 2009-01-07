@@ -132,7 +132,7 @@ int main(int argc, char **argv) {
 	// solve the stiffness matrix
 	Timer solve_timer("Solving stiffness matrix");
 	solve_timer.start();
-	Solution sln(mesh);
+	Solution sln(&mesh);
 	bool solved = d.solve_system(1, &sln);
 	solve_timer.stop();
 
@@ -141,21 +141,16 @@ int main(int argc, char **argv) {
 	printf("%s: %s (%lf secs)\n", solve_timer.get_name(), solve_timer.get_human_time(), solve_timer.get_seconds());
 
 	if (solved) {
-/*		printf("* Solution:\n");
-		double *s = sln.get_solution_vector();
-		for (int i = 1; i <= ndofs; i++) {
-			printf(" x[% 3d] = % lf\n", i, s[i]);
-		}
-*/
+		ExactSolution ex_sln(&mesh, exact_solution);
 		// norm
 		double h1_sln_norm = h1_norm(&sln);
-		double h1_err_norm = h1_error_norm_exact(&sln, exact_solution);
+		double h1_err_norm = h1_error(&sln, &ex_sln);
 
 		printf(" - H1 solution norm:   % le\n", h1_sln_norm);
 		printf(" - H1 error norm:      % le\n", h1_err_norm);
 
 		double l2_sln_norm = l2_norm(&sln);
-		double l2_err_norm = l2_error_norm_exact(&sln, exact_solution);
+		double l2_err_norm = l2_error(&sln, &ex_sln);
 		printf(" - L2 solution norm:   % le\n", l2_sln_norm);
 		printf(" - L2 error norm:      % le\n", l2_err_norm);
 
@@ -174,7 +169,7 @@ int main(int argc, char **argv) {
 //			DiffFilter eh_dx(&mesh, &sln, &ex_sln, FN_DX, FN_DX);
 //			DiffFilter eh_dy(&mesh, &sln, &ex_sln, FN_DY, FN_DY);
 //			DiffFilter eh_dz(&mesh, &sln, &ex_sln, FN_DZ, FN_DZ);
-						
+
 			GmshOutputEngine output(ofile);
 			output.out(&sln, "Uh");
 //			output.out(&sln, "Uh dx", FN_DX_0);

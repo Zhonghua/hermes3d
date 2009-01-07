@@ -4,6 +4,16 @@
 #include "quad.h"
 
 
+/// Numeric quadrature for 2D triangle
+///
+/// @ingroup quadrature
+class QuadStdTri : public Quad2D {
+public:
+	QuadStdTri();
+	~QuadStdTri();
+};
+
+
 /// Numerical quadrature for 3D hexahedron
 ///
 /// @ingroup quadrature

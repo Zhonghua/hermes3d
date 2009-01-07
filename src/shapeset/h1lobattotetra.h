@@ -53,6 +53,8 @@ public:
 
 	virtual int get_edge_orientations() const { return RefTetra::get_edge_orientations(); }
 
+	virtual order3_t get_order(int index) const;
+
 	virtual int get_shape_type(int index) const {
 		return -1;
 	}

@@ -204,9 +204,6 @@ H1ShapesetLobattoHex::H1ShapesetLobattoHex() {
 
 	// vertices
 	vertex_indices = lobatto_hex_vertex_indices;
-
-	// index to order mapping
-	index_to_order = NULL;
 #else
 	EXIT(ERR_HEX_NOT_COMPILED);
 #endif
@@ -226,8 +223,6 @@ H1ShapesetLobattoHex::~H1ShapesetLobattoHex() {
 
 	for (Word_t idx = bubble_indices.first(); idx != INVALID_IDX; idx = bubble_indices.next(idx))
 		delete [] bubble_indices[idx];
-
-	delete [] index_to_order;
 #else
 	EXIT(ERR_HEX_NOT_COMPILED);
 #endif

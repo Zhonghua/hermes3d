@@ -80,25 +80,7 @@ protected:
 
 OutputQuadTetra::OutputQuadTetra() {
 #ifdef WITH_TETRA
-//	ref_domain = &ref_domain_std_tetra;
-
 	max_order = MAX_QUAD_ORDER;
-
-	tables = new QuadPt3D *[max_order + 1];
-	MEM_CHECK(tables);
-	memset(tables, 0, (max_order + 1) * sizeof(QuadPt3D *));
-
-	np = new int[max_order + 1];
-	MEM_CHECK(np);
-	memset(np, 0, (max_order + 1) * sizeof(int));
-
-	subdiv_num = new int[max_order + 1];
-	MEM_CHECK(subdiv_num);
-	memset(subdiv_num, 0, (max_order + 1) * sizeof(int));
-
-	subdiv_modes = new int *[max_order + 1];
-	MEM_CHECK(subdiv_modes);
-	memset(subdiv_modes, 0, (max_order + 1) * sizeof(int *));
 
 	output_precision = 1;
 #else
@@ -108,16 +90,11 @@ OutputQuadTetra::OutputQuadTetra() {
 
 OutputQuadTetra::~OutputQuadTetra() {
 #ifdef WITH_TETRA
-	for (int i = 0; i < max_order + 1; i++)
+	for (Word_t i = tables.first(); i != INVALID_IDX; i = tables.next(i))
 		delete [] tables[i];
-	delete [] tables;
 
-	delete [] np;
-
-	for (int i = 0; i < max_order + 1; i++)
+	for (Word_t i = subdiv_modes.first(); i != INVALID_IDX; i = subdiv_modes.next(i))
 		delete [] subdiv_modes[i];
-	delete [] subdiv_modes;
-	delete [] subdiv_num;
 #else
 	EXIT(ERR_TETRA_NOT_COMPILED);
 #endif
@@ -126,31 +103,30 @@ OutputQuadTetra::~OutputQuadTetra() {
 
 void OutputQuadTetra::calculate_view_points(order3_t order) {
 #ifdef WITH_TETRA
-	if (tables[order] == NULL) {
+	int orderidx = order.get_idx();
+	if (tables[orderidx] == NULL) {
 		// check if the order is greater than 0, because we are taking log(o)
-		if (order == 0) order++;
+		if (order.order == 0) order.order++;
 
 		// there should be refinement levels enough to catch the properties of order 'order' functions on an element
 		// choose a different formula if this does not behave well
-		int levels = int(log(order) / log(2)) + 1;
+		int levels = int(log(order.order) / log(2)) + 1;
 
 		// each refinement level means that a tetrahedron is divided into 8 subtetrahedra
 		// i.e., there are 8^levels resulting tetrahedra => (8^levels)*10 points
-		np[order] = (1 << (3 * levels)) * 10;
-		subdiv_num[order] = (1 << (3 * levels));
+		np[orderidx] = (1 << (3 * levels)) * 10;
+		subdiv_num[orderidx] = (1 << (3 * levels));
 
-		subdiv_modes[order] = new int[subdiv_num[order]];
-		MEM_CHECK(subdiv_modes[order]);
 		// the new subelements are tetrahedra only
-		for (int i = 0; i < subdiv_num[order]; i++)
-			subdiv_modes[order][i] = MODE_TETRAHEDRON;
+		for (int i = 0; i < subdiv_num[orderidx]; i++)
+			subdiv_modes[orderidx][i] = MODE_TETRAHEDRON;
 
 		// compute the table of points recursively
-		tables[order] = new QuadPt3D[np[order]];
-		MEM_CHECK(tables[order]);
+		tables[orderidx] = new QuadPt3D[np[orderidx]];
+		MEM_CHECK(tables[orderidx]);
 		int idx = 0;
 		const Point3D *ref_vtcs = RefTetra::get_vertices();
-		recursive_division(ref_vtcs, tables[order], levels, idx);
+		recursive_division(ref_vtcs, tables[orderidx], levels, idx);
 	}
 #else
 	EXIT(ERR_TETRA_NOT_COMPILED);
@@ -182,10 +158,10 @@ void OutputQuadTetra::recursive_division(const Point3D *tv, QuadPt3D *table, int
 	}
 	else {
 		Point3D div_vtcs[8][4] = {
-			{ Point3D(tv[0].x, tv[0].y, tv[0].z), AVGTV(0,1), AVGTV(0,2), AVGTV(0,3) },
-			{ AVGTV(0,1), Point3D(tv[1].x, tv[1].y, tv[1].z), AVGTV(1,2), AVGTV(1,3) },
-			{ AVGTV(0,2), AVGTV(1,2), Point3D(tv[2].x, tv[2].y, tv[2].z), AVGTV(2,3) },
-			{ AVGTV(0,3), AVGTV(1,3), AVGTV(2,3), Point3D(tv[3].x, tv[3].y, tv[3].z) },
+			{ { tv[0].x, tv[0].y, tv[0].z }, AVGTV(0,1), AVGTV(0,2), AVGTV(0,3) },
+			{ AVGTV(0,1), { tv[1].x, tv[1].y, tv[1].z }, AVGTV(1,2), AVGTV(1,3) },
+			{ AVGTV(0,2), AVGTV(1,2), { tv[2].x, tv[2].y, tv[2].z }, AVGTV(2,3) },
+			{ AVGTV(0,3), AVGTV(1,3), AVGTV(2,3), { tv[3].x, tv[3].y, tv[3].z } },
 			{ AVGTV(0,2), AVGTV(0,1), AVGTV(1,2), AVGTV(1,3) },
 			{ AVGTV(0,3), AVGTV(0,1), AVGTV(0,2), AVGTV(1,3) },
 			{ AVGTV(0,3), AVGTV(0,2), AVGTV(2,3), AVGTV(1,3) },

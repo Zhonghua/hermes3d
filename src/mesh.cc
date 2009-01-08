@@ -962,7 +962,9 @@ void Mesh::dump() {
 }
 
 Word_t Mesh::add_vertex(double x, double y, double z) {
-	return vertices.set(vertices.count() + 1, new Vertex(x, y, z));
+	Word_t idx = vertices.count() + 1;
+	vertices.set(idx, new Vertex(x, y, z));
+	return idx;
 }
 
 Tetra *Mesh::create_tetra(Word_t vtcs[]) {

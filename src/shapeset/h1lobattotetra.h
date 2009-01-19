@@ -82,9 +82,6 @@ protected:
 		CHECK_INDEX(index); CHECK_COMPONENT(component);
 		return shape_table[n][component][index](x, y, z);
 	}
-
-	/// --- put CED specific stuff here ---
-	virtual double get_constrained_value(int n, int index, double x, double y, double z, int component);
 };
 
 #undef CHECK_VERTEX

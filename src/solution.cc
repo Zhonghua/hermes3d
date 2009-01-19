@@ -166,13 +166,13 @@ void Solution::precalculate(qorder_t qord, int mask) {
 	int np = 0;
 	switch (qord.type) {
 		case QOT_ELEMENT:
-			np = quad->get_num_points(qord.order);
-			pt = quad->get_points(qord.order);
+			np = quad->get_num_points(order3_t::from_int(qord.order));
+			pt = quad->get_points(order3_t::from_int(qord.order));
 			break;
 
 		case QOT_FACE:
-			np = quad->get_face_num_points(qord.face, qord.order);
-			pt = quad->get_face_points(qord.face, qord.order);
+			np = quad->get_face_num_points(qord.face, order2_t::from_int(qord.order));
+			pt = quad->get_face_points(qord.face, order2_t::from_int(qord.order));
 			break;
 
 		case QOT_EDGE:
@@ -395,13 +395,13 @@ void ExactSolution::precalculate(qorder_t qord, int mask) {
 	int np = 0;
 	switch (qord.type) {
 		case QOT_ELEMENT:
-			np = quad->get_num_points(qord.order);
-			pt = quad->get_points(qord.order);
+			np = quad->get_num_points(order3_t::from_int(qord.order));
+			pt = quad->get_points(order3_t::from_int(qord.order));
 			break;
 
 		case QOT_FACE:
-			np = quad->get_face_num_points(qord.face, qord.order);
-			pt = quad->get_face_points(qord.face, qord.order);
+			np = quad->get_face_num_points(qord.face, order2_t::from_int(qord.order));
+			pt = quad->get_face_points(qord.face, order2_t::from_int(qord.order));
 			break;
 
 		case QOT_EDGE:
@@ -425,15 +425,15 @@ void ExactSolution::precalculate(qorder_t qord, int mask) {
     double *x, *y, *z;
     switch (qord.type) {
     	case QOT_ELEMENT:
-			x = refmap->get_phys_x(qord.order);
-			y = refmap->get_phys_y(qord.order);
-			z = refmap->get_phys_z(qord.order);
+			x = refmap->get_phys_x(order3_t::from_int(qord.order));
+			y = refmap->get_phys_y(order3_t::from_int(qord.order));
+			z = refmap->get_phys_z(order3_t::from_int(qord.order));
     		break;
 
     	case QOT_FACE:
-    		x = refmap->get_face_phys_x(qord.face, qord.order);
-    		y = refmap->get_face_phys_y(qord.face, qord.order);
-    		z = refmap->get_face_phys_z(qord.face, qord.order);
+    		x = refmap->get_face_phys_x(qord.face, order2_t::from_int(qord.order));
+    		y = refmap->get_face_phys_y(qord.face, order2_t::from_int(qord.order));
+    		z = refmap->get_face_phys_z(qord.face, order2_t::from_int(qord.order));
     		break;
 
     	case QOT_EDGE:

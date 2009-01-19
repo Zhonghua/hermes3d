@@ -10,7 +10,7 @@
 // maximal order of quadratures for triangle
 #define MAX_QUAD_ORDER_TRI							20
 // maximal order of quadratures for tetra
-#define MAX_QUAD_ORDER_TETRA						20
+#define MAX_QUAD_ORDER_TETRA							20
 
 
 // orders
@@ -22,25 +22,25 @@ typedef
 
 // 2D polynomial order
 struct order2_t {
-	order2_t() { type = 1; order = -1; }
+	order2_t() { type = 3; order = -1; }
 	order2_t(int order) { type = MODE_TRIANGLE; this->order = order; }
 	order2_t(int x, int y) { type = MODE_QUAD; this->x = x; this->y = y; }
 
-	unsigned type:1;		// EMode2D
+	unsigned type:2;		// EMode2D
 	union {
 		// tri
 		struct {
-			unsigned order: 31;
+			unsigned order:5;
 		};
 		// quad
 		struct {
 			// directional orders
-			unsigned x:10;
-			unsigned y:10;
+			unsigned x:5;
+			unsigned y:5;
 		};
 	};
 
-	bool invalid() { return (type == 1) && (order == 0x7fffffff); }
+	bool invalid() { return (type == 3); }
 
 	// Operators
 
@@ -118,18 +118,19 @@ struct order2_t {
 		}
 	}
 
-	order2_t operator=(const int o) {
+/*	order2_t operator=(const int o) {
 		this->type = (o >> 31);
 		switch (this->type) {
 			case MODE_TRIANGLE: this->order = o & 0x7fffffff; break;
 			case MODE_QUAD:
-				this->x = (o >> 10) & 0x3FF;
-				this->y = o & 0x3FF;
+				this->y = (o >> 10) & 0x3FF;
+				this->x = o & 0x3FF;
 				break;
 			default: assert(false);
 		}
 		return *this;
 	}
+*/
 
 //	operator const char *() {
 	const char *str() {
@@ -149,10 +150,20 @@ struct order2_t {
 //			default: assert(false);
 //		}
 //	}
+
 	int get_idx() {
 		switch (type) {
-			case MODE_TRIANGLE: return (this->type << 31) | this->order;
-			case MODE_QUAD: return (((this->type << 11) | this->y) << 10) | this->x;
+			case MODE_TRIANGLE: return (this->type << 10) | this->order;
+			case MODE_QUAD: return (((this->type << 5) | this->y) << 5) | this->x;
+			default: assert(false);
+		}
+	}
+
+	static order2_t from_int(int o) {
+		int type = (o >> 10) & 0x03;
+		switch (type) {
+			case MODE_TRIANGLE: return order2_t(o & 0x1F); break;
+			case MODE_QUAD: return order2_t(o & 0x1F, (o >> 5) & 0x1F); break;
 			default: assert(false);
 		}
 	}
@@ -181,26 +192,26 @@ inline order2_t max(order2_t a, order2_t b) {
 // all 1s mean invalid (not set) - see default ctor
 //
 struct order3_t {
-	order3_t() { type = 3; order = -1; }
+	order3_t() { type = -1; }
 	order3_t(int order) { type = MODE_TETRAHEDRON; this->order = order; }
 	order3_t(int x, int y, int z) { type = MODE_HEXAHEDRON; this->x = x; this->y = y; this->z = z; }
 
-	unsigned type:2;		// EMode3D
+	unsigned type:3;		// EMode3D
 	union {
 		// tetra
 		struct {
-			unsigned order: 30;
+			unsigned order: 15;
 		};
 		// hex
 		struct {
 			// directional orders
-			unsigned x:10;
-			unsigned y:10;
-			unsigned z:10;
+			unsigned x:5;
+			unsigned y:5;
+			unsigned z:5;
 		};
 	};
 
-	bool invalid() { return (type == 3) && (order == 0x7fffffff); }
+	bool invalid() { return (type == 7); }
 
 	// Operators
 
@@ -301,8 +312,17 @@ struct order3_t {
 	int get_idx() {
 		assert(!invalid());
 		switch (type) {
-			case MODE_TETRAHEDRON: return this->order;
-			case MODE_HEXAHEDRON: return (((this->z << 10) | this->y) << 10) | this->x;
+			case MODE_TETRAHEDRON: return ((this->type) << 15) | this->order;
+			case MODE_HEXAHEDRON: return (((((this->type << 5) | this->z) << 5) | this->y) << 5) | this->x;
+			default: assert(false);
+		}
+	}
+
+	static order3_t from_int(int o) {
+		int type = (o >> 15) & 0x07;
+		switch (type) {
+			case MODE_TETRAHEDRON: return order3_t(o & 0x7FFF);
+			case MODE_HEXAHEDRON: return order3_t(o & 0x1F, (o >> 5) & 0x1F, (o >> 10) & 0x1F);
 			default: assert(false);
 		}
 	}

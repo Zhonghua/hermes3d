@@ -4830,14 +4830,3 @@ order3_t H1ShapesetLobattoTetra::get_order(int index) const {
 	return order3_t(0);
 #endif
 }
-
-/// --- CED specific stuff ---
-double H1ShapesetLobattoTetra::get_constrained_value(int n, int index, double x, double y, double z, int component) {
-#ifdef WITH_TETRA
-	EXIT(ERR_NOT_IMPLEMENTED);
-	return 0.0;
-#else
-	EXIT(ERR_TETRA_NOT_COMPILED);
-#endif
-}
-

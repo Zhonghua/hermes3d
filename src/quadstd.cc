@@ -4278,6 +4278,7 @@ QuadStdHex::QuadStdHex() {
 		for (int j = 0; j <= MAX_QUAD_ORDER; j++) {
 			order2_t m(i, j);
 			np_face[m.get_idx()] = std_np_1d[i] * std_np_1d[j];
+//			if (i ==24 && j==24) printf("AAA = %d\n", m.get_idx());
 		}
 
 	// edges

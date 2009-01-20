@@ -19,3 +19,12 @@ Tests
 To run tests, do:
 
 $ make test
+
+Debugging
+---------
+
+If you need to debug the build, use:
+
+cmake -DCMAKE_VERBOSE_MAKEFILE=ON .
+
+Then the make will print the exact commands that are executed.

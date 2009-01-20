@@ -16,7 +16,7 @@ endif(FALSE)
 # !!! Do NOT edit the lines below UNLESS you are REALLY SURE what you are doing !!!
 #
 
-if(FALSE)
+#if(FALSE)
 
 # Judy
 find_package(JUDY REQUIRED)
@@ -138,4 +138,4 @@ endif(USE_FORTRAN)
 
 enable_testing()
 
-endif(FALSE)
+#endif(FALSE)

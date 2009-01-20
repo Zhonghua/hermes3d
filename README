@@ -4,7 +4,12 @@ hermes3d
 Compilation
 ------------
 
-$ cp CMake.vars.sample CMake.vars
+If you use Debian/Ubuntu, do:
+
+$ cp CMake.vars.Debian CMake.vars
+
+(If you use some other system, copy CMake.vars.sample and customize it.)
+
 $ cmake .
 $ make
 

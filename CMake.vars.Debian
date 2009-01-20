@@ -1,0 +1,83 @@
+#
+# hermes3d variables
+#
+
+set(REAL YES)						# to build a real version of Hermes3D
+set(COMPLEX NO)					# to build a complex version of Hermes3D
+
+set(DEBUG YES)
+set(DEBUG_ORDER YES)
+
+# set to YES if you want to use MPI
+set(USE_MPI NO)
+set(MPI_ROOT)
+
+# set to YES if you want to use HDF5 library
+set(USE_HDF5 NO)
+set(HDF5_ROOT)
+
+# set to YES if you want to use UMFPACK linear solver
+set(USE_UMFPACK YES)
+set(UMFPACK_ROOT)
+set(AMD_ROOT)
+set(UFCONFIG_DIR)
+
+# set to YES if you want to use AMD Core Math Library
+set(USE_ACML NO)
+set(ACML_ROOT)
+
+# BLAS
+set(USE_BLAS YES)
+set(BLAS_ROOT)
+
+# LAPACK
+set(USE_LAPACK YES)
+set(LAPACK_ROOT)
+
+# set to g2c or gfortran, comment this out if you do not use fortran at all
+set(USE_FORTRAN gfortran)
+set(FORTRAN_ROOT)
+
+# set to YES if you want to use PETSc (do not forget to adjust PETSc specific variables then)
+set(USE_PETSC NO)
+set(PETSC_ROOT /opt/petsc)						# root dir where PETSc is installed
+set(PETSC_ARCH_DEBUG linux-gnu-c-debug)			# PETSc architecture for debugging
+set(PETSC_ARCH_OPT linux-gnu-c-opt)				# PETSc architecture for release
+
+# pardiso (if you want to use pardiso, you need to set both variables)
+# you are responsible for correct installation of pardiso
+set(USE_PARDISO NO)
+set(PARDISO_ROOT )
+set(PARDISO_LIB )
+
+# build type
+if(DEBUG)
+	set(PETSC_ARCH ${PETSC_ARCH_DEBUG})
+	if(REAL)
+		set(HERMES_BIN hermes3d-debug)
+	endif(REAL)
+	if(COMPLEX) 
+		set(HERMES_CPLX_BIN hermes3d-cplx-debug)
+	endif(COMPLEX)
+	set(CMAKE_BUILD_TYPE Debug)
+else(DEBUG)
+	set(PETSC_ARCH ${PETSC_ARCH_OPT})
+	if(REAL)
+		set(HERMES_BIN hermes3d)
+	endif(REAL)
+	if(COMPLEX) 
+		set(HERMES_CPLX_BIN hermes3d-cplx)
+	endif(COMPLEX)
+	set(CMAKE_BUILD_TYPE Release)
+endif(DEBUG)
+
+# Hermes3D related
+set(WITH_TETRA NO)
+set(WITH_HEX   YES)
+set(WITH_PRISM NO)
+
+set(WITH_TESTS YES)
+
+# Docs
+set(DOXYGEN_BINARY doxygen)
+set(DOXYGEN_CONFIG_FILE ${PROJECT_SOURCE_DIR}/doc/Doxyfile)

@@ -2,7 +2,7 @@
 # Fortran
 #
 
-FIND_LIBRARY(FORTRAN_LIBRARY ${USE_FORTRAN} ${FORTRAN_ROOT} /usr/lib64 /usr/lib /usr/local/lib64 /usr/local/lib) 
+FIND_LIBRARY(FORTRAN_LIBRARY ${USE_FORTRAN} ${FORTRAN_ROOT} /usr/lib64 /usr/lib /usr/local/lib64 /usr/local/lib)
 
 IF (FORTRAN_LIBRARY)
 	SET(FORTRAN_FOUND TRUE)

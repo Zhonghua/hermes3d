@@ -1,0 +1,16 @@
+hermes3d
+========
+
+Compilation
+------------
+
+$ cp CMake.vars.sample CMake.vars
+$ cmake .
+$ make
+
+Tests
+-----
+
+To run tests, do:
+
+$ make test

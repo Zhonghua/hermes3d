@@ -68,7 +68,6 @@ RefMap::~RefMap() {
 }
 
 void RefMap::set_quad(Quad3D *quad) {
-	free();
 	this->quad = quad;
 	assert(this->pss != NULL);		// if this asserts, check that you called set_active_element() before calling set_quad()
 	this->pss->set_quad(quad);
@@ -130,7 +129,7 @@ void RefMap::set_active_element(Element *e) {
 void RefMap::push_transform(int son) {
 	Transformable::push_transform(son);
 	update_cur_node();
-	const_jacobian *= 0.125;		// tohle jsem jen tak odhad' (1/8)
+	const_jacobian *= 0.125;
 }
 
 void RefMap::pop_transform() {
@@ -153,9 +152,9 @@ void RefMap::force_transform(uint64 sub_idx, Trf *ctm) {
 void RefMap::calc_inv_ref_map(qorder_t qord) {
 	int np;
 	switch (qord.type) {
-		case QOT_ELEMENT: np = quad->get_num_points(qord.order); break;
+		case QOT_ELEMENT: np = quad->get_num_points(order3_t::from_int(qord.order)); break;
+		case QOT_FACE:    np = quad->get_face_num_points(qord.face, order2_t::from_int(qord.order)); break;
 		case QOT_EDGE:    np = quad->get_edge_num_points(qord.order); break;
-		case QOT_FACE:    np = quad->get_face_num_points(qord.face, qord.order); break;
 		case QOT_VERTEX:  np = quad->get_vertex_num_points(); break;
 	}
 

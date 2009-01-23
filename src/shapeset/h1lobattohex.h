@@ -108,10 +108,6 @@ protected:
 	void compute_bubble_indices(order3_t order);
 
 	virtual double get_val(int n, int index, double x, double y, double z, int component) {
-//		int ori = GET_ORI_FROM_INDEX(index);
-//		int idx = GET_IDX_FROM_INDEX(index);
-
-//		CHECK_INDEX(idx);
 		// use on-the-fly function
 		if (shape_table_deleg[n] == NULL) EXIT(ERR_FAILURE, "Missing a delegate function for calculating shape functions");
 		return shape_table_deleg[n](index, x, y, z, component);
@@ -119,9 +115,9 @@ protected:
 
 
 	/// --- put CED specific stuff here ---
-	virtual CEDComb *calc_constrained_edge_combination(int ori, order1_t order, Part part);
-	virtual CEDComb *calc_constrained_edge_face_combination(int ori, order2_t order, Part part, int dir);
-	virtual CEDComb *calc_constrained_face_combination(int ori, order2_t order, Part part);
+	virtual CEDComb *calc_constrained_edge_combination(int ori, int order, Part part);
+	virtual CEDComb *calc_constrained_edge_face_combination(int ori, int order, Part part, int dir);
+	virtual CEDComb *calc_constrained_face_combination(int ori, int order, Part part);
 };
 
 #undef CHECK_VERTEX

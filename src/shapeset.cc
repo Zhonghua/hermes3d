@@ -151,11 +151,10 @@ CEDComb *Shapeset::get_ced_comb(const CEDKey &key) {
 	}
 	else {
 		// combination does not exist yet => calculate it
-//		if (key.type == CED_KEY_TYPE_EDGE)           comb = calc_constrained_edge_combination(key.ori, key.order, key.part);
-//		else if (key.type == CED_KEY_TYPE_EDGE_FACE) comb = calc_constrained_edge_face_combination(key.ori, key.order, key.part, key.dir);
-//		else if (key.type == CED_KEY_TYPE_FACE)      comb = calc_constrained_face_combination(key.ori, key.order, key.part);
-//		else
-		EXIT(ERR_FAILURE, "Unknown type of CED key.");
+		if (key.type == CED_KEY_TYPE_EDGE)           comb = calc_constrained_edge_combination(key.ori, key.order, key.part);
+		else if (key.type == CED_KEY_TYPE_EDGE_FACE) comb = calc_constrained_edge_face_combination(key.ori, key.order, key.part, key.dir);
+		else if (key.type == CED_KEY_TYPE_FACE)      comb = calc_constrained_face_combination(key.ori, key.order, key.part);
+		else EXIT(ERR_FAILURE, "Unknown type of CED key.");
 
 		ced_comb.set(key, comb);
 	}
@@ -174,11 +173,11 @@ int *Shapeset::get_ced_indices(const CEDKey &key) {
 		int dir = key.dir;
 		const int *eori = RefHex::get_face_edge_orientation(key.ori);
 		if (key.ori >= 4) dir = (key.dir == PART_ORI_VERT) ? PART_ORI_HORZ : PART_ORI_VERT; 			// turned face
-		order2_t o = key.order;
+		order2_t o = order2_t::from_int(key.order);
 		idx = (dir == PART_ORI_HORZ) ? get_edge_indices(key.edge, eori[0], o.x) : get_edge_indices(key.edge, eori[1], o.y);
 	}
 	else if (key.type == CED_KEY_TYPE_FACE) {
-		order2_t order = key.order;
+		order2_t order = order2_t::from_int(key.order);
 		idx = get_face_indices(key.face, key.ori, order);
 	}
 	else

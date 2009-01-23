@@ -13,16 +13,6 @@ enum EPartOri {
 	PART_ORI_VERT = 1
 };
 
-typedef int EdgePart;
-
-struct FacePart {
-	// version for quadrilaterals
-	unsigned horz:16;		// horizontal part (stripe)
-	unsigned vert:16;		// vertical part (stripe)
-
-	int to_int() { return horz << 16 | vert; }
-};
-
 struct Part {
 	// quad part
 	union {
@@ -60,23 +50,6 @@ enum ECedKeyType {
 	CED_KEY_TYPE_EDGE = 0,
 	CED_KEY_TYPE_FACE = 1,
 	CED_KEY_TYPE_EDGE_FACE = 2
-};
-
-
-struct CEDEdgeKey {
-	unsigned ori:1;
-	unsigned edge:4;
-	order1_t order;
-	EdgePart part;
-};
-
-struct CEDFaceKey {
-	unsigned ori:3;
-	unsigned face:3;
-	unsigned face_var:1;
-	unsigned dir:1;
-	order2_t order;
-	FacePart part;
 };
 
 /// constrained key
@@ -241,15 +214,15 @@ protected:
 	// CED
 	double get_constrained_value(int n, int index, double x, double y, double z, int component);
 
-	virtual CEDComb *calc_constrained_edge_combination(int ori, order1_t order, EdgePart part) { return NULL; }
-	virtual CEDComb *calc_constrained_edge_face_combination(int ori, order2_t order, FacePart part, int dir) { return NULL; }
-	virtual CEDComb *calc_constrained_face_combination(int ori, order2_t order, FacePart part) { return NULL; }
+	virtual CEDComb *calc_constrained_edge_combination(int ori, int order, Part part) { return NULL; }
+	virtual CEDComb *calc_constrained_edge_face_combination(int ori, int order, Part part, int dir) { return NULL; }
+	virtual CEDComb *calc_constrained_face_combination(int ori, int order, Part part) { return NULL; }
 	void free_constrained_combinations();
 
 	Map<CEDKey, CEDComb *> ced_comb;			// mapping: CEDKey => CEDComb
-	Map<CEDKey, int> ced_id;					// mapping: CEDkey => ced function index
-	Array<CEDKey> ced_key;				// indexing: index => CEDkey
-	int ced_idx;						// ced index to assing
+	Map<CEDKey, int> ced_id;					// mapping: CEDKey => ced function index
+	Array<CEDKey> ced_key;						// indexing: index => CEDKey
+	int ced_idx;								// ced index to assing
 
 	CEDComb *get_ced_comb(const CEDKey &key);
 	int *get_ced_indices(const CEDKey &key);

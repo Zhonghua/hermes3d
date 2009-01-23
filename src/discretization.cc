@@ -337,6 +337,9 @@ void Discretization::assemble_stiffness_matrix_and_rhs(bool rhsonly) {
 							if (am->dof[i] < 0) continue;
 							fv->set_active_shape(am->idx[i]);
 							scalar bi = bf->unsym(fu, fv, refmap + n, refmap + m) * an->coef[j] * am->coef[i];
+//							if (l >= 0)
+//								printf("[%d, %d] = %lf | idx = %d, %d | coef = %lf, %lf\n", an->dof[j], am->dof[i], bi,
+//										an->idx[j], am->idx[i], an->coef[j], am->coef[i]);
 							if (l >= 0) lsm[i][j] += bi;
 							else lrhs[i] -= bi;
 						}

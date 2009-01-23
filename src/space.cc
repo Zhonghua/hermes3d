@@ -74,7 +74,7 @@ void Space::free_data_tables() {
 	elm_data.remove_all();
 }
 
-//// element orders ///////////////////////////////////////////////////////////////////////////////
+// element orders ///////////////////////////////////////////////////////////////////////////////
 
 
 void Space::set_element_order(Word_t eid, order3_t order) {
@@ -273,11 +273,14 @@ void Space::get_vertex_assembly_list(Element *e, int ivertex, AsmList *al) {
 	int index = shapeset->get_vertex_index(ivertex);
 
 	if (vnode->ced) {
+//		printf("nc = %d\n", vnode->ncomponents);
 		for (int i = 0; i < vnode->ncomponents; i++) {
 			if (vnode->baselist[i].coef != 0) {
+//				printf(" - dof = %d, coef = %lf\n", vnode->baselist[i].dof, vnode->baselist[i].coef);
 				al->add(index, vnode->baselist[i].dof, vnode->baselist[i].coef);
 			}
 		}
+//		printf("--\n");
 	}
 	else {
 		double coef = vnode->dof >= 0 ? 1.0 : vnode->bc_proj;
@@ -305,14 +308,14 @@ void Space::get_edge_assembly_list(Element *elem, int iedge, AsmList *al) {
 			int *indices = shapeset->get_edge_indices(iedge, 0, cng_enode->order);		// iedge bude 0 (?)
 			if (cng_enode->dof >= 0) {
 				for (int j = 0, dof = cng_enode->dof; j < cng_enode->n; j++, dof += stride) {
-					int order = shapeset->get_order(indices[j]).get_edge_order(iedge);
+					order1_t order = shapeset->get_order(indices[j]).get_edge_order(iedge);
 					int idx = shapeset->get_constrained_edge_index(iedge, ecomp->ori, order, ecomp->part);
 					al->add(idx, dof, ecomp->coef);
 				}
 			}
 			else {
 				for (int j = 0; j < cng_enode->n; j++) {
-					int order = shapeset->get_order(indices[j]).get_edge_order(iedge);
+					order1_t order = shapeset->get_order(indices[j]).get_edge_order(iedge);
 					int idx = shapeset->get_constrained_edge_index(iedge, ecomp->ori, order, ecomp->part);
 					al->add(idx, DIRICHLET_DOF, ecomp->coef * cng_enode->bc_proj[j]);
 				}
@@ -333,28 +336,16 @@ void Space::get_edge_assembly_list(Element *elem, int iedge, AsmList *al) {
 			int *indices = shapeset->get_face_indices(fcomp->iface, 0, cng_fnode->order);
 			if (cng_fnode->dof >= 0) {
 				for (int j = 0, dof = cng_fnode->dof; j < cng_fnode->n; j++, dof += stride) {
-					order2_t order;
-					switch (mesh->facets[fcomp->face_id]->mode) {
-						case MODE_HEXAHEDRON: order = shapeset->get_order(indices[j]).get_face_order(fcomp->iface); break;
-						case MODE_TETRAHEDRON:
-						case MODE_PRISM: EXIT(ERR_NOT_IMPLEMENTED); break;
-						default: EXIT(ERR_UNKNOWN_MODE); break;
-					}
-//					int idx = shapeset->get_constrained_edge_face_index(iedge, fcomp->ori, order, fcomp->part, fcomp->dir);
-//					al->add(idx, dof, fcomp->coef);
+					order2_t order = shapeset->get_order(indices[j]).get_face_order(fcomp->iface);
+					int idx = shapeset->get_constrained_edge_face_index(iedge, fcomp->ori, order, fcomp->part, fcomp->dir);
+					al->add(idx, dof, fcomp->coef);
 				}
 			}
 			else {
 				for (int j = 0; j < cng_fnode->n; j++) {
-					order2_t order;
-					switch (mesh->facets[fcomp->face_id]->mode) {
-						case MODE_HEXAHEDRON: order = shapeset->get_order(indices[j]).get_face_order(fcomp->iface); break;
-						case MODE_TETRAHEDRON:
-						case MODE_PRISM: EXIT(ERR_NOT_IMPLEMENTED); break;
-						default: EXIT(ERR_UNKNOWN_MODE); break;
-					}
-//					int idx = shapeset->get_constrained_edge_face_index(iedge, fcomp->ori, order, fcomp->part, fcomp->dir);
-//					al->add(idx, DIRICHLET_DOF, fcomp->coef * cng_fnode->bc_proj[j]);
+					order2_t order = shapeset->get_order(indices[j]).get_face_order(fcomp->iface);
+					int idx = shapeset->get_constrained_edge_face_index(iedge, fcomp->ori, order, fcomp->part, fcomp->dir);
+					al->add(idx, DIRICHLET_DOF, fcomp->coef * cng_fnode->bc_proj[j]);
 				}
 			}
 		}
@@ -391,29 +382,15 @@ void Space::get_face_assembly_list(Element *elem, int iface, AsmList *al) {
 			int *indices = shapeset->get_face_indices(iface, 0, cng_fnode->order);
 			if (cng_fnode->dof >= 0) {
 				for (int j = 0, dof = cng_fnode->dof; j < cng_fnode->n; j++, dof += stride) {
-					order2_t order;
-					switch (facet->mode) {
-						case MODE_HEXAHEDRON: order = shapeset->get_order(indices[j]).get_face_order(iface); break;
-						case MODE_TETRAHEDRON:
-						case MODE_PRISM: EXIT(ERR_NOT_IMPLEMENTED); break;
-						default: EXIT(ERR_UNKNOWN_MODE); break;
-					}
-
-//					int idx = shapeset->get_constrained_face_index(iface, fnode->ori, order, fnode->part);
-//					assert(dof >= DIRICHLET_DOF && dof < get_dof_count());
-//
-//					al->add(idx, dof, 1.0);
+					order2_t order = shapeset->get_order(indices[j]).get_face_order(iface);
+					int idx = shapeset->get_constrained_face_index(iface, fnode->ori, order, fnode->part);
+					assert(dof >= DIRICHLET_DOF && dof < get_dof_count());
+					al->add(idx, dof, 1.0);
 				}
 			}
 			else {
 				for (int j = 0; j < cng_fnode->n; j++) {
-					order2_t order;
-					switch (facet->mode) {
-						case MODE_HEXAHEDRON: order = shapeset->get_order(indices[j]).get_face_order(iface); break;
-						case MODE_TETRAHEDRON:
-						case MODE_PRISM: EXIT(ERR_NOT_IMPLEMENTED); break;
-						default: EXIT(ERR_UNKNOWN_MODE); break;
-					}
+					order2_t order = shapeset->get_order(indices[j]).get_face_order(iface);
 					assert(false);
 //					int idx = shapeset->get_constrained_face_index(iface, fnode->ori, order, fnode->part);
 //					al->add(idx, DIRICHLET_DOF, cng_fnode->bc_proj[j]);
@@ -877,8 +854,9 @@ Space::BaseVertexComponent *Space::merge_baselist(BaseVertexComponent *l1, int n
 	// if we produced less components than we expected, reallocate the resulting array
 	// ...this should be OK as we are always shrinking the array so no copying should occur
 	ncomponents = current - result;
-	if (ncomponents < max_result) return (BaseVertexComponent *) realloc(result, ncomponents * sizeof(BaseVertexComponent));
-	else return result;
+//	if (ncomponents < max_result) return (BaseVertexComponent *) realloc(result, ncomponents * sizeof(BaseVertexComponent));
+//	else
+	return result;
 }
 
 inline void Space::output_component(BaseEdgeComponent *&current, BaseEdgeComponent *&last, BaseEdgeComponent *min, bool add) {
@@ -922,8 +900,9 @@ Space::BaseEdgeComponent *Space::merge_baselist(BaseEdgeComponent *l1, int n1, B
 	while (i2 < n2) output_component(current, last, l2 + i2++, add);
 
 	ncomponents = current - result;
-	if (ncomponents < max_result) return (BaseEdgeComponent *) realloc(result, ncomponents * sizeof(BaseEdgeComponent));
-	else return result;
+//	if (ncomponents < max_result) return (BaseEdgeComponent *) realloc(result, ncomponents * sizeof(BaseEdgeComponent));
+//	else
+	return result;
 }
 
 inline void Space::output_component_over(BaseFaceComponent *&current, BaseFaceComponent *min, BaseFaceComponent *m) {
@@ -1130,6 +1109,7 @@ void Space::calc_vertex_edge_ced(Word_t vtx, Word_t eid, int ori, int part) {
 	PRINTF("calc vertex/edge #%d\n", vtx);
 
 	PRINTF(" - eid = %d, part = %d, ori = %d\n", eid, part, ori);
+//	printf(" - eid = %d, part = %d, ori = %d\n", eid, part, ori);
 
 	assert(eid != INVALID_IDX);
 	EdgeData *ed = en_data[eid];
@@ -1142,6 +1122,8 @@ void Space::calc_vertex_edge_ced(Word_t vtx, Word_t eid, int ori, int part) {
 	double lo, hi;
 	int ncomp = 0;
 	if (ed->ced) {
+//		printf("B\n");
+
 		// count the number of components to merge
 		int nc = 0;
 		for (int i = 0; i < ed->edge_ncomponents; i++) {
@@ -1156,6 +1138,7 @@ void Space::calc_vertex_edge_ced(Word_t vtx, Word_t eid, int ori, int part) {
 		}
 //		BaseVertexComponent *baselist = new BaseVertexComponent[nc];
 		BaseVertexComponent *baselist = (BaseVertexComponent *) malloc(nc * sizeof(BaseVertexComponent));
+//		printf("nc = %d\n", nc);
 
 //		get_interval_part(part, lo, hi);
 //		double mid = (lo + hi) * 0.5;
@@ -1173,12 +1156,12 @@ void Space::calc_vertex_edge_ced(Word_t vtx, Word_t eid, int ori, int part) {
 //			double edge_coef = get_edge_coef(face_to_edge_part(part));
 //			printf("   - ECOMP: edge_id = %d, part = %d, coef = %lf | edge_coef = %lf, mid = %lf\n",
 //				ecomp->edge_id, ecomp->part.part, ecomp->coef, edge_coef, mid);
-			PRINTF("   - ECOMP: edge_id = %d, part = %d, coef = %lf\n",
-				ecomp->edge_id, ecomp->part.part, ecomp->coef);
+//			printf("   - ECOMP: edge_id = %d, part = %d, coef = %lf\n",
+//				ecomp->edge_id, ecomp->part.part, ecomp->coef);
 
 			int *indices = shapeset->get_edge_indices(0, ecomp->ori, cng_enode->order);
 			for (int j = 0, dof = cng_enode->dof; j < cng_enode->n; j++, nci++) {
-				int order = shapeset->get_order(indices[j]).get_edge_order(0);
+				order1_t order = shapeset->get_order(indices[j]).get_edge_order(0);
 				int idx = shapeset->get_constrained_edge_index(0, ecomp->ori, order, ecomp->part);
 //				printf("   - dof = %d, coef = % lf, fn = % lf, (order = %d)\n",
 //				       dof, ecomp->coef, shapeset->get_fn_value(idx, 0, -1.0, -1.0, 0), order);
@@ -1214,20 +1197,22 @@ void Space::calc_vertex_edge_ced(Word_t vtx, Word_t eid, int ori, int part) {
 //				fcomp->face_id, fcomp->part.fpart, fcomp->part.epart, fcomp->part.ori, fcomp->ori, fcomp->coef, h_mid, v_mid);
 //			PRINTF("   - FCOMP: face_id = %d, part = (f = %d, e = %d, ori = %d), ori = %d, coef = %lf\n",
 //				fcomp->face_id, fcomp->part.fpart, fcomp->part.epart, fcomp->part.ori, fcomp->ori, fcomp->coef);
-			PRINTF("   - FCOMP: face_id = %d, part = (%d, %d), dir = %d, ori = %d, coef = %lf\n",
-				fcomp->face_id, fcomp->part.horz, fcomp->part.vert, fcomp->dir, fcomp->ori, fcomp->coef);
+//			printf("   - FCOMP: face_id = %d, part = (%d, %d), dir = %d, ori = %d, coef = %lf\n",
+//				fcomp->face_id, fcomp->part.horz, fcomp->part.vert, fcomp->dir, fcomp->ori, fcomp->coef);
 
 			int *indices = shapeset->get_face_indices(2, fcomp->ori, cng_fnode->order);
 			for (int j = 0, dof = cng_fnode->dof; j < cng_fnode->n; j++, nci++) {
 				// FIXME: Hex-specific
 				order2_t order = shapeset->get_order(indices[j]).get_face_order(2);
-//				int idx = shapeset->get_constrained_edge_face_index(0, fcomp->ori, order, fcomp->part, fcomp->dir);
+				int idx = shapeset->get_constrained_edge_face_index(0, fcomp->ori, order, fcomp->part, fcomp->dir);
 
 //				PRINTF("   - dof = %d, coef = % lf, fn = % lf, (order = %d)\n",
 //				       dof, fcomp->coef, shapeset->get_fn_value(idx, 0, -1.0, -1.0, 0), order);
+//				printf("   - dof = %d, coef = % lf, fn = % lf, (order = %s)\n",
+//					   dof, fcomp->coef, shapeset->get_fn_value(idx, 0.0, -1.0, -1.0, 0), order.str());
 
 				baselist[nci].dof = dof;
-//				baselist[nci].coef = (fcomp->coef) * shapeset->get_fn_value(idx, 0.0, -1.0, -1.0, 0);
+				baselist[nci].coef = (fcomp->coef) * shapeset->get_fn_value(idx, 0.0, -1.0, -1.0, 0);
 				if (cng_fnode->dof == DIRICHLET_DOF) baselist[nci].coef *= cng_fnode->bc_proj[j];
 				else dof += stride;
 			}
@@ -1240,6 +1225,14 @@ void Space::calc_vertex_edge_ced(Word_t vtx, Word_t eid, int ori, int part) {
 //		for (int i = 0; i < nc; i++)
 //			PRINTF(" - [%d]: dof = %d, coef = %lf\n", i, baselist[i].dof, baselist[i].coef);
 //		PRINTF("--\n");
+
+//		printf("--\n");
+//		for (int i = 0; i < vd->ncomponents; i++)
+//			printf(" - [%d]: dof = %d, coef = %lf\n", i, vd->baselist[i].dof, vd->baselist[i].coef);
+//		printf("--\n");
+//		for (int i = 0; i < nc; i++)
+//			printf(" - [%d]: dof = %d, coef = %lf\n", i, baselist[i].dof, baselist[i].coef);
+//		printf("--\n");
 
 		BaseVertexComponent *del = vd->baselist;
 		vd->baselist = merge_baselist(vd->baselist, vd->ncomponents, baselist, nc, ncomp, true);
@@ -1297,7 +1290,8 @@ void Space::calc_vertex_edge_ced(Word_t vtx, Word_t eid, int ori, int part) {
 	}
 
 	for (int i = 0; i < vd->ncomponents; i++) {
-		PRINTF(" - [%d]: dof = %d, coef = %lf\n", i, vd->baselist[i].dof, vd->baselist[i].coef);
+//		PRINTF(" - [%d]: dof = %d, coef = %lf\n", i, vd->baselist[i].dof, vd->baselist[i].coef);
+//		printf(" - [%d]: dof = %d, coef = %lf\n", i, vd->baselist[i].dof, vd->baselist[i].coef);
 
 //		if (vd->baselist[i].dof == -1)
 //			vd->bc_proj = vd->baselist[i].coef;
@@ -1404,12 +1398,12 @@ void Space::calc_mid_vertex_edge_ced(Word_t vtx, Word_t fmp, Word_t eid, int ori
 		int *indices = shapeset->get_edge_indices(0, ecomp->ori, cng_enode->order);		// iedge bude 0 (?)
 		for (int j = 0, dof = cng_enode->dof; j < cng_enode->n; j++, nci++) {
 			int order = shapeset->get_order(indices[j]).get_edge_order(0);
-//			int idx = shapeset->get_constrained_edge_index(0, ecomp->ori, order, ecomp->part);
+			int idx = shapeset->get_constrained_edge_index(0, ecomp->ori, order, ecomp->part);
 //			PRINTF("   - dof = %d, coef = % lf, fn = % lf, (order = %d)\n",
 //			       dof, ecomp->coef, shapeset->get_fn_value(idx, 0, -1.0, -1.0, 0), order);
 
 			baselist[nci].dof = dof;
-//			baselist[nci].coef = ecomp->coef * shapeset->get_fn_value(idx, 0, -1.0, -1.0, 0);
+			baselist[nci].coef = ecomp->coef * shapeset->get_fn_value(idx, 0, -1.0, -1.0, 0);
 			if (cng_enode->dof == DIRICHLET_DOF) baselist[nci].coef *= cng_enode->bc_proj[j];
 			else dof += stride;
 		}
@@ -1439,13 +1433,13 @@ void Space::calc_mid_vertex_edge_ced(Word_t vtx, Word_t fmp, Word_t eid, int ori
 		for (int j = 0, dof = cng_fnode->dof; j < cng_fnode->n; j++, nci++) {
 			// FIXME: Hex-specific
 			order2_t order = shapeset->get_order(indices[j]).get_face_order(2);
-//			int idx = shapeset->get_constrained_edge_face_index(0, fcomp->ori, order, fcomp->part, fcomp->dir);
-//
+			int idx = shapeset->get_constrained_edge_face_index(0, fcomp->ori, order, fcomp->part, fcomp->dir);
+
 //			PRINTF("   - dof = %d, coef = % lf, fn = % lf, (order = %d)\n",
 //			       dof, fcomp->coef, shapeset->get_fn_value(idx, 0.0, -1.0, -1.0, 0), order);
 
 			baselist[nci].dof = dof;
-//			baselist[nci].coef = fcomp->coef * shapeset->get_fn_value(idx, 0.0, -1.0, -1.0, 0);
+			baselist[nci].coef = fcomp->coef * shapeset->get_fn_value(idx, 0.0, -1.0, -1.0, 0);
 			if (cng_fnode->dof == DIRICHLET_DOF) baselist[nci].coef *= cng_fnode->bc_proj[j];
 			else dof += stride;
 		}
@@ -1528,10 +1522,10 @@ void Space::calc_vertex_face_ced(Word_t vtx, Word_t fid, int ori, int iface, int
 			Part part;
 			part.horz = hpart;
 			part.vert = vpart;
-//			int idx = shapeset->get_constrained_face_index(2, ori, order, part);
+			int idx = shapeset->get_constrained_face_index(2, ori, order, part);
 
 			baselist[j].dof = dof;
-//			baselist[j].coef = shapeset->get_fn_value(idx, 0.0, -1.0, 0.0,  0);
+			baselist[j].coef = shapeset->get_fn_value(idx, 0.0, -1.0, 0.0,  0);
 			if (fd->dof == DIRICHLET_DOF) baselist[j].coef *= fd->bc_proj[j];
 			else dof += stride;
 			PRINTF(" - [%d]: dof = %d, coef = %lf\n", j, baselist[j].dof, baselist[j].coef);

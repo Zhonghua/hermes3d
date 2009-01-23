@@ -104,13 +104,13 @@ void PrecalcShapeset::precalculate(qorder_t qord, int mask) {
 	int np = 0;
 	switch (qord.type) {
 		case QOT_ELEMENT:
-			np = quad->get_num_points(qord.order);
-			pt = quad->get_points(qord.order);
+			np = quad->get_num_points(order3_t::from_int(qord.order));
+			pt = quad->get_points(order3_t::from_int(qord.order));
 			break;
 
 		case QOT_FACE:
-			np = quad->get_face_num_points(qord.face, qord.order);
-			pt = quad->get_face_points(qord.face, qord.order);
+			np = quad->get_face_num_points(qord.face, order2_t::from_int(qord.order));
+			pt = quad->get_face_points(qord.face, order2_t::from_int(qord.order));
 			break;
 
 		case QOT_EDGE:

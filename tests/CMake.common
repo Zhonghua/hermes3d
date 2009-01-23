@@ -1,22 +1,6 @@
-
-
-if(FALSE)
-
-# link the correct version of Hermes3D
-if(COMPLEX)
-	target_link_libraries(${PROJECT_NAME} ${HERMES_CPLX_BIN})
-elseif(REAL)
-	target_link_libraries(${PROJECT_NAME} ${HERMES_BIN})
-endif(COMPLEX)
-
-endif(FALSE)
-
-
 # !!! Keep the order of packages and libraries unless linking would be broken !!!
 # !!! Do NOT edit the lines below UNLESS you are REALLY SURE what you are doing !!!
 #
-
-#if(FALSE)
 
 # Judy
 find_package(JUDY REQUIRED)
@@ -135,7 +119,3 @@ if(USE_FORTRAN)
 		set(TESTS_LIBRARIES ${TESTS_LIBRARIES} ${FORTRAN_LIBRARY})
 	endif(FORTRAN_FOUND)
 endif(USE_FORTRAN)
-
-enable_testing()
-
-#endif(FALSE)

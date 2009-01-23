@@ -5,6 +5,7 @@
 include(CMake.common)
 
 add_subdirectory(calc)
+add_subdirectory(hang-nodes)
 add_subdirectory(integrals)
 add_subdirectory(judy-templates)
 add_subdirectory(linear-solvers)

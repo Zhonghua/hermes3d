@@ -20,7 +20,7 @@ To run tests, do:
 
 $ make test-quick
 
-To run all tests (warning: take very long time to finish):
+To run all tests (warning: takes very long time to finish):
 
 $ make test
 

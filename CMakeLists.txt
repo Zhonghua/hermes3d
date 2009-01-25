@@ -65,3 +65,6 @@ add_custom_command(
     DEPENDS   ${PROJECT_BINARY_DIR}/doc/html
 )
 
+add_custom_target(test-quick
+    COMMAND   /usr/bin/ctest -E \"hnnd|qorder|lobatto\"
+    )

@@ -37,7 +37,7 @@ double calc_error(double (*fn)(MeshFunction*, MeshFunction*, RefMap*, RefMap*), 
 		error += fn(sln1, sln2, ru, rv);
 	}
 	trav.finish();
-	return sqrt(error);
+	return error > 0.0 ? sqrt(error) : error;
 }
 
 /// Calculates the norm of sln using function fn
@@ -55,10 +55,9 @@ double calc_norm(double (*fn)(MeshFunction*, RefMap*), MeshFunction *sln) {
 		RefMap *ru = sln->get_refmap();
 
 		norm += fn(sln, ru);
-//		printf("pricitam %lf\n", fn(sln, ru));
 	}
 
-	return sqrt(norm);
+	return norm > 0.0 ? sqrt(norm) : norm;
 }
 
 // H1 space /////////////////////////////////////////////////////////////////////////////////////////

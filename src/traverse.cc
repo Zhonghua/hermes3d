@@ -401,9 +401,17 @@ void Traverse::set_boundary_info(State *s, bool *bnd, FacePos *fp) {
 			break;
 
 		case MODE_TETRAHEDRON:
+			// FIXME: check that the triangle is the unit triable (0, ONE) (see case MODE_HEXAHEDRON above)
+			bnd[0] = m->facets[m->get_facet_id(e, 0)]->type == Facet::OUTER;
+			bnd[1] = m->facets[m->get_facet_id(e, 1)]->type == Facet::OUTER;
+			bnd[2] = m->facets[m->get_facet_id(e, 2)]->type == Facet::OUTER;
+			bnd[3] = m->facets[m->get_facet_id(e, 3)]->type == Facet::OUTER;
+			break;
+
 		case MODE_PRISM:
 			EXIT(ERR_NOT_IMPLEMENTED);
 			break;
+
 		default:
 			EXIT(ERR_UNKNOWN_MODE);
 			break;
@@ -593,6 +601,7 @@ Element **Traverse::get_next_state(bool *bnd, FacePos *fp) {
 			case MODE_PRISM:
 				EXIT(ERR_NOT_IMPLEMENTED);
 				break;
+
 			default:
 				EXIT(ERR_UNKNOWN_MODE);
 				break;

@@ -4138,7 +4138,7 @@ QuadStdTetra::QuadStdTetra() {
 	max_edge_order = MAX_QUAD_ORDER;
 	max_face_order = MAX_QUAD_ORDER_TRI;
 
-	for (int i = 0; i < MAX_QUAD_ORDER_TETRA; i++) {
+	for (int i = 0; i <= MAX_QUAD_ORDER_TETRA; i++) {
 		order3_t o(i);
 		int oi = o.get_idx();
 		tables[oi] = std_tables_3d_tet[i];

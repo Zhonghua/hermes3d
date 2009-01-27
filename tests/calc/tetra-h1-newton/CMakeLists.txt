@@ -27,10 +27,4 @@ configure_file(
 enable_testing()
 
 set(BIN ${PROJECT_BINARY_DIR}/${PROJECT_NAME})
-if(FAST_TEST)
-	add_test(${PROJECT_NAME}-1 ${BIN} ${MESHES_DIR}/mesh3d/tetra1.mesh3d 2)
-else(FAST_TEST)
-	foreach(a RANGE 2 10)
-		add_test(${PROJECT_NAME}-1-${a} ${BIN} ${MESHES_DIR}/mesh3d/tetra1.mesh3d ${a})
-	endforeach(a)
-endif(FAST_TEST)
+add_test(${PROJECT_NAME}-1 ${BIN} ${MESHES_DIR}/mesh3d/tetra1.mesh3d 2)

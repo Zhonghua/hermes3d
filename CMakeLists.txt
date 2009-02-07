@@ -2,7 +2,34 @@ project(h3d)
 
 cmake_minimum_required(VERSION 2.4)
 
-include(CMake.vars)
+# default values
+
+set(DEBUG       NO)
+# real/complex version of the library
+set(REAL        YES)
+set(COMPLEX     NO)
+# Hermes3D related
+set(WITH_TETRA  YES)
+set(WITH_HEX    YES)
+set(WITH_PRISM  NO)
+
+set(USE_BLAS    YES)
+set(USE_LAPACK  YES)
+set(USE_FORTRAN gfortran)
+
+set(USE_UMFPACK YES)
+
+set(WITH_TESTS  YES)
+
+# Doxygen related
+set(DOXYGEN_BINARY doxygen)
+set(DOXYGEN_CONFIG_FILE ${PROJECT_SOURCE_DIR}/doc/doxygen-config)
+
+# allow to override default values via CMake.vars 
+if(EXISTS ${PROJECT_SOURCE_DIR}/CMake.vars)
+    include(CMake.vars)
+endif(EXISTS ${PROJECT_SOURCE_DIR}/CMake.vars)
+
 include_directories(${PROJECT_SOURCE_DIR})
 
 # need either real or complex version
@@ -67,4 +94,4 @@ add_custom_command(
 
 add_custom_target(test-quick
     COMMAND   /usr/bin/ctest -E \"hnnd|qorder|lobatto\"
-    )
+)

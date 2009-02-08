@@ -1,6 +1,7 @@
 project(hdf5-dump)
 
 include(CMake.vars)
+include(../../CMake.common)
 
 add_executable(${PROJECT_NAME}
 	hdf5dump.cc
@@ -12,18 +13,14 @@ include_directories(${TESTS_INCLUDE_DIR})
 target_link_libraries(${PROJECT_NAME} ${TESTS_LIBRARIES}) 
 
 include_directories(${hermes3d_SOURCE_DIR})
-target_link_libraries(${PROJECT_NAME} ${HERMES_BIN})
+target_link_libraries(${PROJECT_NAME} ${HERMES_REAL_BIN})
 
 CONFIGURE_FILE(
 	${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake
 	${CMAKE_CURRENT_SOURCE_DIR}/config.h
 )
 
-#
 # Tests
-#
-
-enable_testing()
 
 set(BIN ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME})
 # cubes

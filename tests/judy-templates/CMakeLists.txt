@@ -14,17 +14,11 @@ configure_file(
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-find_package(JUDY REQUIRED)
-if(JUDY_FOUND)
-	include_directories(${JUDY_INCLUDE_DIR})
-	target_link_libraries(${PROJECT_NAME} ${JUDY_LIBRARY}) 
-endif(JUDY_FOUND)
+# Judy
+include_directories(${JUDY_INCLUDE_DIR})
+target_link_libraries(${PROJECT_NAME} ${JUDY_LIBRARY}) 
 
-#
 # Tests
-#
-
-enable_testing()
 
 add_test(judy-templates-1 ${PROJECT_NAME})
 

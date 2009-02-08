@@ -1,6 +1,7 @@
 project(integ-norm)
 
 include(CMake.vars)
+include(../../../CMake.common)
 
 add_executable(${PROJECT_NAME}
 	main.cc
@@ -20,11 +21,7 @@ configure_file(
 	${CMAKE_CURRENT_SOURCE_DIR}/config.h
 )
 
-#
 # Tests
-#
-
-enable_testing()
 
 set(BIN ${PROJECT_BINARY_DIR}/${PROJECT_NAME})
 add_test(integ-norm-1 ${BIN} ${MESHES_DIR}/mesh3d/cube1.mesh3d)

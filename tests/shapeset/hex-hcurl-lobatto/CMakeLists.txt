@@ -1,6 +1,7 @@
 project(hex-hcurl-lobatto-shapeset)
 
 include(CMake.vars)
+include(../../CMake.common)
 
 if(WITH_HEX)
 #
@@ -20,18 +21,14 @@ include_directories(${TESTS_INCLUDE_DIR})
 target_link_libraries(${PROJECT_NAME} ${TESTS_LIBRARIES}) 
 
 include_directories(${hermes3d_SOURCE_DIR})
-target_link_libraries(${PROJECT_NAME} ${HERMES_BIN})
+target_link_libraries(${PROJECT_NAME} ${HERMES_REAL_BIN})
 
 configure_file(
 	${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake
 	${CMAKE_CURRENT_SOURCE_DIR}/config.h
 )
 
-#
 # Tests
-#
-
-enable_testing()
 
 set(BIN ${PROJECT_BINARY_DIR}/${PROJECT_NAME})
 add_test(hex-curl-lobbato-shapeset-1 ${BIN})

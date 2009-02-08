@@ -1,6 +1,7 @@
 project(hex-h1-1face)
 
 include(CMake.vars)
+include(../../CMake.common)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${TESTS_INCLUDE_DIR})
@@ -12,7 +13,7 @@ add_executable(${PROJECT_NAME}
 	${HERMES_COMMON_DIR}/error.cc
 )
 target_link_libraries(${PROJECT_NAME} ${TESTS_LIBRARIES}) 
-target_link_libraries(${PROJECT_NAME} ${HERMES_BIN})
+target_link_libraries(${PROJECT_NAME} ${HERMES_REAL_BIN})
 
 configure_file(
 	${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake

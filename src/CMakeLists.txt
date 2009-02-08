@@ -110,96 +110,17 @@ set(INC_OUTPUT
 	output/vtk.h
 )
 
-macro(ADD_H3D_LIBRARY BIN)
-	add_library(${BIN} STATIC ${SRC})
-
-	#
-	# linear solvers
-	#
-
-	# PETSc
-	if(USE_PETSC)
-		find_package(PETSC REQUIRED)
-		if(PETSC_FOUND)
-			include_directories(${PETSC_INCLUDE_DIRS})
-			target_link_libraries(${BIN} ${PETSC_LIBRARIES})
-		endif(PETSC_FOUND)
-	endif(USE_PETSC)
-	
-	# UMFPACK
-	if(USE_UMFPACK)
-		find_package(UMFPACK REQUIRED)
-		if(UMFPACK_FOUND)
-			include_directories(
-				${UMFPACK_INCLUDE_DIR}
-				${AMD_INCLUDE_DIR}
-			)
-			target_link_libraries(${BIN}
-				${UMFPACK_LIBRARY}
-				${AMD_LIBRARY}
-			)
-		endif(UMFPACK_FOUND)
-	endif(USE_UMFPACK)
-	
-	# PARDISO
-	if(USE_PARDISO)
-		find_package(PARDISO REQUIRED)
-		if(PARDISO_FOUND)
-			target_link_libraries(${BIN} ${PARDISO_LIBRARY})
-		endif(PARDISO_FOUND)
-	endif(USE_PARDISO)
-	
-	# Judy
-	find_package(JUDY REQUIRED)
-	if(JUDY_FOUND)
-		include_directories(${JUDY_INCLUDE_DIR})
-		target_link_libraries(${BIN} ${JUDY_LIBRARY})
-	endif(JUDY_FOUND)
-	
-	# HDF5
-	if(USE_HDF5)
-		find_package(HDF5 REQUIRED)
-		if(HDF5_FOUND)
-			include_directories(${HDF5_INCLUDE_DIR})
-			target_link_libraries(${BIN} ${HDF5_LIBRARY})
-		endif(HDF5_FOUND)
-	endif(USE_HDF5)
-	
-	# MPI
-	if(USE_MPI)
-		find_package(MPI)
-		if(MPI_FOUND)
-			include_directories(${MPI_INCLUDE_DIR})
-			target_link_libraries(${BIN} ${MPI_LIBRARY})
-		endif(MPI_FOUND)
-	endif(USE_MPI)
-	
-	# GLUT
-	if(USE_GLUT)
-		find_package(GLUT)
-		if(GLUT_FOUND)
-			include_directories(${GLUT_INCLUDE_DIR})
-			target_link_libraries(${BIN} ${GLUT_LIBRARY})
-		endif(GLUT_FOUND)
-	endif(USE_GLUT)
-endmacro(ADD_H3D_LIBRARY)
 
 # real version
-if(REAL)
-	ADD_H3D_LIBRARY(${HERMES_BIN})
+if(REAL) 
+    add_library(${HERMES_REAL_BIN} STATIC ${SRC})
 endif(REAL)
+
 # complex version
 if(COMPLEX)
-	ADD_H3D_LIBRARY(${HERMES_CPLX_BIN})
-	set_target_properties(${HERMES_CPLX_BIN}
-		PROPERTIES
-		COMPILE_FLAGS -DCOMPLEX)
+    add_library(${HERMES_CPLX_BIN} STATIC ${SRC})
+    set_target_properties(${HERMES_CPLX_BIN} PROPERTIES COMPILE_FLAGS -DCOMPLEX)
 endif(COMPLEX)
-
-# need at least one linear solver
-if(NOT USE_PETSC AND NOT USE_UMFPACK AND NOT USE_PARDISO)
-	message(FATAL_ERROR "You need to specify at least one linear solver library in global CMake.vars")
-endif(NOT USE_PETSC AND NOT USE_UMFPACK AND NOT USE_PARDISO)
 
 #
 configure_file(
@@ -224,16 +145,10 @@ install(FILES ${INC_ADAPT}     DESTINATION include/${PROJECT_NAME}/adapt)
 
 # install library
 if(REAL)
-install(
-	TARGETS ${HERMES_BIN}
-	ARCHIVE DESTINATION lib/${PROJECT_NAME}
-)
+    install(TARGETS ${HERMES_REAL_BIN} ARCHIVE DESTINATION lib/${PROJECT_NAME})
 endif(REAL)
 
 if(COMPLEX)
-install(
-	TARGETS ${HERMES_CPLX_BIN}
-	ARCHIVE DESTINATION lib/${PROJECT_NAME}
-)
+    install(TARGETS ${HERMES_CPLX_BIN} ARCHIVE DESTINATION lib/${PROJECT_NAME})
 endif(COMPLEX)
 

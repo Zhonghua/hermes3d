@@ -6,6 +6,9 @@
  */
 
 #include "config.h"
+#ifdef USE_PETSC
+#include <petsc.h>
+#endif
 #include <hermes3d.h>
 #include <common/trace.h>
 #include <common/timer.h>

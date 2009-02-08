@@ -27,7 +27,7 @@ int main(int argc, char *argv[]) {
 	int res = ERR_SUCCESS;
 
 #ifdef USE_PETSC
-	PetscInitialize(&argc, &args, (char *) PETSC_NULL, PETSC_NULL);
+	PetscInitialize(&argc, &argv, (char *) PETSC_NULL, PETSC_NULL);
 #endif
 
 	H1ShapesetLobattoHex shapeset;

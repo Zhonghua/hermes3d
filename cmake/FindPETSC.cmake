@@ -21,7 +21,7 @@ IF (PETSC_FOUND)
 		${PETSC_ROOT}/bmake/${PETSC_ARCH}
 		${PETSC_ROOT}/include/mpiuni
 	)
-
+	
 	# libs has to be in this order
 	FOREACH(L petscts petscsnes petscksp petscdm petscmat petscvec petsc mpiuni)
 		SET(PETSC_LIBRARIES ${PETSC_LIBRARIES} ${PETSC_LIB_DIR}/lib${L}.a)

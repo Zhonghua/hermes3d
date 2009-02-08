@@ -1,7 +1,10 @@
 project(calc-hex-h1)
 
 include(CMake.vars)
-include(../../CMake.common)
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${TESTS_INCLUDE_DIRS})
+include_directories(${hermes3d_SOURCE_DIR})
 
 add_executable(${PROJECT_NAME}
 	hex.cc
@@ -9,12 +12,11 @@ add_executable(${PROJECT_NAME}
 	${HERMES_COMMON_DIR}/error.cc
 )
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-include_directories(${TESTS_INCLUDE_DIR})
-target_link_libraries(${PROJECT_NAME} ${TESTS_LIBRARIES}) 
-
-include_directories(${hermes3d_SOURCE_DIR})
+target_link_libraries(${PROJECT_NAME} ${TESTS_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} ${HERMES_REAL_BIN})
+
+#message(STATUS "INC: ${TESTS_INCLUDE_DIRS}")
+#message(STATUS "LIB: ${TESTS_LIBRARIES}")
 
 configure_file(
 	${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake

@@ -1,7 +1,10 @@
 project(calc-hex-h1-dirichlet)
 
 include(CMake.vars)
-include(../../CMake.common)
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${TESTS_INCLUDE_DIRS})
+include_directories(${hermes3d_SOURCE_DIR})
 
 add_executable(${PROJECT_NAME}
 	hex-dirichlet.cc
@@ -10,11 +13,7 @@ add_executable(${PROJECT_NAME}
 	${HERMES_COMMON_DIR}/utils.cc
 )
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-include_directories(${TESTS_INCLUDE_DIR})
 target_link_libraries(${PROJECT_NAME} ${TESTS_LIBRARIES}) 
-
-include_directories(${hermes3d_SOURCE_DIR})
 target_link_libraries(${PROJECT_NAME} ${HERMES_REAL_BIN})
 
 configure_file(

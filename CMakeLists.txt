@@ -1,6 +1,6 @@
 project(h3d)
 
-cmake_minimum_required(VERSION 2.4)
+cmake_minimum_required(VERSION 2.6)
 
 # default values
 
@@ -18,9 +18,9 @@ set(WITH_TETRA  YES)
 set(WITH_HEX    YES)
 set(WITH_PRISM  NO)
 
-set(USE_BLAS    YES)
-set(USE_LAPACK  YES)
-set(USE_FORTRAN gfortran)
+#set(USE_BLAS    YES)
+#set(USE_LAPACK  YES)
+#set(USE_FORTRAN gfortran)
 
 set(USE_UMFPACK YES)
 set(USE_PETSC   NO)
@@ -75,13 +75,20 @@ else(DEBUG)
 	set(CMAKE_BUILD_TYPE Release)
 endif(DEBUG)
 
+# If using PETSc or UMFPack, we need to enable Fortran support and look for BLAS and LAPACK
+if(USE_PETSC OR USE_UMFPACK)
+    enable_language(Fortran)
+    find_package(BLAS REQUIRED)
+    find_package(LAPACK REQUIRED)
+endif(USE_PETSC OR USE_UMFPACK)
 
 # find necessary packages
 find_package(JUDY REQUIRED)
 
+
 # linear solvers
 if(USE_PETSC)
-   find_package(PETSC REQUIRED)
+	find_package(PETSC REQUIRED)
 endif(USE_PETSC)
 
 if(USE_UMFPACK)
@@ -92,17 +99,18 @@ if(USE_PARDISO)
     find_package(PARDISO REQUIRED)
 endif(USE_PARDISO)
 
+
 if(USE_HDF5)
     find_package(HDF5 REQUIRED)
 	find_package(ZLIB REQUIRED)
 endif(USE_HDF5)
 
 if(USE_MPI)
-    find_package(MPI)
+    find_package(MPI REQUIRED)
 endif(USE_MPI)
 
 if(USE_GLUT)
-    find_package(GLUT)
+    find_package(GLUT REQUIRED)
 endif(USE_GLUT)
 
 include_directories(${PROJECT_SOURCE_DIR})
@@ -136,5 +144,6 @@ add_custom_command(
 )
 
 add_custom_target(test-quick
-    COMMAND   /usr/bin/ctest -E \"hnnd|qorder|lobatto\"
+    COMMAND   /usr/bin/ctest -E \"hnnd|qorder|lobatto|hex-h1-1face\"
 )
+

@@ -1,6 +1,7 @@
 #
 # CMake for tests
 #
+include(CMake.common)
 
 add_subdirectory(calc)
 add_subdirectory(hang-nodes)

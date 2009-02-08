@@ -1,14 +1,13 @@
 project(hnnd-hex-h1)
 
 include(CMake.vars)
-include(../../CMake.common)
 
 set(BIN_DIRICHLET ${PROJECT_NAME}-dirichlet)
 set(BIN_NEWTON ${PROJECT_NAME}-newton)
 
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-include_directories(${TESTS_INCLUDE_DIR})
+include_directories(${TESTS_INCLUDE_DIRS})
 include_directories(${hermes3d_SOURCE_DIR})
 
 add_executable(${BIN_DIRICHLET}

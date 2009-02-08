@@ -1,10 +1,9 @@
 project(hex-h1-1face)
 
 include(CMake.vars)
-include(../../CMake.common)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-include_directories(${TESTS_INCLUDE_DIR})
+include_directories(${TESTS_INCLUDE_DIRS})
 include_directories(${hermes3d_SOURCE_DIR})
 
 add_executable(${PROJECT_NAME}

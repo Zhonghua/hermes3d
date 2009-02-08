@@ -6,13 +6,13 @@
  */
 
 #include "config.h"
+#ifdef USE_PETSC
+#include <petsc.h>
+#endif
 #include <hermes3d.h>
 #include <common/trace.h>
 #include <common/timer.h>
 #include <common/error.h>
-#ifdef USE_PETSC
-#include <petsc.h>
-#endif
 
 // error should be smaller than this epsilon
 #define EPS								10e-10F

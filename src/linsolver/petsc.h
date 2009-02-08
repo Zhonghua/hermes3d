@@ -28,8 +28,8 @@ public:
 
 	virtual bool solve_system(double *sln);
 
-	virtual void dump_matrix(FILE *file, EMatrixDumpFormat format = DF_MATLAB_SPARSE);
-	virtual void dump_rhs(FILE *file, EMatrixDumpFormat format = DF_MATLAB_SPARSE);
+	virtual bool dump_matrix(FILE *file, const char *var_name, EMatrixDumpFormat format = DF_MATLAB_SPARSE);
+	virtual bool dump_rhs(FILE *file, const char *var_name, EMatrixDumpFormat format = DF_MATLAB_SPARSE);
 
 	virtual ESparseMatrixRepresentation matrix_representation() { return SMATRIX_OTHER; }
 

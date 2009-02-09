@@ -1,7 +1,6 @@
 project(mesh3d-dump)
 
 include(CMake.vars)
-include(../../CMake.common)
 
 add_executable(${PROJECT_NAME}
 	mesh3ddump.cc

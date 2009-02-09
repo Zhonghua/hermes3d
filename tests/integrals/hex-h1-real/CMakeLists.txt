@@ -1,7 +1,6 @@
 project(intgrl-hex-h1-real)
 
 include(CMake.vars)
-include(../../CMake.common)
 
 add_executable(${PROJECT_NAME}
 	h1-hex-real.cc

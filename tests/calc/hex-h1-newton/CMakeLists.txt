@@ -1,7 +1,6 @@
 project(calc-hex-h1-newton)
 
 include(CMake.vars)
-include(../../CMake.common)
 
 add_executable(${PROJECT_NAME}
 	hex-newton.cc

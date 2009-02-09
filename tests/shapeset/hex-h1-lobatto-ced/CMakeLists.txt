@@ -1,7 +1,6 @@
 project(hex-h1-lobatto-shapeset-ced)
 
 include(CMake.vars)
-include(../../CMake.common)
 
 if(WITH_HEX)
 #

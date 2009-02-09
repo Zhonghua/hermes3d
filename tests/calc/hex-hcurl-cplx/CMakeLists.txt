@@ -1,7 +1,6 @@
 project(calc-hex-hcurl-cplx)
 
 include(CMake.vars)
-include(../../CMake.common)
 
 add_executable(${PROJECT_NAME}
 	hex-hcurl-cplx.cc

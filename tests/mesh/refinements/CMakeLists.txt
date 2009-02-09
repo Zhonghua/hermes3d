@@ -1,7 +1,6 @@
 project(mesh-refinements)
 
 include(CMake.vars)
-include(../../CMake.common)
 
 add_executable(${PROJECT_NAME}
 	refinements.cc

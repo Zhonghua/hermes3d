@@ -1,7 +1,6 @@
 project(orders)
 
 include(CMake.vars)
-include(../CMake.common)
 
 add_executable(${PROJECT_NAME}
 	main.cc

@@ -1,7 +1,6 @@
 project(calc-tetra-h1-dirichlet)
 
 include(CMake.vars)
-include(../../CMake.common)
 
 add_executable(${PROJECT_NAME}
 	tetra-dirichlet.cc

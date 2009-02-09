@@ -1,7 +1,6 @@
 project(calc-tetra-h1)
 
 include(CMake.vars)
-include(../../CMake.common)
 
 add_executable(${PROJECT_NAME}
 	tetra.cc

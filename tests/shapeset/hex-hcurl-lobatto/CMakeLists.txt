@@ -1,7 +1,6 @@
 project(hex-hcurl-lobatto-shapeset)
 
 include(CMake.vars)
-include(../../CMake.common)
 
 if(WITH_HEX)
 #

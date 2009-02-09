@@ -7,7 +7,7 @@
  */
 
 #include "config.h"
-#ifdef USE_PETSC
+#ifdef WITH_PETSC
 #include <petsc.h>
 #endif
 #include <hermes3d.h>
@@ -231,7 +231,7 @@ int main(int argc, char *argv[]) {
 
 	int ret = ERR_SUCCESS;
 
-#ifdef USE_PETSC
+#ifdef WITH_PETSC
 	// do NOT forget to call this when using PETSc solver
 	PetscInitialize(NULL, NULL, PETSC_NULL, PETSC_NULL);
 	// disable PETSc error handler
@@ -242,37 +242,37 @@ int main(int argc, char *argv[]) {
 		return ERR_NOT_ENOUGH_PARAMS;
 
 	if (strcasecmp(argv[1], "petsc") == 0) {
-#ifdef USE_PETSC
+#ifdef WITH_PETSC
 		PetscLinearSolver solver;
 		ret = test_linear_solver(solver, argv[2]);
 #endif
 	}
 	else if (strcasecmp(argv[1], "petsc-block") == 0) {
-#ifdef USE_PETSC
+#ifdef WITH_PETSC
 		PetscLinearSolver solver;
 		ret = test_linear_solver_block(solver, argv[2]);
 #endif
 	}
 	else if (strcasecmp(argv[1], "umfpack") == 0) {
-#ifdef USE_UMFPACK
+#ifdef WITH_UMFPACK
 		UMFPackLinearSolver solver;
 		ret = test_linear_solver(solver, argv[2]);
 #endif
 	}
 	else if (strcasecmp(argv[1], "umfpack-block") == 0) {
-#ifdef USE_UMFPACK
+#ifdef WITH_UMFPACK
 		UMFPackLinearSolver solver;
 		ret = test_linear_solver_block(solver, argv[2]);
 #endif
 	}
 	else if (strcasecmp(argv[1], "pardiso") == 0) {
-#ifdef USE_PARDISO
+#ifdef WITH_PARDISO
 	    PardisoLinearSolver solver;
 	    ret = test_linear_solver(solver, argv[2]);
 #endif
 	}
 	else if (strcasecmp(argv[1], "pardiso-block") == 0) {
-#ifdef USE_PARDISO
+#ifdef WITH_PARDISO
 	    PardisoLinearSolver solver;
 		ret = test_linear_solver_block(solver, argv[2]);
 #endif
@@ -280,7 +280,7 @@ int main(int argc, char *argv[]) {
 	else
 		ret = ERR_FAILURE;
 
-#ifdef USE_PETSC
+#ifdef WITH_PETSC
 	// do NOT forget to call this when using PETSc solver
 	PetscFinalize();
 #endif

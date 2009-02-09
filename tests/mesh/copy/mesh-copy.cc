@@ -6,7 +6,7 @@
  */
 
 #include "config.h"
-#ifdef USE_PETSC
+#ifdef WITH_PETSC
 #include <petsc.h>
 #endif
 #include <hermes3d.h>
@@ -44,7 +44,7 @@ ECopyType parse_copy_type(char *str) {
 int main(int argc, char **args) {
 	int res = ERR_SUCCESS;
 
-#ifdef USE_PETSC
+#ifdef WITH_PETSC
 	PetscInitialize(&argc, &args, (char *) PETSC_NULL, PETSC_NULL);
 #endif
 
@@ -94,7 +94,7 @@ int main(int argc, char **args) {
 		res = ERR_FAILURE;
 	}
 
-#ifdef USE_PETSC
+#ifdef WITH_PETSC
 	PetscFinalize();
 #endif
 

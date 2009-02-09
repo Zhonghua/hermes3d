@@ -11,7 +11,7 @@
  */
 
 #include "config.h"
-#ifdef USE_PETSC
+#ifdef WITH_PETSC
 #include <petsc.h>
 #endif
 #include <math.h>
@@ -86,7 +86,7 @@ scalar linear_form_surf(RealFunction *fv, RefMap *rv, FacePos *fp) {
 int main(int argc, char **args) {
 	int res = ERR_SUCCESS;
 
-#ifdef USE_PETSC
+#ifdef WITH_PETSC
 	PetscInitialize(&argc, &args, (char *) PETSC_NULL, PETSC_NULL);
 #endif
 
@@ -129,11 +129,11 @@ int main(int argc, char **args) {
 
 	printf("* Calculating a solution\n");
 
-#if defined USE_UMFPACK
+#if defined WITH_UMFPACK
 	UMFPackLinearSolver solver;
-#elif defined USE_PARDISO
+#elif defined WITH_PARDISO
 	PardisoLinearSolver solver;
-#elif defined USE_PETSC
+#elif defined WITH_PETSC
 	PetscLinearSolver solver;
 #endif
 
@@ -226,7 +226,7 @@ int main(int argc, char **args) {
 	else
 		res = ERR_FAILURE;
 
-#ifdef USE_PETSC
+#ifdef WITH_PETSC
 	PetscFinalize();
 #endif
 

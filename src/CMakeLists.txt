@@ -112,25 +112,25 @@ set(INC_OUTPUT
 
 
 macro(LIBRARY_SETTINGS BIN)
-	if(USE_PETSC)
+	if(WITH_PETSC)
 		include_directories(${PETSC_INCLUDE_DIRS})
 		target_link_libraries(${BIN} ${PETSC_LIBRARIES})
 		target_link_libraries(${BIN} ${PETSC_LIBS})
 
        	target_link_libraries(${BIN} ${BLAS_LIBRARIES})
    	    target_link_libraries(${BIN} ${LAPACK_LIBRARIES})
-   	endif(USE_PETSC)
+   	endif(WITH_PETSC)
 
-	if(USE_UMFPACK)
+	if(WITH_UMFPACK)
 		include_directories(${UMFPACK_INCLUDE_DIR} ${AMD_INCLUDE_DIR})
 		target_link_libraries(${BIN} ${UMFPACK_LIBRARY} ${AMD_LIBRARY})
 
        	target_link_libraries(${BIN} ${BLAS_LIBRARIES})
    	    target_link_libraries(${BIN} ${LAPACK_LIBRARIES})
-	endif(USE_UMFPACK)
+	endif(WITH_UMFPACK)
 
-	if(USE_HDF5)
-	endif(USE_HDF5)
+	if(WITH_HDF5)
+	endif(WITH_HDF5)
 endmacro(LIBRARY_SETTINGS)
 
 

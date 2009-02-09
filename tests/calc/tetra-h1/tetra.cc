@@ -6,7 +6,7 @@
  */
 
 #include "config.h"
-#ifdef USE_PETSC
+#ifdef WITH_PETSC
 #include <petsc.h>
 #endif
 #include <hermes3d.h>
@@ -67,7 +67,7 @@ scalar linear_form(RealFunction *fu, RefMap *ru) {
 int main(int argc, char **argv) {
 	int res = ERR_SUCCESS;
 
-#ifdef USE_PETSC
+#ifdef WITH_PETSC
 	PetscInitialize(&argc, &argv, (char *) PETSC_NULL, PETSC_NULL);
 #endif
 
@@ -105,11 +105,11 @@ int main(int argc, char **argv) {
 
 	printf("* Calculating a solution\n");
 
-#if defined USE_UMFPACK
+#if defined WITH_UMFPACK
 	UMFPackLinearSolver solver;
-#elif defined USE_PARDISO
+#elif defined WITH_PARDISO
 	PardisoLinearSolver solver;
-#elif defined USE_PETSC
+#elif defined WITH_PETSC
 	PetscLinearSolver solver;
 #endif
 
@@ -192,7 +192,7 @@ int main(int argc, char **argv) {
 #endif
 	}
 
-#ifdef USE_PETSC
+#ifdef WITH_PETSC
 	PetscFinalize();
 #endif
 

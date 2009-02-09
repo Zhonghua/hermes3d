@@ -5,7 +5,7 @@
 //
 
 #include "../config.h"
-#ifdef USE_HDF5
+#ifdef WITH_HDF5
 extern "C" {
 #include <hdf5.h>
 }
@@ -26,20 +26,20 @@ extern "C" {
 #define E_WRITE_ERROR						-6
 
 HDF5Reader::HDF5Reader() {
-#ifdef USE_HDF5
+#ifdef WITH_HDF5
 #else
 	EXIT(ERR_HDF5_NOT_COMPILED);
 #endif
 }
 
 HDF5Reader::~HDF5Reader() {
-#ifdef USE_HDF5
+#ifdef WITH_HDF5
 #else
 	EXIT(ERR_HDF5_NOT_COMPILED);
 #endif
 }
 
-#ifdef USE_HDF5
+#ifdef WITH_HDF5
 
 // Load ///////////////////////////////////////////////////////////////////////
 
@@ -345,7 +345,7 @@ static bool read_bcs(hid_t id, Mesh *mesh) {
 #endif
 
 bool HDF5Reader::load(const char *file_name, Mesh *mesh) {
-#ifdef USE_HDF5
+#ifdef WITH_HDF5
 	bool ret = true;
 
 	H5open();
@@ -385,7 +385,7 @@ bool HDF5Reader::load(const char *file_name, Mesh *mesh) {
 #endif
 }
 
-#ifdef USE_HDF5
+#ifdef WITH_HDF5
 
 // Save ///////////////////////////////////////////////////////////////////////
 
@@ -697,7 +697,7 @@ static bool save_bc(hid_t parent_group_id, Mesh *mesh) {
 #endif
 
 bool HDF5Reader::save(const char *file_name, Mesh *mesh) {
-#ifdef USE_HDF5
+#ifdef WITH_HDF5
 	herr_t status;
 
 	// init HDF5

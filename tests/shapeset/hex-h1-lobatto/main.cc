@@ -6,7 +6,7 @@
  */
 
 #include "config.h"
-#ifdef USE_PETSC
+#ifdef WITH_PETSC
 #include <petsc.h>
 #endif
 #include <hermes3d.h>
@@ -26,7 +26,7 @@ bool test_gradients_directly(Shapeset *shapeset);
 int main(int argc, char *argv[]) {
 	int res = ERR_SUCCESS;
 
-#ifdef USE_PETSC
+#ifdef WITH_PETSC
 	PetscInitialize(&argc, &argv, (char *) PETSC_NULL, PETSC_NULL);
 #endif
 
@@ -60,7 +60,7 @@ int main(int argc, char *argv[]) {
 		res = e;
 	}
 
-#ifdef USE_PETSC
+#ifdef WITH_PETSC
 	PetscFinalize();
 #endif
 

@@ -21,7 +21,7 @@ extern int
 #endif
 
 PardisoLinearSolver::PardisoLinearSolver() {
-#ifdef USE_PARDISO
+#ifdef WITH_PARDISO
 	Ap = NULL;
 	Ai = NULL;
 	Ax = NULL;
@@ -32,7 +32,7 @@ PardisoLinearSolver::PardisoLinearSolver() {
 }
 
 PardisoLinearSolver::~PardisoLinearSolver() {
-#ifdef USE_PARDISO
+#ifdef WITH_PARDISO
 	free();
 #else
 	EXIT(ERR_PARDISO_NOT_COMPILED);
@@ -40,7 +40,7 @@ PardisoLinearSolver::~PardisoLinearSolver() {
 }
 
 void PardisoLinearSolver::prealloc(int ndofs) {
-#ifdef USE_PARDISO
+#ifdef WITH_PARDISO
 	free();
 
 	this->ndofs = ndofs;
@@ -54,7 +54,7 @@ void PardisoLinearSolver::prealloc(int ndofs) {
 }
 
 void PardisoLinearSolver::pre_add_ij(int row, int col) {
-#ifdef USE_PARDISO
+#ifdef WITH_PARDISO
 	int tmp = row;
 	row = col;
 	col = tmp;
@@ -72,7 +72,7 @@ void PardisoLinearSolver::pre_add_ij(int row, int col) {
 }
 
 void PardisoLinearSolver::alloc() {
-#ifdef USE_PARDISO
+#ifdef WITH_PARDISO
 	free();
 	assert(pages != NULL);
 
@@ -106,7 +106,7 @@ void PardisoLinearSolver::alloc() {
 }
 
 void PardisoLinearSolver::free() {
-#ifdef USE_PARDISO
+#ifdef WITH_PARDISO
 	delete [] Ap; Ap = NULL;
 	delete [] Ai; Ai = NULL;
 	delete [] Ax; Ax = NULL;
@@ -117,7 +117,7 @@ void PardisoLinearSolver::free() {
 }
 
 void PardisoLinearSolver::update_matrix(int row, int col, scalar v) {
-#ifdef USE_PARDISO
+#ifdef WITH_PARDISO
 	int tmp = row;
 	row = col;
 	col = tmp;
@@ -129,7 +129,7 @@ void PardisoLinearSolver::update_matrix(int row, int col, scalar v) {
 }
 
 void PardisoLinearSolver::update_matrix(int m, int n, double **mat, int *rows, int *cols) {
-#ifdef USE_PARDISO
+#ifdef WITH_PARDISO
 	for (int i = 0; i < m; i++)				// rows
 		for (int j = 0; j < n; j++)	 {		// cols
 			if (mat[i][j] != 0.0 && rows[i] != -1 && cols[j] != -1) {		// -1 is a "dirichlet DOF" -> ignore it
@@ -142,7 +142,7 @@ void PardisoLinearSolver::update_matrix(int m, int n, double **mat, int *rows, i
 }
 
 void PardisoLinearSolver::update_rhs(int idx, scalar y) {
-#ifdef USE_PARDISO
+#ifdef WITH_PARDISO
 	if (idx >= 0)
 		srhs[idx] += y;
 #else
@@ -151,7 +151,7 @@ void PardisoLinearSolver::update_rhs(int idx, scalar y) {
 }
 
 void PardisoLinearSolver::update_rhs(int n, int *idx, scalar *y) {
-#ifdef USE_PARDISO
+#ifdef WITH_PARDISO
 	for (int i = 0; i < n; i++)
 		if (idx[i] >= 0)
 			srhs[idx[i]] += y[i];
@@ -161,7 +161,7 @@ void PardisoLinearSolver::update_rhs(int n, int *idx, scalar *y) {
 }
 
 bool PardisoLinearSolver::solve_system(double *sln) {
-#ifdef USE_PARDISO
+#ifdef WITH_PARDISO
 	bool res = true;
 
 	int n = ndofs;
@@ -279,7 +279,7 @@ bool PardisoLinearSolver::solve_system(double *sln) {
 }
 
 bool PardisoLinearSolver::dump_matrix(FILE *file, const char *var_name, EMatrixDumpFormat format/* = DF_MATLAB_SPARSE*/) {
-#ifdef USE_PARDISO
+#ifdef WITH_PARDISO
 	// TODO: check if OK (use unsymmetric matrix)
 	switch (format) {
 		case DF_MATLAB_SPARSE:
@@ -306,7 +306,7 @@ bool PardisoLinearSolver::dump_matrix(FILE *file, const char *var_name, EMatrixD
 }
 
 bool PardisoLinearSolver::dump_rhs(FILE *file, const char *var_name, EMatrixDumpFormat format/* = DF_MATLAB_SPARSE*/) {
-#ifdef USE_PARDISO
+#ifdef WITH_PARDISO
 	switch (format) {
 		case DF_MATLAB_SPARSE:
 			fprintf(file, "%% Size: %dx1\n%s = [\n", ndofs, var_name);

@@ -4,7 +4,7 @@
 
 #include "../config.h"
 
-#ifdef USE_PETSC
+#ifdef WITH_PETSC
 #include <petsc.h>
 #include <petscmat.h>
 #include <petscvec.h>
@@ -17,7 +17,7 @@
 
 // all declarations from PETSc must be in .cc file, because PETSc is optional
 struct msyst {
-#ifdef USE_PETSC
+#ifdef WITH_PETSC
 	// PETSc specific data structures for storing matrix, rhs, vector of unknowns
 	Mat matrix;
 	Vec rhs;
@@ -28,7 +28,7 @@ struct msyst {
 };
 
 PetscLinearSolver::PetscLinearSolver() {
-#ifdef USE_PETSC
+#ifdef WITH_PETSC
 	ms = NULL;
 #else
 	EXIT(ERR_PETSC_NOT_COMPILED);
@@ -36,7 +36,7 @@ PetscLinearSolver::PetscLinearSolver() {
 }
 
 PetscLinearSolver::~PetscLinearSolver() {
-#ifdef USE_PETSC
+#ifdef WITH_PETSC
 	free();
 #else
 	EXIT(ERR_PETSC_NOT_COMPILED);
@@ -44,7 +44,7 @@ PetscLinearSolver::~PetscLinearSolver() {
 }
 
 void PetscLinearSolver::prealloc(int ndofs) {
-#ifdef USE_PETSC
+#ifdef WITH_PETSC
 	this->ndofs = ndofs;
 
 	pages = new Page *[ndofs];
@@ -56,7 +56,7 @@ void PetscLinearSolver::prealloc(int ndofs) {
 }
 
 void PetscLinearSolver::pre_add_ij(int row, int col) {
-#ifdef USE_PETSC
+#ifdef WITH_PETSC
 	if (pages[row] == NULL || pages[row]->count >= PAGE_SIZE) {
 		Page *new_page = new Page;
 		MEM_CHECK(new_page);
@@ -71,7 +71,7 @@ void PetscLinearSolver::pre_add_ij(int row, int col) {
 }
 
 void PetscLinearSolver::alloc() {
-#ifdef USE_PETSC
+#ifdef WITH_PETSC
 	assert(pages != NULL);
 	this->ms = new msyst;
 	MEM_CHECK(this->ms);
@@ -115,7 +115,7 @@ void PetscLinearSolver::alloc() {
 }
 
 void PetscLinearSolver::free() {
-#ifdef USE_PETSC
+#ifdef WITH_PETSC
 	if (ms != NULL) {
 		// commented out, becuase it is causing SEGFAULTS
 //		MatDestroy(ms->matrix);
@@ -132,7 +132,7 @@ void PetscLinearSolver::free() {
 }
 
 void PetscLinearSolver::update_matrix(int m, int n, scalar v) {
-#ifdef USE_PETSC
+#ifdef WITH_PETSC
 	assert(ms != NULL);
 	MatSetValues(ms->matrix, 1, &m, 1, &n, &v, ADD_VALUES);
 #else
@@ -141,7 +141,7 @@ void PetscLinearSolver::update_matrix(int m, int n, scalar v) {
 }
 
 void PetscLinearSolver::update_matrix(int m, int n, scalar **mat, int *rows, int *cols) {
-#ifdef USE_PETSC
+#ifdef WITH_PETSC
 	assert(ms != NULL);
 	// TODO: pass in just the block of the matrix without DIRICHLET_DOFs (so that can use MatSetValues directly without checking row and cols for -1)
 	for (int i = 0; i < m; i++)				// rows
@@ -156,7 +156,7 @@ void PetscLinearSolver::update_matrix(int m, int n, scalar **mat, int *rows, int
 }
 
 void PetscLinearSolver::update_rhs(int idx, scalar y) {
-#ifdef USE_PETSC
+#ifdef WITH_PETSC
 	assert(ms != NULL);
 	if (idx >= 0)
 		VecSetValues(ms->rhs, 1, &idx, &y, ADD_VALUES);
@@ -166,7 +166,7 @@ void PetscLinearSolver::update_rhs(int idx, scalar y) {
 }
 
 void PetscLinearSolver::update_rhs(int n, int *idx, scalar *y) {
-#ifdef USE_PETSC
+#ifdef WITH_PETSC
 	assert(ms != NULL);
 	for (int i = 0; i < n; i++)
 		if (idx[i] >= 0)
@@ -177,7 +177,7 @@ void PetscLinearSolver::update_rhs(int n, int *idx, scalar *y) {
 }
 
 bool PetscLinearSolver::solve_system(double *sln) {
-#ifdef USE_PETSC
+#ifdef WITH_PETSC
 	KSPSetOperators(ms->ksp, ms->matrix, ms->matrix, DIFFERENT_NONZERO_PATTERN);
 	KSPSetFromOptions(ms->ksp);
 	ms->ec = KSPSolve(ms->ksp, ms->rhs, ms->x);
@@ -198,14 +198,14 @@ bool PetscLinearSolver::solve_system(double *sln) {
 }
 
 void PetscLinearSolver::begin_assembling() {
-#ifdef USE_PETSC
+#ifdef WITH_PETSC
 #else
 	EXIT(ERR_PETSC_NOT_COMPILED);
 #endif
 }
 
 void PetscLinearSolver::finish_assembling() {
-#ifdef USE_PETSC
+#ifdef WITH_PETSC
 	MatAssemblyBegin(ms->matrix, MAT_FINAL_ASSEMBLY);
 	MatAssemblyEnd(ms->matrix, MAT_FINAL_ASSEMBLY);
 	VecAssemblyBegin(ms->rhs);
@@ -216,7 +216,7 @@ void PetscLinearSolver::finish_assembling() {
 }
 
 bool PetscLinearSolver::dump_matrix(FILE *file, const char *var_name, EMatrixDumpFormat format) {
-#ifdef USE_PETSC
+#ifdef WITH_PETSC
 //	PetscViewer v;
 //	PetscViewerASCIIOpen(PETSC_COMM_SELF, file_name, &v);
 //	PetscViewerSetFormat(v, PETSC_VIEWER_ASCII_MATLAB);
@@ -229,7 +229,7 @@ bool PetscLinearSolver::dump_matrix(FILE *file, const char *var_name, EMatrixDum
 }
 
 bool PetscLinearSolver::dump_rhs(FILE *file, const char *var_name, EMatrixDumpFormat format) {
-#ifdef USE_PETSC
+#ifdef WITH_PETSC
 //	PetscViewer v;
 //	PetscViewerASCIIOpen(PETSC_COMM_SELF, file_name, &v);
 //	PetscViewerSetFormat(v, PETSC_VIEWER_ASCII_MATLAB);

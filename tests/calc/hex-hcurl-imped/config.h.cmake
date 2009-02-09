@@ -1,7 +1,7 @@
-#cmakedefine USE_UMFPACK
-#cmakedefine USE_PARDISO
-#cmakedefine USE_PETSC
-#cmakedefine USE_MPI
+#cmakedefine WITH_UMFPACK
+#cmakedefine WITH_PARDISO
+#cmakedefine WITH_PETSC
+#cmakedefine WITH_MPI
 
 #cmakedefine TRACING
 #cmakedefine DEBUG

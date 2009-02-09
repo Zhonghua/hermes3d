@@ -18,13 +18,9 @@ set(WITH_TETRA  YES)
 set(WITH_HEX    YES)
 set(WITH_PRISM  NO)
 
-#set(USE_BLAS    YES)
-#set(USE_LAPACK  YES)
-#set(USE_FORTRAN gfortran)
-
-set(USE_UMFPACK YES)
-set(USE_PETSC   NO)
-set(USE_PARDISO NO)
+set(WITH_UMFPACK YES)
+set(WITH_PETSC   NO)
+set(WITH_PARDISO NO)
 
 set(WITH_TESTS  YES)
 set(WITH_TOOLS  NO)
@@ -56,7 +52,6 @@ set(MESHES_DIR ${PROJECT_SOURCE_DIR}/meshes)
 
 # internals regarding build type
 if(DEBUG)
-	set(PETSC_ARCH ${PETSC_ARCH_DEBUG})
 	if(REAL)
 	    set(HERMES_REAL_BIN hermes3d-debug)
 	endif(REAL)
@@ -65,7 +60,6 @@ if(DEBUG)
 	endif(COMPLEX)
 	set(CMAKE_BUILD_TYPE Debug)
 else(DEBUG)
-	set(PETSC_ARCH ${PETSC_ARCH_OPT})
 	if(REAL)
 	    set(HERMES_REAL_BIN hermes3d)
 	endif(REAL)
@@ -76,42 +70,41 @@ else(DEBUG)
 endif(DEBUG)
 
 # If using PETSc or UMFPack, we need to enable Fortran support and look for BLAS and LAPACK
-if(USE_PETSC OR USE_UMFPACK)
+if(WITH_PETSC OR WITH_UMFPACK)
     enable_language(Fortran)
     find_package(BLAS REQUIRED)
     find_package(LAPACK REQUIRED)
-endif(USE_PETSC OR USE_UMFPACK)
+endif(WITH_PETSC OR WITH_UMFPACK)
 
 # find necessary packages
 find_package(JUDY REQUIRED)
 
 
 # linear solvers
-if(USE_PETSC)
+if(WITH_PETSC)
 	find_package(PETSC REQUIRED)
-endif(USE_PETSC)
+endif(WITH_PETSC)
 
-if(USE_UMFPACK)
+if(WITH_UMFPACK)
     find_package(UMFPACK REQUIRED)
-endif(USE_UMFPACK)
+endif(WITH_UMFPACK)
 
-if(USE_PARDISO)
+if(WITH_PARDISO)
     find_package(PARDISO REQUIRED)
-endif(USE_PARDISO)
+endif(WITH_PARDISO)
 
 
-if(USE_HDF5)
+if(WITH_HDF5)
     find_package(HDF5 REQUIRED)
-	find_package(ZLIB REQUIRED)
-endif(USE_HDF5)
+endif(WITH_HDF5)
 
-if(USE_MPI)
+if(WITH_MPI)
     find_package(MPI REQUIRED)
-endif(USE_MPI)
+endif(WITH_MPI)
 
-if(USE_GLUT)
+if(WITH_GLUT)
     find_package(GLUT REQUIRED)
-endif(USE_GLUT)
+endif(WITH_GLUT)
 
 include_directories(${PROJECT_SOURCE_DIR})
 

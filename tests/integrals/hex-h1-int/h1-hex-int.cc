@@ -13,7 +13,7 @@
 //
 
 #include "config.h"
-#ifdef USE_PETSC
+#ifdef WITH_PETSC
 #include <petsc.h>
 #endif
 #include <hermes3d.h>

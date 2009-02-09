@@ -9,15 +9,15 @@ set(DEBUG YES)
 set(DEBUG_ORDER YES)
 
 # set to YES if you want to use MPI
-set(USE_MPI NO)
+set(WITH_MPI NO)
 set(MPI_ROOT)
 
 # set to YES if you want to use HDF5 library
-set(USE_HDF5 NO)
+set(WITH_HDF5 NO)
 set(HDF5_ROOT)
 
 # set to YES if you want to use UMFPACK linear solver
-set(USE_UMFPACK YES)
+set(WITH_UMFPACK YES)
 set(UMFPACK_ROOT)
 set(AMD_ROOT)
 set(UFCONFIG_DIR)
@@ -39,14 +39,14 @@ set(USE_FORTRAN g2c)
 set(FORTRAN_ROOT)
 
 # set to YES if you want to use PETSc (do not forget to adjust PETSc specific variables then)
-set(USE_PETSC NO)
+set(WITH_PETSC NO)
 set(PETSC_ROOT /opt/petsc)						# root dir where PETSc is installed
 set(PETSC_ARCH_DEBUG linux-gnu-c-debug)			# PETSc architecture for debugging
 set(PETSC_ARCH_OPT linux-gnu-c-opt)				# PETSc architecture for release
 
 # pardiso (if you want to use pardiso, you need to set both variables)
 # you are responsible for correct installation of pardiso
-set(USE_PARDISO NO)
+set(WITH_PARDISO NO)
 set(PARDISO_ROOT )
 set(PARDISO_LIB )
 

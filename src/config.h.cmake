@@ -1,8 +1,8 @@
-#cmakedefine USE_UMFPACK
-#cmakedefine USE_PARDISO
-#cmakedefine USE_PETSC
-#cmakedefine USE_HDF5
-#cmakedefine USE_MPI
+#cmakedefine WITH_UMFPACK
+#cmakedefine WITH_PARDISO
+#cmakedefine WITH_PETSC
+#cmakedefine WITH_HDF5
+#cmakedefine WITH_MPI
 
 #cmakedefine TRACING
 #cmakedefine DEBUG
@@ -16,7 +16,7 @@
 #cmakedefine PRELOADING
 
 /* --- */
-#define PACKAGE_BUGREPORT "dandrs@miners.utep.edu"
+#define PACKAGE_BUGREPORT "dandrs@unr.edu"
 #define PACKAGE_NAME "Hermes3D"
 #define PACKAGE_TARNAME "hermes3d"
 #define PACKAGE_VERSION "0.0.1"

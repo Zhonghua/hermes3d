@@ -47,11 +47,11 @@ void set_verbose_level(int lvl);
 //
 // Use this for tracing (for long term runs to see what was happening in the code)
 //
-// Tracing is done into a file. 
+// Tracing is done into a file.
 // First, call TRACE_START with the name of a file where you want the output.
 // Use TRACE_ON and TRACE_OFF to turn on or off the tracing output
 // Use TRACE to output something (behaves like printf but into a file specified by TRACE_START)
-// At the end, call TRACE_END to close the tracing file 
+// At the end, call TRACE_END to close the tracing file
 //
 // TRACE_START and TRACE_END should be called outside the library (they should not be used inside the library)
 //
@@ -86,5 +86,7 @@ void set_verbose_level(int lvl);
 	#define TRACE(...)
 #endif
 
+// TODO: implement this
+#define INFO(...)
 
 #endif

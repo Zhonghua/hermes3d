@@ -442,10 +442,10 @@ void GmshOutputEngine::out(Mesh *mesh) {
 
 	// vertices
 	fprintf(this->out_file, "$Nodes\n");
-	fprintf(this->out_file, "%d\n", mesh->vertices.count());
+	fprintf(this->out_file, "%ld\n", mesh->vertices.count());
 	FOR_ALL_VERTICES(idx, mesh) {
 		Vertex *v = mesh->vertices[idx];
-		fprintf(this->out_file, "%d %lf %lf %lf\n", idx, v->x, v->y, v->z);
+		fprintf(this->out_file, "%ld %lf %lf %lf\n", idx, v->x, v->y, v->z);
 	}
 	fprintf(this->out_file, "$EndNodes\n");
 
@@ -459,12 +459,12 @@ void GmshOutputEngine::out(Mesh *mesh) {
 
 		switch (element->get_mode()) {
 			case MODE_TETRAHEDRON:
-				fprintf(this->out_file, "%ld 4 0 %d %d %d %d\n",
+				fprintf(this->out_file, "%ld 4 0 %ld %ld %ld %ld\n",
 					element->id, vtcs[0], vtcs[1], vtcs[2], vtcs[3]);
 				break;
 
 			case MODE_HEXAHEDRON:
-				fprintf(this->out_file, "%ld 5 0 %d %d %d %d %d %d %d %d\n",
+				fprintf(this->out_file, "%ld 5 0 %ld %ld %ld %ld %ld %ld %ld %ld\n",
 					element->id, vtcs[0], vtcs[1], vtcs[2], vtcs[3], vtcs[4], vtcs[5], vtcs[6], vtcs[7]);
 				break;
 
@@ -489,7 +489,7 @@ void GmshOutputEngine::out(Mesh *mesh) {
 		Word_t vtcs[Edge::NUM_VERTICES];
 		for (int iedge = 0; iedge < Hex::NUM_EDGES; iedge++) {
 			element->get_edge_vertices(iedge, vtcs);
-			fprintf(this->out_file, "%ld 1 0 %d %d\n", mesh->get_edge_id(vtcs[0], vtcs[1]), vtcs[0], vtcs[1]);
+			fprintf(this->out_file, "%ld 1 0 %ld %ld\n", mesh->get_edge_id(vtcs[0], vtcs[1]), vtcs[0], vtcs[1]);
 		}
 	}
 	fprintf(this->out_file, "$EndElements\n");
@@ -503,7 +503,7 @@ void GmshOutputEngine::out(Mesh *mesh) {
 		Word_t vtcs[Quad::NUM_VERTICES];				// FIXME: HEX-specific
 		for (int iface = 0; iface < Hex::NUM_FACES; iface++) {
 			element->get_face_vertices(iface, vtcs);
-			fprintf(this->out_file, "%ld 3 0 %d %d %d %d\n", mesh->get_facet_id(element, iface), vtcs[0], vtcs[1], vtcs[2], vtcs[3]);
+			fprintf(this->out_file, "%ld 3 0 %ld %ld %ld %ld\n", mesh->get_facet_id(element, iface), vtcs[0], vtcs[1], vtcs[2], vtcs[3]);
 		}
 	}
 	fprintf(this->out_file, "$EndElements\n");
@@ -559,7 +559,7 @@ void GmshOutputEngine::out_orders(Space *space, const char *name) {
 		Word_t vtcs[element->get_num_of_vertices()];
 		element->get_vertices(vtcs);
 
-		fprintf(this->out_file, "%ld 5 0 %d %d %d %d %d %d %d %d\n",
+		fprintf(this->out_file, "%d 5 0 %ld %ld %ld %ld %ld %ld %ld %ld\n",
 			id++, vtcs[0], vtcs[1], vtcs[2], vtcs[3], vtcs[4], vtcs[5], vtcs[6], vtcs[7]);
 	}
 	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
@@ -584,9 +584,9 @@ void GmshOutputEngine::out_orders(Space *space, const char *name) {
 		};
 
 		for (int i = 0; i < Hex::NUM_EDGES; i++) {
-			int base = (idx - 1) * 15;
-			int v[4] = { base + pyrel[i][0] + 1, base + pyrel[i][1] + 1, base + pyrel[i][2] + 1, base + pyrel[i][3] + 1};
-			fprintf(this->out_file, "%ld 3 0 %d %d %d %d\n", id++, v[0], v[1], v[2], v[3]);
+			Word_t base = (idx - 1) * 15;
+			Word_t v[4] = { base + pyrel[i][0] + 1, base + pyrel[i][1] + 1, base + pyrel[i][2] + 1, base + pyrel[i][3] + 1};
+			fprintf(this->out_file, "%d 3 0 %ld %ld %ld %ld\n", id++, v[0], v[1], v[2], v[3]);
 		}
 	}
 	fprintf(this->out_file, "$EndElements\n");
@@ -614,7 +614,7 @@ void GmshOutputEngine::out_orders(Space *space, const char *name) {
 			else if (i == 4 || i == 6 || i == 8 || i == 10) dord = order.x;
 			else if (i == 5 || i == 7 || i == 9 || i == 11) dord = order.y;
 			else assert(false);
-			fprintf(this->out_file, "%ld 4 %d %d %d %d\n", id++, dord, dord, dord, dord);
+			fprintf(this->out_file, "%d 4 %d %d %d %d\n", id++, dord, dord, dord, dord);
 		}
 
 	}

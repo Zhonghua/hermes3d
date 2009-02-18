@@ -2455,7 +2455,7 @@ void Space::update_constraints() {
 					Word_t edge_id = mesh->get_edge_id(e, edge[ie]);
 //					en_data[edge_id]->bnd = 1;
 					if (mesh->edges[edge_id].bnd == 0) {
-						printf("edge #%d should be boundary edge.\n", edge_id);
+						printf("edge #%ld should be boundary edge.\n", edge_id);
 					}
 					assert(mesh->edges[edge_id].bnd == 1);
 //					calc_edge_boundary_projection(e, edge[ie]);

@@ -262,14 +262,14 @@ void VtkOutputEngine::dump_points(MeshFunction *fn) {
 	// dataset
 	fprintf(this->out_file, "DATASET UNSTRUCTURED_GRID\n");
 	fprintf(this->out_file, "\n");
-	fprintf(this->out_file, "POINTS %d %s\n", vertices.count(), "float");
+	fprintf(this->out_file, "POINTS %ld %s\n", vertices.count(), "float");
 	for (Word_t i = vertices.first(); i != INVALID_IDX; i = vertices.next(i)) {
 		Point3D *pt = vertices[i];
 		fprintf(this->out_file, "%e %e %e\n", pt->x, pt->y, pt->z);
 	}
 	fprintf(this->out_file, "\n");
 
-	fprintf(this->out_file, "CELLS %d %d\n", cells[0].count() + cells[1].count() + cells[2].count(),
+	fprintf(this->out_file, "CELLS %ld %ld\n", cells[0].count() + cells[1].count() + cells[2].count(),
 		(Tetra::NUM_VERTICES + 1) * cells[0].count() +
 		(Hex::NUM_VERTICES + 1) * cells[1].count() +
 		(Prism::NUM_VERTICES + 1) * cells[2].count());
@@ -284,14 +284,14 @@ void VtkOutputEngine::dump_points(MeshFunction *fn) {
 	}
 	fprintf(this->out_file, "\n");
 
-	fprintf(this->out_file, "CELL_TYPES %d\n", cells[0].count() + cells[1].count() + cells[2].count());
+	fprintf(this->out_file, "CELL_TYPES %ld\n", cells[0].count() + cells[1].count() + cells[2].count());
 	for (int i = 0; i < countof(type); i++) {			// 3 types of elements
 		for (int j = 0; j < cells[type[i]].count(); j++)
 			fprintf(this->out_file, "%d\n", type_id[i]);
 	}
 
 	fprintf(this->out_file, "\n");
-	fprintf(this->out_file, "POINT_DATA %d\n", vertices.count());
+	fprintf(this->out_file, "POINT_DATA %ld\n", vertices.count());
 
 	// free allocated memory
 	for (Word_t i = vertices.first(); i != INVALID_IDX; i = vertices.next(i))

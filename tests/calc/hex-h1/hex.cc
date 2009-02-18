@@ -83,7 +83,7 @@ int main(int argc, char **args) {
 	FOR_ALL_ELEMENTS(idx, &mesh) {
 		Element *e = mesh.elements[idx];
 
-		printf("elem = %d:", idx);
+		printf("elem = %ld:", idx);
 		for (int iface = 0; iface < 6; iface++) {
 			printf(" %d,", e->get_face_orientation(iface));
 		}

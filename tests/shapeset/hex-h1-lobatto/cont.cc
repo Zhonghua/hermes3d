@@ -359,7 +359,7 @@ bool test_cont_values_of_vertex_fns(Mesh *mesh, int pos0, int pos1, Shapeset *sh
 	double z1 = vtx_pt[1]->z;
 
 	if (fabs(shapeset->get_fn_value(vtx_fn[0], x0, y0, z0, 0) - shapeset->get_fn_value(vtx_fn[1], x1, y1, z1, 0)) > EPS) {
-		printf("% 5x, % 5x: % lf, % lf, % lf == % lf, % lf, % lf | % lf, % lf (diff = % g)",
+		printf("%5x, %5x: % lf, % lf, % lf == % lf, % lf, % lf | % lf, % lf (diff = % g)",
 			vtx_fn[0], vtx_fn[1],
 			x0, y0, z0,
 			x1, y1, z1,
@@ -403,7 +403,7 @@ bool test_cont_values_of_vertex_fns(Mesh *mesh, int pos0, int pos1, Shapeset *sh
 		double z1 = c1[2] * face_pts[1][k][perm1[2]];
 
 		if (fabs(shapeset->get_fn_value(vtx_fn[0], x0, y0, z0, 0) - shapeset->get_fn_value(vtx_fn[1], x1, y1, z1, 0)) > EPS) {
-			printf("% 5x, % 5x: % lf, % lf, % lf == % lf, % lf, % lf | % lf, % lf (diff = % g)",
+			printf("%5x, %5x: % lf, % lf, % lf == % lf, % lf, % lf | % lf, % lf (diff = % g)",
 				vtx_fn[0], vtx_fn[1],
 				x0, y0, z0,
 				x1, y1, z1,
@@ -450,7 +450,7 @@ bool test_cont_values_of_vertex_fns(Mesh *mesh, int pos0, int pos1, Shapeset *sh
 		double z1 = c1[2] * edge_pts[1][k][2];
 
 		if (fabs(shapeset->get_fn_value(vtx_fn[0], x0, y0, z0, 0) - shapeset->get_fn_value(vtx_fn[1], x1, y1, z1, 0)) > EPS) {
-			printf("% 5x, % 5x: % lf, % lf, % lf == % lf, % lf, % lf | % lf, % lf (diff = % g)",
+			printf("%5x, %5x: % lf, % lf, % lf == % lf, % lf, % lf | % lf, % lf (diff = % g)",
 				vtx_fn[0], vtx_fn[1],
 				x0, y0, z0,
 				x1, y1, z1,
@@ -494,7 +494,7 @@ bool test_cont_values_of_vertex_fns(Mesh *mesh, int pos0, int pos1, Shapeset *sh
 		double z1 = c1[2] * edge_v_pts[1][k][2];
 
 		if (fabs(shapeset->get_fn_value(vtx_fn[0], x0, y0, z0, 0) - shapeset->get_fn_value(vtx_fn[1], x1, y1, z1, 0)) > EPS) {
-			printf("% 5x, % 5x: % lf, % lf, % lf == % lf, % lf, % lf | % lf, % lf (diff = % g)",
+			printf("%5x, %5x: % lf, % lf, % lf == % lf, % lf, % lf | % lf, % lf (diff = % g)",
 				vtx_fn[0], vtx_fn[1],
 				x0, y0, z0,
 				x1, y1, z1,
@@ -578,7 +578,7 @@ bool test_cont_values_of_edge_fns(Mesh *mesh, int pos0, int pos1, Shapeset *shap
 			double z1 = c1[2] * face_pts[1][k][perm1[2]];
 
 			if (fabs(shapeset->get_fn_value(edge_fn[0][ei], x0, y0, z0, 0) - shapeset->get_fn_value(edge_fn[1][ei], x1, y1, z1, 0)) > EPS) {
-				printf("% 5x, % 5x: % lf, % lf, % lf == % lf, % lf, % lf | % lf, % lf (diff = % g)",
+				printf("%5x, %5x: % lf, % lf, % lf == % lf, % lf, % lf | % lf, % lf (diff = % g)",
 					edge_fn[0][ei], edge_fn[1][ei],
 					x0, y0, z0,
 					x1, y1, z1,
@@ -620,7 +620,7 @@ bool test_cont_values_of_edge_fns(Mesh *mesh, int pos0, int pos1, Shapeset *shap
 			double z1 = c1[2] * edge_pts[1][k][2];
 
 			if (fabs(shapeset->get_fn_value(edge_fn[0][ei], x0, y0, z0, 0) - shapeset->get_fn_value(edge_fn[1][ei], x1, y1, z1, 0)) > EPS) {
-				printf("% 5x, % 5x: % lf, % lf, % lf == % lf, % lf, % lf | % lf, % lf (diff = % g)",
+				printf("%5x, %5x: % lf, % lf, % lf == % lf, % lf, % lf | % lf, % lf (diff = % g)",
 					edge_fn[0][ei], edge_fn[1][ei],
 					x0, y0, z0,
 					x1, y1, z1,
@@ -703,7 +703,7 @@ bool test_cont_values_of_face_fns(Mesh *mesh, int pos0, int pos1, Shapeset *shap
 			double z1 = c1[2] * face_pts[1][k][perm1[2]];
 
 			if (fabs(shapeset->get_fn_value(face_fn[0][fi], x0, y0, z0, 0) - shapeset->get_fn_value(face_fn[1][fi], x1, y1, z1, 0)) > EPS) {
-				printf("% 5x, % 5x: % lf, % lf, % lf == % lf, % lf, % lf | % lf, % lf (diff = % g)",
+				printf("%5x, %5x: % lf, % lf, % lf == % lf, % lf, % lf | % lf, % lf (diff = % g)",
 					face_fn[0][fi], face_fn[1][fi],
 					x0, y0, z0,
 					x1, y1, z1,

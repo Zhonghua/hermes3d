@@ -22,7 +22,7 @@ typedef
 
 // 2D polynomial order
 struct order2_t {
-	order2_t() { type = 3; order = -1; }
+	order2_t() { type = 3; order = 31; }
 	order2_t(int order) { type = MODE_TRIANGLE; this->order = order; }
 	order2_t(int x, int y) { type = MODE_QUAD; this->x = x; this->y = y; }
 
@@ -192,7 +192,7 @@ inline order2_t max(order2_t a, order2_t b) {
 // all 1s mean invalid (not set) - see default ctor
 //
 struct order3_t {
-	order3_t() { type = -1; }
+	order3_t() { type = 7; }
 	order3_t(int order) { type = MODE_TETRAHEDRON; this->order = order; }
 	order3_t(int x, int y, int z) { type = MODE_HEXAHEDRON; this->x = x; this->y = y; this->z = z; }
 

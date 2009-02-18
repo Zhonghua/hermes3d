@@ -326,7 +326,7 @@ scalar Solution::get_sln_value(double x, double y, double z, EValueType which, i
 void Solution::save_solution_vector(char *filename, int ndofs) {
 	FILE *f = fopen(filename, "wb");
 	if (f == NULL) ERROR("Cannot open %s for writing.", filename);
-	fwrite(vec, sizeof(scalar), ndofs + 1, f);
+	size_t written = fwrite(vec, sizeof(scalar), ndofs + 1, f);
 	fclose(f);
 }
 
@@ -339,7 +339,7 @@ void Solution::load_solution_vector(char *filename, int ndofs) {
 	vec = new scalar[ndofs + 1];
 	MEM_CHECK(vec);
 	owner = true;
-	fread(vec, sizeof(scalar), ndofs + 1, f);
+	size_t read = fread(vec, sizeof(scalar), ndofs + 1, f);
 	fclose(f);
 }
 

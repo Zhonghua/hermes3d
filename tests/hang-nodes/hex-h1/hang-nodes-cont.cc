@@ -564,7 +564,7 @@ int main(int argc, char **args) {
 			}
 
 			if (max_difference > TOLERANCE) {
-				printf("base fn %d NOT continuous between elements %d and %d @ (% lf, % lf, % lf), max difference %g (%.15g <-> %.15g)\n",
+				printf("base fn %d NOT continuous between elements %ld and %ld @ (% lf, % lf, % lf), max difference %g (%.15g <-> %.15g)\n",
 						 dof, max_elm_1, max_elm_2 , max_pt_x, max_pt_y, max_pt_z, max_difference, max_val_1, max_val_2);
 				res = ERR_FAILURE;
 			}

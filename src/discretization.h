@@ -51,9 +51,6 @@ public:
 	void assemble_stiffness_matrix_and_rhs(bool rhsonly = false);
 	bool solve_system(int n, ...);
 
-	//experimental function, to get info about type of each dof
-	void static_condensation_info(char* file_name);
-
 	void uncache_lsm(Word_t eid);
 
 protected:

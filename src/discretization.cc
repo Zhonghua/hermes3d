@@ -205,35 +205,6 @@ void Discretization::create_stiffness_matrix() {
 	linear_solver->alloc();
 }
 
-void Discretization::static_condensation_info(char* file_name) {
-	FILE *file;
-	file = fopen(file_name, "w");
-
-	AsmList al;
-	Word_t *list = new Word_t[ndofs];
-	for (int i = 0; i < ndofs; i++)
-		list[i] = -100;
-
-	Mesh *mesh = space[0]->get_mesh();
-	FOR_ALL_ELEMENTS(elm_idx, mesh) {
-		Element *elem = mesh->elements[elm_idx];
-		for (int eq = 0; eq < neq; eq++){
-			space[eq]->get_element_assembly_list(elem, &al);
-			for (int i = 0; i < al.cnt; i++){
-				if (list[al.dof[i]] == -100) list[al.dof[i]] = elm_idx;
-				else if(list[al.dof[i]] >= 0) list[al.dof[i]] = -1;
-				else list[al.dof[i]]--;
-			}
-		}
-	}
-
-	for (int i = 0; i < ndofs; i++)
-		fprintf(file, "%ld, ", list[i]);
-
-	fclose(file);
-	delete[] list;
-}
-
 void Discretization::assemble_stiffness_matrix_and_rhs(bool rhsonly) {
 	if (ndofs == 0) return;
 

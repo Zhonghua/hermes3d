@@ -26,7 +26,6 @@
 // spaces
 #include "space.h"
 #include "space/h1.h"
-#include "space/hcurl.h"
 
 #include "order.h"
 // quadrature
@@ -35,7 +34,6 @@
 
 #include "refmap.h"
 #include "integrals/h1.h"
-#include "integrals/hcurl.h"
 
 #include "refdomain.h"
 
@@ -46,7 +44,6 @@
 #include "shapeset/common.h"
 #include "shapeset/h1lobattotetra.h"
 #include "shapeset/h1lobattohex.h"
-#include "shapeset/hcurllobattohex.h"
 
 #include "norm.h"
 

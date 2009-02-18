@@ -29,12 +29,10 @@ set(SRC
 	shapeset/h1lobattotetrady.cc
 	shapeset/h1lobattotetradz.cc
 	shapeset/h1lobattohex.cc
-	shapeset/hcurllobattohex.cc
 	shapeset/refmapss.cc
 	solution.cc
 	space.cc
 	space/h1.cc
-	space/hcurl.cc
 	transform.cc
 	traverse.cc
 	linsolver.cc

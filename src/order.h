@@ -396,9 +396,9 @@ inline order3_t turn_hex_face_order(order3_t ord) {
 	int o1 = ord.x;
 	int o2 = ord.y;
 	int o3 = ord.z;
-	if (o1 <= 1) swapint(o2, o3);
-	if (o2 <= 1) swapint(o1, o3);
-	if (o3 <= 1) swapint(o1, o2);
+	if (o1 <= 1) std::swap(o2, o3);
+	if (o2 <= 1) std::swap(o1, o3);
+	if (o3 <= 1) std::swap(o1, o2);
 	return order3_t(o1, o2, o3);
 }
 

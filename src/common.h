@@ -37,15 +37,6 @@ typedef double scalar;
 #endif
 
 
-//#define Order0 int
-//#define Order1 int
-//#define Order2 int
-//#define Order3 int
-
-
-#define swapint(a,b) {int c_help = (a); (a) = (b); (b) = c_help;}
-
-
 // 1D element modes
 enum EMode1D {
 	MODE_LINE = 0
@@ -67,7 +58,7 @@ enum EMode3D {
 
 // points
 struct Point1D {
-	double x;		// coordinates of a point
+	double x;			// coordinates of a point
 };
 
 struct Point2D {

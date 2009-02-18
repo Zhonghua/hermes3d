@@ -366,8 +366,8 @@ double HCurlShapesetLobattoHex::calc_any_value(int index, double x, double y, do
 		if (ori % 4 >= 2)
 			oris[dir_2] = 1;
 		if (ori >= 4) {
-			swapint(indices[dir_1], indices[dir_2]);
-			swapint(oris[dir_1], oris[dir_2]);
+			std::swap(indices[dir_1], indices[dir_2]);
+			std::swap(oris[dir_1], oris[dir_2]);
 			which_legendre = (which_legendre == dir_1) ? dir_2 : dir_1;
 			//in our shapeset this is allways true
 			v_direction = which_legendre;
@@ -1093,7 +1093,7 @@ CEDComb *HCurlShapesetLobattoHex::calc_constrained_face_combination(int ori, ord
 	// v_direction when orientation is taken ito account
 	int trans_v_direction = v_direction;
 	if(ori > 3){
-		swapint(h_num_cheb, v_num_cheb);
+		std::swap(h_num_cheb, v_num_cheb);
 		trans_v_direction = 1 - trans_v_direction;
 	}
 	assert(h_num_cheb * v_num_cheb == n);

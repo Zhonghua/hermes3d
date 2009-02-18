@@ -89,15 +89,15 @@ static void find_permutation(int *indices, int *permut, int &num_01) {
 	if (indices[0] < 2) num_01++;
 	if (indices[1] < 2) {
 		num_01++;
-		if (num_01 == 1) swapint(permut[0], permut[1]);
+		if (num_01 == 1) std::swap(permut[0], permut[1]);
 	}
 	if (indices[2] < 2) {
 		num_01++;
 		if (num_01 == 1) {
-			swapint(permut[1], permut[2]);
-			swapint(permut[0], permut[1]);
+			std::swap(permut[1], permut[2]);
+			std::swap(permut[0], permut[1]);
 		}
-		if (num_01 == 2) swapint(permut[1], permut[2]);
+		if (num_01 == 2) std::swap(permut[1], permut[2]);
 	}
 }
 
@@ -126,8 +126,8 @@ static void decompose(int index, int ori, int indices[3], int oris[3], bool swap
 		if (ori % 2 == 1) oris[permut[1]] = 1;
 		if (ori % 4 >= 2) oris[permut[2]] = 1;
 		if (ori >= 4) {
-			swapint(indices[permut[1]], indices[permut[2]]);
-			if (swapori) swapint(oris[permut[1]], oris[permut[2]]);
+			std::swap(indices[permut[1]], indices[permut[2]]);
+			if (swapori) std::swap(oris[permut[1]], oris[permut[2]]);
 		}
 	}
 	else {

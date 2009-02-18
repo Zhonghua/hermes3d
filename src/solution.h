@@ -130,7 +130,6 @@ public:
 	virtual void set_active_element(Element *e);
 
 protected:
-//	RefMap *refmap;
 	exact_fn_t fn[COMPONENTS];
 	void *tables[8];
 

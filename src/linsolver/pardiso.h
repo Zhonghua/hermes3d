@@ -26,7 +26,7 @@ public:
 	virtual bool dump_matrix(FILE *file, const char *var_name, EMatrixDumpFormat format = DF_MATLAB_SPARSE);
 	virtual bool dump_rhs(FILE *file, const char *var_name, EMatrixDumpFormat format = DF_MATLAB_SPARSE);
 
-	virtual ESparseMatrixRepresentation matrix_representation() { return SMATRIX_ROW; }
+	virtual ESparseMatrixRepresentation matrix_representation() { return SMATRIX_ROW; 	}
 
 	virtual int get_matrix_size() const;
 

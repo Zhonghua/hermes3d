@@ -71,11 +71,7 @@ static shape_fn_t *refmap_tetra_dz_table[] = { refmap_tetra_dz };
 RefMapShapesetTetra::RefMapShapesetTetra() {
 #ifdef WITH_TETRA
 	mode = MODE_TETRAHEDRON;
-
-	max_order = 10;			// MAX_ELEMENT_ORDER ?
 	num_components = 1;
-
-	max_index = (sizeof(refmap_tetra_fn) / sizeof(shape_fn_t)) - 1;
 
 	// fn values are calculated by the tables
 	shape_table[FN]  = refmap_tetra_fn_table;
@@ -182,11 +178,7 @@ static shape_fn_t *refmap_hex_dz_table[] = { refmap_hex_dz };
 RefMapShapesetHex::RefMapShapesetHex() {
 #ifdef WITH_HEX
 	mode = MODE_HEXAHEDRON;
-
-	max_order = 10;			// MAX_ELEMENT_ORDER ?
 	num_components = 1;
-
-	max_index = (sizeof(refmap_hex_fn) / sizeof(shape_fn_t)) - 1;
 
 	// nothing is tabelated
 	shape_table[FN]  = refmap_hex_fn_table;

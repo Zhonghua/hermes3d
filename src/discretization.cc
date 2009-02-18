@@ -44,15 +44,6 @@ void Discretization::free() {
 		delete [] biform[i];
 	delete [] biform; biform = NULL;
 	delete [] liform; liform = NULL;
-
-	// free cached local stiffness matrices
-	for (Word_t i = lsm_cache.first(); i != INVALID_IDX; i = lsm_cache.next(i))
-		delete lsm_cache.get(i);
-	lsm_cache.remove_all();
-
-	for (Word_t i = lsm_cache_surf.first(); i != INVALID_IDX; i = lsm_cache_surf.next(i))
-		delete lsm_cache_surf.get(i);
-	lsm_cache_surf.remove_all();
 }
 
 void Discretization::set_num_equations(int neq) {
@@ -206,7 +197,6 @@ void Discretization::create_stiffness_matrix() {
 	Mesh *mesh = space[0]->get_mesh();
 	for (int i = 0; i < neq; i++)
 		ndofs += space[i]->get_dof_count();
-//	if (!quiet) verbose("Ndofs: %d", ndofs);
 	if (ndofs == 0) return;
 
 	linear_solver->prealloc(ndofs);
@@ -215,35 +205,30 @@ void Discretization::create_stiffness_matrix() {
 	linear_solver->alloc();
 }
 
-void Discretization::static_condensation_info(char* file_name)
-{
+void Discretization::static_condensation_info(char* file_name) {
 	FILE *file;
 	file = fopen(file_name, "w");
 
 	AsmList al;
 	Word_t *list = new Word_t[ndofs];
-	for(int i = 0; i < ndofs; i++)
+	for (int i = 0; i < ndofs; i++)
 		list[i] = -100;
 
 	Mesh *mesh = space[0]->get_mesh();
 	FOR_ALL_ELEMENTS(elm_idx, mesh) {
 		Element *elem = mesh->elements[elm_idx];
-		for(int eq = 0; eq < neq; eq++){
+		for (int eq = 0; eq < neq; eq++){
 			space[eq]->get_element_assembly_list(elem, &al);
-			for(int i = 0; i < al.cnt; i++){
-				if(list[al.dof[i]] == -100)
-					list[al.dof[i]] = elm_idx;
-				else if(list[al.dof[i]] >= 0)
-					list[al.dof[i]] = -1;
-				else
-					list[al.dof[i]]--;
+			for (int i = 0; i < al.cnt; i++){
+				if (list[al.dof[i]] == -100) list[al.dof[i]] = elm_idx;
+				else if(list[al.dof[i]] >= 0) list[al.dof[i]] = -1;
+				else list[al.dof[i]]--;
 			}
 		}
 	}
 
-	for(int i = 0; i < ndofs; i++){
+	for (int i = 0; i < ndofs; i++)
 		fprintf(file, "%ld, ", list[i]);
-	}
 
 	fclose(file);
 	delete[] list;
@@ -337,9 +322,6 @@ void Discretization::assemble_stiffness_matrix_and_rhs(bool rhsonly) {
 							if (am->dof[i] < 0) continue;
 							fv->set_active_shape(am->idx[i]);
 							scalar bi = bf->unsym(fu, fv, refmap + n, refmap + m) * an->coef[j] * am->coef[i];
-//							if (l >= 0)
-//								printf("[%d, %d] = %lf | idx = %d, %d | coef = %lf, %lf\n", an->dof[j], am->dof[i], bi,
-//										an->idx[j], am->idx[i], an->coef[j], am->coef[i]);
 							if (l >= 0) lsm[i][j] += bi;
 							else lrhs[i] -= bi;
 						}
@@ -439,9 +421,8 @@ void Discretization::assemble_stiffness_matrix_and_rhs(bool rhsonly) {
 	linear_solver->finish_assembling();
 
 	// free memory
-	for (int i = 0; i < neq; i++) {
+	for (int i = 0; i < neq; i++)
 		delete spss[i];
-	}
 	delete [] spss;
 	delete [] refmap;
 	delete [] al;
@@ -481,17 +462,4 @@ bool Discretization::solve_system(int n, ...) {
 void Discretization::free_solution_vector() {
 	delete [] solution_vector;
 	solution_vector = NULL;
-}
-
-void Discretization::uncache_lsm(Word_t eid) {
-	scalar **lsm;
-	if (lsm_cache.lookup(eid, lsm)) {
-		delete [] lsm;
-		lsm_cache.remove(eid);
-	}
-
-	if (lsm_cache_surf.lookup(eid, lsm)) {
-		delete [] lsm;
-		lsm_cache_surf.remove(eid);
-	}
 }

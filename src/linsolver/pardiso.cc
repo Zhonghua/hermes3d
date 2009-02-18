@@ -90,7 +90,8 @@ void PardisoLinearSolver::alloc() {
 	}
 	Ap[i] = pos;
 
-	delete [] pages; pages = NULL;
+	delete[] pages;
+	pages = NULL;
 
 	Ax = new scalar[Ap[ndofs]];
 	if (Ax == NULL) EXIT(ERR_OUT_OF_MEMORY);
@@ -107,10 +108,10 @@ void PardisoLinearSolver::alloc() {
 
 void PardisoLinearSolver::free() {
 #ifdef WITH_PARDISO
-	delete [] Ap; Ap = NULL;
-	delete [] Ai; Ai = NULL;
-	delete [] Ax; Ax = NULL;
-	delete [] srhs; srhs = NULL;
+	delete[] Ap; Ap = NULL;
+	delete[] Ai; Ai = NULL;
+	delete[] Ax; Ax = NULL;
+	delete[] srhs; 	srhs = NULL;
 #else
 	EXIT(ERR_PARDISO_NOT_COMPILED);
 #endif
@@ -130,9 +131,9 @@ void PardisoLinearSolver::update_matrix(int row, int col, scalar v) {
 
 void PardisoLinearSolver::update_matrix(int m, int n, double **mat, int *rows, int *cols) {
 #ifdef WITH_PARDISO
-	for (int i = 0; i < m; i++)				// rows
-		for (int j = 0; j < n; j++)	 {		// cols
-			if (mat[i][j] != 0.0 && rows[i] != -1 && cols[j] != -1) {		// -1 is a "dirichlet DOF" -> ignore it
+	for (int i = 0; i < m; i++) // rows
+		for (int j = 0; j < n; j++) { // cols
+			if (mat[i][j] != 0.0 && rows[i] != -1 && cols[j] != -1) { // -1 is a "dirichlet DOF" -> ignore it
 				update_matrix(rows[i], cols[j], mat[i][j]);
 			}
 		}
@@ -143,8 +144,7 @@ void PardisoLinearSolver::update_matrix(int m, int n, double **mat, int *rows, i
 
 void PardisoLinearSolver::update_rhs(int idx, scalar y) {
 #ifdef WITH_PARDISO
-	if (idx >= 0)
-		srhs[idx] += y;
+	if (idx >= 0) srhs[idx] += y;
 #else
 	EXIT(ERR_PARDISO_NOT_COMPILED);
 #endif
@@ -153,8 +153,7 @@ void PardisoLinearSolver::update_rhs(int idx, scalar y) {
 void PardisoLinearSolver::update_rhs(int n, int *idx, scalar *y) {
 #ifdef WITH_PARDISO
 	for (int i = 0; i < n; i++)
-		if (idx[i] >= 0)
-			srhs[idx[i]] += y[i];
+		if (idx[i] >= 0) srhs[idx[i]] += y[i];
 #else
 	EXIT(ERR_PARDISO_NOT_COMPILED);
 #endif
@@ -171,16 +170,14 @@ bool PardisoLinearSolver::solve_system(double *sln) {
 	double *b = srhs;
 	double *x = sln;
 
-	//TODO: chybove hlasenia prerobit
+	//TODO: improve error handling
 
 	try {
 		// Numbers of processors, value of OMP_NUM_THREADS
 		int num_procs;
 		char *var = getenv("OMP_NUM_THREADS");
-		if (var != NULL)
-			sscanf(var, "%d", &num_procs);
-		else
-			num_procs = 1;
+		if (var != NULL) sscanf(var, "%d", &num_procs);
+		else num_procs = 1;
 
 		int mtype = 11; // Real unsymmetric matrix
 		int nrhs = 1; // Number of right hand sides.
@@ -206,22 +203,16 @@ bool PardisoLinearSolver::solve_system(double *sln) {
 		error = 0; // Initialize error flag
 
 		// Convert matrix from 0-based C-notation to Fortran 1-based notation.
-		for (int i = 0; i < n + 1; i++) {
-			ia[i] += 1;
-		}
-		for (int i = 0; i < nnz; i++) {
-			ja[i] += 1;
-		}
+		for (int i = 0; i < n + 1; i++) ia[i] += 1;
+		for (int i = 0; i < nnz; i++) ja[i] += 1;
 
 		// Setup Pardiso control parameters.
-		PARDISOINIT (pt, &mtype, iparm);
+		PARDISOINIT(pt, &mtype, iparm);
 
 		// .. Reordering and Symbolic Factorization. This step also allocates
 		// all memory that is necessary for the factorization.
 		phase = 11;
-		PARDISO (pt, &maxfct, &mnum, &mtype, &phase,
-			&n, a, ia, ja, &idum, &nrhs,
-			iparm, &msglvl, &ddum, &ddum, &error);
+		PARDISO(pt, &maxfct, &mnum, &mtype, &phase, &n, a, ia, ja, &idum, &nrhs, iparm, &msglvl, &ddum, &ddum, &error);
 		if (error != 0) {
 			ERROR("ERROR during symbolic factorization: ", error);
 			throw ERR_FAILURE;
@@ -233,9 +224,7 @@ bool PardisoLinearSolver::solve_system(double *sln) {
 
 		// .. Numerical factorization.
 		phase = 22;
-		PARDISO (pt, &maxfct, &mnum, &mtype, &phase,
-			&n, a, ia, ja, &idum, &nrhs,
-			iparm, &msglvl, &ddum, &ddum, &error);
+		PARDISO(pt, &maxfct, &mnum, &mtype, &phase, &n, a, ia, ja, &idum, &nrhs, iparm, &msglvl, &ddum, &ddum, &error);
 		if (error != 0) {
 			ERROR("ERROR during numerical factorization: ", error);
 			throw ERR_FAILURE;
@@ -245,9 +234,7 @@ bool PardisoLinearSolver::solve_system(double *sln) {
 		// .. Back substitution and iterative refinement.
 		phase = 33;
 		iparm[7] = 1; // Max numbers of iterative refinement steps.
-		PARDISO (pt, &maxfct, &mnum, &mtype, &phase,
-			&n, a, ia, ja, &idum, &nrhs,
-			iparm, &msglvl, b, x, &error);
+		PARDISO(pt, &maxfct, &mnum, &mtype, &phase, &n, a, ia, ja, &idum, &nrhs, iparm, &msglvl, b, x, &error);
 		if (error != 0) {
 			ERROR("ERROR during solution: ", error);
 			throw ERR_FAILURE;
@@ -255,18 +242,12 @@ bool PardisoLinearSolver::solve_system(double *sln) {
 		DEBUG_PRINT("Solving completed ... ");
 
 		//  Convert matrix back to 0-based C-notation.
-		for (int i = 0; i < n + 1; i++) {
-			ia[i] -= 1;
-		}
-		for (int i = 0; i < nnz; i++) {
-			ja[i] -= 1;
-		}
+		for (int i = 0; i < n + 1; i++) ia[i] -= 1;
+		for (int i = 0; i < nnz; i++) ja[i] -= 1;
 
 		// .. Termination and release of memory.
 		phase = -1; // Release internal memory.
-		PARDISO (pt, &maxfct, &mnum, &mtype, &phase,
-			&n, &ddum, ia, ja, &idum, &nrhs,
-			iparm, &msglvl, &ddum, &ddum, &error);
+		PARDISO(pt, &maxfct, &mnum, &mtype, &phase, &n, &ddum, ia, ja, &idum, &nrhs, iparm, &msglvl, &ddum, &ddum, &error);
 	}
 	catch (int e) {
 		res = false;
@@ -283,8 +264,7 @@ bool PardisoLinearSolver::dump_matrix(FILE *file, const char *var_name, EMatrixD
 	// TODO: check if OK (use unsymmetric matrix)
 	switch (format) {
 		case DF_MATLAB_SPARSE:
-			fprintf(file, "%% Size: %dx%d\n%% Nonzeros: %d\ntemp = zeros(%d, 3);\ntemp = [\n",
-				ndofs, ndofs, Ap[ndofs], Ap[ndofs]);
+			fprintf(file, "%% Size: %dx%d\n%% Nonzeros: %d\ntemp = zeros(%d, 3);\ntemp = [\n", ndofs, ndofs, Ap[ndofs], Ap[ndofs]);
 			for (int j = 0; j < ndofs; j++)
 				for (int i = Ap[j]; i < Ap[j + 1]; i++)
 					fprintf(file, "%d %d %.18e\n", j + 1, Ai[i] + 1, Ax[i]);

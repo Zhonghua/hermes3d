@@ -17,26 +17,22 @@ extern "C" {
 #include <iostream>
 
 #ifndef COMPLEX
-  // real case
-  #define umfpack_symbolic(m, n, Ap, Ai, Ax, S, C, I)   umfpack_di_symbolic(m, n, Ap, Ai, Ax, S, C, I)
-  #define umfpack_numeric(Ap, Ai, Ax, S, N, C, I)       umfpack_di_numeric(Ap, Ai, Ax, S, N, C, I)
-  #define umfpack_solve(sys, Ap, Ai, Ax, X, B, N, C, I) umfpack_di_solve(sys, Ap, Ai, Ax, X, B, N, C, I)
-  #define umfpack_free_symbolic                         umfpack_di_free_symbolic
-  #define umfpack_free_numeric                          umfpack_di_free_numeric
-  #define umfpack_defaults                              umfpack_di_defaults
+// real case
+#define umfpack_symbolic(m, n, Ap, Ai, Ax, S, C, I)		umfpack_di_symbolic(m, n, Ap, Ai, Ax, S, C, I)
+#define umfpack_numeric(Ap, Ai, Ax, S, N, C, I)			umfpack_di_numeric(Ap, Ai, Ax, S, N, C, I)
+#define umfpack_solve(sys, Ap, Ai, Ax, X, B, N, C, I)	umfpack_di_solve(sys, Ap, Ai, Ax, X, B, N, C, I)
+#define umfpack_free_symbolic							umfpack_di_free_symbolic
+#define umfpack_free_numeric							umfpack_di_free_numeric
+#define umfpack_defaults								umfpack_di_defaults
 #else
-  // macros for calling complex UMFPACK in packed-complex mode
-  #define umfpack_symbolic(m, n, Ap, Ai, Ax, S, C, I) \
-          umfpack_zi_symbolic(m, n, Ap, Ai, (double*) (Ax), NULL, S, C, I)
-  #define umfpack_numeric(Ap, Ai, Ax, S, N, C, I) \
-          umfpack_zi_numeric(Ap, Ai, (double*) (Ax), NULL, S, N, C, I)
-  #define umfpack_solve(sys, Ap, Ai, Ax, X, B, N, C, I) \
-          umfpack_zi_solve(sys, Ap, Ai, (double*) (Ax), NULL, (double*) (X), NULL, (double*) (B), NULL, N, C, I)
-  #define umfpack_free_symbolic umfpack_di_free_symbolic
-  #define umfpack_free_numeric  umfpack_zi_free_numeric
-  #define umfpack_defaults      umfpack_zi_defaults
+// macros for calling complex UMFPACK in packed-complex mode
+#define umfpack_symbolic(m, n, Ap, Ai, Ax, S, C, I)		umfpack_zi_symbolic(m, n, Ap, Ai, (double *) (Ax), NULL, S, C, I)
+#define umfpack_numeric(Ap, Ai, Ax, S, N, C, I)			umfpack_zi_numeric(Ap, Ai, (double *) (Ax), NULL, S, N, C, I)
+#define umfpack_solve(sys, Ap, Ai, Ax, X, B, N, C, I)	umfpack_zi_solve(sys, Ap, Ai, (double *) (Ax), NULL, (double *) (X), NULL, (double *) (B), NULL, N, C, I)
+#define umfpack_free_symbolic							umfpack_di_free_symbolic
+#define umfpack_free_numeric							umfpack_zi_free_numeric
+#define umfpack_defaults								umfpack_zi_defaults
 #endif
-
 
 UMFPackLinearSolver::UMFPackLinearSolver() {
 #ifdef WITH_UMFPACK
@@ -106,7 +102,8 @@ void UMFPackLinearSolver::alloc() {
 	}
 	Ap[i] = pos;
 
-	delete [] pages; pages = NULL;
+	delete[] pages;
+	pages = NULL;
 
 	Ax = new scalar[Ap[ndofs]];
 	if (Ax == NULL) EXIT(ERR_OUT_OF_MEMORY, "Out of memory. Error allocating stiffness matrix (Ax).");
@@ -123,10 +120,10 @@ void UMFPackLinearSolver::alloc() {
 
 void UMFPackLinearSolver::free() {
 #ifdef WITH_UMFPACK
-	delete [] Ap; Ap = NULL;
-	delete [] Ai; Ai = NULL;
-	delete [] Ax; Ax = NULL;
-	delete [] srhs; srhs = NULL;
+	delete[] Ap; Ap = NULL;
+	delete[] Ai; Ai = NULL;
+	delete[] Ax; Ax = NULL;
+	delete[] srhs; srhs = NULL;
 #else
 	EXIT(ERR_UMFPACK_NOT_COMPILED);
 #endif
@@ -142,9 +139,9 @@ void UMFPackLinearSolver::update_matrix(int row, int col, scalar v) {
 
 void UMFPackLinearSolver::update_matrix(int m, int n, scalar **mat, int *rows, int *cols) {
 #ifdef WITH_UMFPACK
-	for (int i = 0; i < m; i++)				// rows
-		for (int j = 0; j < n; j++)	 {		// cols
-			if (mat[i][j] != 0.0 && rows[i] != -1 && cols[j] != -1) {		// -1 is a "dirichlet DOF" -> ignore it
+	for (int i = 0; i < m; i++) // rows
+		for (int j = 0; j < n; j++) { // cols
+			if (mat[i][j] != 0.0 && rows[i] != -1 && cols[j] != -1) { // -1 is a "dirichlet DOF" -> ignore it
 				update_matrix(rows[i], cols[j], mat[i][j]);
 			}
 		}
@@ -153,11 +150,9 @@ void UMFPackLinearSolver::update_matrix(int m, int n, scalar **mat, int *rows, i
 #endif
 }
 
-
 void UMFPackLinearSolver::update_rhs(int idx, scalar y) {
 #ifdef WITH_UMFPACK
-	if (idx >= 0)
-		srhs[idx] += y;
+	if (idx >= 0) srhs[idx] += y;
 #else
 	EXIT(ERR_UMFPACK_NOT_COMPILED);
 #endif
@@ -166,8 +161,7 @@ void UMFPackLinearSolver::update_rhs(int idx, scalar y) {
 void UMFPackLinearSolver::update_rhs(int n, int *idx, scalar *y) {
 #ifdef WITH_UMFPACK
 	for (int i = 0; i < n; i++)
-		if (idx[i] >= 0)
-			srhs[idx[i]] += y[i];
+		if (idx[i] >= 0) srhs[idx[i]] += y[i];
 #else
 	EXIT(ERR_UMFPACK_NOT_COMPILED);
 #endif
@@ -176,18 +170,41 @@ void UMFPackLinearSolver::update_rhs(int n, int *idx, scalar *y) {
 #ifdef WITH_UMFPACK
 static void check_status(const char *fn_name, int status) {
 	switch (status) {
-		case UMFPACK_OK:							break;
-	    case UMFPACK_WARNING_singular_matrix:		ERROR("%s: singular matrix!", fn_name); break;
-		case UMFPACK_ERROR_out_of_memory:			ERROR("%s: out of memory!", fn_name); break;
-		case UMFPACK_ERROR_argument_missing:		ERROR("%s: argument missing", fn_name); break;
-		case UMFPACK_ERROR_invalid_Symbolic_object:	ERROR("%s: invalid Symbolic object", fn_name); break;
-		case UMFPACK_ERROR_invalid_Numeric_object:	ERROR("%s: invalid Numeric object", fn_name); break;
-		case UMFPACK_ERROR_different_pattern:		ERROR("%s: different pattern", fn_name); break;
-		case UMFPACK_ERROR_invalid_system:			ERROR("%s: invalid system", fn_name); break;
-		case UMFPACK_ERROR_n_nonpositive:			ERROR("%s: n nonpositive", fn_name); break;
-		case UMFPACK_ERROR_invalid_matrix:			ERROR("%s: invalid matrix", fn_name); break;
-		case UMFPACK_ERROR_internal_error:			ERROR("%s: internal error", fn_name); break;
-		default:									ERROR("%s: unknown error (%d)", fn_name, status); break;
+		case UMFPACK_OK:
+			break;
+		case UMFPACK_WARNING_singular_matrix:
+			ERROR("%s: singular matrix!", fn_name);
+			break;
+		case UMFPACK_ERROR_out_of_memory:
+			ERROR("%s: out of memory!", fn_name);
+			break;
+		case UMFPACK_ERROR_argument_missing:
+			ERROR("%s: argument missing", fn_name);
+			break;
+		case UMFPACK_ERROR_invalid_Symbolic_object:
+			ERROR("%s: invalid Symbolic object", fn_name);
+			break;
+		case UMFPACK_ERROR_invalid_Numeric_object:
+			ERROR("%s: invalid Numeric object", fn_name);
+			break;
+		case UMFPACK_ERROR_different_pattern:
+			ERROR("%s: different pattern", fn_name);
+			break;
+		case UMFPACK_ERROR_invalid_system:
+			ERROR("%s: invalid system", fn_name);
+			break;
+		case UMFPACK_ERROR_n_nonpositive:
+			ERROR("%s: n nonpositive", fn_name);
+			break;
+		case UMFPACK_ERROR_invalid_matrix:
+			ERROR("%s: invalid matrix", fn_name);
+			break;
+		case UMFPACK_ERROR_internal_error:
+			ERROR("%s: internal error", fn_name);
+			break;
+		default:
+			ERROR("%s: unknown error (%d)", fn_name, status);
+			break;
 	}
 }
 #endif
@@ -200,15 +217,24 @@ bool UMFPackLinearSolver::solve_system(scalar *sln) {
 	int status;
 
 	status = umfpack_symbolic(ndofs, ndofs, Ap, Ai, Ax, &symbolic, NULL, NULL);
-	if (status != UMFPACK_OK) { check_status("umfpack_di_symbolic", status); return false; }
+	if (status != UMFPACK_OK) {
+		check_status("umfpack_di_symbolic", status);
+		return false;
+	}
 	if (symbolic == NULL) EXIT(ERR_FAILURE, "umfpack_di_symbolic error: symbolic == NULL");
 
 	status = umfpack_numeric(Ap, Ai, Ax, symbolic, &numeric, NULL, NULL);
-	if (status != UMFPACK_OK) { check_status("umfpack_di_numeric", status); return false; }
+	if (status != UMFPACK_OK) {
+		check_status("umfpack_di_numeric", status);
+		return false;
+	}
 	if (numeric == NULL) EXIT(ERR_FAILURE, "umfpack_di_numeric error: numeric == NULL");
 
 	status = umfpack_solve(UMFPACK_A, Ap, Ai, Ax, sln, srhs, numeric, NULL, NULL);
-	if (status != UMFPACK_OK) { check_status("umfpack_di_solve", status); return false; }
+	if (status != UMFPACK_OK) {
+		check_status("umfpack_di_solve", status);
+		return false;
+	}
 
 	umfpack_free_symbolic(&symbolic);
 	umfpack_free_numeric(&numeric);
@@ -223,8 +249,7 @@ bool UMFPackLinearSolver::dump_matrix(FILE *file, const char *var_name, EMatrixD
 #ifdef WITH_UMFPACK
 	switch (format) {
 		case DF_MATLAB_SPARSE:
-			fprintf(file, "%% Size: %dx%d\n%% Nonzeros: %d\ntemp = zeros(%d, 3);\ntemp = [\n",
-				ndofs, ndofs, Ap[ndofs], Ap[ndofs]);
+			fprintf(file, "%% Size: %dx%d\n%% Nonzeros: %d\ntemp = zeros(%d, 3);\ntemp = [\n", ndofs, ndofs, Ap[ndofs], Ap[ndofs]);
 			for (int j = 0; j < ndofs; j++)
 				for (int i = Ap[j]; i < Ap[j + 1]; i++)
 					fprintf(file, "%d %d " SCALAR_FMT "\n", Ai[i] + 1, j + 1, SCALAR(Ax[i]));
@@ -267,14 +292,14 @@ bool UMFPackLinearSolver::dump_rhs(FILE *file, const char *var_name, EMatrixDump
 			fprintf(file, " ];\n");
 			return true;
 
-			case DF_HERMES_BIN: {
-				hermes_fwrite("H2DR\001\000\000\000", 1, 8, file);
-				int ssize = sizeof(scalar);
-				hermes_fwrite(&ssize, sizeof(int), 1, file);
-				hermes_fwrite(&ndofs, sizeof(int), 1, file);
-				hermes_fwrite(srhs, sizeof(scalar), ndofs, file);
-				return true;
-			}
+		case DF_HERMES_BIN: {
+			hermes_fwrite("H2DR\001\000\000\000", 1, 8, file);
+			int ssize = sizeof(scalar);
+			hermes_fwrite(&ssize, sizeof(int), 1, file);
+			hermes_fwrite(&ndofs, sizeof(int), 1, file);
+			hermes_fwrite(srhs, sizeof(scalar), ndofs, file);
+			return true;
+		}
 
 		case DF_PLAIN_ASCII:
 			EXIT(ERR_NOT_IMPLEMENTED);

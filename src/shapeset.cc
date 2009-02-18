@@ -71,9 +71,6 @@ double get_edge_coef(int part) {
 Shapeset::Shapeset() {
 	mode = 0;
 	ced_idx = -1;
-
-	max_order = -1;
-	max_index = -1;
 	num_components = -1;
 
 #ifdef PRELOADING

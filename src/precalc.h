@@ -6,7 +6,7 @@
 #include "shapeset.h"
 
 //
-// \class PrecalcShapeset
+//
 //
 class PrecalcShapeset : public RealFunction {
 public:
@@ -53,18 +53,15 @@ public:
 protected:
 	Shapeset *shapeset;
 
-	void *tables;		///< primary Judy array of shapes
+	void *tables;		/// primary Judy array of shapes
 
 	int index;			/// index of active shape
-	int max_index;
 
 	PrecalcShapeset *master_pss;
 
 	bool is_slave() const { return master_pss != NULL; }
 
 	virtual void precalculate(qorder_t order, int mask);
-
-	void update_max_index();
 
 	/// Forces a transform without using push_transform() etc.
 	/// Used by the Solution class. <b>For internal use only</b>.

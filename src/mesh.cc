@@ -111,17 +111,12 @@ void Facet::dump() {
 	const char *s_type[] = { "INNER", "OUTER" };
 	const char *s_mode[] = { "TRI", "QUAD" };
 
-	printf("type = %s (%s), [%d, %d], left (elem = %ld, face = %d), ",
-		s_type[type], s_mode[mode], lactive, ractive, left, left_face_num);
-	if (type == INNER)
-		printf(" right (elem = %ld, face = %d)", right, right_face_num);
-	else
-		printf(" right (bdr = %ld)", right);
+	printf("type = %s (%s), [%d, %d], left (elem = %ld, face = %d), ", s_type[type], s_mode[mode], lactive, ractive, left, left_face_num);
+	if (type == INNER) printf(" right (elem = %ld, face = %d)", right, right_face_num);
+	else printf(" right (bdr = %ld)", right);
 	printf(", ref_mask = %d, sons = [%ld, %ld, %ld, %ld], ", ref_mask, sons[0], sons[1], sons[2], sons[3]);
-	if (parent != INVALID_IDX)
-		printf("parent = %ld", parent);
-	else
-		printf("no parent");
+	if (parent != INVALID_IDX) printf("parent = %ld", parent);
+	else printf("no parent");
 	printf("\n");
 }
 
@@ -193,9 +188,7 @@ Hex::Hex(Word_t v1, Word_t v2, Word_t v3, Word_t v4, Word_t v5, Word_t v6, Word_
 #endif
 }
 
-Hex::Hex(const Hex &o) :
-	Element(o)
-{
+Hex::Hex(const Hex &o) : Element(o) {
 #ifdef WITH_HEX
 	for (int i = 0; i < NUM_VERTICES; i++)
 		vtcs[i] = o.vtcs[i];
@@ -215,19 +208,16 @@ int Hex::get_edge_vertices(int edge_num, Word_t *vtcs) const {
 		vtcs[0] = this->vtcs[local_vetrex[0]];
 		vtcs[1] = this->vtcs[local_vetrex[1]];
 		return Edge::NUM_VERTICES;
-	} else
-		EXIT(ERR_MESH_PROBLEM,
-		    "Invalid local edge number. Hexahedron has edges numbered from 0 to %d (is %d).",
-		    NUM_EDGES - 1, edge_num);
+	}
+	else
+		EXIT(ERR_MESH_PROBLEM, "Invalid local edge number. Hexahedron has edges numbered from 0 to %d (is %d).", NUM_EDGES - 1, edge_num);
 }
 
 const int *Hex::get_edge_vertices(int edge_num) const {
 	if ((edge_num >= 0) && (edge_num < NUM_EDGES))
 		return RefHex::get_edge_vertices(edge_num);
 	else
-		EXIT(ERR_MESH_PROBLEM,
-		    "Invalid local edge number. Hexahedron has edges numbered from 0 to %d (is %d).",
-		    NUM_EDGES - 1, edge_num);
+		EXIT(ERR_MESH_PROBLEM, "Invalid local edge number. Hexahedron has edges numbered from 0 to %d (is %d).", NUM_EDGES - 1, edge_num);
 }
 
 int Hex::get_face_vertices(int face_num, Word_t *vtcs) const {
@@ -236,28 +226,24 @@ int Hex::get_face_vertices(int face_num, Word_t *vtcs) const {
 		for (int i = 0; i < Quad::NUM_VERTICES; i++)
 			vtcs[i] = this->vtcs[local_numbers[i]];
 		return Quad::NUM_VERTICES;
-	} else
-		EXIT(ERR_MESH_PROBLEM,
-		    "Invalid local face number. Hexahedron has faces numbered from 0 to %d (is %d).",
-		    NUM_FACES - 1, face_num);
+	}
+	else
+		EXIT(ERR_MESH_PROBLEM, "Invalid local face number. Hexahedron has faces numbered from 0 to %d (is %d).", NUM_FACES - 1, face_num);
 }
 
 const int *Hex::get_face_vertices(int face_num) const {
 	if (face_num >= 0 && face_num < NUM_FACES)
 		return RefHex::get_face_vertices(face_num);
 	else
-		EXIT(ERR_MESH_PROBLEM,
-		    "Invalid local face number. Hexahedron has faces numbered from 0 to %d (is %d).",
-		    NUM_FACES - 1, face_num);
+		EXIT(ERR_MESH_PROBLEM, "Invalid local face number. Hexahedron has faces numbered from 0 to %d (is %d).", NUM_FACES - 1, face_num);
 }
 
 const int *Hex::get_face_edges(int face_num) const {
 	if (face_num >= 0 && face_num < NUM_FACES) {
 		return RefHex::get_face_edges(face_num);
-	} else
-		EXIT(ERR_MESH_PROBLEM,
-		    "Invalid local face number. Hexahedron has faces numbered from 0 to %d (is %d).",
-		    NUM_FACES - 1, face_num);
+	}
+	else
+		EXIT(ERR_MESH_PROBLEM, "Invalid local face number. Hexahedron has faces numbered from 0 to %d (is %d).", NUM_FACES - 1, face_num);
 }
 
 int Hex::get_edge_orientation(int edge_num) const {
@@ -269,10 +255,9 @@ int Hex::get_edge_orientation(int edge_num) const {
 			return 0;
 		else
 			return 1;
-	} else
-		EXIT(ERR_MESH_PROBLEM,
-		    "Invalid local edge number. Hexahedron has edges numbered from 0 to %d (is %d).",
-		    NUM_EDGES - 1, edge_num);
+	}
+	else
+		EXIT(ERR_MESH_PROBLEM, "Invalid local edge number. Hexahedron has edges numbered from 0 to %d (is %d).", NUM_EDGES - 1, edge_num);
 }
 
 int Hex::get_face_orientation(int face_num) const {
@@ -297,9 +282,7 @@ int Hex::get_face_orientation(int face_num) const {
 		else EXIT(ERR_MESH_PROBLEM, "Error in face orientation.");
 	}
 	else
-		EXIT(ERR_MESH_PROBLEM,
-			"Invalid local face number. Hexahedron has faces numbered from 0 to %d (is %d).",
-			NUM_FACES - 1, face_num);
+		EXIT(ERR_MESH_PROBLEM, "Invalid local face number. Hexahedron has faces numbered from 0 to %d (is %d).", NUM_FACES - 1, face_num);
 }
 
 Element *Hex::copy() {
@@ -318,32 +301,6 @@ Element *Hex::copy_base() {
 #endif
 }
 
-/*
-int Hex::get_edge_xyz_direction(int edge_num) {
-	if ((edge_num >= 0) && (edge_num < NUM_EDGES)) {
-		static const int edir[12] = { DIRECTION_X, DIRECTION_Y, DIRECTION_X, DIRECTION_Y,
-		    DIRECTION_Z, DIRECTION_Z, DIRECTION_Z, DIRECTION_Z, DIRECTION_X, DIRECTION_Y,
-		    DIRECTION_X, DIRECTION_Y };
-		return edir[edge_num];
-	} else
-		EXIT(ERR_MESH_PROBLEM,
-		    "Invalid local edge number. Hexahedron has edges numbered from 0 to %d (is %d).",
-		    NUM_EDGES - 1, edge_num);
-}
-
-const int *Hex::get_face_xyz_directions(int face_num) {
-	if (face_num >= 0 && face_num < NUM_FACES) {
-		static const int fdir[6][2] = { { DIRECTION_Y, DIRECTION_Z }, { DIRECTION_Y, DIRECTION_Z },
-		    { DIRECTION_X, DIRECTION_Z }, { DIRECTION_X, DIRECTION_Z },
-		    { DIRECTION_X, DIRECTION_Y }, { DIRECTION_X, DIRECTION_Y } };
-		return fdir[face_num];
-	} else
-		EXIT(ERR_MESH_PROBLEM,
-		    "Invalid local face number. Hexahedron has faces numbered from 0 to %d (is %d).",
-		    NUM_FACES - 1, face_num);
-}
-*/
-
 void Hex::ref_all_nodes() {
 }
 
@@ -354,7 +311,8 @@ void Hex::unref_all_nodes() {
 void Hex::dump() {
 	printf("id = %ld (%d, %d, %d), vertices(%ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld), ", id, active, used, reft,
 		vtcs[0], vtcs[1], vtcs[2], vtcs[3], vtcs[4], vtcs[5], vtcs[6], vtcs[7]);
-	printf("sons(%ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld)\n", sons[0], sons[1], sons[2], sons[3], sons[4], sons[5], sons[6], sons[7]);
+	printf("sons(%ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld)\n",
+		sons[0], sons[1], sons[2], sons[3], sons[4], sons[5], sons[6], sons[7]);
 }
 
 // Tetra //////////////////////////////////////////////////////////////////////
@@ -369,7 +327,7 @@ Tetra::Tetra() {
 Tetra::Tetra(Word_t v[]) {
 #ifdef WITH_TETRA
 	for (int i = 0; i < NUM_VERTICES; i++)
-	vtcs[i] = v[i];
+		vtcs[i] = v[i];
 #else
 	EXIT(ERR_TETRA_NOT_COMPILED);
 #endif
@@ -387,8 +345,7 @@ Tetra::Tetra(Word_t v1, Word_t v2, Word_t v3, Word_t v4) {
 }
 
 Tetra::Tetra(const Tetra &o) :
-	Element(o)
-{
+	Element(o) {
 #ifdef WITH_TETRA
 	for (int i = 0; i < NUM_VERTICES; i++)
 		vtcs[i] = o.vtcs[i];
@@ -405,19 +362,16 @@ int Tetra::get_edge_vertices(int edge_num, Word_t *vtcs) const {
 		vtcs[0] = this->vtcs[RefTetra::get_edge_vertices(edge_num)[0]];
 		vtcs[1] = this->vtcs[RefTetra::get_edge_vertices(edge_num)[1]];
 		return Edge::NUM_VERTICES;
-	} else
-		EXIT(ERR_MESH_PROBLEM,
-		    "Invalid local edge number. Tetrahedron has edges numbered from 0 to %d (is %d).",
-		    NUM_EDGES - 1, edge_num);
+	}
+	else
+		EXIT(ERR_MESH_PROBLEM, "Invalid local edge number. Tetrahedron has edges numbered from 0 to %d (is %d).", NUM_EDGES - 1, edge_num);
 }
 
 const int *Tetra::get_edge_vertices(int edge_num) const {
 	if ((edge_num >= 0) && (edge_num < NUM_EDGES))
 		return RefTetra::get_edge_vertices(edge_num);
 	else
-		EXIT(ERR_MESH_PROBLEM,
-		    "Invalid local edge number. Tetrahedron has edges numbered from 0 to %d (is %d).",
-		    NUM_EDGES - 1, edge_num);
+		EXIT(ERR_MESH_PROBLEM, "Invalid local edge number. Tetrahedron has edges numbered from 0 to %d (is %d).", NUM_EDGES - 1, edge_num);
 }
 
 int Tetra::get_face_vertices(int face_num, Word_t *vtcs) const {
@@ -426,28 +380,23 @@ int Tetra::get_face_vertices(int face_num, Word_t *vtcs) const {
 		for (int i = 0; i < Tri::NUM_VERTICES; i++)
 			vtcs[i] = this->vtcs[local_numbers[i]];
 		return Tri::NUM_VERTICES;
-	} else
-		EXIT(ERR_MESH_PROBLEM,
-		    "Invalid local face number. Tetrahedron has faces numbered from 0 to %d (is %d).",
-		    NUM_FACES - 1, face_num);
+	}
+	else
+		EXIT(ERR_MESH_PROBLEM, "Invalid local face number. Tetrahedron has faces numbered from 0 to %d (is %d).", NUM_FACES - 1, face_num);
 }
 
 const int *Tetra::get_face_vertices(int face_num) const {
 	if (face_num >= 0 && face_num < NUM_FACES)
 		return RefTetra::get_face_vertices(face_num);
 	else
-		EXIT(ERR_MESH_PROBLEM,
-		    "Invalid local face number. Tetrahedron has faces numbered from 0 to %d (is %d).",
-		    NUM_FACES - 1, face_num);
+		EXIT(ERR_MESH_PROBLEM, "Invalid local face number. Tetrahedron has faces numbered from 0 to %d (is %d).", NUM_FACES - 1, face_num);
 }
 
 const int *Tetra::get_face_edges(int face_num) const {
 	if (face_num >= 0 && face_num < NUM_FACES)
 		return RefTetra::get_face_edges(face_num);
 	else
-		EXIT(ERR_MESH_PROBLEM,
-		    "Invalid local face number. Tetrahedron has faces numbered from 0 to %d (is %d).",
-		    NUM_FACES - 1, face_num);
+		EXIT(ERR_MESH_PROBLEM, "Invalid local face number. Tetrahedron has faces numbered from 0 to %d (is %d).", NUM_FACES - 1, face_num);
 }
 
 int Tetra::get_edge_orientation(int edge_num) const {
@@ -460,10 +409,9 @@ int Tetra::get_edge_orientation(int edge_num) const {
 			return 0;
 		else
 			return 1;
-	} else
-		EXIT(ERR_MESH_PROBLEM,
-		    "Invalid local edge number. Tetrahedron has edges numbered from 0 to %d (is %d).",
-		    NUM_EDGES - 1, edge_num);
+	}
+	else
+		EXIT(ERR_MESH_PROBLEM, "Invalid local edge number. Tetrahedron has edges numbered from 0 to %d (is %d).", NUM_EDGES - 1, edge_num);
 }
 
 int Tetra::get_face_orientation(int face_num) const {
@@ -474,24 +422,16 @@ int Tetra::get_face_orientation(int face_num) const {
 		Word_t v1 = vtcs[map[face_num][1]];
 		Word_t v2 = vtcs[map[face_num][2]];
 
-		if (v0 < v1 && v1 < v2)
-			return 0;
-		else if (v1 < v2 && v2 < v0)
-			return 1;
-		else if (v2 < v0 && v0 < v1)
-			return 2;
-		else if (v0 < v2 && v2 < v1)
-			return 3;
-		else if (v1 < v0 && v0 < v2)
-			return 4;
-		else if (v2 < v1 && v1 < v0)
-			return 5;
-		else
-			ERROR("Error in Tetra::get_face_orientation.");
-	} else
-		EXIT(ERR_MESH_PROBLEM,
-		    "Invalid local face number. Tetrahedron has faces numbered from 0 to %d (is %d).",
-		    NUM_FACES - 1, face_num);
+		if (v0 < v1 && v1 < v2) return 0;
+		else if (v1 < v2 && v2 < v0) return 1;
+		else if (v2 < v0 && v0 < v1) return 2;
+		else if (v0 < v2 && v2 < v1) return 3;
+		else if (v1 < v0 && v0 < v2) return 4;
+		else if (v2 < v1 && v1 < v0) return 5;
+		else ERROR("Error in Tetra::get_face_orientation.");
+	}
+	else
+		EXIT(ERR_MESH_PROBLEM, "Invalid local face number. Tetrahedron has faces numbered from 0 to %d (is %d).", NUM_FACES - 1, face_num);
 }
 
 Element *Tetra::copy() {
@@ -533,7 +473,7 @@ Prism::Prism() {
 Prism::Prism(Word_t v[]) {
 #ifdef WITH_PRISM
 	for (int i = 0; i < NUM_VERTICES; i++)
-	vtcs[i] = v[i];
+		vtcs[i] = v[i];
 #else
 	EXIT(ERR_PRISM_NOT_COMPILED);
 #endif
@@ -553,11 +493,10 @@ Prism::Prism(Word_t v1, Word_t v2, Word_t v3, Word_t v4, Word_t v5, Word_t v6) {
 }
 
 Prism::Prism(const Prism &o) :
-	Element(o)
-{
+	Element(o) {
 #ifdef WITH_PRISM
 	for (int i = 0; i < NUM_VERTICES; i++)
-	vtcs[i] = o.vtcs[i];
+		vtcs[i] = o.vtcs[i];
 #else
 	EXIT(ERR_PRISM_NOT_COMPILED);
 #endif
@@ -571,46 +510,37 @@ int Prism::get_edge_vertices(int edge_num, Word_t *vtcs) const {
 		vtcs[0] = this->vtcs[RefPrism::get_edge_vertices(edge_num)[0]];
 		vtcs[1] = this->vtcs[RefPrism::get_edge_vertices(edge_num)[1]];
 		return Edge::NUM_VERTICES;
-	} else
-		EXIT(ERR_MESH_PROBLEM,
-		    "Invalid local edge number. Prism has edges numbered from 0 to %d (is %d).", NUM_EDGES
-		        - 1, edge_num);
+	}
+	else
+		EXIT(ERR_MESH_PROBLEM, "Invalid local edge number. Prism has edges numbered from 0 to %d (is %d).", NUM_EDGES - 1, edge_num);
 }
 
 const int *Prism::get_edge_vertices(int edge_num) const {
 	if ((edge_num >= 0) && (edge_num < NUM_EDGES))
 		return RefPrism::get_edge_vertices(edge_num);
 	else
-		EXIT(ERR_MESH_PROBLEM,
-		    "Invalid local edge number. Prism has edges numbered from 0 to %d (is %d).", NUM_EDGES
-		        - 1, edge_num);
+		EXIT(ERR_MESH_PROBLEM, "Invalid local edge number. Prism has edges numbered from 0 to %d (is %d).", NUM_EDGES - 1, edge_num);
 }
 
 EMode2D Prism::get_face_mode(int face_num) const {
 	if ((face_num >= 0) && (face_num < NUM_FACES))
 		return RefPrism::get_face_mode(face_num);
 	else
-		EXIT(ERR_MESH_PROBLEM,
-		    "Invalid local face number. Prism has faces numbered from 0 to %d (is %d).", NUM_FACES
-		        - 1, face_num);
+		EXIT(ERR_MESH_PROBLEM, "Invalid local face number. Prism has faces numbered from 0 to %d (is %d).", NUM_FACES - 1, face_num);
 }
 
 int Prism::get_face_num_of_vertices(int face_num) const {
 	if ((face_num >= 0) && (face_num < NUM_FACES))
 		return RefPrism::get_face_num_of_vertices(face_num);
 	else
-		EXIT(ERR_MESH_PROBLEM,
-		    "Invalid local face number. Prism has faces numbered from 0 to %d (is %d).", NUM_FACES
-		        - 1, face_num);
+		EXIT(ERR_MESH_PROBLEM, "Invalid local face number. Prism has faces numbered from 0 to %d (is %d).", NUM_FACES - 1, face_num);
 }
 
 int Prism::get_face_num_of_edges(int face_num) const {
 	if ((face_num >= 0) && (face_num < NUM_FACES))
 		return RefPrism::get_face_num_of_edges(face_num);
 	else
-		EXIT(ERR_MESH_PROBLEM,
-		    "Invalid local face number. Prism has faces numbered from 0 to %d (is %d).", NUM_FACES
-		        - 1, face_num);
+		EXIT(ERR_MESH_PROBLEM, "Invalid local face number. Prism has faces numbered from 0 to %d (is %d).", NUM_FACES - 1, face_num);
 }
 
 int Prism::get_face_vertices(int face_num, Word_t *vtcs) const {
@@ -620,28 +550,23 @@ int Prism::get_face_vertices(int face_num, Word_t *vtcs) const {
 		for (int i = 0; i < nvert; i++)
 			vtcs[i] = this->vtcs[local_numbers[i]];
 		return nvert;
-	} else
-		EXIT(ERR_MESH_PROBLEM,
-		    "Invalid local face number. Prism has faces numbered from 0 to %d (is %d).", NUM_FACES
-		        - 1, face_num);
+	}
+	else
+		EXIT(ERR_MESH_PROBLEM, "Invalid local face number. Prism has faces numbered from 0 to %d (is %d).", NUM_FACES - 1, face_num);
 }
 
 const int *Prism::get_face_vertices(int face_num) const {
 	if ((face_num >= 0) && (face_num < NUM_FACES))
 		return RefPrism::get_face_vertices(face_num);
 	else
-		EXIT(ERR_MESH_PROBLEM,
-		    "Invalid local face number. Prism has faces numbered from 0 to %d (is %d).", NUM_FACES
-		        - 1, face_num);
+		EXIT(ERR_MESH_PROBLEM, "Invalid local face number. Prism has faces numbered from 0 to %d (is %d).", NUM_FACES - 1, face_num);
 }
 
 const int *Prism::get_face_edges(int face_num) const {
 	if (face_num >= 0 && face_num < NUM_FACES)
 		return RefPrism::get_face_edges(face_num);
 	else
-		EXIT(ERR_MESH_PROBLEM,
-		    "Invalid local face number. Prism has faces numbered from 0 to %d (is %d).", NUM_FACES
-		        - 1, face_num);
+		EXIT(ERR_MESH_PROBLEM, "Invalid local face number. Prism has faces numbered from 0 to %d (is %d).", NUM_FACES - 1, face_num);
 }
 
 int Prism::get_edge_orientation(int edge_num) const {
@@ -671,7 +596,6 @@ Element *Prism::copy_base() {
 	return NULL;
 #endif
 }
-
 
 void Prism::ref_all_nodes() {
 }
@@ -707,13 +631,11 @@ void Boundary::dump() {
 // BoundaryTri ////////////////////////////////////////////////////////////////
 
 BoundaryTri::BoundaryTri(int marker) :
-	Boundary(marker)
-{
+	Boundary(marker) {
 }
 
 BoundaryTri::BoundaryTri(const BoundaryTri &o) :
-	Boundary(o)
-{
+	Boundary(o) {
 }
 
 BoundaryTri::~BoundaryTri() {
@@ -726,13 +648,11 @@ Boundary *BoundaryTri::copy() {
 // BoundaryQuad ///////////////////////////////////////////////////////////////
 
 BoundaryQuad::BoundaryQuad(int marker) :
-	Boundary(marker)
-{
+	Boundary(marker) {
 }
 
 BoundaryQuad::BoundaryQuad(const BoundaryQuad &o) :
-	Boundary(o)
-{
+	Boundary(o) {
 }
 
 BoundaryQuad::~BoundaryQuad() {
@@ -778,9 +698,8 @@ void Mesh::copy(const Mesh &mesh) {
 	free();
 
 	// copy vertices
-	for (Word_t i = mesh.vertices.first(); i != INVALID_IDX; i = mesh.vertices.next(i)) {
+	for (Word_t i = mesh.vertices.first(); i != INVALID_IDX; i = mesh.vertices.next(i))
 		this->vertices.set(i, mesh.vertices[i]->copy());
-	}
 
 	// copy boundaries
 	for (Word_t i = mesh.boundaries.first(); i != INVALID_IDX; i = mesh.boundaries.next(i))
@@ -791,19 +710,18 @@ void Mesh::copy(const Mesh &mesh) {
 		Element *e = mesh.elements[i];
 		this->elements.set(i, e->copy());
 
-		// edges
-//		ref_edges(e);
-
 		// copy mid points on edges and edges
 		Word_t emp[e->get_num_of_edges()];
 		for (int iedge = 0; iedge < e->get_num_of_edges(); iedge++) {
 			Word_t edge_vtx[Edge::NUM_VERTICES];
 			e->get_edge_vertices(iedge, edge_vtx);
 			emp[iedge] = mesh.peek_midpoint(edge_vtx[0], edge_vtx[1]);
-			if (emp[iedge] != INVALID_IDX) set_midpoint(edge_vtx[0], edge_vtx[1], emp[iedge]);
+			if (emp[iedge] != INVALID_IDX)
+				set_midpoint(edge_vtx[0], edge_vtx[1], emp[iedge]);
 
 			Edge edge;
-			if (mesh.edges.lookup(edge_vtx + 0, Edge::NUM_VERTICES, edge)) edges.set(edge_vtx, Edge::NUM_VERTICES, edge);
+			if (mesh.edges.lookup(edge_vtx + 0, Edge::NUM_VERTICES, edge))
+				edges.set(edge_vtx, Edge::NUM_VERTICES, edge);
 		}
 
 		// copy mid points on faces
@@ -817,14 +735,16 @@ void Mesh::copy(const Mesh &mesh) {
 						Word_t edge_vtx[Edge::NUM_VERTICES] = { emp[edge[1]], emp[edge[3]] };
 
 						Word_t fmp = mesh.peek_midpoint(edge_vtx[0], edge_vtx[1]);
-						if (fmp != INVALID_IDX) set_midpoint(edge_vtx[0], edge_vtx[1], fmp);
+						if (fmp != INVALID_IDX)
+							set_midpoint(edge_vtx[0], edge_vtx[1], fmp);
 					}
 					// vert
 					if (emp[edge[0]] != INVALID_IDX && emp[edge[2]] != INVALID_IDX) {
 						Word_t edge_vtx[Edge::NUM_VERTICES] = { emp[edge[0]], emp[edge[2]] };
 
 						Word_t fmp = mesh.peek_midpoint(edge_vtx[0], edge_vtx[1]);
-						if (fmp != INVALID_IDX) set_midpoint(edge_vtx[0], edge_vtx[1], fmp);
+						if (fmp != INVALID_IDX)
+							set_midpoint(edge_vtx[0], edge_vtx[1], fmp);
 					}
 					break;
 
@@ -849,9 +769,8 @@ void Mesh::copy(const Mesh &mesh) {
 			int nvtcs = right_e->get_face_vertices(facet->right_face_num, face_idxs);
 			this->facets.set(face_idxs + 0, nvtcs, facet->copy());
 		}
-		else {
-			EXIT(ERR_FAILURE, "WTF?");
-		}
+		else
+			EXIT(ERR_FAILURE, "WTF?");		// FIXME
 	}
 
 	nbase = mesh.nbase;
@@ -899,8 +818,7 @@ void Mesh::copy_base(const Mesh &mesh) {
 					// boundaries
 					if (facet->type == Facet::OUTER) {
 						Word_t bnd_id = facet->right;
-						if (!this->boundaries.exists(bnd_id))
-							this->boundaries.set(bnd_id, mesh.boundaries[bnd_id]->copy());
+						if (!this->boundaries.exists(bnd_id)) this->boundaries.set(bnd_id, mesh.boundaries[bnd_id]->copy());
 					}
 				}
 				else {
@@ -1113,49 +1031,47 @@ void Mesh::ugh() {
 	nactive = nbase = elements.count();
 
 	// set bnd makr for boundary edges
-	FOR_ALL_FACETS(idx, this) {
-		Facet *facet = facets[idx];
-		if (facet->type == Facet::OUTER) {
-			Element *elem = elements[facet->left];
-			const int *face_edge = elem->get_face_edges(facet->left_face_num);
-			for (int iedge = 0; iedge < elem->get_face_num_of_edges(facet->left_face_num); iedge++) {
-				Word_t vtx[Edge::NUM_VERTICES];
-				elem->get_edge_vertices(face_edge[iedge], vtx);
+	FOR_ALL_FACETS(idx, this){
+	Facet *facet = facets[idx];
+	if (facet->type == Facet::OUTER) {
+		Element *elem = elements[facet->left];
+		const int *face_edge = elem->get_face_edges(facet->left_face_num);
+		for (int iedge = 0; iedge < elem->get_face_num_of_edges(facet->left_face_num); iedge++) {
+			Word_t vtx[Edge::NUM_VERTICES];
+			elem->get_edge_vertices(face_edge[iedge], vtx);
 
-				Edge edge;
-				edges.lookup(vtx + 0, Edge::NUM_VERTICES, edge);
-				edge.bnd = 1;
-				edges.set(vtx + 0, Edge::NUM_VERTICES, edge);
-			}
+			Edge edge;
+			edges.lookup(vtx + 0, Edge::NUM_VERTICES, edge);
+			edge.bnd = 1;
+			edges.set(vtx + 0, Edge::NUM_VERTICES, edge);
 		}
 	}
+}
 }
 
 bool Mesh::is_compatible_quad_refinement(Facet *facet, int reft) const {
 	if (facet->type == Facet::INNER) {
 		// BOTH or NONE on the facet => refinement makes no problem
-		if (facet->ref_mask == REFT_QUAD_BOTH || facet->ref_mask == REFT_FACE_NONE)
-			return true;
+		if (facet->ref_mask == REFT_QUAD_BOTH || facet->ref_mask == REFT_FACE_NONE) return true;
 
 		// applying BOTH or NONE is also no problem
-		if (reft == REFT_QUAD_BOTH || reft == REFT_FACE_NONE)
-			return true;
-
-//		printf("* active = [%d, %d], elem = (%d, %d), iface = (%d, %d), reft = %d\n", facet->lactive, facet->ractive, facet->left, facet->right,
-//				facet->left_face_num, facet->right_face_num, facet->ref_mask);
+		if (reft == REFT_QUAD_BOTH || reft == REFT_FACE_NONE) return true;
 
 		Word_t eid;
 		int face_num;
-		if (facet->ractive) { eid = facet->left; face_num = facet->left_face_num; }
-		else if (facet->lactive) { eid = facet->right; face_num = facet->right_face_num; }
+		if (facet->ractive) {
+			eid = facet->left;
+			face_num = facet->left_face_num;
+		}
+		else if (facet->lactive) {
+			eid = facet->right;
+			face_num = facet->right_face_num;
+		}
 
 		Element *e = elements[eid];
 		int nv = e->get_face_num_of_vertices(face_num);
 		Word_t face_vtx[nv];
 		e->get_face_vertices(face_num, face_vtx);
-
-//		printf("* face = %d, %d, %d, %d\n", face_vtx[0], face_vtx[1], face_vtx[2], face_vtx[3]);
-//		printf("* reft = %d\n", reft);
 
 		// check if the vertices are there, if so => compatible refinement
 		Word_t emp[2] = { INVALID_IDX, INVALID_IDX };
@@ -1167,8 +1083,6 @@ bool Mesh::is_compatible_quad_refinement(Facet *facet, int reft) const {
 			emp[0] = peek_midpoint(face_vtx[0], face_vtx[1]);
 			emp[1] = peek_midpoint(face_vtx[2], face_vtx[3]);
 		}
-
-//		printf("* emp = %d, %d\n", emp[0], emp[1]);
 
 		return (emp[0] != INVALID_IDX && emp[1] != INVALID_IDX);
 	}
@@ -1184,35 +1098,22 @@ bool Mesh::can_refine_element(Word_t eid, int reft) const {
 	Element *elem = elements.get(eid);
 	if (elem != NULL) {
 		switch (elem->get_mode()) {
-			case MODE_HEXAHEDRON:  can_refine = can_refine_hex((Hex *) elem, reft); break;
+			case MODE_HEXAHEDRON: can_refine = can_refine_hex((Hex *) elem, reft); break;
 			case MODE_TETRAHEDRON: EXIT(ERR_NOT_IMPLEMENTED); break;
-			case MODE_PRISM:       EXIT(ERR_NOT_IMPLEMENTED); break;
-			default:               EXIT(ERR_UNKNOWN_MODE); break;
+			case MODE_PRISM: EXIT(ERR_NOT_IMPLEMENTED); break;
+			default: EXIT(ERR_UNKNOWN_MODE); break;
 		}
 	}
-	else
-		EXIT(ERR_FAILURE, "Trying to check non-existent element.");
+	else EXIT(ERR_FAILURE, "Trying to check non-existent element.");
 
 	return can_refine;
 
 }
 
-static int get_quad_face_reft(int reft, int ori) {
-/*	if (ori >= 4) {
-		if (reft == REFT_QUAD_VERT) return REFT_QUAD_HORZ;			// vert => horz
-		else if (reft == REFT_QUAD_HORZ) return REFT_QUAD_VERT;		// horz => vert
-		else return reft;											// switching NONE or BOTH does not have any sense
-	}
-	else
-		return reft;
-*/
-	return reft;
-}
-
 bool Mesh::can_refine_hex(Hex *elem, int refinement) const {
-	int nf;								// number of faces to check
-	int iface[Hex::NUM_FACES];			// face numbers to check
-	int face_reft[Hex::NUM_FACES];		// refinements to apply on each face
+	int nf; // number of faces to check
+	int iface[Hex::NUM_FACES]; // face numbers to check
+	int face_reft[Hex::NUM_FACES]; // refinements to apply on each face
 
 	switch (refinement) {
 		case REFT_HEX_NONE:
@@ -1296,9 +1197,7 @@ bool Mesh::can_refine_hex(Hex *elem, int refinement) const {
 		Word_t fid = get_facet_id(elem, iface[i]);
 		Facet *facet = facets.get(fid);
 		assert(facet != NULL);
-
-		int reft = get_quad_face_reft(face_reft[i], elem->get_face_orientation(iface[i]));
-		can_refine &= is_compatible_quad_refinement(facet, reft);
+		can_refine &= is_compatible_quad_refinement(facet, face_reft[i]);
 	}
 
 	return can_refine;
@@ -1311,10 +1210,10 @@ bool Mesh::refine_element(Word_t id, int refinement) {
 	if (elem != NULL) {
 		if (can_refine_element(id, refinement)) {
 			switch (elem->get_mode()) {
-				case MODE_HEXAHEDRON:  refined = refine_hex((Hex *) elem, refinement); break;
+				case MODE_HEXAHEDRON: refined = refine_hex((Hex *) elem, refinement); break;
 				case MODE_TETRAHEDRON: EXIT(ERR_NOT_IMPLEMENTED); break;
-				case MODE_PRISM:       EXIT(ERR_NOT_IMPLEMENTED); break;
-				default:               EXIT(ERR_UNKNOWN_MODE); break;
+				case MODE_PRISM: EXIT(ERR_NOT_IMPLEMENTED); break;
+				default: EXIT(ERR_UNKNOWN_MODE); break;
 			}
 		}
 		else
@@ -1334,7 +1233,8 @@ bool Mesh::refine_hex(Hex *elem, int refinement) {
 
 	bool refined = false;
 	switch (refinement) {
-		case REFT_HEX_NONE: /* do nothing */ break;
+		case REFT_HEX_NONE: /* do nothing */
+			break;
 		// refine to 2 hexes
 		case REFT_HEX_X:
 		case REFT_HEX_Y:
@@ -1370,17 +1270,14 @@ static const int hex_face_vtcs_3[] = { 3, 2, 6, 7 };
 static const int hex_face_vtcs_4[] = { 0, 1, 2, 3 };
 static const int hex_face_vtcs_5[] = { 4, 5, 6, 7 };
 
-
 bool Mesh::refine_hex_2(Hex *parent, int refinement) {
-//	printf("Mesh::refine_hex_2(%d, %d)\n", parent->id, refinement);
-
 	bool refined = true;
 
-	Word_t vtx[Hex::NUM_VERTICES];				// vertices of parent element
+	Word_t vtx[Hex::NUM_VERTICES]; // vertices of parent element
 	parent->get_vertices(vtx);
 
-	Word_t mp[4] = { 0 };						// four midpoints shared when refining to two elements
-	const int *left, *right;					// vertex indices for "left" and "right" face
+	Word_t mp[4] = { 0 }; // four midpoints shared when refining to two elements
+	const int *left, *right; // vertex indices for "left" and "right" face
 	switch (refinement) {
 		case REFT_HEX_X:
 			left = hex_face_vtcs_0;
@@ -1399,33 +1296,32 @@ bool Mesh::refine_hex_2(Hex *parent, int refinement) {
 	}
 
 	// create midpoint
-	for (int i = 0; i < Quad::NUM_VERTICES; i++) {
+	for (int i = 0; i < Quad::NUM_VERTICES; i++)
 		mp[i] = get_midpoint(vtx[left[i]], vtx[right[i]]);
-	}
 
 	// create sons (child elements keep the orientation of the parent element)
-	Word_t son[2][Hex::NUM_VERTICES];			// two hex elements
+	Word_t son[2][Hex::NUM_VERTICES]; // two hex elements
 	for (int i = 0; i < 4; i++) {
 		son[0][left[i]] = vtx[left[i]];
 		son[0][right[i]] = son[1][left[i]] = mp[i];
 		son[1][right[i]] = vtx[right[i]];
 	}
 
-	parent->active = false;						// make parent element inactive
+	parent->active = false; // make parent element inactive
 	parent->unref_all_nodes();
 	unref_edges(parent);
-	for (int i = 0; i < 2; i++) {				// add child elements
+	for (int i = 0; i < 2; i++) { // add child elements
 		Hex *hex = create_hex(son[i]);
 		parent->sons[i] = hex->id;
 		hex->active = true;
 		ref_edges(hex);
 	}
-	nactive++;									// one new active element
+	nactive++; // one new active element
 
 	// adjust facets
-	int face_0[2];								// two faces that are not refined
-	int face_2[4];								// four faces that are splitted
-	int face_refts[4];							// refinements that are applied on faces in face_2 array
+	int face_0[2]; // two faces that are not refined
+	int face_2[4]; // four faces that are splitted
+	int face_refts[4]; // refinements that are applied on faces in face_2 array
 	switch (refinement) {
 		case REFT_HEX_X: {
 			int fr[] = { REFT_QUAD_VERT, REFT_QUAD_VERT, REFT_QUAD_VERT, REFT_QUAD_VERT };
@@ -1455,11 +1351,8 @@ bool Mesh::refine_hex_2(Hex *parent, int refinement) {
 			} break;
 	}
 
-	for (int i = 0; i < 4; i++) {
-		int reft = get_quad_face_reft(face_refts[i], parent->get_face_orientation(face_2[i]));
-//		printf(" * %d (%d) -> %d -> %d\n", face_2[i], parent->get_face_orientation(face_2[i]), face_refts[i], reft);
-		refined &= refine_quad_facet(parent, face_2[i], reft, parent->sons[0], parent->sons[1]);
-	}
+	for (int i = 0; i < 4; i++)
+		refined &= refine_quad_facet(parent, face_2[i], face_refts[i], parent->sons[0], parent->sons[1]);
 
 	refined &= refine_quad_facet(parent, face_0[0], REFT_FACE_NONE, parent->sons[0]);
 	refined &= refine_quad_facet(parent, face_0[1], REFT_FACE_NONE, parent->sons[1]);
@@ -1473,11 +1366,11 @@ bool Mesh::refine_hex_2(Hex *parent, int refinement) {
 bool Mesh::refine_hex_4(Hex *parent, int refinement) {
 	bool refined = true;
 
-	Word_t vtx[Hex::NUM_VERTICES];				// vertices of parent element
+	Word_t vtx[Hex::NUM_VERTICES]; // vertices of parent element
 	parent->get_vertices(vtx);
 
 	int edges[2][4];
-	const int *left, *right;				// vertex indices for "left" and "right" face
+	const int *left, *right; // vertex indices for "left" and "right" face
 	switch (refinement) {
 		case REFT_HEX_XY:
 			left = hex_face_vtcs_4;
@@ -1495,73 +1388,73 @@ bool Mesh::refine_hex_4(Hex *parent, int refinement) {
 			break;
 	}
 
-	Word_t vp[2][4];							// vertex points on two facing faces ;)
+	Word_t vp[2][4]; // vertex points on two facing faces ;)
 	for (int i = 0; i < 4; i++) {
 		vp[0][i] = vtx[left[i]];
 		vp[1][i] = vtx[right[i]];
 	}
 
-	Word_t emp[2][4];							// four edge midpoints on both facing faces
+	Word_t emp[2][4]; // four edge midpoints on both facing faces
 	for (int face = 0; face < 2; face++) {
 		for (int i = 0; i < 4; i++)
 			emp[face][i] = get_midpoint(vp[face][i], vp[face][(i + 1) % 4]);
 	}
 
-	Word_t fmp[2];	 							// one midpoint on two facing faces
+	Word_t fmp[2]; // one midpoint on two facing faces
 	for (int face = 0; face < 2; face++) {
 		fmp[face] = get_midpoint(emp[face][0], emp[face][2]);
 		set_midpoint(emp[face][1], emp[face][3], fmp[face]);
 	}
 
 	// sons (child elements keep the orientation of the parent element)
-	Word_t son[4][Hex::NUM_VERTICES];			// four hex elements
+	Word_t son[4][Hex::NUM_VERTICES]; // four hex elements
 	switch (refinement) {
 		case REFT_HEX_XY: {
 			Word_t s[4][Hex::NUM_VERTICES] = {
-				{ vp[0][0], emp[0][0], fmp[0], emp[0][3],  vp[1][0], emp[1][0], fmp[1], emp[1][3] },
-				{ emp[0][0], vp[0][1], emp[0][1], fmp[0],  emp[1][0], vp[1][1], emp[1][1], fmp[1] },
-				{ fmp[0], emp[0][1], vp[0][2], emp[0][2],  fmp[1], emp[1][1], vp[1][2], emp[1][2] },
-				{ emp[0][3], fmp[0], emp[0][2], vp[0][3],  emp[1][3], fmp[1], emp[1][2], vp[1][3] },
+				{ vp[0][0], emp[0][0], fmp[0], emp[0][3], vp[1][0], emp[1][0], fmp[1], emp[1][3] },
+				{ emp[0][0], vp[0][1], emp[0][1], fmp[0], emp[1][0], vp[1][1], emp[1][1], fmp[1] },
+				{ fmp[0], emp[0][1], vp[0][2], emp[0][2], fmp[1], emp[1][1], vp[1][2], emp[1][2] },
+				{ emp[0][3], fmp[0], emp[0][2], vp[0][3], emp[1][3], fmp[1], emp[1][2], vp[1][3] }
 			};
 			memcpy(son, s, sizeof(s));
 			} break;
 
 		case REFT_HEX_YZ: {
 			Word_t s[4][Hex::NUM_VERTICES] = {
-				{ vp[0][0], vp[1][0], emp[1][0], emp[0][0],  emp[0][3], emp[1][3], fmp[1], fmp[0] },
-				{ emp[0][0], emp[1][0], vp[1][1], vp[0][1],  fmp[0], fmp[1], emp[1][1], emp[0][1] },
-				{ fmp[0], fmp[1], emp[1][1], emp[0][1],      emp[0][2], emp[1][2], vp[1][2], vp[0][2] },
-				{ emp[0][3], emp[1][3], fmp[1], fmp[0],      vp[0][3], vp[1][3], emp[1][2], emp[0][2] },
+				{ vp[0][0], vp[1][0], emp[1][0], emp[0][0], emp[0][3], emp[1][3], fmp[1], fmp[0] },
+				{ emp[0][0], emp[1][0], vp[1][1], vp[0][1], fmp[0], fmp[1], emp[1][1], emp[0][1] },
+				{ fmp[0], fmp[1], emp[1][1], emp[0][1], emp[0][2], emp[1][2], vp[1][2], vp[0][2] },
+				{ emp[0][3], emp[1][3], fmp[1], fmp[0], vp[0][3], vp[1][3], emp[1][2], emp[0][2] }
 			};
 			memcpy(son, s, sizeof(s));
 			} break;
 
 		case REFT_HEX_XZ: {
 			Word_t s[4][Hex::NUM_VERTICES] = {
-				{ vp[0][0], emp[0][0], emp[1][0], vp[1][0],  emp[0][3], fmp[0], fmp[1], emp[1][3] },
-				{ emp[0][0], vp[0][1], vp[1][1], emp[1][0],  fmp[0], emp[0][1], emp[1][1], fmp[1] },
-				{ fmp[0], emp[0][1], emp[1][1], fmp[1],      emp[0][2], vp[0][2], vp[1][2], emp[1][2] },
-				{ emp[0][3], fmp[0], fmp[1], emp[1][3],      vp[0][3], emp[0][2], emp[1][2], vp[1][3] },
+				{ vp[0][0], emp[0][0], emp[1][0], vp[1][0], emp[0][3], fmp[0], fmp[1], emp[1][3] },
+				{ emp[0][0], vp[0][1], vp[1][1], emp[1][0], fmp[0], emp[0][1], emp[1][1], fmp[1] },
+				{ fmp[0], emp[0][1], emp[1][1], fmp[1], emp[0][2], vp[0][2], vp[1][2], emp[1][2] },
+				{ emp[0][3], fmp[0], fmp[1], emp[1][3], vp[0][3], emp[0][2], emp[1][2], vp[1][3] }
 			};
 			memcpy(son, s, sizeof(s));
 			} break;
 	}
 
-	parent->active = false;						// make parent element inactive
+	parent->active = false; // make parent element inactive
 	parent->unref_all_nodes();
 	unref_edges(parent);
-	for (int i = 0; i < 4; i++) {				// add child elements
+	for (int i = 0; i < 4; i++) { // add child elements
 		Hex *hex = create_hex(son[i]);
 		parent->sons[i] = hex->id;
 		hex->active = true;
 		ref_edges(hex);
 	}
-	nactive += 3;								// three new active element
+	nactive += 3; // three new active element
 
 	// adjust facets
-	int face_4[2];								// two faces that are splitted into four facets
-	int face_2[4];								// four faces that are splitted into two facets
-	int face_refts[4];							// refinements that are applied on faces in face_2 array
+	int face_4[2]; // two faces that are splitted into four facets
+	int face_2[4]; // four faces that are splitted into two facets
+	int face_refts[4]; // refinements that are applied on faces in face_2 array
 	switch (refinement) {
 		case REFT_HEX_XY: {
 			int fr[] = { REFT_QUAD_VERT, REFT_QUAD_VERT, REFT_QUAD_VERT, REFT_QUAD_VERT };
@@ -1592,10 +1485,8 @@ bool Mesh::refine_hex_4(Hex *parent, int refinement) {
 	}
 
 	int eidx[4][2] = { { 0, 3 }, { 1, 2 }, { 0, 1 }, { 3, 2 } };
-	for (int i = 0; i < 4; i++) {
-		int reft = get_quad_face_reft(face_refts[i], parent->get_face_orientation(face_2[i]));
-		refined &= refine_quad_facet(parent, face_2[i], reft, parent->sons[eidx[i][0]], parent->sons[eidx[i][1]]);
-	}
+	for (int i = 0; i < 4; i++)
+		refined &= refine_quad_facet(parent, face_2[i], face_refts[i], parent->sons[eidx[i][0]], parent->sons[eidx[i][1]]);
 
 	refined &= refine_quad_facet(parent, face_4[0], REFT_QUAD_BOTH, parent->sons[0], parent->sons[1], parent->sons[2], parent->sons[3]);
 	refined &= refine_quad_facet(parent, face_4[1], REFT_QUAD_BOTH, parent->sons[0], parent->sons[1], parent->sons[2], parent->sons[3]);
@@ -1612,37 +1503,37 @@ bool Mesh::refine_hex_4(Hex *parent, int refinement) {
 bool Mesh::refine_hex_8(Hex *parent, int refinement) {
 	bool refined = true;
 
-	Word_t vtx[Hex::NUM_VERTICES];				// vertices of parent element
+	Word_t vtx[Hex::NUM_VERTICES]; // vertices of parent element
 	parent->get_vertices(vtx);
 
-	Word_t emp[12]; 							// 12 midpoints on edges
+	Word_t emp[12]; // 12 midpoints on edges
 	for (int edge = 0; edge < Hex::NUM_EDGES; edge++) {
 		const int *edge_vtx_idx = RefHex::get_edge_vertices(edge);
 		emp[edge] = get_midpoint(vtx[edge_vtx_idx[0]], vtx[edge_vtx_idx[1]]);
 	}
 
-	Word_t fmp[6];	 							// 6 midpoints on faces
+	Word_t fmp[6]; // 6 midpoints on faces
 	for (int face = 0; face < Hex::NUM_FACES; face++) {
 		const int *face_edge_idx = RefHex::get_face_edges(face);
 		fmp[face] = get_midpoint(emp[face_edge_idx[0]], emp[face_edge_idx[2]]);
 		set_midpoint(emp[face_edge_idx[1]], emp[face_edge_idx[3]], fmp[face]);
 	}
 
-	Word_t ctr = get_midpoint(fmp[0], fmp[1]);	// midpoint in the center
+	Word_t ctr = get_midpoint(fmp[0], fmp[1]); // midpoint in the center
 	set_midpoint(fmp[2], fmp[3], ctr);
 	set_midpoint(fmp[4], fmp[5], ctr);
 
 	// sons (child elements keep the orientation of the parent element)
-	Word_t son[8][Hex::NUM_VERTICES] = {		// eight hex elements
-		{ vtx[0], emp[0], fmp[4], emp[3],  emp[4], fmp[2], ctr, fmp[0] },
-		{ emp[0], vtx[1], emp[1], fmp[4],  fmp[2], emp[5], fmp[1], ctr },
-		{ fmp[4], emp[1], vtx[2], emp[2],  ctr, fmp[1], emp[6], fmp[3] },
-		{ emp[3], fmp[4], emp[2], vtx[3],  fmp[0], ctr, fmp[3], emp[7] },
-		{ emp[4], fmp[2], ctr, fmp[0],     vtx[4], emp[8], fmp[5], emp[11] },
-		{ fmp[2], emp[5], fmp[1], ctr,     emp[8], vtx[5], emp[9], fmp[5] },
-		{ ctr, fmp[1], emp[6], fmp[3],     fmp[5], emp[9], vtx[6], emp[10] },
-		{ fmp[0], ctr, fmp[3], emp[7],     emp[11], fmp[5], emp[10], vtx[7] }
-	};
+	Word_t son[8][Hex::NUM_VERTICES] = { // eight hex elements
+	    { vtx[0], emp[0], fmp[4], emp[3], emp[4], fmp[2], ctr, fmp[0] },
+	    { emp[0], vtx[1], emp[1], fmp[4], fmp[2], emp[5], fmp[1], ctr },
+	    { fmp[4], emp[1], vtx[2], emp[2], ctr, fmp[1], emp[6], fmp[3] },
+	    { emp[3], fmp[4], emp[2], vtx[3], fmp[0], ctr, fmp[3], emp[7] },
+	    { emp[4], fmp[2], ctr, fmp[0],    vtx[4], emp[8], fmp[5], emp[11] },
+	    { fmp[2], emp[5], fmp[1], ctr,    emp[8], vtx[5], emp[9], fmp[5] },
+	    { ctr, fmp[1], emp[6], fmp[3],    fmp[5], emp[9], vtx[6], emp[10] },
+	    { fmp[0], ctr, fmp[3], emp[7],    emp[11], fmp[5], emp[10], vtx[7] }
+	   };
 
 	// deactivate edges on parent element
 	for (int i = 0; i < Hex::NUM_EDGES; i++) {
@@ -1650,16 +1541,16 @@ bool Mesh::refine_hex_8(Hex *parent, int refinement) {
 		parent->get_edge_vertices(i, edge_vtx);
 	}
 
-	parent->active = false;						// make parent element inactive
+	parent->active = false; // make parent element inactive
 	parent->unref_all_nodes();
 	unref_edges(parent);
-	for (int i = 0; i < 8; i++) {				// add child elements
+	for (int i = 0; i < 8; i++) { // add child elements
 		Hex *hex = create_hex(son[i]);
 		parent->sons[i] = hex->id;
 		hex->active = true;
 		ref_edges(hex);
 	}
-	nactive += 7;								// seven new active element
+	nactive += 7; // seven new active element
 
 	// adjust facets
 	refined &= refine_quad_facet(parent, 0, REFT_QUAD_BOTH, parent->sons[0], parent->sons[3], parent->sons[7], parent->sons[4]);
@@ -1695,20 +1586,15 @@ bool Mesh::refine_quad_facet(Hex *parent_elem, int iface, int face_refinement, W
 	Facet *facet = facets.get(fid);
 	assert(facet->mode == MODE_QUAD);
 
-//	if (is_compatible_quad_refinement(facet, face_refinement)) {
-		if (facet->left == parent_elem->id)
-			facet->set_left_info(eid, iface);
-		else if (facet->right == parent_elem->id)
-			facet->set_right_info(eid, iface);
-		else {
-			assert(false);
-			EXIT(ERR_FAILURE, "Refining facet that does not face with appropriate element/boundary");
-		}
+	//	if (is_compatible_quad_refinement(facet, face_refinement)) {
+	if (facet->left == parent_elem->id) facet->set_left_info(eid, iface);
+	else if (facet->right == parent_elem->id) facet->set_right_info(eid, iface);
+	else {
+		assert(false);
+		EXIT(ERR_FAILURE, "Refining facet that does not face with appropriate element/boundary");
+	}
 
-		return true;
-//	}
-//	else
-//		return false;
+	return true;
 }
 
 bool Mesh::refine_quad_facet(Hex *parent_elem, int iface, int face_refinement, Word_t eid0, Word_t eid1) {
@@ -1717,184 +1603,14 @@ bool Mesh::refine_quad_facet(Hex *parent_elem, int iface, int face_refinement, W
 	Word_t fid = get_facet_id(parent_elem, iface);
 	Facet *facet = facets.get(fid);
 	assert(facet->mode == MODE_QUAD);
-//	if (is_compatible_quad_refinement(facet, face_refinement)) {
-		if (facet->type == Facet::INNER && facet->left == parent_elem->id) {
-			// refine to the left
-			if (facet->ref_mask == REFT_FACE_NONE || facet->ref_mask == face_refinement) {
-//				printf("N (%d, %d)\n", parent_elem->id, iface);
-				facet->lactive = false;
-				facet->ref_mask = face_refinement;
-
-				Facet *f0 = add_quad_facet(Facet::INNER, eid0, facet->left_face_num, INVALID_IDX, -1);
-				Facet *f1 = add_quad_facet(Facet::INNER, eid1, facet->left_face_num, INVALID_IDX, -1);
-
-				f0->parent = fid;
-				f1->parent = fid;
-
-				if (face_refinement == REFT_QUAD_HORZ) {
-					facet->sons[0] = get_facet_id(elements[eid0], facet->left_face_num);
-					facet->sons[1] = get_facet_id(elements[eid1], facet->left_face_num);
-				}
-				else {
-					facet->sons[2] = get_facet_id(elements[eid0], facet->left_face_num);
-					facet->sons[3] = get_facet_id(elements[eid1], facet->left_face_num);
-				}
-			}
-			else if (face_refinement == REFT_QUAD_HORZ) {
-//				printf("A\n");
-
-				Facet *upper_facet = add_quad_facet(Facet::INNER, eid1, facet->left_face_num, INVALID_IDX, -1);
-				Facet *lower_facet = add_quad_facet(Facet::INNER, eid0, facet->left_face_num, INVALID_IDX, -1);
-
-				upper_facet->parent = fid;
-				upper_facet->ractive = false;
-				upper_facet->ref_mask = REFT_QUAD_VERT;
-				upper_facet->sons[2] = facet->sons[3];
-				upper_facet->sons[3] = facet->sons[2];
-				Word_t upper_id = get_facet_id(elements[eid1], facet->left_face_num);
-
-				lower_facet->parent = fid;
-				lower_facet->ractive = false;
-				lower_facet->ref_mask = REFT_QUAD_VERT;
-				lower_facet->sons[2] = facet->sons[0];
-				lower_facet->sons[3] = facet->sons[1];
-				Word_t lower_id = get_facet_id(elements[eid0], facet->left_face_num);
-
-				facets.get(facet->sons[0])->parent = facets.get(facet->sons[1])->parent = lower_id;
-				facets.get(facet->sons[3])->parent = facets.get(facet->sons[2])->parent = upper_id;
-
-				facet->lactive = false;
-				facet->ref_mask = REFT_QUAD_HORZ;
-				facet->sons[0] = upper_id;
-				facet->sons[1] = lower_id;
-				facet->sons[2] = facet->sons[3] = INVALID_IDX;
-			}
-			else if (face_refinement == REFT_QUAD_VERT) {
-//				printf("B\n");
-
-				Facet *upper_facet = add_quad_facet(Facet::INNER, eid1, facet->left_face_num, INVALID_IDX, -1);
-				Facet *lower_facet = add_quad_facet(Facet::INNER, eid0, facet->left_face_num, INVALID_IDX, -1);
-
-				upper_facet->parent = fid;
-				upper_facet->ractive = false;
-				upper_facet->ref_mask = REFT_QUAD_HORZ;
-				upper_facet->sons[1] = facet->sons[2];
-				upper_facet->sons[0] = facet->sons[1];
-				Word_t upper_id = get_facet_id(elements[eid1], facet->left_face_num);
-
-				lower_facet->parent = fid;
-				lower_facet->ractive = false;
-				lower_facet->ref_mask = REFT_QUAD_HORZ;
-				lower_facet->sons[1] = facet->sons[3];
-				lower_facet->sons[0] = facet->sons[0];
-				Word_t lower_id = get_facet_id(elements[eid0], facet->left_face_num);
-
-				facets.get(facet->sons[1])->parent = facets.get(facet->sons[2])->parent = upper_id;
-				facets.get(facet->sons[0])->parent = facets.get(facet->sons[3])->parent = lower_id;
-
-				facet->lactive = false;
-				facet->ref_mask = REFT_QUAD_VERT;
-				facet->sons[2] = lower_id;
-				facet->sons[3] = upper_id;
-				facet->sons[0] = facet->sons[1] = INVALID_IDX;
-			}
-			else
-				EXIT(ERR_FAILURE, "Trying to apply incompatible face refinement to element #%d.", parent_elem->id);
-		}
-		else if (facet->type == Facet::INNER && facet->right == parent_elem->id) {
-			// refine to the right (with element)
-			if (facet->ref_mask == REFT_FACE_NONE || facet->ref_mask == face_refinement) {
-//				printf("X\n");
-
-				facet->ractive = false;
-				facet->ref_mask = face_refinement;
-
-				Facet *f0 = add_quad_facet(Facet::INNER, INVALID_IDX, -1, eid0, facet->right_face_num);
-				Facet *f1 = add_quad_facet(Facet::INNER, INVALID_IDX, -1, eid1, facet->right_face_num);
-
-				f0->parent = fid;
-				f1->parent = fid;
-
-				if (face_refinement == REFT_QUAD_HORZ) {
-					facet->sons[0] = get_facet_id(elements[eid0], facet->right_face_num);
-					facet->sons[1] = get_facet_id(elements[eid1], facet->right_face_num);
-				}
-				else {
-					facet->sons[2] = get_facet_id(elements[eid0], facet->right_face_num);
-					facet->sons[3] = get_facet_id(elements[eid1], facet->right_face_num);
-				}
-			}
-			else if (face_refinement == REFT_QUAD_HORZ) {
-//				printf("C\n");
-
-				Facet *upper_facet = add_quad_facet(Facet::INNER, INVALID_IDX, -1, eid1, facet->right_face_num);
-				Facet *lower_facet = add_quad_facet(Facet::INNER, INVALID_IDX, -1, eid0, facet->right_face_num);
-
-				upper_facet->parent = fid;
-				upper_facet->lactive = false;
-				upper_facet->ref_mask = REFT_QUAD_VERT;
-				upper_facet->sons[2] = facet->sons[3];
-				upper_facet->sons[3] = facet->sons[2];
-				Word_t upper_id = get_facet_id(elements[eid1], facet->right_face_num);
-
-				lower_facet->parent = fid;
-				lower_facet->lactive = false;
-				lower_facet->ref_mask = REFT_QUAD_VERT;
-				lower_facet->sons[2] = facet->sons[0];
-				lower_facet->sons[3] = facet->sons[1];
-				Word_t lower_id = get_facet_id(elements[eid0], facet->right_face_num);
-
-				facets.get(facet->sons[0])->parent = facets.get(facet->sons[1])->parent = lower_id;
-				facets.get(facet->sons[3])->parent = facets.get(facet->sons[2])->parent = upper_id;
-
-				facet->ractive = false;
-				facet->ref_mask = REFT_QUAD_HORZ;
-				facet->sons[1] = upper_id;
-				facet->sons[0] = lower_id;
-				facet->sons[2] = facet->sons[3] = INVALID_IDX;
-			}
-			else if (face_refinement == REFT_QUAD_VERT) {
-//				printf("D\n");
-
-				Facet *upper_facet = add_quad_facet(Facet::INNER, INVALID_IDX, -1, eid1, facet->right_face_num);
-				Facet *lower_facet = add_quad_facet(Facet::INNER, INVALID_IDX, -1, eid0, facet->right_face_num);
-
-				upper_facet->parent = fid;
-				upper_facet->lactive = false;
-				upper_facet->ref_mask = REFT_QUAD_HORZ;
-				upper_facet->sons[1] = facet->sons[2];
-				upper_facet->sons[0] = facet->sons[1];
-				Word_t upper_id = get_facet_id(elements[eid1], facet->right_face_num);
-
-				lower_facet->parent = fid;
-				lower_facet->lactive = false;
-				lower_facet->ref_mask = REFT_QUAD_HORZ;
-				lower_facet->sons[1] = facet->sons[3];
-				lower_facet->sons[0] = facet->sons[0];
-				Word_t lower_id = get_facet_id(elements[eid0], facet->right_face_num);
-
-				facets.get(facet->sons[1])->parent = facets.get(facet->sons[2])->parent = upper_id;
-				facets.get(facet->sons[0])->parent = facets.get(facet->sons[3])->parent = lower_id;
-
-				facet->ractive = false;
-				facet->ref_mask = REFT_QUAD_VERT;
-				facet->sons[2] = lower_id;
-				facet->sons[3] = upper_id;
-				facet->sons[0] = facet->sons[1] = INVALID_IDX;
-			}
-			else
-				EXIT(ERR_FAILURE, "Trying to apply incompatible face refinement to element #%d.", parent_elem->id);
-		}
-		else if (facet->type == Facet::OUTER) {
-//			printf("outer\n");
-
-			// refine to the right (with boundary)
+	if (facet->type == Facet::INNER && facet->left == parent_elem->id) {
+		// refine to the left
+		if (facet->ref_mask == REFT_FACE_NONE || facet->ref_mask == face_refinement) {
 			facet->lactive = false;
-			facet->ractive = false;
 			facet->ref_mask = face_refinement;
 
-			Facet *f0 = add_quad_facet(Facet::OUTER, eid0, facet->left_face_num, facet->right, facet->right_face_num);
-			Facet *f1 = add_quad_facet(Facet::OUTER, eid1, facet->left_face_num, facet->right, facet->right_face_num);
+			Facet *f0 = add_quad_facet(Facet::INNER, eid0, facet->left_face_num, INVALID_IDX, -1);
+			Facet *f1 = add_quad_facet(Facet::INNER, eid1, facet->left_face_num, INVALID_IDX, -1);
 
 			f0->parent = fid;
 			f1->parent = fid;
@@ -1908,15 +1624,168 @@ bool Mesh::refine_quad_facet(Hex *parent_elem, int iface, int face_refinement, W
 				facet->sons[3] = get_facet_id(elements[eid1], facet->left_face_num);
 			}
 		}
-		else {
-			// WTF?
-			ERROR("Refining facet that does not face with appropriate element/boundary");
-		}
+		else if (face_refinement == REFT_QUAD_HORZ) {
+			Facet *upper_facet = add_quad_facet(Facet::INNER, eid1, facet->left_face_num, INVALID_IDX, -1);
+			Facet *lower_facet = add_quad_facet(Facet::INNER, eid0, facet->left_face_num, INVALID_IDX, -1);
 
-		return true;
-//	}
-//	else
-//		return false;
+			upper_facet->parent = fid;
+			upper_facet->ractive = false;
+			upper_facet->ref_mask = REFT_QUAD_VERT;
+			upper_facet->sons[2] = facet->sons[3];
+			upper_facet->sons[3] = facet->sons[2];
+			Word_t upper_id = get_facet_id(elements[eid1], facet->left_face_num);
+
+			lower_facet->parent = fid;
+			lower_facet->ractive = false;
+			lower_facet->ref_mask = REFT_QUAD_VERT;
+			lower_facet->sons[2] = facet->sons[0];
+			lower_facet->sons[3] = facet->sons[1];
+			Word_t lower_id = get_facet_id(elements[eid0], facet->left_face_num);
+
+			facets.get(facet->sons[0])->parent = facets.get(facet->sons[1])->parent = lower_id;
+			facets.get(facet->sons[3])->parent = facets.get(facet->sons[2])->parent = upper_id;
+
+			facet->lactive = false;
+			facet->ref_mask = REFT_QUAD_HORZ;
+			facet->sons[0] = upper_id;
+			facet->sons[1] = lower_id;
+			facet->sons[2] = facet->sons[3] = INVALID_IDX;
+		}
+		else if (face_refinement == REFT_QUAD_VERT) {
+			Facet *upper_facet = add_quad_facet(Facet::INNER, eid1, facet->left_face_num, INVALID_IDX, -1);
+			Facet *lower_facet = add_quad_facet(Facet::INNER, eid0, facet->left_face_num, INVALID_IDX, -1);
+
+			upper_facet->parent = fid;
+			upper_facet->ractive = false;
+			upper_facet->ref_mask = REFT_QUAD_HORZ;
+			upper_facet->sons[1] = facet->sons[2];
+			upper_facet->sons[0] = facet->sons[1];
+			Word_t upper_id = get_facet_id(elements[eid1], facet->left_face_num);
+
+			lower_facet->parent = fid;
+			lower_facet->ractive = false;
+			lower_facet->ref_mask = REFT_QUAD_HORZ;
+			lower_facet->sons[1] = facet->sons[3];
+			lower_facet->sons[0] = facet->sons[0];
+			Word_t lower_id = get_facet_id(elements[eid0], facet->left_face_num);
+
+			facets.get(facet->sons[1])->parent = facets.get(facet->sons[2])->parent = upper_id;
+			facets.get(facet->sons[0])->parent = facets.get(facet->sons[3])->parent = lower_id;
+
+			facet->lactive = false;
+			facet->ref_mask = REFT_QUAD_VERT;
+			facet->sons[2] = lower_id;
+			facet->sons[3] = upper_id;
+			facet->sons[0] = facet->sons[1] = INVALID_IDX;
+		}
+		else
+			EXIT(ERR_FAILURE, "Trying to apply incompatible face refinement to element #%d.", parent_elem->id);
+	}
+	else if (facet->type == Facet::INNER && facet->right == parent_elem->id) {
+		// refine to the right (with element)
+		if (facet->ref_mask == REFT_FACE_NONE || facet->ref_mask == face_refinement) {
+			facet->ractive = false;
+			facet->ref_mask = face_refinement;
+
+			Facet *f0 = add_quad_facet(Facet::INNER, INVALID_IDX, -1, eid0, facet->right_face_num);
+			Facet *f1 = add_quad_facet(Facet::INNER, INVALID_IDX, -1, eid1, facet->right_face_num);
+
+			f0->parent = fid;
+			f1->parent = fid;
+
+			if (face_refinement == REFT_QUAD_HORZ) {
+				facet->sons[0] = get_facet_id(elements[eid0], facet->right_face_num);
+				facet->sons[1] = get_facet_id(elements[eid1], facet->right_face_num);
+			}
+			else {
+				facet->sons[2] = get_facet_id(elements[eid0], facet->right_face_num);
+				facet->sons[3] = get_facet_id(elements[eid1], facet->right_face_num);
+			}
+		}
+		else if (face_refinement == REFT_QUAD_HORZ) {
+			Facet *upper_facet = add_quad_facet(Facet::INNER, INVALID_IDX, -1, eid1, facet->right_face_num);
+			Facet *lower_facet = add_quad_facet(Facet::INNER, INVALID_IDX, -1, eid0, facet->right_face_num);
+
+			upper_facet->parent = fid;
+			upper_facet->lactive = false;
+			upper_facet->ref_mask = REFT_QUAD_VERT;
+			upper_facet->sons[2] = facet->sons[3];
+			upper_facet->sons[3] = facet->sons[2];
+			Word_t upper_id = get_facet_id(elements[eid1], facet->right_face_num);
+
+			lower_facet->parent = fid;
+			lower_facet->lactive = false;
+			lower_facet->ref_mask = REFT_QUAD_VERT;
+			lower_facet->sons[2] = facet->sons[0];
+			lower_facet->sons[3] = facet->sons[1];
+			Word_t lower_id = get_facet_id(elements[eid0], facet->right_face_num);
+
+			facets.get(facet->sons[0])->parent = facets.get(facet->sons[1])->parent = lower_id;
+			facets.get(facet->sons[3])->parent = facets.get(facet->sons[2])->parent = upper_id;
+
+			facet->ractive = false;
+			facet->ref_mask = REFT_QUAD_HORZ;
+			facet->sons[1] = upper_id;
+			facet->sons[0] = lower_id;
+			facet->sons[2] = facet->sons[3] = INVALID_IDX;
+		}
+		else if (face_refinement == REFT_QUAD_VERT) {
+			Facet *upper_facet = add_quad_facet(Facet::INNER, INVALID_IDX, -1, eid1, facet->right_face_num);
+			Facet *lower_facet = add_quad_facet(Facet::INNER, INVALID_IDX, -1, eid0, facet->right_face_num);
+
+			upper_facet->parent = fid;
+			upper_facet->lactive = false;
+			upper_facet->ref_mask = REFT_QUAD_HORZ;
+			upper_facet->sons[1] = facet->sons[2];
+			upper_facet->sons[0] = facet->sons[1];
+			Word_t upper_id = get_facet_id(elements[eid1], facet->right_face_num);
+
+			lower_facet->parent = fid;
+			lower_facet->lactive = false;
+			lower_facet->ref_mask = REFT_QUAD_HORZ;
+			lower_facet->sons[1] = facet->sons[3];
+			lower_facet->sons[0] = facet->sons[0];
+			Word_t lower_id = get_facet_id(elements[eid0], facet->right_face_num);
+
+			facets.get(facet->sons[1])->parent = facets.get(facet->sons[2])->parent = upper_id;
+			facets.get(facet->sons[0])->parent = facets.get(facet->sons[3])->parent = lower_id;
+
+			facet->ractive = false;
+			facet->ref_mask = REFT_QUAD_VERT;
+			facet->sons[2] = lower_id;
+			facet->sons[3] = upper_id;
+			facet->sons[0] = facet->sons[1] = INVALID_IDX;
+		}
+		else
+			EXIT(ERR_FAILURE, "Trying to apply incompatible face refinement to element #%d.", parent_elem->id);
+	}
+	else if (facet->type == Facet::OUTER) {
+		// refine to the right (with boundary)
+		facet->lactive = false;
+		facet->ractive = false;
+		facet->ref_mask = face_refinement;
+
+		Facet *f0 = add_quad_facet(Facet::OUTER, eid0, facet->left_face_num, facet->right, facet->right_face_num);
+		Facet *f1 = add_quad_facet(Facet::OUTER, eid1, facet->left_face_num, facet->right, facet->right_face_num);
+
+		f0->parent = fid;
+		f1->parent = fid;
+
+		if (face_refinement == REFT_QUAD_HORZ) {
+			facet->sons[0] = get_facet_id(elements[eid0], facet->left_face_num);
+			facet->sons[1] = get_facet_id(elements[eid1], facet->left_face_num);
+		}
+		else {
+			facet->sons[2] = get_facet_id(elements[eid0], facet->left_face_num);
+			facet->sons[3] = get_facet_id(elements[eid1], facet->left_face_num);
+		}
+	}
+	else {
+		// WTF?
+		ERROR("Refining facet that does not face with appropriate element/boundary");
+	}
+
+	return true;
 }
 
 bool Mesh::refine_quad_facet(Hex *parent_elem, int iface, int face_refinement, Word_t eid0, Word_t eid1, Word_t eid2, Word_t eid3) {
@@ -1926,152 +1795,139 @@ bool Mesh::refine_quad_facet(Hex *parent_elem, int iface, int face_refinement, W
 	Facet *facet = facets.get(fid);
 	assert(facet->mode == MODE_QUAD);
 
-//	if (is_compatible_quad_refinement(facet, face_refinement)) {
-		if (facet->type == Facet::INNER && facet->left == parent_elem->id) {
-			// refine to the left
-			if (facet->ref_mask == REFT_FACE_NONE || facet->ref_mask == REFT_QUAD_BOTH) {
-				// no refinement OR the same type of the refinement on the right side
-				// -> refinement on the left side is safe
-				facet->lactive = false;
-				facet->ref_mask = REFT_QUAD_BOTH;
-
-				Word_t ei[4] = { eid0, eid1, eid2, eid3 };
-				for (int i = 0; i < 4; i++) {
-					Facet *child_facet = add_quad_facet(Facet::INNER, ei[i], facet->left_face_num, INVALID_IDX, -1);
-					child_facet->parent = fid;
-					facet->sons[i] = get_facet_id(elements[ei[i]], facet->left_face_num);
-				}
-			}
-			else if (facet->ref_mask == REFT_QUAD_HORZ) {		// FIXME: ignoring the orientation
-	//			printf("AA\n");
-
-				facet->lactive = false;
-
-				Word_t ei[4] = { eid0, eid1, eid2, eid3 };
-				Facet *child_facets[4];
-				for (int i = 0; i < 4; i++)
-					child_facets[i] = add_quad_facet(Facet::INNER, ei[i], facet->left_face_num, INVALID_IDX, -1);
-
-				Facet *upper_facet = facets.get(facet->sons[1]);
-				upper_facet->ref_mask = REFT_QUAD_VERT;
-				upper_facet->sons[2] = get_facet_id(elements[ei[3]], facet->left_face_num);
-				upper_facet->sons[3] = get_facet_id(elements[ei[2]], facet->left_face_num);
-				child_facets[2]->parent = child_facets[3]->parent = get_facet_id(elements[upper_facet->right], upper_facet->right_face_num);
-
-				Facet *lower_facet = facets.get(facet->sons[0]);
-				lower_facet->ref_mask = REFT_QUAD_VERT;
-				lower_facet->sons[2] = get_facet_id(elements[ei[0]], facet->left_face_num);
-				lower_facet->sons[3] = get_facet_id(elements[ei[1]], facet->left_face_num);
-				child_facets[0]->parent = child_facets[1]->parent = get_facet_id(elements[lower_facet->right], lower_facet->right_face_num);
-			}
-			else if (facet->ref_mask == REFT_QUAD_VERT) {		// FIXME: ignoring the orientation
-	//			printf("BB\n");
-
-				facet->lactive = false;
-
-				Word_t ei[4] = { eid0, eid1, eid2, eid3 };
-				Facet *child_facets[4];
-				for (int i = 0; i < 4; i++)
-					child_facets[i] = add_quad_facet(Facet::INNER, ei[i], facet->left_face_num, INVALID_IDX, -1);
-
-				Facet *upper_facet = facets.get(facet->sons[3]);
-				upper_facet->ref_mask = REFT_QUAD_HORZ;
-				upper_facet->sons[1] = get_facet_id(elements[ei[2]], facet->left_face_num);
-				upper_facet->sons[0] = get_facet_id(elements[ei[1]], facet->left_face_num);
-				child_facets[2]->parent = child_facets[1]->parent = get_facet_id(elements[upper_facet->right], upper_facet->right_face_num);
-
-				Facet *lower_facet = facets.get(facet->sons[2]);
-				lower_facet->ref_mask = REFT_QUAD_HORZ;
-				lower_facet->sons[1] = get_facet_id(elements[ei[3]], facet->left_face_num);
-				lower_facet->sons[0] = get_facet_id(elements[ei[0]], facet->left_face_num);
-				child_facets[0]->parent = child_facets[3]->parent = get_facet_id(elements[lower_facet->right], lower_facet->right_face_num);
-			}
-		}
-		else if (facet->type == Facet::INNER && facet->right == parent_elem->id) {
-			// refine to the right (with element)
-			if (facet->ref_mask == REFT_FACE_NONE || facet->ref_mask == REFT_QUAD_BOTH) {
-				// no refinement OR the same type of the refinement on the left side
-				// -> refinement on the right side is safe
-				facet->ractive = false;
-				facet->ref_mask = REFT_QUAD_BOTH;
-
-				Word_t ei[4] = { eid0, eid1, eid2, eid3 };
-				for (int i = 0; i < 4; i++) {
-					Facet *child_facet = add_quad_facet(Facet::INNER, INVALID_IDX, -1, ei[i], facet->right_face_num);
-					child_facet->parent = fid;
-					facet->sons[i] = get_facet_id(elements[ei[i]], facet->right_face_num);
-				}
-
-			}
-			else if (facet->ref_mask == REFT_QUAD_HORZ) {		// FIXME: ignoring the orientation
-	//			printf("CC\n");
-
-				facet->ractive = false;
-
-				Word_t ei[4] = { eid0, eid1, eid2, eid3 };
-				Facet *child_facets[4];
-				for (int i = 0; i < 4; i++)
-					child_facets[i] = add_quad_facet(Facet::INNER, INVALID_IDX, -1, ei[i], facet->right_face_num);
-
-				Facet *upper_facet = facets.get(facet->sons[1]);
-				upper_facet->ref_mask = REFT_QUAD_VERT;
-				upper_facet->sons[2] = get_facet_id(elements[ei[3]], facet->right_face_num);
-				upper_facet->sons[3] = get_facet_id(elements[ei[2]], facet->right_face_num);
-				child_facets[2]->parent = child_facets[3]->parent = get_facet_id(elements[upper_facet->left], upper_facet->left_face_num);
-
-				Facet *lower_facet = facets.get(facet->sons[0]);
-				lower_facet->ref_mask = REFT_QUAD_VERT;
-				lower_facet->sons[2] = get_facet_id(elements[ei[0]], facet->right_face_num);
-				lower_facet->sons[3] = get_facet_id(elements[ei[1]], facet->right_face_num);
-				child_facets[0]->parent = child_facets[1]->parent = get_facet_id(elements[lower_facet->left], lower_facet->left_face_num);
-			}
-			else if (facet->ref_mask == REFT_QUAD_VERT) {		// FIXME: ignoring the orientation
-	//			printf("DD\n");
-
-				facet->ractive = false;
-
-				Word_t ei[4] = { eid0, eid1, eid2, eid3 };
-				Facet *child_facets[4];
-				for (int i = 0; i < 4; i++)
-					child_facets[i] = add_quad_facet(Facet::INNER, INVALID_IDX, -1, ei[i], facet->right_face_num);
-
-				Facet *upper_facet = facets.get(facet->sons[3]);
-				upper_facet->ref_mask = REFT_QUAD_HORZ;
-				upper_facet->sons[1] = get_facet_id(elements[ei[2]], facet->right_face_num);
-				upper_facet->sons[0] = get_facet_id(elements[ei[1]], facet->right_face_num);
-				child_facets[2]->parent = child_facets[1]->parent = get_facet_id(elements[upper_facet->left], upper_facet->left_face_num);
-
-				Facet *lower_facet = facets.get(facet->sons[2]);
-				lower_facet->ref_mask = REFT_QUAD_HORZ;
-				lower_facet->sons[1] = get_facet_id(elements[ei[3]], facet->right_face_num);
-				lower_facet->sons[0] = get_facet_id(elements[ei[0]], facet->right_face_num);
-				child_facets[0]->parent = child_facets[3]->parent = get_facet_id(elements[lower_facet->left], lower_facet->left_face_num);
-			}
-		}
-		else if (facet->type == Facet::OUTER) {
-			// refine to the right (with boundary)
+	//	if (is_compatible_quad_refinement(facet, face_refinement)) {
+	if (facet->type == Facet::INNER && facet->left == parent_elem->id) {
+		// refine to the left
+		if (facet->ref_mask == REFT_FACE_NONE || facet->ref_mask == REFT_QUAD_BOTH) {
+			// no refinement OR the same type of the refinement on the right side
+			// -> refinement on the left side is safe
 			facet->lactive = false;
+			facet->ref_mask = REFT_QUAD_BOTH;
+
+			Word_t ei[4] = { eid0, eid1, eid2, eid3 };
+			for (int i = 0; i < 4; i++) {
+				Facet *child_facet = add_quad_facet(Facet::INNER, ei[i], facet->left_face_num, INVALID_IDX, -1);
+				child_facet->parent = fid;
+				facet->sons[i] = get_facet_id(elements[ei[i]], facet->left_face_num);
+			}
+		}
+		else if (facet->ref_mask == REFT_QUAD_HORZ) { // FIXME: ignoring the orientation
+			facet->lactive = false;
+
+			Word_t ei[4] = { eid0, eid1, eid2, eid3 };
+			Facet *child_facets[4];
+			for (int i = 0; i < 4; i++)
+				child_facets[i] = add_quad_facet(Facet::INNER, ei[i], facet->left_face_num, INVALID_IDX, -1);
+
+			Facet *upper_facet = facets.get(facet->sons[1]);
+			upper_facet->ref_mask = REFT_QUAD_VERT;
+			upper_facet->sons[2] = get_facet_id(elements[ei[3]], facet->left_face_num);
+			upper_facet->sons[3] = get_facet_id(elements[ei[2]], facet->left_face_num);
+			child_facets[2]->parent = child_facets[3]->parent = get_facet_id(elements[upper_facet->right], upper_facet->right_face_num);
+
+			Facet *lower_facet = facets.get(facet->sons[0]);
+			lower_facet->ref_mask = REFT_QUAD_VERT;
+			lower_facet->sons[2] = get_facet_id(elements[ei[0]], facet->left_face_num);
+			lower_facet->sons[3] = get_facet_id(elements[ei[1]], facet->left_face_num);
+			child_facets[0]->parent = child_facets[1]->parent = get_facet_id(elements[lower_facet->right], lower_facet->right_face_num);
+		}
+		else if (facet->ref_mask == REFT_QUAD_VERT) { // FIXME: ignoring the orientation
+			facet->lactive = false;
+
+			Word_t ei[4] = { eid0, eid1, eid2, eid3 };
+			Facet *child_facets[4];
+			for (int i = 0; i < 4; i++)
+				child_facets[i] = add_quad_facet(Facet::INNER, ei[i], facet->left_face_num, INVALID_IDX, -1);
+
+			Facet *upper_facet = facets.get(facet->sons[3]);
+			upper_facet->ref_mask = REFT_QUAD_HORZ;
+			upper_facet->sons[1] = get_facet_id(elements[ei[2]], facet->left_face_num);
+			upper_facet->sons[0] = get_facet_id(elements[ei[1]], facet->left_face_num);
+			child_facets[2]->parent = child_facets[1]->parent = get_facet_id(elements[upper_facet->right], upper_facet->right_face_num);
+
+			Facet *lower_facet = facets.get(facet->sons[2]);
+			lower_facet->ref_mask = REFT_QUAD_HORZ;
+			lower_facet->sons[1] = get_facet_id(elements[ei[3]], facet->left_face_num);
+			lower_facet->sons[0] = get_facet_id(elements[ei[0]], facet->left_face_num);
+			child_facets[0]->parent = child_facets[3]->parent = get_facet_id(elements[lower_facet->right], lower_facet->right_face_num);
+		}
+	}
+	else if (facet->type == Facet::INNER && facet->right == parent_elem->id) {
+		// refine to the right (with element)
+		if (facet->ref_mask == REFT_FACE_NONE || facet->ref_mask == REFT_QUAD_BOTH) {
+			// no refinement OR the same type of the refinement on the left side
+			// -> refinement on the right side is safe
 			facet->ractive = false;
 			facet->ref_mask = REFT_QUAD_BOTH;
 
 			Word_t ei[4] = { eid0, eid1, eid2, eid3 };
 			for (int i = 0; i < 4; i++) {
-				Facet *child_facet = add_quad_facet(Facet::OUTER, ei[i], facet->left_face_num, facet->right, facet->right_face_num);
+				Facet *child_facet = add_quad_facet(Facet::INNER, INVALID_IDX, -1, ei[i], facet->right_face_num);
 				child_facet->parent = fid;
-				facet->sons[i] = get_facet_id(elements[ei[i]], facet->left_face_num);
+				facet->sons[i] = get_facet_id(elements[ei[i]], facet->right_face_num);
 			}
-		}
-		else {
-			// WTF?
-			ERROR("Refining facet that does not face with appropriate element/boundary");
-		}
 
-		return true;
-//	}
-//	else {
-//		EXIT(ERR_FAILURE, "Applying incompatible refinement.");
-//		return false;
-//	}
+		}
+		else if (facet->ref_mask == REFT_QUAD_HORZ) { // FIXME: ignoring the orientation
+			facet->ractive = false;
+
+			Word_t ei[4] = { eid0, eid1, eid2, eid3 };
+			Facet *child_facets[4];
+			for (int i = 0; i < 4; i++)
+				child_facets[i] = add_quad_facet(Facet::INNER, INVALID_IDX, -1, ei[i], facet->right_face_num);
+
+			Facet *upper_facet = facets.get(facet->sons[1]);
+			upper_facet->ref_mask = REFT_QUAD_VERT;
+			upper_facet->sons[2] = get_facet_id(elements[ei[3]], facet->right_face_num);
+			upper_facet->sons[3] = get_facet_id(elements[ei[2]], facet->right_face_num);
+			child_facets[2]->parent = child_facets[3]->parent = get_facet_id(elements[upper_facet->left], upper_facet->left_face_num);
+
+			Facet *lower_facet = facets.get(facet->sons[0]);
+			lower_facet->ref_mask = REFT_QUAD_VERT;
+			lower_facet->sons[2] = get_facet_id(elements[ei[0]], facet->right_face_num);
+			lower_facet->sons[3] = get_facet_id(elements[ei[1]], facet->right_face_num);
+			child_facets[0]->parent = child_facets[1]->parent = get_facet_id(elements[lower_facet->left], lower_facet->left_face_num);
+		}
+		else if (facet->ref_mask == REFT_QUAD_VERT) { // FIXME: ignoring the orientation
+			facet->ractive = false;
+
+			Word_t ei[4] = { eid0, eid1, eid2, eid3 };
+			Facet *child_facets[4];
+			for (int i = 0; i < 4; i++)
+				child_facets[i] = add_quad_facet(Facet::INNER, INVALID_IDX, -1, ei[i], facet->right_face_num);
+
+			Facet *upper_facet = facets.get(facet->sons[3]);
+			upper_facet->ref_mask = REFT_QUAD_HORZ;
+			upper_facet->sons[1] = get_facet_id(elements[ei[2]], facet->right_face_num);
+			upper_facet->sons[0] = get_facet_id(elements[ei[1]], facet->right_face_num);
+			child_facets[2]->parent = child_facets[1]->parent = get_facet_id(elements[upper_facet->left], upper_facet->left_face_num);
+
+			Facet *lower_facet = facets.get(facet->sons[2]);
+			lower_facet->ref_mask = REFT_QUAD_HORZ;
+			lower_facet->sons[1] = get_facet_id(elements[ei[3]], facet->right_face_num);
+			lower_facet->sons[0] = get_facet_id(elements[ei[0]], facet->right_face_num);
+			child_facets[0]->parent = child_facets[3]->parent = get_facet_id(elements[lower_facet->left], lower_facet->left_face_num);
+		}
+	}
+	else if (facet->type == Facet::OUTER) {
+		// refine to the right (with boundary)
+		facet->lactive = false;
+		facet->ractive = false;
+		facet->ref_mask = REFT_QUAD_BOTH;
+
+		Word_t ei[4] = { eid0, eid1, eid2, eid3 };
+		for (int i = 0; i < 4; i++) {
+			Facet *child_facet = add_quad_facet(Facet::OUTER, ei[i], facet->left_face_num, facet->right, facet->right_face_num);
+			child_facet->parent = fid;
+			facet->sons[i] = get_facet_id(elements[ei[i]], facet->left_face_num);
+		}
+	}
+	else {
+		// WTF?
+		ERROR("Refining facet that does not face with appropriate element/boundary");
+	}
+
+	return true;
 }
 
 Facet *Mesh::add_quad_facet(Facet::Type type, Word_t left_elem, int left_iface, Word_t right_elem, int right_iface) {
@@ -2113,9 +1969,7 @@ Facet *Mesh::add_quad_facet(Facet::Type type, Word_t left_elem, int left_iface, 
 		e = elements[right_elem];
 		e->get_face_vertices(right_iface, facet_idxs);
 	}
-	else
-		EXIT(ERR_FAILURE, "Right and left elements on facet are not set.");
-
+	else EXIT(ERR_FAILURE, "Right and left elements on facet are not set.");
 
 	// update bnd mark for boundary edges
 	if (facet->type == Facet::OUTER) {
@@ -2135,12 +1989,12 @@ Facet *Mesh::add_quad_facet(Facet::Type type, Word_t left_elem, int left_iface, 
 }
 
 void Mesh::refine_all_elements(int refinement) {
-	FOR_ALL_ACTIVE_ELEMENTS(idx, this) {
-		refine_element(idx, refinement);
-	}
+	FOR_ALL_ACTIVE_ELEMENTS(idx, this){
+	refine_element(idx, refinement);
+}
 }
 
-void Mesh::refine_by_criterion(int (*criterion)(Element* e), int depth) {
+void Mesh::refine_by_criterion(int(*criterion)(Element* e), int depth) {
 	// TODO
 }
 
@@ -2182,46 +2036,9 @@ void Mesh::set_midpoint(Word_t a, Word_t b, Word_t idx) {
 	midpoints.set(pt, Edge::NUM_VERTICES, idx);
 }
 
-/*void Mesh::set_edge(Word_t a, Word_t b, int active) {
-	Word_t idx[] = { a, b };
-	edges.set(idx, Edge::NUM_VERTICES, active);
-}
-*/
 Word_t Mesh::get_edge_id(Word_t a, Word_t b) const {
 	Word_t pt[] = { a, b };
 	return edges.get_idx(pt + 0, Edge::NUM_VERTICES);
-}
-
-/*
-void Mesh::activate_edges(Element *element, int active) {
-	for (int iedge = 0; iedge < element->get_num_of_edges(); iedge++) {
-		Word_t edge_vtx[Edge::NUM_VERTICES];
-		element->get_edge_vertices(iedge, edge_vtx);
-		set_edge(edge_vtx[0], edge_vtx[1], active);
-	}
-}
-*/
-
-void Mesh::ref_element(Element *e) {
-	assert(e != NULL);
-
-/*	int nv = e->get_num_of_vertices();
-	Word_t vtx[nv];
-	e->get_vertices(vtx);
-	for (int i = 0; i < nv; i++)
-		vertices[vtx[i]]->ref++;
-*/
-}
-
-void Mesh::unref_element(Element *e) {
-	assert(e != NULL);
-
-/*	int nv = e->get_num_of_vertices();
-	Word_t vtx[nv];
-	e->get_vertices(vtx);
-	for (int i = 0; i < nv; i++)
-		vertices[vtx[i]]->ref--;
-*/
 }
 
 /// referencing edges
@@ -2238,7 +2055,7 @@ void Mesh::ref_edges(Element *e) {
 			edges.set(vtx, Edge::NUM_VERTICES, edge);
 		}
 		else {
-//			ERROR("Referencing non-existent edge.");
+			//			ERROR("Referencing non-existent edge.");
 			edge.ref = 1;
 			edges.set(vtx, Edge::NUM_VERTICES, edge);
 		}
@@ -2302,4 +2119,3 @@ Word_t Mesh::get_facet_id(int nv, ...) const {
 
 	return facets.get_idx(k + 0, nv);
 }
-

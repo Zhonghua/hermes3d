@@ -69,11 +69,9 @@ void Filter::init() {
 	mesh = meshes[0];
 	unimesh = false;
 
+	// FIXME
 	for (int i = 1; i < num; i++)
-//		if (meshes[i]->get_seq() != mesh->get_seq()) {
-			unimesh = true;
-//			break;
-//		}
+		unimesh = true;
 
 	if (unimesh) {
 		Traverse trav;
@@ -91,7 +89,6 @@ void Filter::init() {
 	order = 0;
 	memset(tables, 0, sizeof(tables));
 	memset(sln_sub, 0, sizeof(sln_sub));
-//	set_quad(&g_quad_2d_std);					// FIXME
 }
 
 void Filter::set_quad(Quad3D *quad) {
@@ -321,39 +318,10 @@ ImagPartFilter::ImagPartFilter(MeshFunction *sln1, int item1) :
 #endif
 
 void VonMisesFilter::precalculate(int order, int mask) {
+	// TODO: port to 3D
 	ERROR(ERR_NOT_IMPLEMENTED);
-#if 0
-	Quad3D *quad = quads[cur_quad];
-	int np = quad->get_num_points(order);
-	Node *node = new_node(FN_VAL_0, np);
-	MEM_CHECK(node);
-
-	sln[0]->set_quad_order(order, FN_DX | FN_DY | FN_DZ);
-	sln[1]->set_quad_order(order, FN_DX | FN_DY | FN_DZ);
-
-	scalar *dudx, *dudy, *dudz, *dvdx, *dvdy, *dvdz;
-	sln[0]->get_dx_dy_dz_values(dudx, dudy, dudz);
-	sln[1]->get_dx_dy_dz_values(dvdx, dvdy, dvdz);
-
-	for (int i = 0; i < np; i++) {
-		// FIXME: stress tensor
-/*		double tz = lambda*(getval(dudx[i]) + getval(dvdy[i]));
-		double tx = tz + 2*mu*getval(dudx[i]);
-		double ty = tz + 2*mu*getval(dvdy[i]);
-		double txy = mu*(getval(dudy[i]) + getval(dvdx[i]));
-
-		// Von Mises stress
-		node->values[0][0][i] = 1.0/sqrt(2.0) * sqrt(sqr(tx - ty) + sqr(ty - tz) + sqr(tz - tx) + 6
-		    *sqr(txy));
-*/
-	}
-
-	// remove the old node and attach the new one
-	replace_cur_node(node);
-#endif
 }
 
-// FIXME: port to 3D
 VonMisesFilter::VonMisesFilter(MeshFunction *sln1, MeshFunction *sln2, double lambda, double mu, int cyl, int item1, int item2) :
 	Filter(sln1, sln2)
 {

@@ -60,7 +60,6 @@ int H1Space::assign_dofs_internal() {
 	BitArray init_edges;
 	BitArray init_faces;
 
-	//	Word_t idx;
 	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
 		Element *e = mesh->elements[idx];
 		// vertex dofs
@@ -135,10 +134,8 @@ void H1Space::calc_vertex_boundary_projection(Element *elem, int ivertex) {
 	Word_t vtx = elem->get_vertex(ivertex);
 	VertexData *vnode = vn_data[vtx];
 	Vertex *v = mesh->vertices[vtx];
-	if (vnode->bc_type == BC_ESSENTIAL) {
+	if (vnode->bc_type == BC_ESSENTIAL)
 		vnode->bc_proj = bc_value_callback_by_coord(vnode->marker, v->x, v->y, v->z, 0);
-//		printf("BC: vtx[%d] = %lf\n", vtx, vnode->bc_proj);
-	}
 }
 
 void H1Space::calc_edge_boundary_projection(Element *elem, int iedge) {
@@ -248,8 +245,6 @@ void H1Space::calc_face_boundary_projection(Element *elem, int iface) {
 	if (fnode->bc_type != BC_ESSENTIAL) return;
 	if (fnode->bc_proj != NULL) return;
 
-//	printf("BC: %d, %d: ", elem->id, iface);
-
 	double **proj_mat = new_matrix<double>(fnode->n, fnode->n);
 	if (proj_mat == NULL) EXIT(ERR_OUT_OF_MEMORY);
 	double *proj_rhs = new double[fnode->n];
@@ -265,25 +260,17 @@ void H1Space::calc_face_boundary_projection(Element *elem, int iface) {
 	const int *local_face_edge = elem->get_face_edges(iface);
 
 	// get total number of vertex + edge functions
-//	printf("[");
 	int num_fns = elem->get_face_num_of_vertices(iface);
 	for (int edge = 0; edge < elem->get_face_num_of_edges(iface); edge++) {
 		Word_t edge_idx = mesh->get_edge_id(elem, local_face_edge[edge]);
 		EdgeData *enode = en_data[edge_idx];
-//		printf("%d", edge_idx);
 		if (enode->ced && enode->edge_ncomponents > 0 && enode->edge_baselist != NULL) {
-//			printf("+");
-//			enode->dump(edge_idx);
-//			if (enode->edge_ncomponents > 0 && enode->edge_baselist != NULL) {
-				Word_t eid = enode->edge_baselist[0].edge_id;
-				num_fns += en_data[eid]->n;
-//			}
+			Word_t eid = enode->edge_baselist[0].edge_id;
+			num_fns += en_data[eid]->n;
 		}
 		else
 			num_fns += enode->n;
-//		printf(", ");
 	}
-//	printf("] ");
 
 	double *coef = new double[num_fns];
 	if (coef == NULL) EXIT(ERR_OUT_OF_MEMORY);
@@ -303,7 +290,6 @@ void H1Space::calc_face_boundary_projection(Element *elem, int iface) {
 		EdgeData *enode = en_data[edge_idx];
 
 		if (enode->ced && enode->edge_ncomponents > 0 && enode->edge_baselist != NULL) {
-//				printf("*");
 				BaseEdgeComponent *ecomp = enode->edge_baselist + 0;
 				EdgeData *cng_enode = en_data[ecomp->edge_id]; 						// constraining edge node
 
@@ -313,16 +299,8 @@ void H1Space::calc_face_boundary_projection(Element *elem, int iface) {
 					fn_idx[m] = shapeset->get_constrained_edge_index(local_face_edge[edge], ecomp->ori, order, ecomp->part);
 					coef[m] = cng_enode->bc_proj[j];
 				}
-
-//				int *edge_fn_idx = shapeset->get_edge_indices(local_face_edge[edge], edge_ori, enode->order);
-//				for (int i = 0; i < enode->n; i++, m++) {
-//					coef[m] = enode->bc_proj[i];
-//					fn_idx[m] = edge_fn_idx[i];
-//				}
-//			}
 		}
 		else {
-//			printf(".");
 			int edge_ori = elem->get_edge_orientation(local_face_edge[edge]);
 			int *edge_fn_idx = shapeset->get_edge_indices(local_face_edge[edge], edge_ori, enode->order);
 
@@ -332,7 +310,6 @@ void H1Space::calc_face_boundary_projection(Element *elem, int iface) {
 			}
 		}
 	}
-//	printf("\n");
 
 	// do it //
 	int face_ori = elem->get_face_orientation(iface);
@@ -400,8 +377,7 @@ void H1Space::update_constrained_nodes(Word_t fid) {
 		return;
 
 	if (facet->ractive || facet->lactive) {
-//		printf("id = %d, ", fid);
-		facet->dump();
+		facet->dump();			// WTF?
 	}
 	else {
 		for (int i = 0; i < 4; i++) {

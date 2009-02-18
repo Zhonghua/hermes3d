@@ -111,8 +111,6 @@ public:
 	~Shapeset();
 
 	int get_mode() const { return mode; }
-	int get_max_order() const { return max_order; }
-	int get_max_index() const { return max_index; }
 	int get_num_components() const { return num_components; }
 
 	// @return index of a vertex shape function for a vertex
@@ -200,13 +198,7 @@ public:
 
 protected:
 	int mode;
-
-	int max_order;
-	int max_index;
 	int num_components;
-
-//	// mapping from index of shape function to its order
-//	order3_t *index_to_order;
 
 	// FIXME: better name
 	virtual double get_val(int n, int index, double x, double y, double z, int component) = 0;

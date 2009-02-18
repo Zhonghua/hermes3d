@@ -110,8 +110,7 @@ static bool read_vertices(hid_t id, Mesh *mesh) {
 			H5Dclose(dataset_id);
 		}
 	}
-	else
-		ret = false;
+	else ret = false;
 
 	H5Gclose(group_id);
 
@@ -148,10 +147,9 @@ static bool read_hexes(hid_t id, Mesh *mesh) {
 			H5Dclose(dataset_id);
 		}
 	}
-	else
-		ret = false;
+	else ret = false;
 
-	H5Gclose(group_id);		// close the group
+	H5Gclose(group_id); // close the group
 
 	return ret;
 }
@@ -185,8 +183,7 @@ static bool read_tetras(hid_t id, Mesh *mesh) {
 			H5Dclose(dataset_id);
 		}
 	}
-	else
-		ret = false;
+	else ret = false;
 
 	H5Gclose(group_id); // close the group
 
@@ -222,8 +219,7 @@ static bool read_prisms(hid_t id, Mesh *mesh) {
 			H5Dclose(dataset_id);
 		}
 	}
-	else
-		ret = false;
+	else ret = false;
 
 	H5Gclose(group_id); // close the group
 
@@ -264,11 +260,9 @@ static bool read_tris(hid_t id, Mesh *mesh) {
 			sprintf(name, "%d", i);
 			hid_t dataset_id = H5Dopen(group_id, name);
 			if (dataset_id >= 0) {
-				Word_t vtcs[Tri::NUM_VERTICES] = {0};
+				Word_t vtcs[Tri::NUM_VERTICES] = { 0 };
 				unsigned int marker = 0;
-				if (H5Dread(dataset_id, H5T_NATIVE_UINT32, H5S_ALL, H5S_ALL, H5P_DEFAULT, vtcs) >= 0 &&
-					read_attr(dataset_id, "marker", marker))
-				{
+				if (H5Dread(dataset_id, H5T_NATIVE_UINT32, H5S_ALL, H5S_ALL, H5P_DEFAULT, vtcs) >= 0 && read_attr(dataset_id, "marker", marker)) {
 					mesh->add_tri_boundary(vtcs, marker);
 				}
 				else {
@@ -280,8 +274,7 @@ static bool read_tris(hid_t id, Mesh *mesh) {
 			H5Dclose(dataset_id);
 		}
 	}
-	else
-		ret = false;
+	else ret = false;
 
 	H5Gclose(group_id); // close the group
 
@@ -306,9 +299,7 @@ static bool read_quads(hid_t id, Mesh *mesh) {
 			if (dataset_id >= 0) {
 				Word_t vtcs[Quad::NUM_VERTICES] = { 0 };
 				unsigned int marker = 0;
-				if (H5Dread(dataset_id, H5T_NATIVE_UINT32, H5S_ALL, H5S_ALL, H5P_DEFAULT, vtcs) >= 0 &&
-					read_attr(dataset_id, "marker", marker))
-				{
+				if (H5Dread(dataset_id, H5T_NATIVE_UINT32, H5S_ALL, H5S_ALL, H5P_DEFAULT, vtcs) >= 0 && read_attr(dataset_id, "marker", marker)) {
 					mesh->add_quad_boundary(vtcs, marker);
 				}
 				else {
@@ -320,8 +311,7 @@ static bool read_quads(hid_t id, Mesh *mesh) {
 			H5Dclose(dataset_id);
 		}
 	}
-	else
-		ret = false;
+	else ret = false;
 
 	H5Gclose(group_id); // close the group
 
@@ -645,8 +635,7 @@ static bool save_quad_bc(hid_t parent_group_id, Mesh *mesh, Array<Word_t> &bcs) 
 		// the dataset
 		hid_t dataset_id = H5Dcreate(group_id, name, H5T_NATIVE_UINT32, elem_dataspace_id, H5P_DEFAULT);
 		const int *vidx = elem->get_face_vertices(facet->left_face_num);
-		uint vtcs[Quad::NUM_VERTICES] = {
-			elem->get_vertex(vidx[0]), elem->get_vertex(vidx[1]), elem->get_vertex(vidx[2]), elem->get_vertex(vidx[3]) };
+		uint vtcs[Quad::NUM_VERTICES] = { elem->get_vertex(vidx[0]), elem->get_vertex(vidx[1]), elem->get_vertex(vidx[2]), elem->get_vertex(vidx[3]) };
 		elem->get_face_vertices(facet->left_face_num);
 		status = H5Dwrite(dataset_id, H5T_NATIVE_UINT32, H5S_ALL, H5S_ALL, H5P_DEFAULT, vtcs);
 

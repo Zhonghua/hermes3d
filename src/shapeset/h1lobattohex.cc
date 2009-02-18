@@ -185,13 +185,7 @@ static double calc_dz_value(int index, double x, double y, double z, int compone
 H1ShapesetLobattoHex::H1ShapesetLobattoHex() {
 #ifdef WITH_HEX
 	mode = MODE_HEXAHEDRON;
-
 	num_components = 1;
-
-//	max_edge_order = MAX_ELEMENT_ORDER + 1;
-//	max_face_order = MAKE_QUAD_ORDER(MAX_ELEMENT_ORDER + 1, MAX_ELEMENT_ORDER + 1);
-//	max_order = MAKE_HEX_ORDER(MAX_ELEMENT_ORDER + 1, MAX_ELEMENT_ORDER + 1, MAX_ELEMENT_ORDER + 1);
-//	max_index = MAKE_HEX_IDX(MAX_ELEMENT_ORDER + 1, MAX_ELEMENT_ORDER + 1, MAX_ELEMENT_ORDER + 1, 0);
 
 	// fn, dx, dy, dz will be calculated on-the-fly
 	shape_table_deleg[FN]  = calc_fn_value;

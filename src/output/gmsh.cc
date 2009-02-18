@@ -62,7 +62,6 @@ protected:
 	virtual void recursive_division(const Point3D *ref_vtcs, QuadPt3D *table, int levels, int &idx) = 0;
 };
 
-
 //// OutputQuadTetra //////////////////////////////////////////////////////////////////////////////
 
 /// Quadrature for visualizing the solution on tetrahedron
@@ -91,15 +90,14 @@ OutputQuadTetra::OutputQuadTetra() {
 OutputQuadTetra::~OutputQuadTetra() {
 #ifdef WITH_TETRA
 	for (Word_t i = tables.first(); i != INVALID_IDX; i = tables.next(i))
-		delete [] tables[i];
+		delete[] tables[i];
 
 	for (Word_t i = subdiv_modes.first(); i != INVALID_IDX; i = subdiv_modes.next(i))
-		delete [] subdiv_modes[i];
+		delete[] subdiv_modes[i];
 #else
 	EXIT(ERR_TETRA_NOT_COMPILED);
 #endif
 }
-
 
 void OutputQuadTetra::calculate_view_points(order3_t order) {
 #ifdef WITH_TETRA
@@ -145,9 +143,7 @@ void OutputQuadTetra::recursive_division(const Point3D *tv, QuadPt3D *table, int
 			idx++;
 		}
 		// edges
-		Point3D edge_pt[] = {
-			AVGTV(0, 1), AVGTV(1, 2), AVGTV(0, 2), AVGTV(0, 3), AVGTV(2, 3), AVGTV(1, 3)
-		};
+		Point3D edge_pt[] = { AVGTV(0, 1), AVGTV(1, 2), AVGTV(0, 2), AVGTV(0, 3), AVGTV(2, 3), AVGTV(1, 3) };
 		for (int i = 0; i < Tetra::NUM_EDGES; i++) {
 			table[idx].x = edge_pt[i].x;
 			table[idx].y = edge_pt[i].y;
@@ -208,10 +204,10 @@ OutputQuadHex::OutputQuadHex() {
 OutputQuadHex::~OutputQuadHex() {
 #ifdef WITH_HEX
 	for (Word_t i = tables.first(); i != INVALID_IDX; i = tables.next(i))
-		delete [] tables[i];
+		delete[] tables[i];
 
 	for (Word_t i = subdiv_modes.first(); i != INVALID_IDX; i = subdiv_modes.next(i))
-		delete [] subdiv_modes[i];
+		delete[] subdiv_modes[i];
 #else
 	EXIT(ERR_HEX_NOT_COMPILED);
 #endif
@@ -219,7 +215,7 @@ OutputQuadHex::~OutputQuadHex() {
 
 void OutputQuadHex::calculate_view_points(order3_t order) {
 #ifdef WITH_HEX
-
+	// FIXME:
 //	int o = get_principal_order(order);
 //	int levels = int(log(o) / log(2)) + output_precision;
 	int o = order.get_idx();
@@ -270,9 +266,7 @@ void OutputQuadHex::recursive_division(const Point3D *tv, QuadPt3D *table, int l
 			idx++;
 		}
 		// faces
-		Point3D face_pts[] = {
-			AVGTV(0, 2), AVGTV(0, 5), AVGTV(0, 7), AVGTV(1, 6), AVGTV(3, 6), AVGTV(4, 6)
-		};
+		Point3D face_pts[] = { AVGTV(0, 2), AVGTV(0, 5), AVGTV(0, 7), AVGTV(1, 6), AVGTV(3, 6), AVGTV(4, 6) };
 		for (int i = 0; i < Hex::NUM_FACES; i++) {
 			table[idx].x = face_pts[i].x;
 			table[idx].y = face_pts[i].y;
@@ -297,7 +291,7 @@ void OutputQuadHex::recursive_division(const Point3D *tv, QuadPt3D *table, int l
 			{ AVGTV(0,4), AVGTV(1,4), AVGTV(2,4), AVGTV(3,4), { tv[4].x, tv[4].y, tv[4].z }, AVGTV(4,5), AVGTV(4,6), AVGTV(4,7) },
 			{ AVGTV(0,5), AVGTV(1,5), AVGTV(2,5), AVGTV(3,5), AVGTV(4,5), { tv[5].x, tv[5].y, tv[5].z }, AVGTV(5,6), AVGTV(5,7) },
 			{ AVGTV(0,6), AVGTV(1,6), AVGTV(2,6), AVGTV(3,6), AVGTV(4,6), AVGTV(5,6), { tv[6].x, tv[6].y, tv[6].z }, AVGTV(6,7) },
-			{ AVGTV(0,7), AVGTV(1,7), AVGTV(2,7), AVGTV(3,7), AVGTV(4,7), AVGTV(5,7), AVGTV(6,7), { tv[7].x, tv[7].y, tv[7].z } },
+			{ AVGTV(0,7), AVGTV(1,7), AVGTV(2,7), AVGTV(3,7), AVGTV(4,7), AVGTV(5,7), AVGTV(6,7), { tv[7].x, tv[7].y, tv[7].z } }
 		};
 
 		for (int i = 0; i < 8; i++)
@@ -316,17 +310,17 @@ void OutputQuadHex::recursive_division(const Point3D *tv, QuadPt3D *table, int l
 
 //
 #ifdef WITH_TETRA
-	static Gmsh::OutputQuadTetra output_quad_tetra;
-	#define OUTPUT_QUAD_TETRA		&output_quad_tetra
+static Gmsh::OutputQuadTetra output_quad_tetra;
+#define OUTPUT_QUAD_TETRA		&output_quad_tetra
 #else
-	#define OUTPUT_QUAD_TETRA		NULL
+#define OUTPUT_QUAD_TETRA		NULL
 #endif
 
 #ifdef WITH_HEX
-	static Gmsh::OutputQuadHex output_quad_hex;
-	#define OUTPUT_QUAD_HEX			&output_quad_hex
+static Gmsh::OutputQuadHex output_quad_hex;
+#define OUTPUT_QUAD_HEX			&output_quad_hex
 #else
-	#define OUTPUT_QUAD_HEX			NULL
+#define OUTPUT_QUAD_HEX			NULL
 #endif
 
 static Gmsh::OutputQuad *output_quad[] = { OUTPUT_QUAD_TETRA, OUTPUT_QUAD_HEX, NULL };
@@ -344,9 +338,9 @@ void GmshOutputEngine::dump_scalars(int mode, Point3D *pts, double *values, int 
 	const char *id;
 	switch (mode) {
 		case MODE_TETRAHEDRON: id = "SS2"; break;
-		case MODE_HEXAHEDRON:  id = "SH2"; break;
-		case MODE_PRISM:       ERROR("Unsupported mode."); break;
-		default:               ERROR("Invalid mode."); break;
+		case MODE_HEXAHEDRON: id = "SH2"; break;
+		case MODE_PRISM: ERROR("Unsupported mode."); break;
+		default: ERROR("Invalid mode."); break;
 	}
 
 	// write id
@@ -407,7 +401,7 @@ void GmshOutputEngine::out(MeshFunction *fn, const char *name, int item/* = FN_V
 			int num_pts;
 			switch (mode) {
 				case MODE_TETRAHEDRON: num_pts = 10; break; // quadratic TETRA (see gmsh documentation)
-				case MODE_HEXAHEDRON:  num_pts = 27; break; // quadratic HEX (see gmsh documentation)
+				case MODE_HEXAHEDRON: num_pts = 27; break; // quadratic HEX (see gmsh documentation)
 				case MODE_PRISM: EXIT(ERR_NOT_IMPLEMENTED); break;
 				default: EXIT(ERR_UNKNOWN_MODE); break;
 			}
@@ -500,7 +494,7 @@ void GmshOutputEngine::out(Mesh *mesh) {
 	fprintf(this->out_file, "%d\n", mesh->get_num_active_elements() * Hex::NUM_FACES);
 	FOR_ALL_ELEMENTS(idx, mesh) {
 		Element *element = mesh->elements[idx];
-		Word_t vtcs[Quad::NUM_VERTICES];				// FIXME: HEX-specific
+		Word_t vtcs[Quad::NUM_VERTICES]; // FIXME: HEX-specific
 		for (int iface = 0; iface < Hex::NUM_FACES; iface++) {
 			element->get_face_vertices(iface, vtcs);
 			fprintf(this->out_file, "%ld 3 0 %ld %ld %ld %ld\n", mesh->get_facet_id(element, iface), vtcs[0], vtcs[1], vtcs[2], vtcs[3]);
@@ -537,12 +531,12 @@ void GmshOutputEngine::out_orders(Space *space, const char *name) {
 		for (int iface = 0; iface < Hex::NUM_FACES; iface++) {
 			Word_t fvtcs[Quad::NUM_VERTICES];
 			element->get_face_vertices(iface, fvtcs);
-			Vertex *v[4] = { mesh->vertices[fvtcs[0]], mesh->vertices[fvtcs[1]], mesh->vertices[fvtcs[2]], mesh->vertices[fvtcs[3]] };
+			Vertex *v[4] = {mesh->vertices[fvtcs[0]], mesh->vertices[fvtcs[1]], mesh->vertices[fvtcs[2]], mesh->vertices[fvtcs[3]]};
 			Vertex fcenter((v[0]->x + v[2]->x) / 2.0, (v[0]->y + v[2]->y) / 2.0, (v[0]->z + v[2]->z) / 2.0);
 			fprintf(this->out_file, "%d %lf %lf %lf\n", id++, fcenter.x, fcenter.y, fcenter.z);
 		}
 
-		Vertex *v[4] = { mesh->vertices[vtcs[0]], mesh->vertices[vtcs[1]], mesh->vertices[vtcs[3]], mesh->vertices[vtcs[4]] };
+		Vertex *v[4] = {mesh->vertices[vtcs[0]], mesh->vertices[vtcs[1]], mesh->vertices[vtcs[3]], mesh->vertices[vtcs[4]]};
 		Vertex center((v[0]->x + v[1]->x) / 2.0, (v[0]->y + v[2]->y) / 2.0, (v[0]->z + v[3]->z) / 2.0);
 		fprintf(this->out_file, "%d %lf %lf %lf\n", id++, center.x, center.y, center.z);
 	}
@@ -585,7 +579,7 @@ void GmshOutputEngine::out_orders(Space *space, const char *name) {
 
 		for (int i = 0; i < Hex::NUM_EDGES; i++) {
 			Word_t base = (idx - 1) * 15;
-			Word_t v[4] = { base + pyrel[i][0] + 1, base + pyrel[i][1] + 1, base + pyrel[i][2] + 1, base + pyrel[i][3] + 1};
+			Word_t v[4] = { base + pyrel[i][0] + 1, base + pyrel[i][1] + 1, base + pyrel[i][2] + 1, base + pyrel[i][3] + 1 };
 			fprintf(this->out_file, "%d 3 0 %ld %ld %ld %ld\n", id++, v[0], v[1], v[2], v[3]);
 		}
 	}
@@ -597,8 +591,8 @@ void GmshOutputEngine::out_orders(Space *space, const char *name) {
 	fprintf(this->out_file, "\"%s\"\n", name);
 	fprintf(this->out_file, "%d\n", 0);
 	fprintf(this->out_file, "%d\n", 3);
-	fprintf(this->out_file, "0\n");		// time step (not used, but has to be there)
-	fprintf(this->out_file, "1\n");		// 1 value per node
+	fprintf(this->out_file, "0\n"); // time step (not used, but has to be there)
+	fprintf(this->out_file, "1\n"); // 1 value per node
 	fprintf(this->out_file, "%d\n", (mesh->get_num_active_elements() * Hex::NUM_EDGES));
 
 	id = mesh->get_num_active_elements() + 1;

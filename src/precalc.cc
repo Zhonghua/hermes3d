@@ -17,7 +17,6 @@ PrecalcShapeset::PrecalcShapeset(Shapeset *shapeset)
 	num_components = shapeset->get_num_components();
 	assert(num_components == 1 || num_components == 3);
 	tables = NULL;
-	update_max_index();
 }
 
 
@@ -30,27 +29,17 @@ PrecalcShapeset::PrecalcShapeset(PrecalcShapeset *pss)
 	shapeset = pss->shapeset;
 	num_components = pss->num_components;
 	tables = NULL;
-	update_max_index();
 }
-
 
 PrecalcShapeset::~PrecalcShapeset() {
 	free();
 	JudyLFreeArray(&tables, NULL);
 }
 
-
-void PrecalcShapeset::update_max_index() {
-	max_index = shapeset->get_max_index();
-}
-
-
 void PrecalcShapeset::set_quad(Quad3D *quad) {
 	RealFunction::set_quad(quad);
 
 	set_active_shape(0);
-//	cur_quad = ((master_pss != NULL) ? master_pss : this)->register_quad(quad);
-//	max_order = quad->get_max_order();
 }
 
 void PrecalcShapeset::set_active_shape(int index) {
@@ -72,10 +61,7 @@ void PrecalcShapeset::set_active_shape(int index) {
 	// understood by the base class and indexed by order. The component and
 	// val/d/dd indices are used directly in the Node structure.
 
-//	assert(max_index >= index);
-
-	unsigned key = ((unsigned) (max_index - index) << 3) | cur_quad;
-//	unsigned key = cur_quad | (mode << 3) | ((unsigned) (max_index[mode] - index) << 4);
+	unsigned key = ((unsigned) (index) << 3) | cur_quad;
 
 	void **tab = (master_pss == NULL) ? &tables : &(master_pss->tables);
 	sub_tables = (void **) JudyLIns(tab, key, NULL);
@@ -91,7 +77,6 @@ void PrecalcShapeset::set_active_element(Element *e) {
 		EXIT(ERR_FAILURE, "Using element with incorrect shapeset.");
 
 	Quad3D *quad = get_quad();
-//	max_order = quad->get_max_order();
 
 	element = e;
 }
@@ -179,7 +164,7 @@ void PrecalcShapeset::dump_info(int quad, FILE *f) {
 	void **sub = (void **) JudyLFirst(tables, &key, NULL);
 	while (sub != NULL) {
 		if ((key & 7) == quad) {
-			fprintf(f, "PRIMARY TABLE, index=%ld\n", max_index - (key >> 3));
+			fprintf(f, "PRIMARY TABLE, index=%ld\n", (key >> 3));
 			unsigned long idx = 0;
 			void **nodes = (void **) JudyLFirst(*sub, &idx, NULL);
 			while (nodes != NULL) {

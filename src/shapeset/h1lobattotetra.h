@@ -25,27 +25,22 @@ public:
 	}
 
 	virtual int *get_face_indices(int face, int ori, order2_t order) {
-//		CHECK_FACE(face); CHECK_ORDER(order);
 		return face_indices[face][ori];
 	}
 
 	virtual int *get_bubble_indices(order3_t order) {
-//		CHECK_ORDER(order);
 		return bubble_indices[order.get_idx()];
 	}
 
 	virtual int get_num_edge_fns(order1_t order) const {
-//		CHECK_ORDER(order);
 		return edge_count[order];
 	}
 
 	virtual int get_num_face_fns(order2_t order) const {
-//		CHECK_ORDER(order);
 		return face_count[order.get_idx()];
 	}
 
 	virtual int get_num_bubble_fns(order3_t order) const {
-//		CHECK_ORDER(order);
 		return bubble_count[order.get_idx()];
 	}
 
@@ -79,7 +74,7 @@ protected:
 	int *bubble_count;
 
 	virtual double get_val(int n, int index, double x, double y, double z, int component) {
-		CHECK_INDEX(index); CHECK_COMPONENT(component);
+		CHECK_COMPONENT(component);
 		return shape_table[n][component][index](x, y, z);
 	}
 };

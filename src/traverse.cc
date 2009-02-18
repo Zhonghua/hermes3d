@@ -365,39 +365,6 @@ void Traverse::set_boundary_info(State *s, bool *bnd, FacePos *fp) {
 			bnd[3] = (s->cr.y_hi == ONE) && m->facets[m->get_facet_id(e, 3)]->type == Facet::OUTER;
 			bnd[4] = (s->cr.z_lo == 0)   && m->facets[m->get_facet_id(e, 4)]->type == Facet::OUTER;
 			bnd[5] = (s->cr.z_hi == ONE) && m->facets[m->get_facet_id(e, 5)]->type == Facet::OUTER;
-
-
-//			if (bnd[0]) {
-//				fp[0].h_lo = (double) s->cr.y_lo / ONE; fp[0].h_hi = (double) s->cr.y_hi / ONE;
-//				fp[0].v_lo = (double) s->cr.z_lo / ONE; fp[0].v_hi = (double) s->cr.z_hi / ONE;
-//			}
-//			if (bnd[1]) {
-//				fp[1].h_lo = (double) s->cr.y_lo / ONE; fp[1].h_hi = (double) s->cr.y_hi / ONE;
-//				fp[1].v_lo = (double) s->cr.z_lo / ONE; fp[1].v_hi = (double) s->cr.z_hi / ONE;
-//			}
-//			if (bnd[2]) {
-//				fp[2].h_lo = (double) s->cr.x_lo / ONE; fp[2].h_hi = (double) s->cr.x_hi / ONE;
-//				fp[2].v_lo = (double) s->cr.z_lo / ONE; fp[2].v_hi = (double) s->cr.z_hi / ONE;
-//			}
-//			if (bnd[3]) {
-//				fp[3].h_lo = (double) s->cr.x_lo / ONE; fp[3].h_hi = (double) s->cr.x_hi / ONE;
-//				fp[3].v_lo = (double) s->cr.z_lo / ONE; fp[3].v_hi = (double) s->cr.z_hi / ONE;
-//			}
-//			if (bnd[4]) {
-//				fp[4].h_lo = (double) s->cr.x_lo / ONE; fp[4].h_hi = (double) s->cr.x_hi / ONE;
-//				fp[4].v_lo = (double) s->cr.y_lo / ONE; fp[4].v_hi = (double) s->cr.y_hi / ONE;
-//			}
-//			if (bnd[5]) {
-//				fp[5].h_lo = (double) s->cr.x_lo / ONE; fp[5].h_hi = (double) s->cr.x_hi / ONE;
-//				fp[5].v_lo = (double) s->cr.y_lo / ONE; fp[5].v_hi = (double) s->cr.y_hi / ONE;
-//			}
-//
-//			for (int i = 0; i < 6; i++) {
-//				if (bnd[i]) {
-//					printf(" * %d: (% lf, % lf) x (% lf, % lf)\n", i, fp[i].h_lo, fp[i].h_hi, fp[i].v_lo, fp[i].v_hi);
-//
-//				}
-//			}
 			break;
 
 		case MODE_TETRAHEDRON:
@@ -425,7 +392,6 @@ void Traverse::set_boundary_info(State *s, bool *bnd, FacePos *fp) {
 
 			fp[iface].marker = b->marker;
 			fp[iface].face = iface;
-//			printf("Dis: iface = %d\n", iface);
 		}
 	}
 }
@@ -471,7 +437,6 @@ void Traverse::hex_push_son_states(State *s) {
 						ns->trans[i] = son + 1;
 					}
 					else {
-//						printf(" - son[%d][%d] = %d\n", i, j, trans_to_son_idx(sons[i][j]));
 						Word_t eid = s->e[i]->get_son(trans_to_son_idx(sons[i][j]));
 						ns->e[i] = meshes[i]->elements[eid];
 						hex_move_to_son(ns->er + i, s->er + i, sons[i][j]);
@@ -611,8 +576,6 @@ Element **Traverse::get_next_state(bool *bnd, FacePos *fp) {
 
 
 void Traverse::begin(int n, Mesh **meshes, Transformable **fn) {
-//	printf("Traverse::begin: n = %d\n", n);
-
 	assert(n > 0);
 	num = n;
 
@@ -644,8 +607,6 @@ static void free_state(State *state) {
 
 
 void Traverse::finish() {
-//	printf("Traverse::finish\n");
-
 	if (stack == NULL) return;
 
 	for (int i = 0; i < size; i++)
@@ -681,8 +642,6 @@ uint64 hex_init_idx(Box *cr, Box *er) {
 }
 
 void Traverse::hex_union_rec(Box *cr, Element **e, Box *er, uint64 *idx, Element *uni) {
-//	printf("Traverse::hex_union_rec\n");
-
 	// state arrays
 	Element *e_new[num];
 	Box er_new[num], cr_new;
@@ -695,8 +654,6 @@ void Traverse::hex_union_rec(Box *cr, Element **e, Box *er, uint64 *idx, Element
 	for (int i = 0; i < num; i++)
 		if (!e[i]->active)
 			split |= get_hex_split_and_sons(e[i], cr, er + i, sons[i] + 0);
-
-//	printf(" - split = 0x%x\n", split);
 
 	int sidx[4];
 	int son0, son1, reft;
@@ -780,7 +737,7 @@ void Traverse::hex_union_rec(Box *cr, Element **e, Box *er, uint64 *idx, Element
 }
 
 void Traverse::union_recurrent(Box *cr, Element **e, Box *er, uint64 *idx, Element *uni) {
-  int i, j;
+	int i, j;
 
 	// are we at the bottom?
 	bool leaf = true;

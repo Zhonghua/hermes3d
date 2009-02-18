@@ -10,7 +10,7 @@
 // maximal order of quadratures for triangle
 #define MAX_QUAD_ORDER_TRI							20
 // maximal order of quadratures for tetra
-#define MAX_QUAD_ORDER_TETRA							20
+#define MAX_QUAD_ORDER_TETRA						20
 
 
 // orders
@@ -118,21 +118,6 @@ struct order2_t {
 		}
 	}
 
-/*	order2_t operator=(const int o) {
-		this->type = (o >> 31);
-		switch (this->type) {
-			case MODE_TRIANGLE: this->order = o & 0x7fffffff; break;
-			case MODE_QUAD:
-				this->y = (o >> 10) & 0x3FF;
-				this->x = o & 0x3FF;
-				break;
-			default: assert(false);
-		}
-		return *this;
-	}
-*/
-
-//	operator const char *() {
 	const char *str() {
 		static char s[64];
 		switch (type) {
@@ -142,14 +127,6 @@ struct order2_t {
 		}
 		return s;
 	}
-
-//	operator int() {
-//		switch (type) {
-//			case MODE_TRIANGLE: return this->order;
-//			case MODE_QUAD: return (this->x << 10) | this->y;
-//			default: assert(false);
-//		}
-//	}
 
 	int get_idx() {
 		switch (type) {
@@ -167,14 +144,6 @@ struct order2_t {
 			default: assert(false);
 		}
 	}
-
-//	operator Word_t() {
-//		switch (type) {
-//			case MODE_TRIANGLE: return this->order;
-//			case MODE_QUAD: return (this->x << 10) | this->y;
-//			default: assert(false);
-//		}
-//	}
 };
 
 inline order2_t max(order2_t a, order2_t b) {
@@ -289,7 +258,6 @@ struct order3_t {
 		}
 	}
 
-//	operator const char *() {
 	const char *str() {
 		static char s[64];
 		switch (type) {
@@ -299,15 +267,6 @@ struct order3_t {
 		}
 		return s;
 	}
-
-//	operator int() {
-//		int ord;
-//		switch (type) {
-//			case MODE_TETRAHEDRON: return this->order;
-//			case MODE_HEXAHEDRON: return (((this->x << 10) | this->y) << 10) | this->z;
-//			default: assert(false);
-//		}
-//	}
 
 	int get_idx() {
 		assert(!invalid());

@@ -3,7 +3,6 @@
 
 #include <common/array.h>
 #include <common/error.h>
-//#include <common/trace.h>
 
 /// AsmList is a simple container for the element assembly arrays idx, dof, coef. and ori
 /// These arrays are filled by Space::get_element_assembly_list() and used by the
@@ -13,7 +12,6 @@
 /// @ingroup assembling
 class AsmList {
 public:
-
 	long int *idx;
 	int *dof;
 	scalar *coef;

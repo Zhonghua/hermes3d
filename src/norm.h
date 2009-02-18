@@ -22,16 +22,6 @@ double hcurl_norm(MeshFunction *sln);
 double l2_error_hcurl(MeshFunction *sln1, MeshFunction *sln2);
 double l2_norm_hcurl(MeshFunction *sln);
 
-#if 0
-double l2_error_norm(Solution *sln1, Solution *sln2);
-double l2_norm(Solution *sln);
-double l2_error_norm_exact(Solution *sln, scalar (*exact)(double x, double y, double z, scalar &dx, scalar &dy, scalar &dz));
-
-double h1_error_norm(Solution *sln1, Solution *sln2);
-double h1_norm(Solution *sln);
-double h1_error_norm_exact(Solution *sln, scalar (*exact)(double x, double y, double z, scalar &dx, scalar &dy, scalar &dz));
-#endif
-
 /// @}
 
 #endif

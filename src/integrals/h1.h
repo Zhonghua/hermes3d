@@ -240,7 +240,6 @@ inline double int_h1_error(Function<T> *fu, Function<T> *fv, RefMap *ru, RefMap 
 	return result;
 }
 
-
 template<typename T>
 inline double int_h1_semi_error(Function<T> *fu, Function<T> *fv, RefMap *ru, RefMap *rv) {
 	Quad3D *quad = fu->get_quad();

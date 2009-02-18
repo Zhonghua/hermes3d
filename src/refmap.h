@@ -35,19 +35,14 @@ public:
 	/// Must be called prior to using all other functions in the class.
 	virtual void set_active_element(Element *e);
 
-	/// \return True if the jacobian of the reference map is constant (which
+	/// @return True if the jacobian of the reference map is constant (which
 	/// is the case for non-curvilinear tetra elements), false otherwise.
 	bool is_jacobian_const() const { return is_const; }
 
-//	/// \return True if the jacobian of the reference map is diagonal (even
-//	/// though probably non-constant). This is the case for axis-aligned
-//	/// non-curvilinear hex elements (???).
-//	bool is_jacobian_diag() const { return is_diag; }
-
-	/// \return The increase in the integration order due to the reference map.
+	/// @return The increase in the integration order due to the reference map.
 	order3_t get_ref_order() const { return ref_order; }
 
-	/// \return The increase in the integration order due to the inverse reference map.
+	/// @return The increase in the integration order due to the inverse reference map.
 	order3_t get_inv_ref_order() const { return inv_ref_order; }
 
 	/// If the jacobian of the reference map is constant, this is the fast
@@ -65,55 +60,55 @@ public:
 	/// @return The transposed inverse matrix of the reference map.
 	double3x3 *get_const_inv_ref_map() { return &const_inv_ref_map; }
 
-	/// \return The jacobian of the reference map precalculated at the integration
+	/// @return The jacobian of the reference map precalculated at the integration
 	/// points of the specified order. Intended for non-constant jacobian elements.
-	/// \param order [in] Integration order
+	/// @param order [in] Integration order
 	double *get_jacobian(qorder_t order) {
 		if (!cur_node->jacobian.exists(order)) calc_inv_ref_map(order);
 		return cur_node->jacobian[order];
 	}
 
-	/// \return The jacobi matrices of the reference map precalculated at the
+	/// @return The jacobi matrices of the reference map precalculated at the
 	/// integration points of the specified order. Intended for non-constant
 	/// jacobian elements.
-	/// \param order [in] Integration order
+	/// @param order [in] Integration order
 	double3x3 *get_ref_map(qorder_t order) {
 		if (!cur_node->inv_ref_map.exists(order)) calc_inv_ref_map(order);
 		return cur_node->ref_map[order];
 	}
 
-	/// \return The transposed inverse matrices of the reference map precalculated at the
+	/// @return The transposed inverse matrices of the reference map precalculated at the
 	/// integration points of the specified order. Intended for non-constant
 	/// jacobian elements.
-	/// \param order [in] Integration order
+	/// @param order [in] Integration order
 	double3x3 *get_inv_ref_map(qorder_t order) {
 		assert(cur_node != NULL);
 		if (!cur_node->inv_ref_map.exists(order)) calc_inv_ref_map(order);
 		return cur_node->inv_ref_map[order];
 	}
 
-	/// \return The x-coordinates of the integration points transformed to the
+	/// @return The x-coordinates of the integration points transformed to the
 	/// physical domain of the element. Intended for integrals containing spatial
 	/// variables.
-	/// \param order [in] Integration order
+	/// @param order [in] Integration order
 	double *get_phys_x(order3_t order) {
 		if (!cur_node->phys_x.exists(order.get_idx())) calc_phys_x(order);
 		return cur_node->phys_x.get(order.get_idx());
 	}
 
-	/// \return The y-coordinates of the integration points transformed to the
+	/// @return The y-coordinates of the integration points transformed to the
 	/// physical domain of the element. Intended for integrals containing spatial
 	/// variables.
-	/// \param order [in] Integration order
+	/// @param order [in] Integration order
 	double *get_phys_y(order3_t order) {
 		if (!cur_node->phys_y.exists(order.get_idx())) calc_phys_y(order);
 		return cur_node->phys_y.get(order.get_idx());
 	}
 
-	/// \return The z-coordinates of the integration points transformed to the
+	/// @return The z-coordinates of the integration points transformed to the
 	/// physical domain of the element. Intended for integrals containing spatial
 	/// variables.
-	/// \param order [in] Integration order
+	/// @param order [in] Integration order
 	double *get_phys_z(order3_t order) {
 		if (!cur_node->phys_z.exists(order.get_idx())) calc_phys_z(order);
 		return cur_node->phys_z.get(order.get_idx());
@@ -300,7 +295,6 @@ protected:
 	void calc_phys_x(order3_t order);
 	void calc_phys_y(order3_t order);
 	void calc_phys_z(order3_t order);
-//	void calc_tangent(int edge);
 
 	void calc_edge_phys_x(int edge, order1_t order);
 	void calc_edge_phys_y(int edge, order1_t order);

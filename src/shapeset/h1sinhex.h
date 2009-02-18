@@ -5,6 +5,7 @@
 #include "../mesh.h"
 #include "../refdomain.h"
 #include "hex.h"
+#include "common.h"
 
 
 /// H1 shapeset for hexahedra
@@ -22,48 +23,34 @@ public:
 	}
 
 	virtual int *get_edge_indices(int edge, int ori, order1_t order) {
-		CHECK_EDGE(edge); CHECK_EDGE_ORDER(order);
-		if (order == 0) order = max_edge_order;
+		CHECK_EDGE(edge);
 		if (!edge_indices[edge][ori].exists(order)) compute_edge_indices(edge, ori, order);
 		return edge_indices[edge][ori][order];
 	}
 
 	virtual int *get_face_indices(int face, int ori, order2_t order) {
- 		CHECK_FACE(face); CHECK_FACE_ORDER(order);
-		if (order == 0) order = max_face_order;
-		if (!face_indices[face][ori].exists(order)) compute_face_indices(face, ori, order);
-		return face_indices[face][ori][order];
+ 		CHECK_FACE(face);
+		if (!face_indices[face][ori].exists(order.get_idx())) compute_face_indices(face, ori, order);
+		return face_indices[face][ori][order.get_idx()];
 	}
 
   	virtual int *get_bubble_indices(order3_t order) {
- 		CHECK_ORDER(order);
-		if (order == 0) order = max_order;
-		if (!bubble_indices.exists(order)) compute_bubble_indices(order);
-		return bubble_indices[order];
+		if (!bubble_indices.exists(order.get_idx())) compute_bubble_indices(order);
+		return bubble_indices[order.get_idx()];
 	}
 
 	virtual int get_num_edge_fns(order1_t order) const {
-		CHECK_EDGE_ORDER(order);
 		if (order > 1) return (order - 1);
 		else return 0;
 	}
 
 	virtual int get_num_face_fns(order2_t order) const {
-		CHECK_FACE_ORDER(order);
-		int order1 = GET_QUAD_ORDER_1(order);
-		int order2 = GET_QUAD_ORDER_2(order);
-
-		if (order1 > 1 && order2 > 1) return (order1 - 1) * (order2 - 1);
+		if (order.x > 1 && order.y > 1) return (order.x - 1) * (order.y - 1);
 		else return 0;
 	}
 
 	virtual int get_num_bubble_fns(order3_t order) const {
-		CHECK_ORDER(order);
-		int order1 = GET_HEX_ORDER_1(order);
-		int order2 = GET_HEX_ORDER_2(order);
-		int order3 = GET_HEX_ORDER_3(order);
-
-		if (order1 > 1 && order2 > 1 && order3 > 1) return (order1 - 1) * (order2 - 1) * (order3 - 1);
+		if (order.x > 1 && order.y > 1 && order.z > 1) return (order.x - 1) * (order.y - 1) * (order.z - 1);
 		else return 0;
 	}
 
@@ -71,24 +58,9 @@ public:
 
 	virtual int get_edge_orientations() const { return RefHex::get_edge_orientations(); }
 
-	virtual int get_order(int index) const {
-		if (index >= 0) {
-			int ori = GET_ORI_FROM_INDEX(index);
-			int idx = GET_IDX_FROM_INDEX(index);
+	virtual order3_t get_order(int index) const;
 
-			CHECK_INDEX(idx);
-			int ord = index_to_order[idx];
-			return ord;
-		}
-		else {
-			EXIT(ERR_NOT_IMPLEMENTED);
-			return 0;
-		}
-	}
-
-	virtual int get_shape_type(int index) const {
-		return -1;
-	}
+	virtual int get_shape_type(int index) const { return -1; }
 
 protected:
 	// some constants
@@ -97,19 +69,15 @@ protected:
 
 	shape_fn_deleg_t shape_table_deleg[VALUE_TYPES];
 
-	// for validation (set in the constructor)
-	int max_edge_order;
-	int max_face_order;
-
 	/// Indices of vertex shape functions on reference element, indexing: [vertex shape fn index]
 	int *vertex_indices;
 	Array<int *> edge_indices[Hex::NUM_EDGES][NUM_EDGE_ORIS];
 	Array<int *> face_indices[Hex::NUM_FACES][NUM_FACE_ORIS];
 	Array<int *> bubble_indices;
 
-	void compute_edge_indices(int edge, int ori, int order);
-	void compute_face_indices(int face, int ori, int order);
-	void compute_bubble_indices(int order);
+	void compute_edge_indices(int edge, int ori, order1_t order);
+	void compute_face_indices(int face, int ori, order2_t order);
+	void compute_bubble_indices(order3_t order);
 
 	virtual double get_val(int n, int index, double x, double y, double z, int component) {
 		// use on-the-fly function
@@ -119,7 +87,7 @@ protected:
 
 	/// --- put CED specific stuff here ---
 	virtual CEDComb *calc_constrained_edge_combination(int ori, int order, Part part);
-	virtual CEDComb *calc_constrained_edge_face_combination(int ori, int order, Part part);
+	virtual CEDComb *calc_constrained_edge_face_combination(int ori, int order, Part part, int dir);
 	virtual CEDComb *calc_constrained_face_combination(int ori, int order, Part part);
 };
 

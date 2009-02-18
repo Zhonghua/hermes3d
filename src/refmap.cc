@@ -344,8 +344,6 @@ void RefMap::calc_edge_phys_z(int edge, order1_t order) {
 
 //TODO rewrite in simmilar way to nonconst function
 void RefMap::calc_face_const_jacobian(int face) {
-//	TODO: ERROR("RefMap::calc_face_const_jacobian: FIXME: Transformation not called");
-
 	assert(cur_node->face_mode[face] == MODE_TRIANGLE);
 
 	// physical triangle
@@ -387,8 +385,6 @@ void RefMap::calc_face_const_jacobian(int face) {
 
 
 void RefMap::calc_face_jacobian(int face, order2_t order) {
-//	TODO: ERROR("RefMap::calc_face_jacobian: FIXME: Transformation not called");
-
 	assert(mesh != NULL);
 
 	int np = quad->get_face_num_points(face, order);
@@ -400,7 +396,6 @@ void RefMap::calc_face_jacobian(int face, order2_t order) {
 
 	qorder_t surf_order = FACE_QORDER(face, order);
 
-//	pss->force_transform(sub_idx, ctm);		// checkme
 	for (int i = 0; i < RefHex::get_face_num_of_vertices(face); i++) {
 		double *dx, *dy, *dz;
 		pss->set_active_shape(indices[face_vertices[i]]);
@@ -455,15 +450,12 @@ void RefMap::calc_face_jacobian(int face, order2_t order) {
 // this is in fact identical to calc_inv_ref_map
 // the only difference is, that everything is calculated in integration points on given face
 void RefMap::calc_face_inv_ref_map(int face, order2_t order) {
-//	TODO: ERROR("RefMap::calc_face_inv_ref_map: FIXME: Transformation not called");
-
 	int np = quad->get_face_num_points(face, order);
 
 	double3x3 *m = new double3x3[np];
 	MEM_CHECK(m);
 	memset(m, 0, np * sizeof(double3x3));
 
-//	pss->force_transform(sub_idx, ctm);			// checkme
 	for (int i = 0; i < num_coefs; i++) {
 		double *dx, *dy, *dz;
 		pss->set_active_shape(indices[i]);
@@ -561,12 +553,9 @@ void RefMap::calc_face_phys_z(int face, order2_t order) {
 }
 
 void RefMap::calc_face_normal(int face, order2_t order) {
-//	TODO: ERROR("RefMap::calc_face_normal: FIXME: Transformation not called");
-
 	assert(mesh != NULL);
 
 	int np = quad->get_face_num_points(face, order);
-
 	double3x3 *m = get_face_ref_map(face, order);
 
 	Point3D *normal = new Point3D[np];
@@ -616,8 +605,6 @@ void RefMap::calc_vertex_phys() {
 //
 
 void RefMap::init_node(Node **pp) {
-//	printf("RefMap::init_node\n");
-
 	Node *node = *pp = new Node;
 	MEM_CHECK(node);
 
@@ -740,13 +727,9 @@ void RefMap::free_node(Node *node) {
 	delete [] node->face_inv_ref_map;
 
 	delete node;
-
-//	printf("RefMap::free_node\n");
 }
 
 void RefMap::update_cur_node() {
-//	printf("RefMap::update_cur_node: sub_idx = %d, max_idx = %d\n", sub_idx, max_idx);
-
 	Node **pp = (sub_idx > max_idx) ? handle_overflow() : (Node **) JudyLIns(&nodes, sub_idx, NULL);
 	if (*pp == NULL) init_node(pp);
 	cur_node = *pp;

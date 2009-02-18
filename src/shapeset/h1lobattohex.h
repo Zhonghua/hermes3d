@@ -8,15 +8,6 @@
 
 /// H1 shapeset for hexahedra
 ///
-/// NOTE: This shapeset is very large. We use product geometry for calculating values of shape functions. Each function index
-/// has to represent a shape function and its orientation. The encoeing is as following:
-///  iii...iiii|ooo
-///
-///  ooo - last 3 bits represent the orientation (there is 8 possible orientations)
-///  iii - is the index of shape function
-///
-/// Use GET_ORI_FROM_INDEX and GET_IDX_FROM_INDEX macroes for working with shape function indices.
-///
 /// @ingroup shapesets
 class H1ShapesetLobattoHex : public Shapeset {
 public:
@@ -30,49 +21,33 @@ public:
 
 	virtual int *get_edge_indices(int edge, int ori, order1_t order) {
 		CHECK_EDGE(edge);
-//		CHECK_EDGE_ORDER(order);
-//		if (order == 0) order = max_edge_order;
 		if (!edge_indices[edge][ori].exists(order)) compute_edge_indices(edge, ori, order);
 		return edge_indices[edge][ori][order];
 	}
 
 	virtual int *get_face_indices(int face, int ori, order2_t order) {
 		CHECK_FACE(face);
-//		CHECK_FACE_ORDER(order);
-//		if (order == 0) order = max_face_order;
 		if (!face_indices[face][ori].exists(order.get_idx())) compute_face_indices(face, ori, order);
 		return face_indices[face][ori][order.get_idx()];
 	}
 
   	virtual int *get_bubble_indices(order3_t order) {
-// 		CHECK_ORDER(order);
-//		 if (order == 0) order = max_order;
 		if (!bubble_indices.exists(order.get_idx())) compute_bubble_indices(order);
 		return bubble_indices[order.get_idx()];
 	}
 
 	virtual int get_num_edge_fns(order1_t order) const {
-//		CHECK_EDGE_ORDER(order);
 		if (order > 1) return (order - 1);
 		else return 0;
 	}
 
 	virtual int get_num_face_fns(order2_t order) const {
-//		CHECK_FACE_ORDER(order);
-		int order1 = order.x;
-		int order2 = order.y;
-
-		if (order1 > 1 && order2 > 1) return (order1 - 1) * (order2 - 1);
+		if (order.x > 1 && order.y > 1) return (order.x - 1) * (order.y - 1);
 		else return 0;
 	}
 
 	virtual int get_num_bubble_fns(order3_t order) const {
-//		CHECK_ORDER(order);
-		int order1 = order.x;
-		int order2 = order.y;
-		int order3 = order.z;
-
-		if (order1 > 1 && order2 > 1 && order3 > 1) return (order1 - 1) * (order2 - 1) * (order3 - 1);
+		if (order.x > 1 && order.y > 1 && order.z > 1) return (order.x - 1) * (order.y - 1) * (order.z - 1);
 		else return 0;
 	}
 
@@ -82,9 +57,7 @@ public:
 
 	virtual order3_t get_order(int index) const;
 
-	virtual int get_shape_type(int index) const {
-		return -1;
-	}
+	virtual int get_shape_type(int index) const { return -1; }
 
 protected:
 	// some constants
@@ -92,10 +65,6 @@ protected:
 	static const int NUM_FACE_ORIS = 8;
 
 	shape_fn_deleg_t shape_table_deleg[VALUE_TYPES];
-
-	// for validation (set in the constructor)
-	int max_edge_order;
-	int max_face_order;
 
 	/// Indices of vertex shape functions on reference element, indexing: [vertex shape fn index]
 	int *vertex_indices;

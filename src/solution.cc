@@ -104,9 +104,6 @@ void Solution::set_quad(Quad3D *quad) {
 }
 
 void Solution::set_active_element(Element *e) {
-//	if (e == element) return;
-//	TODO: ^^^
-
 	MeshFunction::set_active_element(e);
 
 	// try finding an existing table for e
@@ -123,7 +120,6 @@ void Solution::set_active_element(Element *e) {
 		elems[cur_quad][cur_elem] = e;
 	}
 
-//	element = e;
 	mode = e->get_mode();
 
 	assert(space != NULL);
@@ -131,8 +127,6 @@ void Solution::set_active_element(Element *e) {
 	assert(slave_pss != NULL);
 	slave_pss->set_active_element(e);
 
-//	max_order = slave_pss->max_order;
-//	printf("max order set to %d\n", max_order);
 	sub_tables = &(tables[cur_quad][cur_elem]);
 	update_nodes_ptr();
 
@@ -353,7 +347,6 @@ void Solution::enable_transform(bool enable) {
 ExactSolution::ExactSolution(Mesh *mesh, exact_fn_t fn0, exact_fn_t fn1, exact_fn_t fn2)
 	: MeshFunction(mesh)
 {
-//	this->mesh = mesh;
 	fn[0] = fn0;
 	fn[1] = fn1;
 	fn[2] = fn2;
@@ -361,7 +354,6 @@ ExactSolution::ExactSolution(Mesh *mesh, exact_fn_t fn0, exact_fn_t fn1, exact_f
 	else if (fn2 == NULL) num_components = 2;
 	else num_components = 3;
 	memset(tables, 0, sizeof(tables));
-//	refmap = NULL;
 }
 
 ExactSolution::~ExactSolution() {
@@ -469,29 +461,5 @@ void ExactSolution::precalculate(qorder_t qord, int mask) {
 
 void ConstantSolution::precalculate(qorder_t order, int mask) {
 	EXIT(ERR_NOT_IMPLEMENTED);
-#if 0
-	Quad3D *quad = quads[cur_quad];
-//	quad->set_mode(mode);
-	int np = quad->get_num_points(order);
-
-	assert(!(mask & ~FN_DEFAULT));
-	mask = FN_DEFAULT;
-	Node *node = new_node(mask, np);
-	MEM_CHECK(node);
-
-	// evaluate the exact solution
-	for (int j = 0; j < num_components; j++) {
-		for (int i = 0; i < np; i++) {
-			node->values[j][FN][i] = c[j];
-			node->values[j][DX][i] = 0.0;
-			node->values[j][DY][i] = 0.0;
-			node->values[j][DZ][i] = 0.0;
-		}
-	}
-
-
-	// remove the old node and attach the new one
-	replace_cur_node(node);
-#endif
 }
 

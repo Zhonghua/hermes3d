@@ -1,5 +1,5 @@
 //
-// umfpacksolver.cc
+// linsolver.cc
 //
 
 #include "config.h"
@@ -45,15 +45,11 @@ void LinearSolver::insert_value(int *Ai, scalar *Ax, int Alen, int idx, scalar v
 		while (1) {
 			mid = (lo + hi) >> 1;
 
-			if (idx < Ai[mid])
-				hi = mid - 1;
-			else if (idx > Ai[mid])
-				lo = mid + 1;
-			else
-				break;
+			if (idx < Ai[mid]) hi = mid - 1;
+			else if (idx > Ai[mid]) lo = mid + 1;
+			else break;
 
-			if (lo > hi)
-				EXIT(ERR_FAILURE, "Sparse matrix entry not found.");
+			if (lo > hi) EXIT(ERR_FAILURE, "Sparse matrix entry not found.");
 		}
 
 		Ax[mid] += value;

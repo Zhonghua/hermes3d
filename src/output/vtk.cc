@@ -41,9 +41,6 @@ class OutputQuadTetra : public OutputQuad {
 public:
 	OutputQuadTetra();
 	virtual ~OutputQuadTetra();
-
-protected:
-//	virtual void calculate_view_points(int order);
 };
 
 OutputQuadTetra::OutputQuadTetra() {
@@ -52,8 +49,6 @@ OutputQuadTetra::OutputQuadTetra() {
 OutputQuadTetra::~OutputQuadTetra() {
 
 }
-
-
 
 /// Quadrature for visualizing the solution on hexahedron
 ///
@@ -72,77 +67,19 @@ protected:
 	void calc_table(int order);
 };
 
-
 OutputQuadHex::OutputQuadHex() {
 #ifdef WITH_HEX
 	mode = MODE_HEXAHEDRON;
-/*	max_order = MAKE_HEX_ORDER(MAX_QUAD_ORDER, MAX_QUAD_ORDER, MAX_QUAD_ORDER);
-	max_edge_order = 0;				// not used
-	max_face_order = 0;				// not used
-
-	int num = max_order + 1;
-
-	// allocate memory for tables (tables are calculated on demand)
-	tables = new QuadPt3D *[num];
-	memset(tables, 0, num * sizeof(QuadPt3D *));
-
-	// number of integration points
-	np = new int [num];
-	memset(np, 0, num * sizeof(int));
-
-	for (int i = 0; i <= MAX_QUAD_ORDER; i++) {
-		for (int j = 0; j <= MAX_QUAD_ORDER; j++) {
-			for (int o = 0; o <= MAX_QUAD_ORDER; o++) {
-				int m = MAKE_HEX_ORDER(i, j, o);
-				np[m] = (i + 1) * (j + 1) * (o + 1);
-			}
-		}
-	}
-*/
 #endif
 }
 
 OutputQuadHex::~OutputQuadHex() {
 #ifdef WITH_HEX
-/*	// free hexa points
-	for (int i = 0; i <= MAX_QUAD_ORDER; i++) {
-		for (int j = 0; j <= MAX_QUAD_ORDER; j++) {
-			for (int o = 0; o <= MAX_QUAD_ORDER; o++) {
-				int m = MAKE_HEX_ORDER(i, j, o);
-				delete [] tables[m];
-			}
-		}
-	}
-	delete [] tables;
-	delete [] np;
-*/
 #endif
 }
 
 void OutputQuadHex::calc_table(int order) {
 #ifdef WITH_HEX
-/*	tables[order] = new QuadPt3D[np[order]];
-	int i, j, o;
-	i = GET_HEX_ORDER_1(order);
-	j = GET_HEX_ORDER_2(order);
-	o = GET_HEX_ORDER_3(order);
-	double step_i, step_j, step_o;
-	step_i = 2.0 / i;
-	step_j = 2.0 / j;
-	step_o = 2.0 / o;
-
-	for (int k = 0, n = 0; k < i + 1; k++) {
-		for (int l = 0; l < j + 1; l++) {
-			for (int p = 0; p < o + 1; p++, n++) {
-				assert(n < np[order]);
-				tables[order][n].x = (step_i * k) - 1;
-				tables[order][n].y = (step_j * l) - 1;
-				tables[order][n].z = (step_o * p) - 1;
-				tables[order][n].w = 0.0;	// not used
-			}
-		}
-	}
-*/
 #else
 	EXIT(ERR_HEX_NOT_COMPILED);
 #endif
@@ -156,17 +93,17 @@ void OutputQuadHex::calc_table(int order) {
 
 //
 #ifdef WITH_TETRA
-	static Vtk::OutputQuadTetra output_quad_tetra;
-	#define OUTPUT_QUAD_TETRA		&output_quad_tetra
+static Vtk::OutputQuadTetra output_quad_tetra;
+#define OUTPUT_QUAD_TETRA		&output_quad_tetra
 #else
-	#define OUTPUT_QUAD_TETRA		NULL
+#define OUTPUT_QUAD_TETRA		NULL
 #endif
 
 #ifdef WITH_HEX
-	static Vtk::OutputQuadHex output_quad_hex;
-	#define OUTPUT_QUAD_HEX			&output_quad_hex
+static Vtk::OutputQuadHex output_quad_hex;
+#define OUTPUT_QUAD_HEX			&output_quad_hex
 #else
-	#define OUTPUT_QUAD_HEX			NULL
+#define OUTPUT_QUAD_HEX			NULL
 #endif
 
 static Vtk::OutputQuad *output_quad[] = { OUTPUT_QUAD_TETRA, OUTPUT_QUAD_HEX, NULL };
@@ -181,7 +118,7 @@ VtkOutputEngine::~VtkOutputEngine() {
 
 void VtkOutputEngine::dump_points(MeshFunction *fn) {
 	Array<Point3D *> vertices;
-	Array<int *> cells[3];				// 3 types of elements
+	Array<int *> cells[3]; // 3 types of elements
 
 	int type[] = { MODE_TETRAHEDRON, MODE_HEXAHEDRON, MODE_PRISM };
 	int type_id[] = { VTK_TETRA, VTK_HEXAHEDRON, VTK_WEDGE };
@@ -196,6 +133,7 @@ void VtkOutputEngine::dump_points(MeshFunction *fn) {
 		order3_t order;
 		switch (mode) {
 			case MODE_HEXAHEDRON: order = order3_t(8, 8, 8); break;
+			default: EXIT(ERR_NOT_IMPLEMENTED); break;
 		}
 
 		Vtk::OutputQuad *quad = output_quad[mode];
@@ -220,20 +158,15 @@ void VtkOutputEngine::dump_points(MeshFunction *fn) {
 
 		// insert cells
 		switch (mode) {
-			case MODE_HEXAHEDRON: {
-				int size_i, size_j, size_o;
-				size_i = order.x;
-				size_j = order.y;
-				size_o = order.z;
-
-				for (int i = 0; i < size_i; i++) {
-					for (int j = 0; j < size_j; j++) {
-						for (int o = 0; o < size_o; o++) {
+			case MODE_HEXAHEDRON:
+				for (int i = 0; i < order.x; i++) {
+					for (int j = 0; j < order.y; j++) {
+						for (int o = 0; o < order.z; o++) {
 							int *cell = new int [Hex::NUM_VERTICES];
-							cell[0] = (size_o + 1) * (i * (size_j + 1) + j) + o;
-							cell[1] = cell[0] + ((size_j + 1) * (size_o + 1));
-							cell[2] = cell[1] + (size_o + 1);
-							cell[3] = cell[0] + (size_o + 1);
+							cell[0] = (order.z + 1) * (i * (order.y + 1) + j) + o;
+							cell[1] = cell[0] + ((order.y + 1) * (order.z + 1));
+							cell[2] = cell[1] + (order.z + 1);
+							cell[3] = cell[0] + (order.z + 1);
 							cell[4] = cell[0] + 1;
 							cell[5] = cell[1] + 1;
 							cell[6] = cell[2] + 1;
@@ -243,10 +176,11 @@ void VtkOutputEngine::dump_points(MeshFunction *fn) {
 						}
 					}
 				}
-			} break;
+				break;
 
 			case MODE_PRISM:
-			case MODE_TETRAHEDRON: EXIT(ERR_NOT_IMPLEMENTED); break;
+			case MODE_TETRAHEDRON:
+				EXIT(ERR_NOT_IMPLEMENTED); break;
 
 			default: EXIT(ERR_UNKNOWN_MODE); break;
 		} // switch
@@ -273,7 +207,7 @@ void VtkOutputEngine::dump_points(MeshFunction *fn) {
 		(Tetra::NUM_VERTICES + 1) * cells[0].count() +
 		(Hex::NUM_VERTICES + 1) * cells[1].count() +
 		(Prism::NUM_VERTICES + 1) * cells[2].count());
-	for (int i = 0; i < countof(type); i++) {			// 3 types of elements
+	for (int i = 0; i < countof(type); i++) { // 3 types of elements
 		int pt_cnt[] = { Tetra::NUM_VERTICES, Hex::NUM_VERTICES, Prism::NUM_VERTICES };
 		for (int j = cells[type[i]].first(); j != INVALID_IDX; j = cells[type[i]].next(j)) {
 			fprintf(this->out_file, "%d", pt_cnt[i]);
@@ -285,7 +219,7 @@ void VtkOutputEngine::dump_points(MeshFunction *fn) {
 	fprintf(this->out_file, "\n");
 
 	fprintf(this->out_file, "CELL_TYPES %ld\n", cells[0].count() + cells[1].count() + cells[2].count());
-	for (int i = 0; i < countof(type); i++) {			// 3 types of elements
+	for (int i = 0; i < countof(type); i++) { // 3 types of elements
 		for (int j = 0; j < cells[type[i]].count(); j++)
 			fprintf(this->out_file, "%d\n", type_id[i]);
 	}
@@ -297,7 +231,7 @@ void VtkOutputEngine::dump_points(MeshFunction *fn) {
 	for (Word_t i = vertices.first(); i != INVALID_IDX; i = vertices.next(i))
 		delete vertices[i];
 
-	for (int i = 0; i < 3; i++)			// 3 types of elements
+	for (int i = 0; i < 3; i++) // 3 types of elements
 		for (Word_t j = cells[i].first(); j != INVALID_IDX; j = cells[i].next(j))
 			delete cells[i][j];
 }
@@ -320,14 +254,13 @@ void VtkOutputEngine::dump_scalars(const char *name, MeshFunction *fn, int item)
 		order3_t order(8, 8, 8);
 
 		switch (mode) {
-			// FIXME
+			// TODO
 			case MODE_TETRAHEDRON:
 			case MODE_HEXAHEDRON:
-				break;
-/*			case MODE_TETRAHEDRON: order = space->get_element_order(idx); break;
-			case MODE_HEXAHEDRON: order = get_principal_order(space->get_element_order(idx)); break;
-*/			case MODE_PRISM: EXIT(ERR_NOT_IMPLEMENTED); break;
-			default: EXIT(ERR_UNKNOWN_MODE); break;
+			case MODE_PRISM:
+				EXIT(ERR_NOT_IMPLEMENTED); break;
+			default:
+				EXIT(ERR_UNKNOWN_MODE); break;
 		}
 
 		Vtk::OutputQuad *quad = output_quad[mode];
@@ -339,7 +272,7 @@ void VtkOutputEngine::dump_scalars(const char *name, MeshFunction *fn, int item)
 		scalar *val = fn->get_values(a, b);
 
 		int np = quad->get_num_points(order);
-		for (int i = 0; i < np; i++){
+		for (int i = 0; i < np; i++) {
 			assert(fabs(IMAG(val[i])) < 1e-12);
 			fprintf(this->out_file, "%e\n", REAL(val[i]));
 		}
@@ -363,14 +296,14 @@ void VtkOutputEngine::dump_vectors(const char *name, MeshFunction *fn, int item)
 		order3_t order(8, 8, 8);
 
 		switch (mode) {
-			// FIXME
+			// TODO
 			case MODE_TETRAHEDRON:
 			case MODE_HEXAHEDRON:
 				break;
-/*			case MODE_TETRAHEDRON: order = space->get_element_order(idx); break;
-			case MODE_HEXAHEDRON: order = get_principal_order(space->get_element_order(idx)); break;
-*/			case MODE_PRISM: EXIT(ERR_NOT_IMPLEMENTED); break;
-			default: EXIT(ERR_UNKNOWN_MODE); break;
+			case MODE_PRISM:
+				EXIT(ERR_NOT_IMPLEMENTED); break;
+			default:
+				EXIT(ERR_UNKNOWN_MODE); break;
 		}
 
 		Vtk::OutputQuad *quad = output_quad[mode];
@@ -380,11 +313,11 @@ void VtkOutputEngine::dump_vectors(const char *name, MeshFunction *fn, int item)
 		int a = 0, b = 0;
 		mask_to_comp_val(item, a, b);
 		scalar *val[3];
-		for (int comp = 0; comp < 3; comp++)	// FIXME: magic number
+		for (int comp = 0; comp < 3; comp++) // FIXME: magic number
 			val[comp] = fn->get_values(comp, b);
 
 		int np = quad->get_num_points(order);
-		for (int i = 0; i < np; i++){
+		for (int i = 0; i < np; i++) {
 			assert(fabs(IMAG(val[0][i])) < 1e-12);
 			assert(fabs(IMAG(val[1][i])) < 1e-12);
 			assert(fabs(IMAG(val[2][i])) < 1e-12);

@@ -224,8 +224,6 @@ public:
 	virtual Word_t get_vertex(int vertex_num) const = 0;
 	virtual void get_vertices(Word_t *vtcs) const = 0;
 
-//	virtual int get_edge_num(int face_num, int edge_in_face_num) const = 0;
-
 	// these 2 should not be overloaded
 	virtual int get_edge_vertices(int edge_num, Word_t *vtcs) const = 0;
 	virtual const int *get_edge_vertices(int edge_num) const = 0;
@@ -256,8 +254,6 @@ public:
 	//
 	virtual Word_t get_son(int son_idx) { return INVALID_IDX; }
 	virtual int get_num_of_sons() { return -1; }
-
-	// TODO: API for adaptivity
 
 public:
 	Word_t id;							// id of an element
@@ -363,7 +359,6 @@ public:
 	virtual Word_t get_vertex(int vertex_num) const { return vtcs[vertex_num]; }
 	virtual void get_vertices(Word_t *vtcs) const { memcpy(vtcs, this->vtcs, sizeof(this->vtcs)); }
 
-//	virtual int get_edge_num(int face_num, int edge_in_face_num) const;
 	// FIXME
 	virtual int get_edge_vertices(int edge_num, Word_t *vtcs) const;
 	virtual const int *get_edge_vertices(int edge_num) const;
@@ -420,7 +415,6 @@ public:
 	virtual Word_t get_vertex(int vertex_num) const { return vtcs[vertex_num]; }
 	virtual void get_vertices(Word_t *vtcs) const { memcpy(vtcs, this->vtcs, sizeof(this->vtcs)); }
 
-//	virtual int get_edge_num(int facet_num, int edge_in_facet_num) const;
 	// FIXME
 	virtual int get_edge_vertices(int edge_num, Word_t *vtcs) const;
 	virtual const int *get_edge_vertices(int edge_num) const;
@@ -675,10 +669,6 @@ protected:
 	/// @param[in] b index of the second vertex
 	void set_midpoint(Word_t a, Word_t b, Word_t idx);
 
-	/// referencing elements
-	void ref_element(Element *e);
-	void unref_element(Element *e);
-
 	/// referencing edges
 	void ref_edges(Element *e);
 	void unref_edges(Element *e);
@@ -692,7 +682,6 @@ struct FacePos {
 	int face;			///< element face number (local)
 
 	// for internal use
-//	double h_lo, h_hi, v_lo, v_hi;
 	Element *base;
 	Space *space, *space_u, *space_v;
 };

@@ -36,8 +36,6 @@ Function<TYPE>::Function() {
 	cur_quad = 0;
 
 	sub_idx = 0;
-
-//	max_order = 0;
 }
 
 

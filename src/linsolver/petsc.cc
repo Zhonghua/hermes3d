@@ -91,8 +91,9 @@ void PetscLinearSolver::alloc() {
 		nnz[i] = LinearSolver::sort_and_store_indices(pages[i], ai + pos, ai + aisize);
 		pos += nnz[i];
 	}
-	delete [] pages; pages = NULL;
-	delete [] ai;
+	delete[] pages;
+	pages = NULL;
+	delete[] ai;
 
 	//
 	MatCreateSeqAIJ(PETSC_COMM_SELF, this->ndofs, this->ndofs, 0, nnz, &ms->matrix);
@@ -105,7 +106,7 @@ void PetscLinearSolver::alloc() {
 	// create vector of unknowns
 	VecDuplicate(ms->rhs, &ms->x);
 
-	delete [] nnz;
+	delete[] nnz;
 
 	//
 	KSPCreate(PETSC_COMM_WORLD, &ms->ksp);
@@ -144,9 +145,9 @@ void PetscLinearSolver::update_matrix(int m, int n, scalar **mat, int *rows, int
 #ifdef WITH_PETSC
 	assert(ms != NULL);
 	// TODO: pass in just the block of the matrix without DIRICHLET_DOFs (so that can use MatSetValues directly without checking row and cols for -1)
-	for (int i = 0; i < m; i++)				// rows
-		for (int j = 0; j < n; j++)	 {		// cols
-			if (mat[i][j] != 0.0 && rows[i] != DIRICHLET_DOF && cols[j] != DIRICHLET_DOF) {		// ignore "dirichlet DOF"
+	for (int i = 0; i < m; i++) // rows
+		for (int j = 0; j < n; j++) { // cols
+			if (mat[i][j] != 0.0 && rows[i] != DIRICHLET_DOF && cols[j] != DIRICHLET_DOF) { // ignore "dirichlet DOF"
 				MatSetValues(ms->matrix, 1, rows + i, 1, cols + j, &(mat[i][j]), ADD_VALUES);
 			}
 		}
@@ -158,8 +159,7 @@ void PetscLinearSolver::update_matrix(int m, int n, scalar **mat, int *rows, int
 void PetscLinearSolver::update_rhs(int idx, scalar y) {
 #ifdef WITH_PETSC
 	assert(ms != NULL);
-	if (idx >= 0)
-		VecSetValues(ms->rhs, 1, &idx, &y, ADD_VALUES);
+	if (idx >= 0) VecSetValues(ms->rhs, 1, &idx, &y, ADD_VALUES);
 #else
 	EXIT(ERR_PETSC_NOT_COMPILED);
 #endif
@@ -169,8 +169,7 @@ void PetscLinearSolver::update_rhs(int n, int *idx, scalar *y) {
 #ifdef WITH_PETSC
 	assert(ms != NULL);
 	for (int i = 0; i < n; i++)
-		if (idx[i] >= 0)
-			VecSetValues(ms->rhs, 1, idx + i, y + i, ADD_VALUES);
+		if (idx[i] >= 0) VecSetValues(ms->rhs, 1, idx + i, y + i, ADD_VALUES);
 #else
 	EXIT(ERR_PETSC_NOT_COMPILED);
 #endif
@@ -187,9 +186,10 @@ bool PetscLinearSolver::solve_system(double *sln) {
 	// index map vector (basic serial code uses the map sln[i] = x[i] for all dofs.
 	int *idx = new int[ndofs];
 	MEM_CHECK(idx);
-	for (int i = 0; i < ndofs; i++) idx[i] = i;
+	for (int i = 0; i < ndofs; i++)
+		idx[i] = i;
 	VecGetValues(ms->x, ndofs, idx, sln);
-	delete [] idx;
+	delete[] idx;
 #else
 	EXIT(ERR_PETSC_NOT_COMPILED);
 #endif

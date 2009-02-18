@@ -31,15 +31,11 @@ public:
 	Space *get_space(int idx);
 	PrecalcShapeset *get_pss(int idx);
 
-//	void set_space(int idx, Space *space);
 	void set_spaces(int num, ...);
 	void set_spaces(int num, Space **spaces);
 
-//	void set_pss(int idx, PrecalcShapeset *pss);
 	void set_pss(int num, ...);
 	void set_pss(int num, PrecalcShapeset **pss);
-
-//	void set_space_and_pss(int idx, Space *space, PrecalcShapeset *pss);
 
 	void set_bilinear_form(int i, int j,
 		scalar (*bilinear_form_unsym)(RealFunction*, RealFunction*, RefMap*, RefMap*),
@@ -94,13 +90,8 @@ protected:
 	LiForm  *liform;
 
 	void precalculate_sparse_structure(LinearSolver* solver);
-//	void allocate_matrices();
-//	void assemble_matrices(PrecalcShapeset *ref_map_pss);
 
 	void free_solution_vector();
-
-	FreqMap<Word_t, scalar **> lsm_cache;
-	FreqMap<Word_t, scalar **> lsm_cache_surf;
 };
 
 void update_limit_table(EMode3D mode);

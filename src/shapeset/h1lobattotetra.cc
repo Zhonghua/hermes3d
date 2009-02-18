@@ -4777,12 +4777,7 @@ static shape_fn_t *lobatto_tetra_dz_table[] = {
 H1ShapesetLobattoTetra::H1ShapesetLobattoTetra() {
 #ifdef WITH_TETRA
 	mode = MODE_TETRAHEDRON;
-//	ref_domain = &ref_domain_std_tetra;
-
-	max_order = 10;			// MAX_ELEMENT_ORDER ?
 	num_components = 1;
-
-	max_index = (sizeof(lobatto_tetra_fn) / sizeof(shape_fn_t)) - 1;
 
 	// fn values are calculated by the tables
 	shape_table[FN] = lobatto_tetra_fn_table;
@@ -4797,18 +4792,12 @@ H1ShapesetLobattoTetra::H1ShapesetLobattoTetra() {
 
 	edge_indices = lobatto_tetra_edge_indices;
 	edge_count = lobatto_tetra_edge_count;
-//	edge_total_count = lobatto_tetra_total_edge_count;
 
 	face_indices = lobatto_tetra_face_indices;
 	face_count = lobatto_tetra_face_count;
-//	face_total_count = lobatto_tetra_total_face_count;
 
 	bubble_indices = lobatto_tetra_bubble_indices;
 	bubble_count = lobatto_tetra_bubble_count;
-//	bubble_total_count = lobatto_tetra_total_bubble_count;
-
-//	index_to_order = lobatto_tetra_index_to_order;
-//	index_to_ori_variants = lobatto_tetra_index_to_ori_variants;
 #else
 	EXIT(ERR_TETRA_NOT_COMPILED);
 #endif

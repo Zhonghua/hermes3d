@@ -54,11 +54,6 @@ public:
 	/// allocate the memory for stiffness matrix and right-hand side
 	virtual void alloc() = 0;
 
-	/// allocate the memory for stiffness matrix (by copying given one)
-	///
-	/// @param[in] sparse_matrix   - sparse matrix to copy
-//	virtual void alloc(void* sparse_matrix) = 0;
-
 	/// free the memory associated with stiffness matrix and right-hand side
 	virtual void free() = 0;
 

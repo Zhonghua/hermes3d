@@ -12,10 +12,10 @@ struct UniData {
 	uint64 idx;
 };
 
-#define SPLIT_NONE							0x0000
-#define SPLIT_HEX_X							0x0001
-#define SPLIT_HEX_Y							0x0002
-#define SPLIT_HEX_Z							0x0004
+#define SPLIT_NONE								0x0000
+#define SPLIT_HEX_X								0x0001
+#define SPLIT_HEX_Y								0x0002
+#define SPLIT_HEX_Z								0x0004
 #define SPLIT_HEX_XY							SPLIT_HEX_X | SPLIT_HEX_Y
 #define SPLIT_HEX_XZ							SPLIT_HEX_X | SPLIT_HEX_Z
 #define SPLIT_HEX_YZ							SPLIT_HEX_Y | SPLIT_HEX_Z
@@ -55,7 +55,6 @@ private:
 	State *push_state();
 	void set_boundary_info(State *s, bool *bnd, FacePos *ep);
 	void union_recurrent(Box *cr, Element **e, Box *er, uint64 *idx, Element *uni);
-//	uint64 hex_init_idx(Box *cr, Box *er);
 
 	void hex_union_rec(Box *cr, Element **e, Box *er, uint64 *idx, Element *uni);
 	void hex_push_son_states(State *s);

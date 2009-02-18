@@ -75,7 +75,6 @@
 		}\
 }}
 
-
 #define U_CURL_0 (du2dy[i] - du1dz[i])
 #define U_CURL_1 (du0dz[i] - du2dx[i])
 #define U_CURL_2 (du1dx[i] - du0dy[i])
@@ -171,7 +170,7 @@ inline scalar hcurl_int_curl_u_curl_v(RealFunction *fu, RealFunction *fv, RefMap
 /// Integral \F \u
 ///
 /// @ingroup hcurlintergrals
-inline scalar hcurl_int_F_u(scalar (*F)(double x, double y, double z, int comp), RealFunction *fu, RefMap *ru) {
+inline scalar hcurl_int_F_u(scalar(*F)(double x, double y, double z, int comp), RealFunction *fu, RefMap *ru) {
 	Quad3D *quad = fu->get_quad();
 
 	order3_t o(0, 0, 0);
@@ -195,7 +194,6 @@ inline scalar hcurl_int_F_u(scalar (*F)(double x, double y, double z, int comp),
 }
 
 #define hcurl_int_F_v(F, fv, rv) hcurl_int_F_u(F, fv, rv)
-
 
 // surface integrals //////////////////////////////////////////////////////////////////////////////
 
@@ -224,9 +222,9 @@ inline scalar hcurl_surf_int_G_v(RealFunction *fv, RefMap *rv, FacePos *fp) {
 	double *z = rv->get_face_phys_z(fp->face, face_order);
 
 	HCURL_INTEGRATE_SURF_EXPRESSION(
-	        N_X_V_X_N_0 * fp->space->bc_value_callback_by_coord(fp->marker, x[i], y[i], z[i], 0) +
-			N_X_V_X_N_1 * fp->space->bc_value_callback_by_coord(fp->marker, x[i], y[i], z[i], 1) +
-			N_X_V_X_N_2 * fp->space->bc_value_callback_by_coord(fp->marker, x[i], y[i], z[i], 2));
+		N_X_V_X_N_0 * fp->space->bc_value_callback_by_coord(fp->marker, x[i], y[i], z[i], 0) +
+		N_X_V_X_N_1 * fp->space->bc_value_callback_by_coord(fp->marker, x[i], y[i], z[i], 1) +
+		N_X_V_X_N_2 * fp->space->bc_value_callback_by_coord(fp->marker, x[i], y[i], z[i], 2));
 
 	return result;
 }
@@ -254,6 +252,5 @@ inline scalar hcurl_surf_int_u_v(RealFunction *fu, RealFunction *fv, RefMap *ru,
 	HCURL_INTEGRATE_SURF_EXPRESSION(N_X_U_X_N_0 * N_X_V_X_N_0 + N_X_U_X_N_1 * N_X_V_X_N_1 + N_X_U_X_N_2 * N_X_V_X_N_2);
 	return result;
 }
-
 
 #endif

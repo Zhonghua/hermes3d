@@ -60,7 +60,6 @@ public:
 	virtual int get_edge_orientations() const { return 0; }
 
 	virtual order3_t get_order(int index) const {
-		CHECK_INDEX(index);
 		return order3_t(1);
 	}
 
@@ -70,7 +69,7 @@ public:
 	}
 
 	virtual double get_value(int n, int index, double x, double y, double z, int component) {
-		CHECK_INDEX(index); CHECK_COMPONENT(component);
+		CHECK_COMPONENT(component);
 		return shape_table[n][component][index](x, y, z);
 	}
 
@@ -81,7 +80,7 @@ protected:
 	int  *vertex_indices;
 
 	virtual double get_val(int n, int index, double x, double y, double z, int component) {
-		CHECK_INDEX(index); CHECK_COMPONENT(component);
+		CHECK_COMPONENT(component);
 		return shape_table[n][component][index](x, y, z);
 	}
 };
@@ -146,7 +145,6 @@ public:
 	virtual int get_edge_orientations() const { return 0; }
 
 	virtual order3_t get_order(int index) const {
-		CHECK_INDEX(index);
 		return order3_t(1, 1, 1);
 	}
 
@@ -156,7 +154,7 @@ public:
 	}
 
 	virtual double get_value(int n, int index, double x, double y, double z, int component) {
-		CHECK_INDEX(index); CHECK_COMPONENT(component);
+		CHECK_COMPONENT(component);
 		return shape_table[n][component][index](x, y, z);
 	}
 
@@ -167,11 +165,11 @@ protected:
 	int  *vertex_indices;
 
 	virtual double get_val(int n, int index, double x, double y, double z, int component) {
-		CHECK_INDEX(index); CHECK_COMPONENT(component);
+		CHECK_COMPONENT(component);
 		return shape_table[n][component][index](x, y, z);
 	}
 };
 
-#undef CHECK_VERTEX
+#undef CHECK_COMPONENT
 
 #endif

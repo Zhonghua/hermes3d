@@ -20,7 +20,7 @@ public:
 	}
 
 	virtual int *get_edge_indices(int edge, int ori, order1_t order) {
-		CHECK_EDGE(edge); CHECK_ORDER(order);
+		CHECK_EDGE(edge);
 		return edge_indices[edge][ori];
 	}
 

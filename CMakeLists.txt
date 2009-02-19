@@ -37,13 +37,36 @@ endif(EXISTS ${PROJECT_SOURCE_DIR}/CMake.vars)
 # sanity checks
 
 # need at least real or complex version
-if(NOT REAL AND NOT COMPLEX)
-	message(FATAL_ERROR "Specify either REAL and/or COMPLEX version of Hermes3D in global CMake.vars")
-endif(NOT REAL AND NOT COMPLEX)
+if(REAL)
+    list(APPEND VERS "real")
+endif(REAL)
+if(COMPLEX)
+    list(APPEND VERS "complex")
+endif(COMPLEX)
 
-if(NOT WITH_TETRA AND NOT WITH_HEX AND NOT WITH_PRISM)
-    message(FATAL_ERROR "No support of any type of elements")
-endif(NOT WITH_TETRA AND NOT WITH_HEX AND NOT WITH_PRISM)
+list(LENGTH VERS VERS_LEN)
+if(VERS_LEN GREATER 0)
+    message(STATUS "Will build versions: ${VERS}")
+else(VERS_LEN GREATER 0)
+	message(FATAL_ERROR "No versions specified. Re-run with REAL and/or COMPLEX set to YES")
+endif(VERS_LEN GREATER 0)
+
+if(WITH_TETRA)
+    list(APPEND ELEMTYPES "tetra")
+endif(WITH_TETRA)
+if(WITH_HEX)
+    list(APPEND ELEMTYPES "hex")
+endif(WITH_HEX)
+if(WITH_PRISM)
+    list(APPEND ELEMTYPES "prism")
+endif(WITH_PRISM)
+
+list(LENGTH ELEMTYPES ELEMTYPES_LEN)
+if(ELEMTYPES_LEN GREATER 0)
+    message(STATUS "Will build with element types: ${ELEMTYPES}")
+else(ELEMTYPES_LEN GREATER 0)
+    message(FATAL_ERROR "No element types selected. Re-run with WITH_TETRA, WITH_HEX or WITH_PRISM set to YES")
+endif(ELEMTYPES_LEN GREATER 0)
 
 # set internal library-wide variables
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)

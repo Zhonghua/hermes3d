@@ -223,10 +223,10 @@ H1ShapesetSinHex::~H1ShapesetSinHex() {
 
 	for (Word_t idx = bubble_indices.first(); idx != INVALID_IDX; idx = bubble_indices.next(idx))
 		delete [] bubble_indices[idx];
-#else
-	EXIT(ERR_HEX_NOT_COMPILED);
 #endif
 }
+
+#ifdef WITH_HEX
 
 order3_t H1ShapesetSinHex::get_order(int index) const {
 	if (index >= 0) {
@@ -242,7 +242,6 @@ order3_t H1ShapesetSinHex::get_order(int index) const {
 }
 
 void H1ShapesetSinHex::compute_edge_indices(int edge, int ori, order1_t order) {
-#ifdef WITH_HEX
 	assert(order > 1);
 	int *indices = new int[order - 1];
 	MEM_CHECK(indices);
@@ -265,13 +264,9 @@ void H1ShapesetSinHex::compute_edge_indices(int edge, int ori, order1_t order) {
 	}
 
 	edge_indices[edge][ori][order] = indices;
-#else
-	EXIT(ERR_HEX_NOT_COMPILED);
-#endif
 }
 
 void H1ShapesetSinHex::compute_face_indices(int face, int ori, order2_t order) {
-#ifdef WITH_HEX
 	assert(order.x > 1);
 	assert(order.y > 1);
 	int horder = order.x, vorder = order.y;
@@ -322,13 +317,9 @@ void H1ShapesetSinHex::compute_face_indices(int face, int ori, order2_t order) {
 	}
 
 	face_indices[face][ori][order.get_idx()] = indices;
-#else
-	EXIT(ERR_HEX_NOT_COMPILED);
-#endif
 }
 
 void H1ShapesetSinHex::compute_bubble_indices(order3_t order) {
-#ifdef WITH_HEX
 	assert(order.x > 1);
 	assert(order.y > 1);
 	assert(order.z > 1);
@@ -342,9 +333,6 @@ void H1ShapesetSinHex::compute_bubble_indices(order3_t order) {
 				indices[idx++] = hex_index_t(SHFN_BUBBLE, 0, i, j, k, 0);
 
 	bubble_indices[order.get_idx()] = indices;
-#else
-	EXIT(ERR_HEX_NOT_COMPILED);
-#endif
 }
 
 /// --- CED specific stuff ---
@@ -364,3 +352,4 @@ CEDComb *H1ShapesetSinHex::calc_constrained_face_combination(int ori, int order,
 	return NULL;
 }
 
+#endif

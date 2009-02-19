@@ -94,13 +94,12 @@ OutputQuadTetra::~OutputQuadTetra() {
 
 	for (Word_t i = subdiv_modes.first(); i != INVALID_IDX; i = subdiv_modes.next(i))
 		delete[] subdiv_modes[i];
-#else
-	EXIT(ERR_TETRA_NOT_COMPILED);
 #endif
 }
 
-void OutputQuadTetra::calculate_view_points(order3_t order) {
 #ifdef WITH_TETRA
+
+void OutputQuadTetra::calculate_view_points(order3_t order) {
 	int orderidx = order.get_idx();
 	if (tables[orderidx] == NULL) {
 		// check if the order is greater than 0, because we are taking log(o)
@@ -126,13 +125,9 @@ void OutputQuadTetra::calculate_view_points(order3_t order) {
 		const Point3D *ref_vtcs = RefTetra::get_vertices();
 		recursive_division(ref_vtcs, tables[orderidx], levels, idx);
 	}
-#else
-	EXIT(ERR_TETRA_NOT_COMPILED);
-#endif
 }
 
 void OutputQuadTetra::recursive_division(const Point3D *tv, QuadPt3D *table, int levels, int &idx) {
-#ifdef WITH_TETRA
 	if (levels == 0) {
 		// vertices
 		for (int i = 0; i < Tetra::NUM_VERTICES; i++) {
@@ -167,10 +162,9 @@ void OutputQuadTetra::recursive_division(const Point3D *tv, QuadPt3D *table, int
 		for (int i = 0; i < 8; i++)
 			recursive_division(div_vtcs[i], table, levels - 1, idx);
 	}
-#else
-	EXIT(ERR_TETRA_NOT_COMPILED);
-#endif
 }
+
+#endif
 
 //// OutputQuadHex ////////////////////////////////////////////////////////////////////////////////
 
@@ -208,13 +202,12 @@ OutputQuadHex::~OutputQuadHex() {
 
 	for (Word_t i = subdiv_modes.first(); i != INVALID_IDX; i = subdiv_modes.next(i))
 		delete[] subdiv_modes[i];
-#else
-	EXIT(ERR_HEX_NOT_COMPILED);
 #endif
 }
 
-void OutputQuadHex::calculate_view_points(order3_t order) {
 #ifdef WITH_HEX
+
+void OutputQuadHex::calculate_view_points(order3_t order) {
 	// FIXME:
 //	int o = get_principal_order(order);
 //	int levels = int(log(o) / log(2)) + output_precision;
@@ -236,14 +229,9 @@ void OutputQuadHex::calculate_view_points(order3_t order) {
 	int idx = 0;
 	const Point3D *ref_vtcs = RefHex::get_vertices();
 	recursive_division(ref_vtcs, tables[o], levels, idx);
-
-#else
-	EXIT(ERR_HEX_NOT_COMPILED);
-#endif
 }
 
 void OutputQuadHex::recursive_division(const Point3D *tv, QuadPt3D *table, int levels, int &idx) {
-#ifdef WITH_HEX
 	if (levels == 0) {
 		// vertices
 		for (int i = 0; i < Hex::NUM_VERTICES; i++) {
@@ -297,10 +285,9 @@ void OutputQuadHex::recursive_division(const Point3D *tv, QuadPt3D *table, int l
 		for (int i = 0; i < 8; i++)
 			recursive_division(div_vtcs[i], table, levels - 1, idx);
 	}
-#else
-	EXIT(ERR_HEX_NOT_COMPILED);
-#endif
 }
+
+#endif
 
 //// OutputQuadPrism /////////////////////////////////////////////////////////////////////////////
 

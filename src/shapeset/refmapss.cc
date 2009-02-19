@@ -89,10 +89,6 @@ RefMapShapesetTetra::RefMapShapesetTetra() {
 }
 
 RefMapShapesetTetra::~RefMapShapesetTetra() {
-#ifdef WITH_TETRA
-#else
-	EXIT(ERR_TETRA_NOT_COMPILED);
-#endif
 }
 
 //// RefMapShapesetHex ////////////////////////////////////////////////////////////////////////////
@@ -197,10 +193,4 @@ RefMapShapesetHex::RefMapShapesetHex() {
 }
 
 RefMapShapesetHex::~RefMapShapesetHex() {
-#ifdef WITH_HEX
-#else
-	EXIT(ERR_TETRA_NOT_COMPILED);
-#endif
 }
-
-

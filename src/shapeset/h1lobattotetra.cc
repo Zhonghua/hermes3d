@@ -4805,17 +4805,12 @@ H1ShapesetLobattoTetra::H1ShapesetLobattoTetra() {
 
 
 H1ShapesetLobattoTetra::~H1ShapesetLobattoTetra() {
-#ifdef WITH_TETRA
-#else
-	EXIT(ERR_TETRA_NOT_COMPILED);
-#endif
 }
 
-order3_t H1ShapesetLobattoTetra::get_order(int index) const {
 #ifdef WITH_TETRA
+
+order3_t H1ShapesetLobattoTetra::get_order(int index) const {
 	return order3_t(lobatto_tetra_index_to_order[index]);
-#else
-	EXIT(ERR_TETRA_NOT_COMPILED);
-	return order3_t(0);
-#endif
 }
+
+#endif

@@ -4,15 +4,8 @@ hermes3d
 Compilation
 ------------
 
-If you use Debian/Ubuntu, do:
-
-$ cp CMake.vars.Debian CMake.vars
-
-(If you use some other system, copy CMake.vars.sample and customize it.)
-
 $ cmake .
 $ make
-
 
 Intel C Compiler
 ----------------
@@ -25,7 +18,6 @@ $ cmake .
 $ make
 
 NOTE: version 10.0.026 did not work for me (some compatibility issues with STL), 10.1.022 works ok
-
 
 Tests
 -----
@@ -46,3 +38,4 @@ If you need to debug the build, use:
 cmake -DCMAKE_VERBOSE_MAKEFILE=ON .
 
 Then the make will print the exact commands that are executed.
+

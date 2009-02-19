@@ -32,14 +32,10 @@ HDF5Reader::HDF5Reader() {
 #endif
 }
 
-HDF5Reader::~HDF5Reader() {
 #ifdef WITH_HDF5
-#else
-	EXIT(ERR_HDF5_NOT_COMPILED);
-#endif
-}
 
-#ifdef WITH_HDF5
+HDF5Reader::~HDF5Reader() {
+}
 
 // Load ///////////////////////////////////////////////////////////////////////
 
@@ -332,10 +328,8 @@ static bool read_bcs(hid_t id, Mesh *mesh) {
 
 	return true;
 }
-#endif
 
 bool HDF5Reader::load(const char *file_name, Mesh *mesh) {
-#ifdef WITH_HDF5
 	bool ret = true;
 
 	H5open();
@@ -370,12 +364,7 @@ bool HDF5Reader::load(const char *file_name, Mesh *mesh) {
 
 	H5close();
 	return ret;
-#else
-	EXIT(ERR_HDF5_NOT_COMPILED);
-#endif
 }
-
-#ifdef WITH_HDF5
 
 // Save ///////////////////////////////////////////////////////////////////////
 
@@ -683,10 +672,7 @@ static bool save_bc(hid_t parent_group_id, Mesh *mesh) {
 	return ret;
 }
 
-#endif
-
 bool HDF5Reader::save(const char *file_name, Mesh *mesh) {
-#ifdef WITH_HDF5
 	herr_t status;
 
 	// init HDF5
@@ -732,7 +718,7 @@ bool HDF5Reader::save(const char *file_name, Mesh *mesh) {
 	H5close();
 
 	return ret;
-#else
-	EXIT(ERR_HDF5_NOT_COMPILED);
-#endif
 }
+
+#endif
+

@@ -22,7 +22,7 @@ protected:
 	virtual int get_face_ndofs(order2_t order);
 	virtual int get_element_ndofs(order3_t order);
 
-	virtual int assign_dofs_internal();
+	virtual void assign_dofs_internal();
 
 	virtual void calc_vertex_boundary_projection(Element *elem, int ivertex);
 	virtual void calc_edge_boundary_projection(Element *elem, int iedge);

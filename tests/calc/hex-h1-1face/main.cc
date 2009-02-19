@@ -276,7 +276,7 @@ double bc_values(int marker, double x, double y, double z, int comp) {
 		case 4: return   n * pow(x, m) * pow(y, n - 1) * pow(z, o) + 3 * pow(x, 2) * pow(y, 2) + fnc(x, y, z);
 		case 5: return -(o * pow(x, m) * pow(y, n) * pow(z, o - 1) - pow(x, 3) + 4 * pow(z, 3)) + fnc(x, y, z);
 		case 6: return   o * pow(x, m) * pow(y, n) * pow(z, o - 1) - pow(x, 3) + 4 * pow(z, 3) + fnc(x, y, z);
-		default: EXIT(ERR_FACE_INDEX_OUT_OF_RANGE);
+		default: EXIT(ERR_FACE_INDEX_OUT_OF_RANGE); return 0.0;
 #elif defined XM_YN_ZO_2
 		case 1: return -(m * pow(x, m-1) * pow(y, n) * pow(z, o) + 2 * x * pow(y, 3) - 2 * x * z) + fnc(x, y, z);
 		case 2: return   m * pow(x, m-1) * pow(y, n) * pow(z, o) + 2 * x * pow(y, 3) - 2 * x * z + fnc(x, y, z);
@@ -284,7 +284,7 @@ double bc_values(int marker, double x, double y, double z, int comp) {
 		case 4: return   n * pow(x, m) * pow(y, n-1) * pow(z, o) + 3 * pow(x, 2) * pow(y, 2) + fnc(x, y, z);
 		case 5: return -(o * pow(x, m) * pow(y, n) * pow(z, o-1) - pow(x, 2) + 4 * pow(z, 3)) + fnc(x, y, z);
 		case 6: return   o * pow(x, m) * pow(y, n) * pow(z, o-1) - pow(x, 2) + 4 * pow(z, 3) + fnc(x, y, z);
-		default: EXIT(ERR_FACE_INDEX_OUT_OF_RANGE);
+		default: EXIT(ERR_FACE_INDEX_OUT_OF_RANGE); return 0.0;
 #elif defined X2_Y2_Z2
 		case 1: return -(2*x) + fnc(x, y, z);
 		case 2: return  (2*x) + fnc(x, y, z);
@@ -292,7 +292,7 @@ double bc_values(int marker, double x, double y, double z, int comp) {
 		case 4: return  (2*y) + fnc(x, y, z);
 		case 5: return -(2*z) + fnc(x, y, z);
 		case 6: return  (2*z) + fnc(x, y, z);
-		default: EXIT(ERR_FACE_INDEX_OUT_OF_RANGE);
+		default: EXIT(ERR_FACE_INDEX_OUT_OF_RANGE); return 0.0;
 #endif
 	}
 #endif

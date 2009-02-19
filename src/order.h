@@ -17,7 +17,7 @@
 
 // 1D polynomial order
 typedef
-	unsigned int order1_t;
+	int order1_t;
 
 
 // 2D polynomial order

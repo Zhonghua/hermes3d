@@ -159,7 +159,7 @@ protected:
 	double lambda, mu;
 	int cyl, item1, item2;
 
-	virtual void precalculate(int order, int mask);
+	virtual void precalculate(qorder_t order, int mask);
 };
 
 #endif

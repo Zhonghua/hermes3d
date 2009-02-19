@@ -73,13 +73,13 @@ int testArrayInt() {
 	//
 	printf("  * Testing iterators\n");
 	r = true;
-	for (Word_t i = int_array.first(); i != -1; i = int_array.next(i))
+	for (Word_t i = int_array.first(); i != INVALID_IDX; i = int_array.next(i))
 		r &= int_array.get(i) == i + 100;
 	if (!testPrint(r, "    - Forward iteration", true))
 		return ERROR_FAILURE;
 
 	r = true;
-	for (Word_t i = int_array.last(); i != -1; i = int_array.prev(i))
+	for (Word_t i = int_array.last(); i != INVALID_IDX; i = int_array.prev(i))
 		r &= int_array.get(i) == i + 100;
 	if (!testPrint(r, "    - Backward iteration", true))
 		return ERROR_FAILURE;
@@ -172,14 +172,14 @@ int testArrayStruct() {
 	//
 	printf("  * Testing iterators\n");
 	r = true;
-	for (Word_t i = pt_array.first(); i != -1; i = pt_array.next(i)) {
+	for (Word_t i = pt_array.first(); i != INVALID_IDX; i = pt_array.next(i)) {
 		r &= (pt_array.get(i).X == i + 100) && (pt_array.get(i).Y == i + 1000);
 	}
 	if (!testPrint(r, "    - Forward iteration", true))
 		return ERROR_FAILURE;
 
 	r = true;
-	for (Word_t i = pt_array.last(); i != -1; i = pt_array.prev(i)) {
+	for (Word_t i = pt_array.last(); i != INVALID_IDX; i = pt_array.prev(i)) {
 		r &= (pt_array.get(i).X == i + 100) && (pt_array.get(i).Y == i + 1000);
 	}
 	if (!testPrint(r, "    - Backward iteration", true))
@@ -273,7 +273,7 @@ int testArrayPtrStruct() {
 	//
 	printf("  * Testing iterators\n");
 	r = true;
-	for (Word_t i = ptr_array.first(); i != -1; i = ptr_array.next(i)) {
+	for (Word_t i = ptr_array.first(); i != INVALID_IDX; i = ptr_array.next(i)) {
 		Point *pt = ptr_array.get(i);
 		r &= (pt->X == i + 100) && (pt->Y == i + 1000);
 	}
@@ -281,7 +281,7 @@ int testArrayPtrStruct() {
 		return ERROR_FAILURE;
 
 	r = true;
-	for (Word_t i = ptr_array.last(); i != -1; i = ptr_array.prev(i)) {
+	for (Word_t i = ptr_array.last(); i != INVALID_IDX; i = ptr_array.prev(i)) {
 		Point *pt = ptr_array.get(i);
 		r &= (pt->X == i + 100) && (pt->Y == i + 1000);
 	}
@@ -308,7 +308,7 @@ int testArrayPtrStruct() {
 		return ERROR_FAILURE;
 
 	// free memory
-	for (Word_t i = ptr_array.first(); i != -1; i = ptr_array.next(i))
+	for (Word_t i = ptr_array.first(); i != INVALID_IDX; i = ptr_array.next(i))
 		delete ptr_array.get(i);
 
 	ptr_array.remove_all();
@@ -352,7 +352,7 @@ int testMap() {
 	printf("  * Testing iterators\n");
 	r = true;
 	int i = 0;
-	for (Word_t iter = pt_map.first(); iter != -1; iter = pt_map.next(iter)) {
+	for (Word_t iter = pt_map.first(); iter != INVALID_IDX; iter = pt_map.next(iter)) {
 		Point pt = pt_map.get(iter);
 		r &= (pt.X == i + 100) && (pt.Y == i + 200);
 		i++;
@@ -362,7 +362,7 @@ int testMap() {
 
 	r = true;
 	i = 3;
-	for (Word_t iter = pt_map.last(); iter != -1; iter = pt_map.prev(iter)) {
+	for (Word_t iter = pt_map.last(); iter != INVALID_IDX; iter = pt_map.prev(iter)) {
 		Point pt = pt_map.get(iter);
 		r &= (pt.X == i + 100) && (pt.Y == i + 100);
 		i--;

@@ -323,7 +323,7 @@ public: // remove me
 	virtual void assign_face_dofs(Word_t fid);
 	virtual void assign_bubble_dofs(Word_t eid);
 
-	virtual int assign_dofs_internal() = 0;
+	virtual void assign_dofs_internal() = 0;
 
 	virtual void get_vertex_assembly_list(Element *e, int ivertex, AsmList *al);
 	virtual void get_edge_assembly_list(Element *e, int iedge, AsmList *al);

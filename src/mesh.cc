@@ -203,86 +203,68 @@ Hex::~Hex() {
 }
 
 int Hex::get_edge_vertices(int edge_num, Word_t *vtcs) const {
-	if ((edge_num >= 0) && (edge_num < NUM_EDGES)) {
-		const int *local_vetrex = RefHex::get_edge_vertices(edge_num);
-		vtcs[0] = this->vtcs[local_vetrex[0]];
-		vtcs[1] = this->vtcs[local_vetrex[1]];
-		return Edge::NUM_VERTICES;
-	}
-	else
-		EXIT(ERR_MESH_PROBLEM, "Invalid local edge number. Hexahedron has edges numbered from 0 to %d (is %d).", NUM_EDGES - 1, edge_num);
+	assert((edge_num >= 0) && (edge_num < NUM_EDGES));
+	const int *local_vetrex = RefHex::get_edge_vertices(edge_num);
+	vtcs[0] = this->vtcs[local_vetrex[0]];
+	vtcs[1] = this->vtcs[local_vetrex[1]];
+	return Edge::NUM_VERTICES;
 }
 
 const int *Hex::get_edge_vertices(int edge_num) const {
-	if ((edge_num >= 0) && (edge_num < NUM_EDGES))
-		return RefHex::get_edge_vertices(edge_num);
-	else
-		EXIT(ERR_MESH_PROBLEM, "Invalid local edge number. Hexahedron has edges numbered from 0 to %d (is %d).", NUM_EDGES - 1, edge_num);
+	assert((edge_num >= 0) && (edge_num < NUM_EDGES));
+	return RefHex::get_edge_vertices(edge_num);
 }
 
 int Hex::get_face_vertices(int face_num, Word_t *vtcs) const {
-	if (face_num >= 0 && face_num < NUM_FACES) {
-		const int *local_numbers = RefHex::get_face_vertices(face_num);
-		for (int i = 0; i < Quad::NUM_VERTICES; i++)
-			vtcs[i] = this->vtcs[local_numbers[i]];
-		return Quad::NUM_VERTICES;
-	}
-	else
-		EXIT(ERR_MESH_PROBLEM, "Invalid local face number. Hexahedron has faces numbered from 0 to %d (is %d).", NUM_FACES - 1, face_num);
+	assert(face_num >= 0 && face_num < NUM_FACES);
+	const int *local_numbers = RefHex::get_face_vertices(face_num);
+	for (int i = 0; i < Quad::NUM_VERTICES; i++)
+		vtcs[i] = this->vtcs[local_numbers[i]];
+	return Quad::NUM_VERTICES;
 }
 
 const int *Hex::get_face_vertices(int face_num) const {
-	if (face_num >= 0 && face_num < NUM_FACES)
-		return RefHex::get_face_vertices(face_num);
-	else
-		EXIT(ERR_MESH_PROBLEM, "Invalid local face number. Hexahedron has faces numbered from 0 to %d (is %d).", NUM_FACES - 1, face_num);
+	assert(face_num >= 0 && face_num < NUM_FACES);
+	return RefHex::get_face_vertices(face_num);
 }
 
 const int *Hex::get_face_edges(int face_num) const {
-	if (face_num >= 0 && face_num < NUM_FACES) {
-		return RefHex::get_face_edges(face_num);
-	}
-	else
-		EXIT(ERR_MESH_PROBLEM, "Invalid local face number. Hexahedron has faces numbered from 0 to %d (is %d).", NUM_FACES - 1, face_num);
+	assert(face_num >= 0 && face_num < NUM_FACES);
+	return RefHex::get_face_edges(face_num);
 }
 
 int Hex::get_edge_orientation(int edge_num) const {
-	if ((edge_num >= 0) && (edge_num < NUM_EDGES)) {
-		const int *vert_idx = RefHex::get_edge_vertices(edge_num);
-		// 0 - the edge orientation on the physical domain agrees with the orientation on reference domain
-		// 1 - egde orientation is opposite
-		if (vtcs[vert_idx[0]] < vtcs[vert_idx[1]])
-			return 0;
-		else
-			return 1;
-	}
+	assert((edge_num >= 0) && (edge_num < NUM_EDGES));
+	const int *vert_idx = RefHex::get_edge_vertices(edge_num);
+	// 0 - the edge orientation on the physical domain agrees with the orientation on reference domain
+	// 1 - egde orientation is opposite
+	if (vtcs[vert_idx[0]] < vtcs[vert_idx[1]])
+		return 0;
 	else
-		EXIT(ERR_MESH_PROBLEM, "Invalid local edge number. Hexahedron has edges numbered from 0 to %d (is %d).", NUM_EDGES - 1, edge_num);
+		return 1;
 }
 
 int Hex::get_face_orientation(int face_num) const {
-	if (face_num >= 0 && face_num < NUM_FACES) {
-		Word_t v[4];
-		get_face_vertices(face_num, v);
+	assert(face_num >= 0 && face_num < NUM_FACES);
+	Word_t v[4];
+	get_face_vertices(face_num, v);
 
-		Word_t minval = 1000;
-		int min = 0, min2 = 0;
-		for (int i = 0; i < 4; i++) {
-			if (v[i] < minval) {
-				minval = v[i];
-				min = i;
-			}
+	Word_t minval = 1000;
+	int min = 0, min2 = 0;
+	for (int i = 0; i < 4; i++) {
+		if (v[i] < minval) {
+			minval = v[i];
+			min = i;
 		}
-
-		// FIXME: replace magic numbers
-		if (min == 0) return (v[1] < v[3]) ? 0 : 4;
-		else if (min == 1) return (v[0] < v[2]) ? 1 : 6;
-		else if (min == 2) return (v[3] < v[1]) ? 3 : 7;
-		else if (min == 3) return (v[2] < v[0]) ? 2 : 5;
-		else EXIT(ERR_MESH_PROBLEM, "Error in face orientation.");
 	}
-	else
-		EXIT(ERR_MESH_PROBLEM, "Invalid local face number. Hexahedron has faces numbered from 0 to %d (is %d).", NUM_FACES - 1, face_num);
+
+	assert(min >= 0 && min <= 3); // Error in face orientation
+	// FIXME: replace magic numbers
+	if (min == 0) return (v[1] < v[3]) ? 0 : 4;
+	else if (min == 1) return (v[0] < v[2]) ? 1 : 6;
+	else if (min == 2) return (v[3] < v[1]) ? 3 : 7;
+	else if (min == 3) return (v[2] < v[0]) ? 2 : 5;
+	else return -1;
 }
 
 Element *Hex::copy() {
@@ -358,80 +340,62 @@ Tetra::~Tetra() {
 }
 
 int Tetra::get_edge_vertices(int edge_num, Word_t *vtcs) const {
-	if ((edge_num >= 0) && (edge_num < NUM_EDGES)) {
-		vtcs[0] = this->vtcs[RefTetra::get_edge_vertices(edge_num)[0]];
-		vtcs[1] = this->vtcs[RefTetra::get_edge_vertices(edge_num)[1]];
-		return Edge::NUM_VERTICES;
-	}
-	else
-		EXIT(ERR_MESH_PROBLEM, "Invalid local edge number. Tetrahedron has edges numbered from 0 to %d (is %d).", NUM_EDGES - 1, edge_num);
+	assert((edge_num >= 0) && (edge_num < NUM_EDGES));
+	vtcs[0] = this->vtcs[RefTetra::get_edge_vertices(edge_num)[0]];
+	vtcs[1] = this->vtcs[RefTetra::get_edge_vertices(edge_num)[1]];
+	return Edge::NUM_VERTICES;
 }
 
 const int *Tetra::get_edge_vertices(int edge_num) const {
-	if ((edge_num >= 0) && (edge_num < NUM_EDGES))
-		return RefTetra::get_edge_vertices(edge_num);
-	else
-		EXIT(ERR_MESH_PROBLEM, "Invalid local edge number. Tetrahedron has edges numbered from 0 to %d (is %d).", NUM_EDGES - 1, edge_num);
+	assert((edge_num >= 0) && (edge_num < NUM_EDGES));
+	return RefTetra::get_edge_vertices(edge_num);
 }
 
 int Tetra::get_face_vertices(int face_num, Word_t *vtcs) const {
-	if (face_num >= 0 && face_num < NUM_FACES) {
-		const int *local_numbers = RefTetra::get_face_vertices(face_num);
-		for (int i = 0; i < Tri::NUM_VERTICES; i++)
-			vtcs[i] = this->vtcs[local_numbers[i]];
-		return Tri::NUM_VERTICES;
-	}
-	else
-		EXIT(ERR_MESH_PROBLEM, "Invalid local face number. Tetrahedron has faces numbered from 0 to %d (is %d).", NUM_FACES - 1, face_num);
+	assert(face_num >= 0 && face_num < NUM_FACES);
+	const int *local_numbers = RefTetra::get_face_vertices(face_num);
+	for (int i = 0; i < Tri::NUM_VERTICES; i++)
+		vtcs[i] = this->vtcs[local_numbers[i]];
+	return Tri::NUM_VERTICES;
 }
 
 const int *Tetra::get_face_vertices(int face_num) const {
-	if (face_num >= 0 && face_num < NUM_FACES)
-		return RefTetra::get_face_vertices(face_num);
-	else
-		EXIT(ERR_MESH_PROBLEM, "Invalid local face number. Tetrahedron has faces numbered from 0 to %d (is %d).", NUM_FACES - 1, face_num);
+	assert(face_num >= 0 && face_num < NUM_FACES);
+	return RefTetra::get_face_vertices(face_num);
 }
 
 const int *Tetra::get_face_edges(int face_num) const {
-	if (face_num >= 0 && face_num < NUM_FACES)
-		return RefTetra::get_face_edges(face_num);
-	else
-		EXIT(ERR_MESH_PROBLEM, "Invalid local face number. Tetrahedron has faces numbered from 0 to %d (is %d).", NUM_FACES - 1, face_num);
+	assert(face_num >= 0 && face_num < NUM_FACES);
+	return RefTetra::get_face_edges(face_num);
 }
 
 int Tetra::get_edge_orientation(int edge_num) const {
-	if ((edge_num >= 0) && (edge_num < NUM_EDGES)) {
-		static int map[6][2] = { { 0, 1 }, { 1, 2 }, { 0, 2 }, { 0, 3 }, { 1, 3 }, { 2, 3 } };
+	assert((edge_num >= 0) && (edge_num < NUM_EDGES));
+	static int map[6][2] = { { 0, 1 }, { 1, 2 }, { 0, 2 }, { 0, 3 }, { 1, 3 }, { 2, 3 } };
 
-		// 0 - the edge orientation on the physical domain agrees with the orientation on reference domain
-		// 1 - egde orientation is opposite
-		if (vtcs[map[edge_num][0]] < vtcs[map[edge_num][1]])
-			return 0;
-		else
-			return 1;
-	}
+	// 0 - the edge orientation on the physical domain agrees with the orientation on reference domain
+	// 1 - egde orientation is opposite
+	if (vtcs[map[edge_num][0]] < vtcs[map[edge_num][1]])
+		return 0;
 	else
-		EXIT(ERR_MESH_PROBLEM, "Invalid local edge number. Tetrahedron has edges numbered from 0 to %d (is %d).", NUM_EDGES - 1, edge_num);
+		return 1;
 }
 
 int Tetra::get_face_orientation(int face_num) const {
-	if (face_num >= 0 && face_num < NUM_FACES) {
-		static int map[4][3] = { { 0, 1, 3 }, { 1, 2, 3 }, { 0, 2, 3 }, { 0, 1, 2 } };
+	assert(face_num >= 0 && face_num < NUM_FACES);
+	static int map[4][3] = { { 0, 1, 3 }, { 1, 2, 3 }, { 0, 2, 3 }, { 0, 1, 2 } };
 
-		Word_t v0 = vtcs[map[face_num][0]];
-		Word_t v1 = vtcs[map[face_num][1]];
-		Word_t v2 = vtcs[map[face_num][2]];
+	Word_t v0 = vtcs[map[face_num][0]];
+	Word_t v1 = vtcs[map[face_num][1]];
+	Word_t v2 = vtcs[map[face_num][2]];
 
-		if (v0 < v1 && v1 < v2) return 0;
-		else if (v1 < v2 && v2 < v0) return 1;
-		else if (v2 < v0 && v0 < v1) return 2;
-		else if (v0 < v2 && v2 < v1) return 3;
-		else if (v1 < v0 && v0 < v2) return 4;
-		else if (v2 < v1 && v1 < v0) return 5;
-		else ERROR("Error in Tetra::get_face_orientation.");
-	}
-	else
-		EXIT(ERR_MESH_PROBLEM, "Invalid local face number. Tetrahedron has faces numbered from 0 to %d (is %d).", NUM_FACES - 1, face_num);
+	if (v0 < v1 && v1 < v2) return 0;
+	else if (v1 < v2 && v2 < v0) return 1;
+	else if (v2 < v0 && v0 < v1) return 2;
+	else if (v0 < v2 && v2 < v1) return 3;
+	else if (v1 < v0 && v0 < v2) return 4;
+	else if (v2 < v1 && v1 < v0) return 5;
+	else return -1;
 }
 
 Element *Tetra::copy() {
@@ -506,67 +470,49 @@ Prism::~Prism() {
 }
 
 int Prism::get_edge_vertices(int edge_num, Word_t *vtcs) const {
-	if ((edge_num >= 0) && (edge_num < NUM_EDGES)) {
-		vtcs[0] = this->vtcs[RefPrism::get_edge_vertices(edge_num)[0]];
-		vtcs[1] = this->vtcs[RefPrism::get_edge_vertices(edge_num)[1]];
-		return Edge::NUM_VERTICES;
-	}
-	else
-		EXIT(ERR_MESH_PROBLEM, "Invalid local edge number. Prism has edges numbered from 0 to %d (is %d).", NUM_EDGES - 1, edge_num);
+	assert((edge_num >= 0) && (edge_num < NUM_EDGES));
+	vtcs[0] = this->vtcs[RefPrism::get_edge_vertices(edge_num)[0]];
+	vtcs[1] = this->vtcs[RefPrism::get_edge_vertices(edge_num)[1]];
+	return Edge::NUM_VERTICES;
 }
 
 const int *Prism::get_edge_vertices(int edge_num) const {
-	if ((edge_num >= 0) && (edge_num < NUM_EDGES))
-		return RefPrism::get_edge_vertices(edge_num);
-	else
-		EXIT(ERR_MESH_PROBLEM, "Invalid local edge number. Prism has edges numbered from 0 to %d (is %d).", NUM_EDGES - 1, edge_num);
+	assert((edge_num >= 0) && (edge_num < NUM_EDGES));
+	return RefPrism::get_edge_vertices(edge_num);
 }
 
 EMode2D Prism::get_face_mode(int face_num) const {
-	if ((face_num >= 0) && (face_num < NUM_FACES))
-		return RefPrism::get_face_mode(face_num);
-	else
-		EXIT(ERR_MESH_PROBLEM, "Invalid local face number. Prism has faces numbered from 0 to %d (is %d).", NUM_FACES - 1, face_num);
+	assert((face_num >= 0) && (face_num < NUM_FACES));
+	return RefPrism::get_face_mode(face_num);
 }
 
 int Prism::get_face_num_of_vertices(int face_num) const {
-	if ((face_num >= 0) && (face_num < NUM_FACES))
-		return RefPrism::get_face_num_of_vertices(face_num);
-	else
-		EXIT(ERR_MESH_PROBLEM, "Invalid local face number. Prism has faces numbered from 0 to %d (is %d).", NUM_FACES - 1, face_num);
+	assert((face_num >= 0) && (face_num < NUM_FACES));
+	return RefPrism::get_face_num_of_vertices(face_num);
 }
 
 int Prism::get_face_num_of_edges(int face_num) const {
-	if ((face_num >= 0) && (face_num < NUM_FACES))
-		return RefPrism::get_face_num_of_edges(face_num);
-	else
-		EXIT(ERR_MESH_PROBLEM, "Invalid local face number. Prism has faces numbered from 0 to %d (is %d).", NUM_FACES - 1, face_num);
+	assert((face_num >= 0) && (face_num < NUM_FACES));
+	return RefPrism::get_face_num_of_edges(face_num);
 }
 
 int Prism::get_face_vertices(int face_num, Word_t *vtcs) const {
-	if ((face_num >= 0) && (face_num < NUM_FACES)) {
-		int nvert = RefPrism::get_face_num_of_vertices(face_num);
-		const int *local_numbers = RefPrism::get_face_vertices(face_num);
-		for (int i = 0; i < nvert; i++)
-			vtcs[i] = this->vtcs[local_numbers[i]];
-		return nvert;
-	}
-	else
-		EXIT(ERR_MESH_PROBLEM, "Invalid local face number. Prism has faces numbered from 0 to %d (is %d).", NUM_FACES - 1, face_num);
+	assert((face_num >= 0) && (face_num < NUM_FACES));
+	int nvert = RefPrism::get_face_num_of_vertices(face_num);
+	const int *local_numbers = RefPrism::get_face_vertices(face_num);
+	for (int i = 0; i < nvert; i++)
+		vtcs[i] = this->vtcs[local_numbers[i]];
+	return nvert;
 }
 
 const int *Prism::get_face_vertices(int face_num) const {
-	if ((face_num >= 0) && (face_num < NUM_FACES))
-		return RefPrism::get_face_vertices(face_num);
-	else
-		EXIT(ERR_MESH_PROBLEM, "Invalid local face number. Prism has faces numbered from 0 to %d (is %d).", NUM_FACES - 1, face_num);
+	assert((face_num >= 0) && (face_num < NUM_FACES));
+	return RefPrism::get_face_vertices(face_num);
 }
 
 const int *Prism::get_face_edges(int face_num) const {
-	if (face_num >= 0 && face_num < NUM_FACES)
-		return RefPrism::get_face_edges(face_num);
-	else
-		EXIT(ERR_MESH_PROBLEM, "Invalid local face number. Prism has faces numbered from 0 to %d (is %d).", NUM_FACES - 1, face_num);
+	assert(face_num >= 0 && face_num < NUM_FACES);
+	return RefPrism::get_face_edges(face_num);
 }
 
 int Prism::get_edge_orientation(int edge_num) const {
@@ -1009,7 +955,11 @@ Boundary *Mesh::add_tri_boundary(Word_t vtcs[], int marker) {
 
 		facet->type = Facet::OUTER;
 		facet->set_right_info(bdr->id);
+
+		return bdr;
 	}
+	else
+		return NULL;
 }
 
 Boundary *Mesh::add_quad_boundary(Word_t vtcs[], int marker) {
@@ -1023,7 +973,11 @@ Boundary *Mesh::add_quad_boundary(Word_t vtcs[], int marker) {
 
 		facet->type = Facet::OUTER;
 		facet->set_right_info(bdr->id);
+
+		return bdr;
 	}
+	else
+		return NULL;
 }
 
 void Mesh::ugh() {
@@ -1096,15 +1050,13 @@ bool Mesh::can_refine_element(Word_t eid, int reft) const {
 	bool can_refine = false;
 
 	Element *elem = elements.get(eid);
-	if (elem != NULL) {
-		switch (elem->get_mode()) {
-			case MODE_HEXAHEDRON: can_refine = can_refine_hex((Hex *) elem, reft); break;
-			case MODE_TETRAHEDRON: EXIT(ERR_NOT_IMPLEMENTED); break;
-			case MODE_PRISM: EXIT(ERR_NOT_IMPLEMENTED); break;
-			default: EXIT(ERR_UNKNOWN_MODE); break;
-		}
+	assert(elem != NULL);
+	switch (elem->get_mode()) {
+		case MODE_HEXAHEDRON: can_refine = can_refine_hex((Hex *) elem, reft); break;
+		case MODE_TETRAHEDRON: EXIT(ERR_NOT_IMPLEMENTED); break;
+		case MODE_PRISM: EXIT(ERR_NOT_IMPLEMENTED); break;
+		default: EXIT(ERR_UNKNOWN_MODE); break;
 	}
-	else EXIT(ERR_FAILURE, "Trying to check non-existent element.");
 
 	return can_refine;
 
@@ -1207,29 +1159,23 @@ bool Mesh::can_refine_hex(Hex *elem, int refinement) const {
 bool Mesh::refine_element(Word_t id, int refinement) {
 	bool refined = false;
 	Element *elem = elements.get(id);
-	if (elem != NULL) {
-		if (can_refine_element(id, refinement)) {
-			switch (elem->get_mode()) {
-				case MODE_HEXAHEDRON: refined = refine_hex((Hex *) elem, refinement); break;
-				case MODE_TETRAHEDRON: EXIT(ERR_NOT_IMPLEMENTED); break;
-				case MODE_PRISM: EXIT(ERR_NOT_IMPLEMENTED); break;
-				default: EXIT(ERR_UNKNOWN_MODE); break;
-			}
+	assert(elem != NULL);
+	if (can_refine_element(id, refinement)) {
+		switch (elem->get_mode()) {
+			case MODE_HEXAHEDRON: refined = refine_hex((Hex *) elem, refinement); break;
+			case MODE_TETRAHEDRON: EXIT(ERR_NOT_IMPLEMENTED); break;
+			case MODE_PRISM: EXIT(ERR_NOT_IMPLEMENTED); break;
+			default: EXIT(ERR_UNKNOWN_MODE); break;
 		}
-		else
-			EXIT(ERR_FAILURE, "Applying incompatible refinement (elem = %d, reft = %d).", id, refinement);
 	}
 	else
-		EXIT(ERR_FAILURE, "Trying to refine non-existent element.");
+		EXIT(ERR_FAILURE, "Applying incompatible refinement (elem = %d, reft = %d).", id, refinement);
 
 	return refined;
 }
 
 bool Mesh::refine_hex(Hex *elem, int refinement) {
-	if (!elem->active) {
-		assert(false);
-		EXIT(ERR_FAILURE, "Refinement already applied to element #%d.", elem->id);
-	}
+	assert(elem->active);		// Refinement already applied to element
 
 	bool refined = false;
 	switch (refinement) {
@@ -1589,10 +1535,7 @@ bool Mesh::refine_quad_facet(Hex *parent_elem, int iface, int face_refinement, W
 	//	if (is_compatible_quad_refinement(facet, face_refinement)) {
 	if (facet->left == parent_elem->id) facet->set_left_info(eid, iface);
 	else if (facet->right == parent_elem->id) facet->set_right_info(eid, iface);
-	else {
-		assert(false);
-		EXIT(ERR_FAILURE, "Refining facet that does not face with appropriate element/boundary");
-	}
+	else assert(false); // Refining facet that does not face with appropriate element/boundary
 
 	return true;
 }
@@ -2074,10 +2017,7 @@ void Mesh::unref_edges(Element *e) {
 			edge.ref--;
 			edges.set(vtx, Edge::NUM_VERTICES, edge);
 		}
-		else {
-			assert(false);
-			EXIT(ERR_FAILURE, "Unreferencing non-existent edge.");
-		}
+		else assert(false); // Unreferencing non-existent edge
 	}
 }
 

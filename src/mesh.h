@@ -183,8 +183,8 @@ public:
 			((lactive && !ractive && right == idx && right_face_num == iface) ||
 			 (!lactive && ractive && left == idx && left_face_num == iface) ||
 			 (!lactive && !ractive &&
-				((left == -1 && left_face_num == -1 && right == idx && right_face_num == iface) ||
-				 (left == idx && left_face_num == iface && right == -1 && right_face_num == -1))));
+				((left == INVALID_IDX && left_face_num == -1 && right == idx && right_face_num == iface) ||
+				 (left == idx && left_face_num == iface && right == INVALID_IDX && right_face_num == -1))));
 	}
 
 	// for debugging

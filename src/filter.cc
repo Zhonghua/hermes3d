@@ -317,11 +317,6 @@ ImagPartFilter::ImagPartFilter(MeshFunction *sln1, int item1) :
 #define getval(exp) (exp.real())
 #endif
 
-void VonMisesFilter::precalculate(int order, int mask) {
-	// TODO: port to 3D
-	ERROR(ERR_NOT_IMPLEMENTED);
-}
-
 VonMisesFilter::VonMisesFilter(MeshFunction *sln1, MeshFunction *sln2, double lambda, double mu, int cyl, int item1, int item2) :
 	Filter(sln1, sln2)
 {
@@ -331,3 +326,9 @@ VonMisesFilter::VonMisesFilter(MeshFunction *sln1, MeshFunction *sln2, double la
 	this->item1 = item1;
 	this->item2 = item2;
 }
+
+void VonMisesFilter::precalculate(qorder_t order, int mask) {
+	// TODO: port to 3D
+	ERROR(ERR_NOT_IMPLEMENTED);
+}
+

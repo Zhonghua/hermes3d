@@ -58,13 +58,13 @@ public:
 	OutputQuadHex();
 	virtual ~OutputQuadHex();
 
-	virtual QuadPt3D *get_points(int order) {
-		if (tables[order] == NULL) calc_table(order);
-		return tables[order];
+	virtual QuadPt3D *get_points(order3_t order) {
+		if (tables[order.get_idx()] == NULL) calc_table(order);
+		return tables[order.get_idx()];
 	}
 
 protected:
-	void calc_table(int order);
+	void calc_table(order3_t order);
 };
 
 OutputQuadHex::OutputQuadHex() {
@@ -78,7 +78,7 @@ OutputQuadHex::~OutputQuadHex() {
 #endif
 }
 
-void OutputQuadHex::calc_table(int order) {
+void OutputQuadHex::calc_table(order3_t order) {
 #ifdef WITH_HEX
 #else
 	EXIT(ERR_HEX_NOT_COMPILED);

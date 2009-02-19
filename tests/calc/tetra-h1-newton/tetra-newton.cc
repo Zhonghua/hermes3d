@@ -47,6 +47,7 @@ double bc_values(int marker, double x, double y, double z, int comp) {
 		case 2: return (2.0 / 7.0) * (3 * x + 2 * y + 6 * z) + fnc(x, y, z);
 		case 3: return -2 * x + fnc(x, y, z);
 		case 4: return -2 * z + fnc(x, y, z);
+		default: EXIT(ERR_FAILURE, "Unknown marker"); return 0.0;
 	}
 }
 

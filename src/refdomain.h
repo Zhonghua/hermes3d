@@ -73,14 +73,14 @@ public:
 	static const Point3D *get_vertices() { return vertices; }
 
 	static const int *get_edge_vertices(int edge) { return edge_vtcs[edge]; }
-	static const int get_edge_orientations() { return 2; }		// two orientations of an edge
+	static int get_edge_orientations() { return 2; }		// two orientations of an edge
 
-	static const int get_face_num_of_vertices(int face) { return face_nvtcs[face]; }
-	static const int get_face_num_of_edges(int face) { return face_nedges[face]; }
+	static int get_face_num_of_vertices(int face) { return face_nvtcs[face]; }
+	static int get_face_num_of_edges(int face) { return face_nedges[face]; }
 	static const int *get_face_vertices(int face) { return face_vtcs[face]; }
 	static const int *get_face_edges(int face) { return face_edges[face]; }
-	static const EMode2D get_face_mode(int face) { return face_mode[face]; }
-	static const int get_face_orientations(int face) { return face_orientations[face]; }
+	static EMode2D get_face_mode(int face) { return face_mode[face]; }
+	static int get_face_orientations(int face) { return face_orientations[face]; }
 
 protected:
 	static const Point3D vertices[];
@@ -102,24 +102,24 @@ public:
 	static const Point3D *get_vertices() { return vertices; }
 
 	static const int *get_edge_vertices(int edge) { return edge_vtcs[edge]; }
-	static const int get_edge_orientations() { return 2; }		// two orientations of an edge
+	static int get_edge_orientations() { return 2; }		// two orientations of an edge
 
-	static const int get_face_num_of_vertices(int face) { return face_nvtcs[face]; }
-	static const int get_face_num_of_edges(int face) { return face_nedges[face]; }
+	static int get_face_num_of_vertices(int face) { return face_nvtcs[face]; }
+	static int get_face_num_of_edges(int face) { return face_nedges[face]; }
 	static const int *get_face_vertices(int face) { return face_vtcs[face]; }
 	static const int *get_face_edges(int face) { return face_edges[face]; }
-	static const EMode2D get_face_mode(int face) { return face_mode[face]; }
-	static const int get_face_orientations(int face) { return face_orientations[face]; }
+	static EMode2D get_face_mode(int face) { return face_mode[face]; }
+	static int get_face_orientations(int face) { return face_orientations[face]; }
 	/// @param[in] ori - face orientation
 	/// @return orientations of edges on a face
 	/// 	all edges are oriented the same way on all faces, so we do not have to care about face number
 	static const int *get_face_edge_orientation(int ori) { return face_edge_ori[ori]; }
 
-	static const int get_edge_tangent_direction(int edge) { return edge_tangent[edge]; }
-	static const int get_face_tangent_direction(int face, int which) { return face_tangent[face][which]; }
+	static int get_edge_tangent_direction(int edge) { return edge_tangent[edge]; }
+	static int get_face_tangent_direction(int face, int which) { return face_tangent[face][which]; }
 
 protected:
-	static Point3D vertices[];
+	static const Point3D vertices[];
 	static const int2 edge_vtcs[];
 	static const int *face_vtcs[];
 	static const int *face_edges[];
@@ -141,14 +141,14 @@ public:
 	static const Point3D *get_vertices() { return vertices; }
 
 	static const int *get_edge_vertices(int edge) { return edge_vtcs[edge]; }
-	static const int get_edge_orientations() { return 2; }		// two orientations of an edge
+	static int get_edge_orientations() { return 2; }		// two orientations of an edge
 
-	static const int get_face_num_of_vertices(int face) { return face_nvtcs[face]; }
-	static const int get_face_num_of_edges(int face) { return face_nedges[face]; }
+	static int get_face_num_of_vertices(int face) { return face_nvtcs[face]; }
+	static int get_face_num_of_edges(int face) { return face_nedges[face]; }
 	static const int *get_face_vertices(int face) { return face_vtcs[face]; }
 	static const int *get_face_edges(int face) { return face_edges[face]; }
-	static const EMode2D get_face_mode(int face) { return face_mode[face]; }
-	static const int get_face_orientations(int face) { return face_orientations[face]; }
+	static EMode2D get_face_mode(int face) { return face_mode[face]; }
+	static int get_face_orientations(int face) { return face_orientations[face]; }
 
 protected:
 	static const Point3D vertices[];

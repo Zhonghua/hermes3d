@@ -357,7 +357,7 @@ void Space::get_face_assembly_list(Element *elem, int iface, AsmList *al) {
 	if (fnode->ced) {
 		Facet *facet = mesh->facets[face_id];
 
-		if (fnode->facet_id != -1) {
+		if (fnode->facet_id != INVALID_IDX) {
 			FaceData *cng_fnode = fn_data[fnode->facet_id];
 
 			int *indices = shapeset->get_face_indices(iface, 0, cng_fnode->order);

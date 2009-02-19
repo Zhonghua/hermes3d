@@ -13,6 +13,20 @@ $ cp CMake.vars.Debian CMake.vars
 $ cmake .
 $ make
 
+
+Intel C Compiler
+----------------
+
+To use Intel C compiler
+
+$ export CC=/path/to/icc
+$ export CXX=/path/to/icpc
+$ cmake .
+$ make
+
+NOTE: version 10.0.026 did not work for me (some compatibility issues with STL), 10.1.022 works ok
+
+
 Tests
 -----
 

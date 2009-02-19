@@ -61,7 +61,7 @@ double bc_values(int marker, double x, double y, double z, int comp) {
 		case 4: return   n * pow(x, m) * pow(y, n-1) * pow(z, o) + 3 * pow(x, 2) * pow(y, 2) + fnc(x, y, z);
 		case 5: return -(o * pow(x, m) * pow(y, n) * pow(z, o-1) - pow(x, 3) + 4 * pow(z, 3)) + fnc(x, y, z);
 		case 6: return   o * pow(x, m) * pow(y, n) * pow(z, o-1) - pow(x, 3) + 4 * pow(z, 3) + fnc(x, y, z);
-		default: EXIT(ERR_FACE_INDEX_OUT_OF_RANGE);
+		default: EXIT(ERR_FAILURE, "Unknown marker"); return 0.0;
 	}
 }
 

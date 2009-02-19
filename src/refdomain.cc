@@ -79,7 +79,7 @@ const int RefTetra::face_orientations[] = { 6, 6, 6, 6 };
 
 // Hex ////////////////////////////////////////////////////////////////////////
 
-Point3D RefHex::vertices[] = {
+const Point3D RefHex::vertices[] = {
 	{ -1.0, -1.0, -1.0 },
 	{  1.0, -1.0, -1.0 },
 	{  1.0,  1.0, -1.0 },

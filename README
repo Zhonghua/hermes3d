@@ -4,14 +4,11 @@ hermes3d
 Compilation
 ------------
 
-If you use Debian/Ubuntu, do:
-
-$ cp CMake.vars.Debian CMake.vars
-
-(If you use some other system, copy CMake.vars.sample and customize it.)
-
 $ cmake .
 $ make
+
+To customize the build, create CMake.vars file and set the appropriate variables.
+Look into CMake.vars.example for more details.
 
 Tests
 -----
@@ -32,3 +29,4 @@ If you need to debug the build, use:
 cmake -DCMAKE_VERBOSE_MAKEFILE=ON .
 
 Then the make will print the exact commands that are executed.
+

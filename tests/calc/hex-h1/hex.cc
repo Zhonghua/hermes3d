@@ -1,9 +1,21 @@
-/*
- * hex.cc
- *
- *
- *
- */
+// This file is part of Hermes3D
+//
+// Copyright (c) 2009 David Andrs <dandrs@unr.edu>
+// Copyright (c) 2009 Pavel Kus <pavel.kus@gmail.com>
+//
+// Hermes3D is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published
+// by the Free Software Foundation; either version 2 of the License,
+// or (at your option) any later version.
+//
+// Hermes3D is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Hermes3D; if not, write to the Free Software
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 #include "config.h"
 #ifdef WITH_PETSC
@@ -128,6 +140,11 @@ int main(int argc, char **args) {
 	assemble_timer.start();
 	d.assemble_stiffness_matrix_and_rhs();
 	assemble_timer.stop();
+
+	FILE *ff = fopen(OUTPUT_DIR"/matrix", "w");
+	solver.dump_matrix(ff, "A");
+	solver.dump_rhs(ff, "b");
+	fclose(ff);
 
 	// solve the stiffness matrix
 	Timer solve_timer("Solving stiffness matrix");

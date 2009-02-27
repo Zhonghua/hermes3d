@@ -1,3 +1,22 @@
+// This file is part of Hermes3D
+//
+// Copyright (c) 2009 David Andrs <dandrs@unr.edu>
+// Copyright (c) 2009 Pavel Kus <pavel.kus@gmail.com>
+//
+// Hermes3D is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published
+// by the Free Software Foundation; either version 2 of the License,
+// or (at your option) any later version.
+//
+// Hermes3D is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Hermes3D; if not, write to the Free Software
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
 #ifndef _MESH_H_
 #define _MESH_H_
 
@@ -30,7 +49,7 @@ class Mesh3DLoader;
 class Vertex {
 public:
 	static const int NUM_COORDS = 3;
-	
+
 	Vertex();
 	Vertex(double _x, double _y, double _z);
 	Vertex(const Vertex &o);
@@ -57,11 +76,11 @@ public:
 class Tetra : public Element {
 public:
 	static const int NUM_VERTICES = 4;
-	
+
 	Tetra();
 	Tetra(uint v[]);
 	Tetra(uint v1, uint v2, uint v3, uint v4);
-	
+
 	uint vtcs[NUM_VERTICES];
 
 	virtual EMode3D get_mode() const { return MODE_TETRAHEDRON; }
@@ -89,7 +108,7 @@ public:
 	Prism();
 	Prism(uint v[]);
 	Prism(uint v1, uint v2, uint v3, uint v4, uint v5, uint v6);
-	
+
 	uint vtcs[NUM_VERTICES];
 
 	virtual EMode3D get_mode() const { return MODE_PRISM; }
@@ -111,7 +130,7 @@ public:
 
 /// Base class for boundaries of all types
 ///
-///  
+///
 class Boundary {
 public:
 	Boundary(int marker);
@@ -119,7 +138,7 @@ public:
 	virtual ~Boundary();
 
 	virtual int get_marker() const { return marker; }
-	
+
 	virtual EMode2D get_mode() const = 0;
 	virtual uint *get_vertices() = 0;
 
@@ -206,7 +225,7 @@ protected:
 	Hex *create_hex(uint vtcs[]);
 	Prism *create_prism(uint vtcs[]);
 
-	
+
 };
 
 #endif

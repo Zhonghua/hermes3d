@@ -1,3 +1,22 @@
+// This file is part of Hermes3D
+//
+// Copyright (c) 2009 David Andrs <dandrs@unr.edu>
+// Copyright (c) 2009 Pavel Kus <pavel.kus@gmail.com>
+//
+// Hermes3D is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published
+// by the Free Software Foundation; either version 2 of the License,
+// or (at your option) any later version.
+//
+// Hermes3D is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Hermes3D; if not, write to the Free Software
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
 /*
  * main.cc
  *
@@ -116,7 +135,7 @@ void solve(LinearSolver &solver, int n, Array<MatrixEntry> &matrix, Array<double
 	}
 
 	solver.alloc();
-	
+
 	//
 	solver.begin_assembling();
 
@@ -154,12 +173,12 @@ int test_linear_solver(LinearSolver &solver, char *file_name) {
 		return ERR_FAILURE;
 
 	solve(solver, n, matrix, rhs);
-	
+
 	return ERR_SUCCESS;
 }
 
 //
-// testing 
+// testing
 //
 
 int test_linear_solver_block(LinearSolver &solver, char *file_name) {
@@ -179,18 +198,18 @@ int test_linear_solver_block(LinearSolver &solver, char *file_name) {
 	}
 
 	solver.alloc();
-	
+
 	//
 	solver.begin_assembling();
 
 	double **mat = new_matrix<double>(n, n);
-	int *cols = new int[n]; 
+	int *cols = new int[n];
 	int *rows = new int[n];
 	for (int i = 0; i < n; i++) {
 		cols[i] = i;
 		rows[i] = i;
 	}
-	
+
 	for (Word_t i = matrix.first(); i != INVALID_IDX; i = matrix.next(i)) {
 		MatrixEntry &me = matrix[i];
 		mat[me.m][me.n] = me.value;
@@ -219,7 +238,7 @@ int test_linear_solver_block(LinearSolver &solver, char *file_name) {
 
 	delete [] sln;
 	delete [] mat;
-	
+
 	return ERR_SUCCESS;
 }
 

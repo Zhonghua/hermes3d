@@ -1,6 +1,21 @@
+// This file is part of Hermes3D
 //
-// petsc.cc
+// Copyright (c) 2009 David Andrs <dandrs@unr.edu>
+// Copyright (c) 2009 Pavel Kus <pavel.kus@gmail.com>
 //
+// Hermes3D is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published
+// by the Free Software Foundation; either version 2 of the License,
+// or (at your option) any later version.
+//
+// Hermes3D is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Hermes3D; if not, write to the Free Software
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 #include "../config.h"
 
@@ -35,11 +50,16 @@ PetscLinearSolver::PetscLinearSolver() {
 #endif
 }
 
-#ifdef WITH_PETSC
 
 PetscLinearSolver::~PetscLinearSolver() {
+#ifdef WITH_PETSC
 	free();
+#else
+	EXIT(ERR_PETSC_NOT_COMPILED);
+#endif
 }
+
+#ifdef WITH_PETSC
 
 void PetscLinearSolver::prealloc(int ndofs) {
 	this->ndofs = ndofs;
@@ -80,9 +100,8 @@ void PetscLinearSolver::alloc() {
 		nnz[i] = LinearSolver::sort_and_store_indices(pages[i], ai + pos, ai + aisize);
 		pos += nnz[i];
 	}
-	delete[] pages;
-	pages = NULL;
-	delete[] ai;
+	delete [] pages; pages = NULL;
+	delete [] ai;
 
 	//
 	MatCreateSeqAIJ(PETSC_COMM_SELF, this->ndofs, this->ndofs, 0, nnz, &ms->matrix);
@@ -95,7 +114,7 @@ void PetscLinearSolver::alloc() {
 	// create vector of unknowns
 	VecDuplicate(ms->rhs, &ms->x);
 
-	delete[] nnz;
+	delete [] nnz;
 
 	//
 	KSPCreate(PETSC_COMM_WORLD, &ms->ksp);
@@ -117,14 +136,17 @@ void PetscLinearSolver::free() {
 void PetscLinearSolver::update_matrix(int m, int n, scalar v) {
 	assert(ms != NULL);
 	MatSetValues(ms->matrix, 1, &m, 1, &n, &v, ADD_VALUES);
+#else
+	EXIT(ERR_PETSC_NOT_COMPILED);
+#endif
 }
 
 void PetscLinearSolver::update_matrix(int m, int n, scalar **mat, int *rows, int *cols) {
 	assert(ms != NULL);
 	// TODO: pass in just the block of the matrix without DIRICHLET_DOFs (so that can use MatSetValues directly without checking row and cols for -1)
-	for (int i = 0; i < m; i++) // rows
-		for (int j = 0; j < n; j++) { // cols
-			if (mat[i][j] != 0.0 && rows[i] != DIRICHLET_DOF && cols[j] != DIRICHLET_DOF) { // ignore "dirichlet DOF"
+	for (int i = 0; i < m; i++)				// rows
+		for (int j = 0; j < n; j++)	 {		// cols
+			if (mat[i][j] != 0.0 && rows[i] != DIRICHLET_DOF && cols[j] != DIRICHLET_DOF) {		// ignore "dirichlet DOF"
 				MatSetValues(ms->matrix, 1, rows + i, 1, cols + j, &(mat[i][j]), ADD_VALUES);
 			}
 		}
@@ -151,8 +173,7 @@ bool PetscLinearSolver::solve_system(double *sln) {
 	// index map vector (basic serial code uses the map sln[i] = x[i] for all dofs.
 	int *idx = new int[ndofs];
 	MEM_CHECK(idx);
-	for (int i = 0; i < ndofs; i++)
-		idx[i] = i;
+	for (int i = 0; i < ndofs; i++) idx[i] = i;
 	VecGetValues(ms->x, ndofs, idx, sln);
 	delete[] idx;
 
@@ -188,4 +209,3 @@ bool PetscLinearSolver::dump_rhs(FILE *file, const char *var_name, EMatrixDumpFo
 }
 
 #endif
-

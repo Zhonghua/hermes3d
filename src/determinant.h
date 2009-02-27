@@ -1,17 +1,35 @@
+// This file is part of Hermes3D
+//
+// Copyright (c) 2009 David Andrs <dandrs@unr.edu>
+// Copyright (c) 2009 Pavel Kus <pavel.kus@gmail.com>
+//
+// Hermes3D is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published
+// by the Free Software Foundation; either version 2 of the License,
+// or (at your option) any later version.
+//
+// Hermes3D is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Hermes3D; if not, write to the Free Software
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 #ifndef _DETERMINANT_H_
 #define _DETERMINANT_H_
 
 inline double det2(
-	double a11, double a12, 
+	double a11, double a12,
 	double a21, double a22)
 {
 	return a11*a22-a12*a21;
 }
 
 inline double det3(
-	double a11, double a12, double a13, 
-	double a21, double a22, double a23, 
+	double a11, double a12, double a13,
+	double a21, double a22, double a23,
 	double a31, double a32, double a33)
 {
 	return a11*det2(a22, a23, a32, a33)
@@ -20,7 +38,7 @@ inline double det3(
 }
 
 inline double det4(
-	double a11, double a12, double a13, double a14, 
+	double a11, double a12, double a13, double a14,
 	double a21, double a22, double a23, double a24,
 	double a31, double a32, double a33, double a34,
 	double a41, double a42, double a43, double a44)

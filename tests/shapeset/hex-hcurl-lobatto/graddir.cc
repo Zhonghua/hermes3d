@@ -1,3 +1,22 @@
+// This file is part of Hermes3D
+//
+// Copyright (c) 2009 David Andrs <dandrs@unr.edu>
+// Copyright (c) 2009 Pavel Kus <pavel.kus@gmail.com>
+//
+// Hermes3D is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published
+// by the Free Software Foundation; either version 2 of the License,
+// or (at your option) any later version.
+//
+// Hermes3D is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Hermes3D; if not, write to the Free Software
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
 #include "config.h"
 #include "common.h"
 #include <hermes3d.h>
@@ -17,9 +36,9 @@ double dif, maxdif;
 bool test(Shapeset *ss, int fnum)
 {
 	scalar val, valph, valder;
-	
+
 	bool passed = true;
-	
+
 	for(int point = 0; point < np; point++){
 		for(int comp = 0; comp < ss->get_num_components(); comp++){
 			// dx
@@ -33,7 +52,7 @@ bool test(Shapeset *ss, int fnum)
 			}
 			if (dif > maxdif)
 				maxdif = dif;
-					
+
 			// dy
 			val = ss->get_fn_value(fnum, ptx[point], pty[point], ptz[point], comp);
 			valph = ss->get_fn_value(fnum, ptx[point], pty[point] + hh, ptz[point], comp);
@@ -45,7 +64,7 @@ bool test(Shapeset *ss, int fnum)
 			}
 			if (dif > maxdif)
 				maxdif = dif;
-					
+
 			// dz
 			val = ss->get_fn_value(fnum, ptx[point], pty[point], ptz[point], comp);
 			valph = ss->get_fn_value(fnum, ptx[point], pty[point], ptz[point] + hh, comp);
@@ -57,7 +76,7 @@ bool test(Shapeset *ss, int fnum)
 			}
 			if (dif > maxdif)
 				maxdif = dif;
-			
+
 		}
 	}
 	return passed;
@@ -70,35 +89,35 @@ bool test_gradients_directly(Shapeset *ss)
 	maxdif = 0.;
 	bool passed = true;
 	int index, *indices, ii;
-	
+
 	int order = MAX_ELEMENT_ORDER;
 	for(int ie = 0; ie < 12; ie++){
-		for(int ori = 0; ori < 2; ori++){ 
+		for(int ori = 0; ori < 2; ori++){
 			indices = ss->get_edge_indices(ie, ori, order);
 			for(ii = 0; ii < ss->get_num_edge_fns(order); ii++)
 				if(! test(ss, indices[ii]))
 					passed = false;
 		}
 	}
-	
+
 	order = MAKE_QUAD_ORDER(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER);
 	for(int ic = 0; ic < 6; ic++){
-		for(int ori = 0; ori < 8; ori++){ 
+		for(int ori = 0; ori < 8; ori++){
 			indices = ss->get_face_indices(ic, ori, order);
 			for(ii = 0; ii < ss->get_num_face_fns(order); ii++)
 				if(! test(ss, indices[ii]))
 					passed = false;
 		}
 	}
-	
+
 	order = MAKE_HEX_ORDER(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER);
 	indices = ss->get_bubble_indices(order);
 	for(ii = 0; ii < ss->get_num_bubble_fns(order); ii++)
 		if(! test(ss, indices[ii]))
 			passed = false;
-	
+
 	printf("maximal difference is %g, which is %g * h^2\n", maxdif, maxdif/hh/hh);
-	
+
 	return passed;
 }
 

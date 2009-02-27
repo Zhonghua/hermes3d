@@ -1,6 +1,21 @@
+// This file is part of Hermes3D
 //
-// umfpacksolver.cc
+// Copyright (c) 2009 David Andrs <dandrs@unr.edu>
+// Copyright (c) 2009 Pavel Kus <pavel.kus@gmail.com>
 //
+// Hermes3D is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published
+// by the Free Software Foundation; either version 2 of the License,
+// or (at your option) any later version.
+//
+// Hermes3D is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Hermes3D; if not, write to the Free Software
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 #include "../config.h"
 
@@ -106,10 +121,10 @@ void UMFPackLinearSolver::alloc() {
 }
 
 void UMFPackLinearSolver::free() {
-	delete[] Ap; Ap = NULL;
-	delete[] Ai; Ai = NULL;
-	delete[] Ax; Ax = NULL;
-	delete[] srhs; srhs = NULL;
+	delete [] Ap; Ap = NULL;
+	delete [] Ai; Ai = NULL;
+	delete [] Ax; Ax = NULL;
+	delete [] srhs; srhs = NULL;
 }
 
 void UMFPackLinearSolver::update_matrix(int row, int col, scalar v) {
@@ -117,12 +132,10 @@ void UMFPackLinearSolver::update_matrix(int row, int col, scalar v) {
 }
 
 void UMFPackLinearSolver::update_matrix(int m, int n, scalar **mat, int *rows, int *cols) {
-	for (int i = 0; i < m; i++) // rows
-		for (int j = 0; j < n; j++) { // cols
-			if (mat[i][j] != 0.0 && rows[i] != -1 && cols[j] != -1) { // -1 is a "dirichlet DOF" -> ignore it
+	for (int i = 0; i < m; i++)				// rows
+		for (int j = 0; j < n; j++)			// cols
+			if (mat[i][j] != 0.0 && rows[i] != -1 && cols[j] != -1)			// -1 is a "dirichlet DOF" -> ignore it
 				update_matrix(rows[i], cols[j], mat[i][j]);
-			}
-		}
 }
 
 void UMFPackLinearSolver::update_rhs(int idx, scalar y) {

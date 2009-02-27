@@ -1,3 +1,22 @@
+// This file is part of Hermes3D
+//
+// Copyright (c) 2009 David Andrs <dandrs@unr.edu>
+// Copyright (c) 2009 Pavel Kus <pavel.kus@gmail.com>
+//
+// Hermes3D is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published
+// by the Free Software Foundation; either version 2 of the License,
+// or (at your option) any later version.
+//
+// Hermes3D is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Hermes3D; if not, write to the Free Software
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
 //
 // mesh3dreader.cc
 //
@@ -137,7 +156,7 @@ bool Mesh3DLoader::load(const char *file_name, Mesh *mesh) {
 				case STATE_VERTICES:
 					if (read_n_nums(row, Vertex::NUM_COORDS, buffer)) {
 						mesh->add_vertex(buffer[0], buffer[1], buffer[2]);
-						
+
 						vertex_count--;
 						if (vertex_count == 0)
 							state = STATE_TETRAS_NUM;
@@ -161,7 +180,7 @@ bool Mesh3DLoader::load(const char *file_name, Mesh *mesh) {
 
 					for (int i = 0; i < Tetra::NUM_VERTICES; i++) vs[i]--;
 					Tetra *tetra = mesh->add_tetra(vs);
-					
+
 					tetra_count--;
 					if (tetra_count == 0)
 						state = STATE_HEXES_NUM;
@@ -182,10 +201,10 @@ bool Mesh3DLoader::load(const char *file_name, Mesh *mesh) {
 							ERROR("Invalid vertex index was found in the section defining hexes.");
 							throw E_READ_ERROR;
 						}
-	
+
 						for (int i = 0; i < Hex::NUM_VERTICES; i++) vs[i]--;
 						Hex *hex = mesh->add_hex(vs);
-	
+
 						hex_count--;
 						if (hex_count == 0)
 							state = STATE_PRISMS_NUM;
@@ -229,7 +248,7 @@ bool Mesh3DLoader::load(const char *file_name, Mesh *mesh) {
 							ERROR("Invalid vertex index was found in the section defining tris.");
 							throw E_READ_ERROR;
 						}
-	
+
 						uint facet_idxs[Tri::NUM_VERTICES] = {vs[0] - 1, vs[1] - 1, vs[2] - 1};
 						mesh->add_tri_boundary(facet_idxs, (int) vs[Tri::NUM_VERTICES]);
 						tri_count--;
@@ -256,7 +275,7 @@ bool Mesh3DLoader::load(const char *file_name, Mesh *mesh) {
 							ERROR("Invalid vertex index was found in the section defining quads.");
 							throw E_READ_ERROR;
 						}
-	
+
 						uint facet_idxs[Quad::NUM_VERTICES] = { vs[0] - 1, vs[1] - 1, vs[2] - 1, vs[3] - 1 };
 						mesh->add_quad_boundary(facet_idxs, (int) vs[Quad::NUM_VERTICES]);
 						quad_count--;
@@ -285,10 +304,10 @@ bool Mesh3DLoader::load(const char *file_name, Mesh *mesh) {
 		}
 	}
 	catch (int e) {
-		fclose(file);	
+		fclose(file);
 		return false;
 	}
-	
-	fclose(file);	
+
+	fclose(file);
 	return true;
 }

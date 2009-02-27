@@ -1,3 +1,22 @@
+// This file is part of Hermes3D
+//
+// Copyright (c) 2009 David Andrs <dandrs@unr.edu>
+// Copyright (c) 2009 Pavel Kus <pavel.kus@gmail.com>
+//
+// Hermes3D is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published
+// by the Free Software Foundation; either version 2 of the License,
+// or (at your option) any later version.
+//
+// Hermes3D is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Hermes3D; if not, write to the Free Software
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
 /*
  * hex-dirichlet.cc
  *
@@ -154,11 +173,11 @@ int main(int argc, char **args) {
 	    solve_timer.get_seconds());
 
 	if (solved) {
-		printf("* Solution:\n");
-		double *s = sln.get_solution_vector();
-		for (int i = 1; i <= ndofs; i++) {
-			printf(" x[% 3d] = % lf\n", i, s[i]);
-		}
+//		printf("* Solution:\n");
+//		double *s = sln.get_solution_vector();
+//		for (int i = 1; i <= ndofs; i++) {
+//			printf(" x[% 3d] = % lf\n", i, s[i]);
+//		}
 
 		ExactSolution ex_sln(&mesh, exact_solution);
 		// norm

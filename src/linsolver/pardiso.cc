@@ -1,3 +1,22 @@
+// This file is part of Hermes3D
+//
+// Copyright (c) 2009 David Andrs <dandrs@unr.edu>
+// Copyright (c) 2009 Miroslav Simko <msimko@miners.utep.edu>
+//
+// Hermes3D is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published
+// by the Free Software Foundation; either version 2 of the License,
+// or (at your option) any later version.
+//
+// Hermes3D is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Hermes3D; if not, write to the Free Software
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
 #include <common/trace.h>
 #include <common/error.h>
 
@@ -31,11 +50,15 @@ PardisoLinearSolver::PardisoLinearSolver() {
 #endif
 }
 
-#ifdef WITH_PARDISO
-
 PardisoLinearSolver::~PardisoLinearSolver() {
+#ifdef WITH_PARDISO
 	free();
+#else
+	EXIT(ERR_PARDISO_NOT_COMPILED);
+#endif
 }
+
+#ifdef WITH_PARDISO
 
 void PardisoLinearSolver::prealloc(int ndofs) {
 	free();
@@ -108,9 +131,9 @@ void PardisoLinearSolver::update_matrix(int row, int col, scalar v) {
 }
 
 void PardisoLinearSolver::update_matrix(int m, int n, double **mat, int *rows, int *cols) {
-	for (int i = 0; i < m; i++) // rows
-		for (int j = 0; j < n; j++) { // cols
-			if (mat[i][j] != 0.0 && rows[i] != -1 && cols[j] != -1) { // -1 is a "dirichlet DOF" -> ignore it
+	for (int i = 0; i < m; i++)				// rows
+		for (int j = 0; j < n; j++)	 {		// cols
+			if (mat[i][j] != 0.0 && rows[i] != -1 && cols[j] != -1) {		// -1 is a "dirichlet DOF" -> ignore it
 				update_matrix(rows[i], cols[j], mat[i][j]);
 			}
 		}
@@ -268,4 +291,3 @@ int PardisoLinearSolver::get_matrix_size() const {
 }
 
 #endif
-

@@ -1,3 +1,21 @@
+// This file is part of Hermes3D
+//
+// Copyright (c) 2009 David Andrs <dandrs@unr.edu>
+//
+// Hermes3D is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published
+// by the Free Software Foundation; either version 2 of the License,
+// or (at your option) any later version.
+//
+// Hermes3D is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Hermes3D; if not, write to the Free Software
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
 #ifndef _BITARRAY_H_
 #define _BITARRAY_H_
 
@@ -17,7 +35,7 @@
 class BitArray {
 	void *judy;
 
-public:	
+public:
 	BitArray() : judy(NULL) {}
 	~BitArray() { free(); }
 
@@ -50,7 +68,7 @@ public:
 		J1T(rc, judy, index);
 		return rc == 1;
 	}
-	
+
 	/// Count the number of indices present in the array between index1 and index2 (inclusive).
 	/// \param[in] index1 Starting index. Optional, default value \c 0.
 	/// \param[in] index2 End index. Optional, default value <c>(Word_t) -1</c>.
@@ -136,7 +154,7 @@ public:
 		J1NE(rc, judy, index);
 		return rc ? index : INVALID_IDX;
 	}
-	
+
 	/// Get the last unset index that is equal to or less than the passed \c index.
 	/// \param[in] index Optional, default value <c>(Word_t)-1</c> (finds the last unset index).
 	/// \return \li Last unset index that is equal or less than the passed \c index (if found), \li \c INVALID_IDX (if not found).
@@ -145,7 +163,7 @@ public:
 		J1LE(rc, judy, index);
 		return rc ? index : INVALID_IDX;
 	}
-	
+
 	/// Get the last unset index that is less than passed \c index.
 	/// \param[in] index Index whose unset predecessor we want to find. Optional, default value <c>(Word_t)-1</c>.
 	/// \return \li Last unset index that is less than the passed \c index (if found), \li \c INVALID_IDX (if not found).
@@ -163,8 +181,8 @@ public:
 		}
 		return true;
 	}
-	
-	/// unset all elements 
+
+	/// unset all elements
 	void free() {
 		int val;
 		J1FA(val, judy);

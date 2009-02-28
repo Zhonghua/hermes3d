@@ -1,6 +1,6 @@
 // This file is part of Hermes3D
 //
-// Copyright (c) 2009 David Andrs <dandrs@unr.edu>
+// Copyright (c) 2007 - 2009 David Andrs <dandrs@unr.edu>
 //
 // Hermes3D is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published

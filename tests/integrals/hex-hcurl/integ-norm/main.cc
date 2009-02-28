@@ -1,6 +1,6 @@
 // This file is part of Hermes3D
 //
-// Copyright (c) 2009 Pavel Kus <pavel.kus@gmail.com>
+// Copyright (c) 2008 - 2009 Pavel Kus <pavel.kus@gmail.com>
 //
 // Hermes3D is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published
@@ -16,20 +16,16 @@
 // along with Hermes3D; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-/*
- * main.cc
- *
- * Test of integrals and norms
- * Norm of a shape function is calculated using two different ways
- * via integrals and and norm
- * this test tests correctness of hcurl integrals (u.v, curl u . curl v),
- * hcurl and L2 norm in hcurl
- * and also transformations of solution and gradient in Solution
- * (because in each aproach, the transformation is done differently. When using
- * integrals, we transform curl using relation from book (Monk). When using norms,
- * partial derivatives are transformed in Solution and then curl is calculated in norm
- *
- */
+// Test of integrals and norms
+//
+// Norm of a shape function is calculated using two different ways
+// via integrals and and norm
+// this test tests correctness of hcurl integrals (u.v, curl u . curl v),
+// Hcurl and L2 norm in Hcurl
+// and also transformations of solution and gradient in Solution
+// (because in each aproach, the transformation is done differently. When using
+// integrals, we transform curl using relation from book (Monk). When using norms,
+// partial derivatives are transformed in Solution and then curl is calculated in norm
 
 #include "config.h"
 #ifdef WITH_PETSC

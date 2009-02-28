@@ -1,7 +1,7 @@
 // This file is part of Hermes3D
 //
-// Copyright (c) 2009 David Andrs <dandr@unr.edu>
-// Copyright (c) 2009 Miroslav Simko <msimko@miners.utep.edu>
+// Copyright (c) 2007 - 2009 David Andrs <dandr@unr.edu>
+// Copyright (c) 2008 Miroslav Simko <msimko@miners.utep.edu>
 //
 // Hermes3D is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published

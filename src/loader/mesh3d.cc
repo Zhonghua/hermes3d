@@ -1,7 +1,8 @@
 // This file is part of Hermes3D
 //
-// Copyright (c) 2009 David Andrs <dandrs@unr.edu>
-// Copyright (c) 2009 Pavel Kus <pavel.kus@gmail.com>
+// Copyright (c) 2007 - 2009 David Andrs <dandrs@unr.edu>
+// Copyright (c) 2007 - 2009 Pavel Kus <pavel.kus@gmail.com>
+// Copyright (c) 2008 Miroslav Simko <msimko@miners.utep.edu>
 //
 // Hermes3D is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published
@@ -16,12 +17,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Hermes3D; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
-//
-// mesh3dloader.cc
-//
-// Loading mesh from mesh3d format
-//
 
 #include "../config.h"
 

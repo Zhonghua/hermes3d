@@ -140,11 +140,6 @@ int main(int argc, char **args) {
 	d.assemble_stiffness_matrix_and_rhs();
 	assemble_timer.stop();
 
-	FILE *ff = fopen(OUTPUT_DIR"/matrix", "w");
-	solver.dump_matrix(ff, "A");
-	solver.dump_rhs(ff, "b");
-	fclose(ff);
-
 	// solve the stiffness matrix
 	Timer solve_timer("Solving stiffness matrix");
 	solve_timer.start();

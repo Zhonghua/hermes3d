@@ -136,9 +136,6 @@ void PetscLinearSolver::free() {
 void PetscLinearSolver::update_matrix(int m, int n, scalar v) {
 	assert(ms != NULL);
 	MatSetValues(ms->matrix, 1, &m, 1, &n, &v, ADD_VALUES);
-#else
-	EXIT(ERR_PETSC_NOT_COMPILED);
-#endif
 }
 
 void PetscLinearSolver::update_matrix(int m, int n, scalar **mat, int *rows, int *cols) {

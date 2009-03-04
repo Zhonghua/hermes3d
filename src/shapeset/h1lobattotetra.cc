@@ -4560,7 +4560,7 @@ static int **lobatto_tetra_edge_indices[] = {
 	lobatto_tetra_edge_indices_5
 };
 
-static int lobatto_tetra_edge_count[] = { 0, 0, 1, 1, 1, 1, 1, 1, 1, 1 };
+static int lobatto_tetra_edge_count[] = { 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
 
 // faces //
 

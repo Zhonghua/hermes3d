@@ -51,7 +51,8 @@ double calc_error(double (*fn)(MeshFunction*, MeshFunction*, RefMap*, RefMap*), 
 		error += fn(sln1, sln2, ru, rv);
 	}
 	trav.finish();
-	return error > 0.0 ? sqrt(error) : error;
+
+	return error > 10e-15 ? sqrt(error) : error;		// do not ruin the precision by taking the sqrt
 }
 
 /// Calculates the norm of sln using function fn
@@ -71,7 +72,7 @@ double calc_norm(double (*fn)(MeshFunction*, RefMap*), MeshFunction *sln) {
 		norm += fn(sln, ru);
 	}
 
-	return norm > 0.0 ? sqrt(norm) : norm;
+	return norm > 10e-15 ? sqrt(norm) : norm;			// do not ruin the precision by taking the sqrt
 }
 
 // H1 space /////////////////////////////////////////////////////////////////////////////////////////
@@ -167,4 +168,3 @@ double l2_error(MeshFunction *sln1, MeshFunction *sln2) {
 double l2_norm(MeshFunction *sln) {
 	return calc_norm(norm_fn_l2, sln);
 }
-

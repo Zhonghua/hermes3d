@@ -90,8 +90,6 @@ void PrecalcShapeset::set_active_element(Element *e) {
 	if (e->get_mode() != shapeset->get_mode())
 		EXIT(ERR_FAILURE, "Using element with incorrect shapeset.");
 
-	Quad3D *quad = get_quad();
-
 	element = e;
 }
 

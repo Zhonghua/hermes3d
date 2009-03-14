@@ -47,8 +47,6 @@ UMFPackLinearSolver::~UMFPackLinearSolver() {
 #endif
 }
 
-#ifdef WITH_UMFPACK
-
 #ifndef COMPLEX
 // real case
 #define umfpack_symbolic(m, n, Ap, Ai, Ax, S, C, I)		umfpack_di_symbolic(m, n, Ap, Ai, Ax, S, C, I)
@@ -68,6 +66,7 @@ UMFPackLinearSolver::~UMFPackLinearSolver() {
 #endif
 
 void UMFPackLinearSolver::prealloc(int ndofs) {
+#ifdef WITH_UMFPACK
 	free();
 
 	this->ndofs = ndofs;
@@ -75,9 +74,11 @@ void UMFPackLinearSolver::prealloc(int ndofs) {
 	pages = new Page *[ndofs];
 	if (pages == NULL) EXIT(ERR_OUT_OF_MEMORY, "Out of memory. Error pre-allocating pages.");
 	memset(pages, 0, ndofs * sizeof(Page *));
+#endif
 }
 
 void UMFPackLinearSolver::pre_add_ij(int row, int col) {
+#ifdef WITH_UMFPACK
 	if (pages[col] == NULL || pages[col]->count >= PAGE_SIZE) {
 		Page *new_page = new Page;
 		if (new_page == NULL) EXIT(ERR_OUT_OF_MEMORY, "Out of memory. Error allocating a page.");
@@ -86,9 +87,11 @@ void UMFPackLinearSolver::pre_add_ij(int row, int col) {
 		pages[col] = new_page;
 	}
 	pages[col]->idx[pages[col]->count++] = row;
+#endif
 }
 
 void UMFPackLinearSolver::alloc() {
+#ifdef WITH_UMFPACK
 	free();
 	assert(pages != NULL);
 
@@ -118,34 +121,47 @@ void UMFPackLinearSolver::alloc() {
 	srhs = new scalar[ndofs];
 	if (srhs == NULL) EXIT(ERR_OUT_OF_MEMORY, "Out of memory. Error allocating the RHS vector.");
 	memset(srhs, 0, ndofs * sizeof(scalar));
+#endif
 }
 
 void UMFPackLinearSolver::free() {
+#ifdef WITH_UMFPACK
 	delete [] Ap; Ap = NULL;
 	delete [] Ai; Ai = NULL;
 	delete [] Ax; Ax = NULL;
 	delete [] srhs; srhs = NULL;
+#endif
 }
 
 void UMFPackLinearSolver::update_matrix(int row, int col, scalar v) {
+#ifdef WITH_UMFPACK
 	insert_value(Ai + Ap[col], Ax + Ap[col], Ap[col + 1] - Ap[col], row, v);
+#endif
 }
 
 void UMFPackLinearSolver::update_matrix(int m, int n, scalar **mat, int *rows, int *cols) {
+#ifdef WITH_UMFPACK
 	for (int i = 0; i < m; i++)				// rows
 		for (int j = 0; j < n; j++)			// cols
 			if (mat[i][j] != 0.0 && rows[i] != -1 && cols[j] != -1)			// -1 is a "dirichlet DOF" -> ignore it
 				update_matrix(rows[i], cols[j], mat[i][j]);
+#endif
 }
 
 void UMFPackLinearSolver::update_rhs(int idx, scalar y) {
+#ifdef WITH_UMFPACK
 	if (idx >= 0) srhs[idx] += y;
+#endif
 }
 
 void UMFPackLinearSolver::update_rhs(int n, int *idx, scalar *y) {
+#ifdef WITH_UMFPACK
 	for (int i = 0; i < n; i++)
 		if (idx[i] >= 0) srhs[idx[i]] += y[i];
+#endif
 }
+
+#ifdef WITH_UMFPACK
 
 static void check_status(const char *fn_name, int status) {
 	switch (status) {
@@ -164,7 +180,10 @@ static void check_status(const char *fn_name, int status) {
 	}
 }
 
+#endif
+
 bool UMFPackLinearSolver::solve_system(scalar *sln) {
+#ifdef WITH_UMFPACK
 	bool res = true;
 
 	void *symbolic, *numeric;
@@ -194,9 +213,13 @@ bool UMFPackLinearSolver::solve_system(scalar *sln) {
 	umfpack_free_numeric(&numeric);
 
 	return true;
+#else
+	return false;
+#endif
 }
 
 bool UMFPackLinearSolver::dump_matrix(FILE *file, const char *var_name, EMatrixDumpFormat format/* = DF_MATLAB_SPARSE*/) {
+#ifdef WITH_UMFPACK
 	switch (format) {
 		case DF_MATLAB_SPARSE:
 			fprintf(file, "%% Size: %dx%d\n%% Nonzeros: %d\ntemp = zeros(%d, 3);\ntemp = [\n", ndofs, ndofs, Ap[ndofs], Ap[ndofs]);
@@ -227,9 +250,13 @@ bool UMFPackLinearSolver::dump_matrix(FILE *file, const char *var_name, EMatrixD
 		default:
 			return false;
 	}
+#else
+	return false;
+#endif
 }
 
 bool UMFPackLinearSolver::dump_rhs(FILE *file, const char *var_name, EMatrixDumpFormat format/* = DF_MATLAB_SPARSE*/) {
+#ifdef WITH_UMFPACK
 	switch (format) {
 		case DF_MATLAB_SPARSE:
 			fprintf(file, "%% Size: %dx1\n%s = [\n", ndofs, var_name);
@@ -254,12 +281,16 @@ bool UMFPackLinearSolver::dump_rhs(FILE *file, const char *var_name, EMatrixDump
 		default:
 			return false;
 	}
+#else
+	return false;
+#endif
 }
 
 int UMFPackLinearSolver::get_matrix_size() const {
+#ifdef WITH_UMFPACK
 	assert(Ap != NULL);
 	return (sizeof(int) + sizeof(scalar)) * (Ap[ndofs] + ndofs);
-}
-
+#else
+	return -1;
 #endif
-
+}

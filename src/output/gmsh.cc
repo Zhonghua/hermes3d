@@ -116,9 +116,9 @@ OutputQuadTetra::~OutputQuadTetra() {
 #endif
 }
 
-#ifdef WITH_TETRA
 
 void OutputQuadTetra::calculate_view_points(order3_t order) {
+#ifdef WITH_TETRA
 	int orderidx = order.get_idx();
 	// check if the order is greater than 0, because we are taking log(o)
 	if (order.order == 0) order.order++;
@@ -144,9 +144,11 @@ void OutputQuadTetra::calculate_view_points(order3_t order) {
 	int idx = 0;
 	const Point3D *ref_vtcs = RefTetra::get_vertices();
 	recursive_division(ref_vtcs, tables[orderidx], levels, idx);
+#endif
 }
 
 void OutputQuadTetra::recursive_division(const Point3D *tv, QuadPt3D *table, int levels, int &idx) {
+#ifdef WITH_TETRA
 	if (levels == 0) {
 		// vertices
 		for (int i = 0; i < Tetra::NUM_VERTICES; i++) {
@@ -181,9 +183,9 @@ void OutputQuadTetra::recursive_division(const Point3D *tv, QuadPt3D *table, int
 		for (int i = 0; i < 8; i++)
 			recursive_division(div_vtcs[i], table, levels - 1, idx);
 	}
+#endif
 }
 
-#endif
 
 //// OutputQuadHex ////////////////////////////////////////////////////////////////////////////////
 
@@ -224,9 +226,8 @@ OutputQuadHex::~OutputQuadHex() {
 #endif
 }
 
-#ifdef WITH_HEX
-
 void OutputQuadHex::calculate_view_points(order3_t order) {
+#ifdef WITH_HEX
 	// FIXME:
 //	int o = get_principal_order(order);
 //	int levels = int(log(o) / log(2)) + output_precision;
@@ -248,9 +249,11 @@ void OutputQuadHex::calculate_view_points(order3_t order) {
 	int idx = 0;
 	const Point3D *ref_vtcs = RefHex::get_vertices();
 	recursive_division(ref_vtcs, tables[o], levels, idx);
+#endif
 }
 
 void OutputQuadHex::recursive_division(const Point3D *tv, QuadPt3D *table, int levels, int &idx) {
+#ifdef WITH_HEX
 	if (levels == 0) {
 		// vertices
 		for (int i = 0; i < Hex::NUM_VERTICES; i++) {
@@ -304,9 +307,9 @@ void OutputQuadHex::recursive_division(const Point3D *tv, QuadPt3D *table, int l
 		for (int i = 0; i < 8; i++)
 			recursive_division(div_vtcs[i], table, levels - 1, idx);
 	}
+#endif
 }
 
-#endif
 
 //// OutputQuadPrism /////////////////////////////////////////////////////////////////////////////
 

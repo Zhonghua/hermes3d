@@ -59,17 +59,18 @@ PetscLinearSolver::~PetscLinearSolver() {
 #endif
 }
 
-#ifdef WITH_PETSC
-
 void PetscLinearSolver::prealloc(int ndofs) {
+#ifdef WITH_PETSC
 	this->ndofs = ndofs;
 
 	pages = new Page *[ndofs];
 	MEM_CHECK(pages);
 	memset(pages, 0, ndofs * sizeof(Page *));
+#endif
 }
 
 void PetscLinearSolver::pre_add_ij(int row, int col) {
+#ifdef WITH_PETSC
 	if (pages[row] == NULL || pages[row]->count >= PAGE_SIZE) {
 		Page *new_page = new Page;
 		MEM_CHECK(new_page);
@@ -78,9 +79,11 @@ void PetscLinearSolver::pre_add_ij(int row, int col) {
 		pages[row] = new_page;
 	}
 	pages[row]->idx[pages[row]->count++] = col;
+#endif
 }
 
 void PetscLinearSolver::alloc() {
+#ifdef WITH_PETSC
 	assert(pages != NULL);
 	this->ms = new msyst;
 	MEM_CHECK(this->ms);
@@ -118,9 +121,11 @@ void PetscLinearSolver::alloc() {
 
 	//
 	KSPCreate(PETSC_COMM_WORLD, &ms->ksp);
+#endif
 }
 
 void PetscLinearSolver::free() {
+#ifdef WITH_PETSC
 	if (ms != NULL) {
 		// commented out, becuase it is causing SEGFAULTS
 //		MatDestroy(ms->matrix);
@@ -131,14 +136,18 @@ void PetscLinearSolver::free() {
 		delete ms;
 		ms = NULL;
 	}
+#endif
 }
 
 void PetscLinearSolver::update_matrix(int m, int n, scalar v) {
+#ifdef WITH_PETSC
 	assert(ms != NULL);
 	MatSetValues(ms->matrix, 1, &m, 1, &n, &v, ADD_VALUES);
+#endif
 }
 
 void PetscLinearSolver::update_matrix(int m, int n, scalar **mat, int *rows, int *cols) {
+#ifdef WITH_PETSC
 	assert(ms != NULL);
 	// TODO: pass in just the block of the matrix without DIRICHLET_DOFs (so that can use MatSetValues directly without checking row and cols for -1)
 	for (int i = 0; i < m; i++)				// rows
@@ -147,20 +156,26 @@ void PetscLinearSolver::update_matrix(int m, int n, scalar **mat, int *rows, int
 				MatSetValues(ms->matrix, 1, rows + i, 1, cols + j, &(mat[i][j]), ADD_VALUES);
 			}
 		}
+#endif
 }
 
 void PetscLinearSolver::update_rhs(int idx, scalar y) {
+#ifdef WITH_PETSC
 	assert(ms != NULL);
 	if (idx >= 0) VecSetValues(ms->rhs, 1, &idx, &y, ADD_VALUES);
+#endif
 }
 
 void PetscLinearSolver::update_rhs(int n, int *idx, scalar *y) {
+#ifdef WITH_PETSC
 	assert(ms != NULL);
 	for (int i = 0; i < n; i++)
 		if (idx[i] >= 0) VecSetValues(ms->rhs, 1, idx + i, y + i, ADD_VALUES);
+#endif
 }
 
 bool PetscLinearSolver::solve_system(double *sln) {
+#ifdef WITH_PETSC
 	KSPSetOperators(ms->ksp, ms->matrix, ms->matrix, DIFFERENT_NONZERO_PATTERN);
 	KSPSetFromOptions(ms->ksp);
 	ms->ec = KSPSolve(ms->ksp, ms->rhs, ms->x);
@@ -175,34 +190,42 @@ bool PetscLinearSolver::solve_system(double *sln) {
 	delete[] idx;
 
 	return true;
+#else
+	return false;
+#endif
 }
 
 void PetscLinearSolver::begin_assembling() {
 }
 
 void PetscLinearSolver::finish_assembling() {
+#ifdef WITH_PETSC
 	MatAssemblyBegin(ms->matrix, MAT_FINAL_ASSEMBLY);
 	MatAssemblyEnd(ms->matrix, MAT_FINAL_ASSEMBLY);
 	VecAssemblyBegin(ms->rhs);
 	VecAssemblyEnd(ms->rhs);
+#endif
 }
 
 bool PetscLinearSolver::dump_matrix(FILE *file, const char *var_name, EMatrixDumpFormat format) {
+#ifdef WITH_PETSC
 //	PetscViewer v;
 //	PetscViewerASCIIOpen(PETSC_COMM_SELF, file_name, &v);
 //	PetscViewerSetFormat(v, PETSC_VIEWER_ASCII_MATLAB);
 //	MatView(ms->matrix, v);
 //	PetscViewerDestroy(v);
+#endif
 	return false;
 }
 
 bool PetscLinearSolver::dump_rhs(FILE *file, const char *var_name, EMatrixDumpFormat format) {
+#ifdef WITH_PETSC
 //	PetscViewer v;
 //	PetscViewerASCIIOpen(PETSC_COMM_SELF, file_name, &v);
 //	PetscViewerSetFormat(v, PETSC_VIEWER_ASCII_MATLAB);
 //	VecView(ms->rhs, v);
 //	PetscViewerDestroy(v);
+#endif
 	return false;
 }
 
-#endif

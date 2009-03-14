@@ -4360,9 +4360,8 @@ QuadStdHex::~QuadStdHex() {
 #endif
 }
 
-#ifdef WITH_HEX
-
 void QuadStdHex::calc_table(order3_t order) {
+#ifdef WITH_HEX
 //	assert(order.type == mode);
 	int idx = order.get_idx();
 	tables[idx] = new QuadPt3D[np[idx]];
@@ -4380,9 +4379,11 @@ void QuadStdHex::calc_table(order3_t order) {
 			}
 		}
 	}
+#endif
 }
 
 void QuadStdHex::calc_face_table(int face, order2_t order) {
+#ifdef WITH_HEX
 	int idx = order.get_idx();
 	face_tables[face][idx] = new QuadPt3D[np_face[idx]];
 	MEM_CHECK(face_tables[face][idx]);
@@ -4432,17 +4433,21 @@ void QuadStdHex::calc_face_table(int face, order2_t order) {
 			EXIT(ERR_FAILURE, "Invalid face number %d. Can be 0 - 5.", face);
 			break;
 	}
+#endif
 }
 
 order3_t QuadStdHex::lower_order_same_accuracy(order3_t ord) {
+#ifdef WITH_HEX
 //	assert(ord.type == MODE_HEXAHEDRON);
 	int x = (ord.x % 2) ? ord.x-- : ord.x;
 	int y = (ord.y % 2) ? ord.y-- : ord.y;
 	int z = (ord.x % 2) ? ord.z-- : ord.z;
 	return order3_t(x, y, z);
+#else
+	return order3_t(0, 0, 0);
+#endif
 }
 
-#endif
 
 // QuadStdPrism /////////////////////////////////////////////////////////////////
 

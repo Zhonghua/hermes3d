@@ -148,7 +148,7 @@ endmacro(LIBRARY_SETTINGS)
 
 # real version
 if(REAL) 
-    add_library(${HERMES_REAL_BIN} STATIC ${SRC})
+    add_library(${HERMES_REAL_BIN} SHARED ${SRC})
 	LIBRARY_SETTINGS(${HERMES_REAL_BIN})
 endif(REAL)
 
@@ -182,7 +182,7 @@ install(FILES ${INC_INTEGRALS} DESTINATION include/${PROJECT_NAME}/integrals)
 
 # install library
 if(REAL)
-    install(TARGETS ${HERMES_REAL_BIN} ARCHIVE DESTINATION lib/${PROJECT_NAME})
+    install(TARGETS ${HERMES_REAL_BIN} LIBRARY DESTINATION lib/${PROJECT_NAME})
 endif(REAL)
 
 if(COMPLEX)

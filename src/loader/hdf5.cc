@@ -57,9 +57,10 @@ HDF5Reader::~HDF5Reader() {
 #endif
 }
 
-#ifdef WITH_HDF5
 
 // Load ///////////////////////////////////////////////////////////////////////
+
+#ifdef WITH_HDF5
 
 // checks the version of hdf5 file
 static bool check_version(hid_t id) {
@@ -351,7 +352,10 @@ static bool read_bcs(hid_t id, Mesh *mesh) {
 	return true;
 }
 
+#endif
+
 bool HDF5Reader::load(const char *file_name, Mesh *mesh) {
+#ifdef WITH_HDF5
 	bool ret = true;
 
 	H5open();
@@ -386,9 +390,14 @@ bool HDF5Reader::load(const char *file_name, Mesh *mesh) {
 
 	H5close();
 	return ret;
+#else
+	return false;
+#endif
 }
 
 // Save ///////////////////////////////////////////////////////////////////////
+
+#ifdef WITH_HDF5
 
 // not included in the class just to hide it
 // TODO: improve error handling
@@ -694,7 +703,10 @@ static bool save_bc(hid_t parent_group_id, Mesh *mesh) {
 	return ret;
 }
 
+#endif
+
 bool HDF5Reader::save(const char *file_name, Mesh *mesh) {
+#ifdef WITH_HDF5
 	herr_t status;
 
 	// init HDF5
@@ -740,7 +752,7 @@ bool HDF5Reader::save(const char *file_name, Mesh *mesh) {
 	H5close();
 
 	return ret;
-}
-
+#else
+	return false;
 #endif
-
+}

@@ -58,9 +58,8 @@ PardisoLinearSolver::~PardisoLinearSolver() {
 #endif
 }
 
-#ifdef WITH_PARDISO
-
 void PardisoLinearSolver::prealloc(int ndofs) {
+#ifdef WITH_PARDISO
 	free();
 
 	this->ndofs = ndofs;
@@ -68,9 +67,11 @@ void PardisoLinearSolver::prealloc(int ndofs) {
 	pages = new Page *[ndofs];
 	if (pages == NULL) EXIT(ERR_OUT_OF_MEMORY);
 	memset(pages, 0, ndofs * sizeof(Page *));
+#endif
 }
 
 void PardisoLinearSolver::pre_add_ij(int row, int col) {
+#ifdef WITH_PARDISO
 	int tmp = row;
 	row = col;
 	col = tmp;
@@ -82,9 +83,11 @@ void PardisoLinearSolver::pre_add_ij(int row, int col) {
 		pages[col] = new_page;
 	}
 	pages[col]->idx[pages[col]->count++] = row;
+#endif
 }
 
 void PardisoLinearSolver::alloc() {
+#ifdef WITH_PARDISO
 	free();
 	assert(pages != NULL);
 
@@ -113,42 +116,54 @@ void PardisoLinearSolver::alloc() {
 	srhs = new scalar[ndofs];
 	if (srhs == NULL) EXIT(ERR_OUT_OF_MEMORY);
 	memset(srhs, 0, ndofs * sizeof(scalar));
+#endif
 }
 
 void PardisoLinearSolver::free() {
+#ifdef WITH_PARDISO
 	delete[] Ap; Ap = NULL;
 	delete[] Ai; Ai = NULL;
 	delete[] Ax; Ax = NULL;
 	delete[] srhs; 	srhs = NULL;
+#endif
 }
 
 void PardisoLinearSolver::update_matrix(int row, int col, scalar v) {
+#ifdef WITH_PARDISO
 	int tmp = row;
 	row = col;
 	col = tmp;
 
 	insert_value(Ai + Ap[col], Ax + Ap[col], Ap[col + 1] - Ap[col], row, v);
+#endif
 }
 
 void PardisoLinearSolver::update_matrix(int m, int n, double **mat, int *rows, int *cols) {
+#ifdef WITH_PARDISO
 	for (int i = 0; i < m; i++)				// rows
 		for (int j = 0; j < n; j++)	 {		// cols
 			if (mat[i][j] != 0.0 && rows[i] != -1 && cols[j] != -1) {		// -1 is a "dirichlet DOF" -> ignore it
 				update_matrix(rows[i], cols[j], mat[i][j]);
 			}
 		}
+#endif
 }
 
 void PardisoLinearSolver::update_rhs(int idx, scalar y) {
+#ifdef WITH_PARDISO
 	if (idx >= 0) srhs[idx] += y;
+#endif
 }
 
 void PardisoLinearSolver::update_rhs(int n, int *idx, scalar *y) {
+#ifdef WITH_PARDISO
 	for (int i = 0; i < n; i++)
 		if (idx[i] >= 0) srhs[idx[i]] += y[i];
+#endif
 }
 
 bool PardisoLinearSolver::solve_system(double *sln) {
+#ifdef WITH_PARDISO
 	bool res = true;
 
 	int n = ndofs;
@@ -242,9 +257,13 @@ bool PardisoLinearSolver::solve_system(double *sln) {
 	}
 
 	return res;
+#else
+	return false;
+#endif
 }
 
 bool PardisoLinearSolver::dump_matrix(FILE *file, const char *var_name, EMatrixDumpFormat format/* = DF_MATLAB_SPARSE*/) {
+#ifdef WITH_PARDISO
 	// TODO: check if OK (use unsymmetric matrix)
 	switch (format) {
 		case DF_MATLAB_SPARSE:
@@ -264,9 +283,13 @@ bool PardisoLinearSolver::dump_matrix(FILE *file, const char *var_name, EMatrixD
 		default:
 			return false;
 	}
+#else
+	return false;
+#endif
 }
 
 bool PardisoLinearSolver::dump_rhs(FILE *file, const char *var_name, EMatrixDumpFormat format/* = DF_MATLAB_SPARSE*/) {
+#ifdef WITH_PARDISO
 	switch (format) {
 		case DF_MATLAB_SPARSE:
 			fprintf(file, "%% Size: %dx1\n%s = [\n", ndofs, var_name);
@@ -283,11 +306,17 @@ bool PardisoLinearSolver::dump_rhs(FILE *file, const char *var_name, EMatrixDump
 		default:
 			return false;
 	}
+#else
+	return false;
+#endif
 }
 
 int PardisoLinearSolver::get_matrix_size() const {
+#ifdef WITH_PARDISO
 	assert(Ap != NULL);
 	return (sizeof(int) + sizeof(scalar)) * (Ap[ndofs] + ndofs);
+#else
+	return -1;
+#endif
 }
 
-#endif

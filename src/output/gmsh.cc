@@ -120,30 +120,30 @@ OutputQuadTetra::~OutputQuadTetra() {
 
 void OutputQuadTetra::calculate_view_points(order3_t order) {
 	int orderidx = order.get_idx();
-	if (tables[orderidx] == NULL) {
-		// check if the order is greater than 0, because we are taking log(o)
-		if (order.order == 0) order.order++;
+	// check if the order is greater than 0, because we are taking log(o)
+	if (order.order == 0) order.order++;
 
-		// there should be refinement levels enough to catch the properties of order 'order' functions on an element
-		// choose a different formula if this does not behave well
-		int levels = int(log(order.order) / log(2)) + 1;
+	// there should be refinement levels enough to catch the properties of order 'order' functions on an element
+	// choose a different formula if this does not behave well
+	int levels = int(log(order.order) / log(2)) + 1;
 
-		// each refinement level means that a tetrahedron is divided into 8 subtetrahedra
-		// i.e., there are 8^levels resulting tetrahedra => (8^levels)*10 points
-		np[orderidx] = (1 << (3 * levels)) * 10;
-		subdiv_num[orderidx] = (1 << (3 * levels));
+	// each refinement level means that a tetrahedron is divided into 8 subtetrahedra
+	// i.e., there are 8^levels resulting tetrahedra => (8^levels)*10 points
+	np[orderidx] = (1 << (3 * levels)) * 10;
+	subdiv_num[orderidx] = (1 << (3 * levels));
 
-		// the new subelements are tetrahedra only
-		for (int i = 0; i < subdiv_num[orderidx]; i++)
-			subdiv_modes[orderidx][i] = MODE_TETRAHEDRON;
+	// the new subelements are tetrahedra only
+	subdiv_modes[orderidx] = new int[subdiv_num[orderidx]];
+	MEM_CHECK(subdiv_modes[orderidx]);
+	for (int i = 0; i < subdiv_num[orderidx]; i++)
+		subdiv_modes[orderidx][i] = MODE_TETRAHEDRON;
 
-		// compute the table of points recursively
-		tables[orderidx] = new QuadPt3D[np[orderidx]];
-		MEM_CHECK(tables[orderidx]);
-		int idx = 0;
-		const Point3D *ref_vtcs = RefTetra::get_vertices();
-		recursive_division(ref_vtcs, tables[orderidx], levels, idx);
-	}
+	// compute the table of points recursively
+	tables[orderidx] = new QuadPt3D[np[orderidx]];
+	MEM_CHECK(tables[orderidx]);
+	int idx = 0;
+	const Point3D *ref_vtcs = RefTetra::get_vertices();
+	recursive_division(ref_vtcs, tables[orderidx], levels, idx);
 }
 
 void OutputQuadTetra::recursive_division(const Point3D *tv, QuadPt3D *table, int levels, int &idx) {

@@ -19,7 +19,6 @@
 #ifndef _QUAD_H_
 #define _QUAD_H_
 
-#include "config.h"
 #include "common.h"
 #include "order.h"
 #include <common/error.h>

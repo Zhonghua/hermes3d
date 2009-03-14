@@ -42,6 +42,7 @@ set(SRC
 	${HERMES_COMMON_DIR}/trace.cc
 	${HERMES_COMMON_DIR}/error.cc
 	${HERMES_COMMON_DIR}/utils.cc
+	${HERMES_COMMON_DIR}/timer.cc
 )
 
 # include files that will be installed
@@ -59,6 +60,7 @@ set(INC
 	matrix.h
 	linsolver.h
 	norm.h
+	order.h
 	output.h
 	precalc.h
 	quad.h
@@ -74,22 +76,29 @@ set(INC
 
 set(INC_COMMON
 	${HERMES_COMMON_DIR}/array.h
+	${HERMES_COMMON_DIR}/arrayptr.h
 	${HERMES_COMMON_DIR}/bitarray.h
 	${HERMES_COMMON_DIR}/map.h
 	${HERMES_COMMON_DIR}/maphs.h
 	${HERMES_COMMON_DIR}/mapord.h
 	${HERMES_COMMON_DIR}/utils.h
+	${HERMES_COMMON_DIR}/error.h
+	${HERMES_COMMON_DIR}/trace.h
+	${HERMES_COMMON_DIR}/timer.h
 )
 
 set(INC_SPACE
 	space/h1.h
-	space/hcurl.h
 )
 
 set(INC_SHAPESET
 	shapeset/common.h
 	shapeset/h1lobattotetra.h
 	shapeset/h1lobattohex.h
+	shapeset/hex.h
+	shapeset/tetra.h
+	shapeset/refmapss.h
+	shapeset/lobatto.h
 )
 
 set(INC_LOADER
@@ -106,6 +115,11 @@ set(INC_LINSOLVER
 set(INC_OUTPUT
 	output/gmsh.h
 	output/vtk.h
+	output/graph.h
+)
+
+set(INC_INTEGRALS
+	integrals/h1.h
 )
 
 
@@ -164,7 +178,7 @@ install(FILES ${INC_SHAPESET}  DESTINATION include/${PROJECT_NAME}/shapeset)
 install(FILES ${INC_LOADER}    DESTINATION include/${PROJECT_NAME}/loader)
 install(FILES ${INC_LINSOLVER} DESTINATION include/${PROJECT_NAME}/linsolver)
 install(FILES ${INC_OUTPUT}    DESTINATION include/${PROJECT_NAME}/output)
-install(FILES ${INC_ADAPT}     DESTINATION include/${PROJECT_NAME}/adapt)
+install(FILES ${INC_INTEGRALS} DESTINATION include/${PROJECT_NAME}/integrals)
 
 # install library
 if(REAL)

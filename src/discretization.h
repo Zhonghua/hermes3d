@@ -20,7 +20,6 @@
 #ifndef _DISCRETIZATION_H_
 #define _DISCRETIZATION_H_
 
-#include <common/freqmap.h>
 #include "linsolver.h"
 #include "space.h"
 #include "precalc.h"
@@ -69,8 +68,6 @@ public:
 	void create_stiffness_matrix();
 	void assemble_stiffness_matrix_and_rhs(bool rhsonly = false);
 	bool solve_system(int n, ...);
-
-	void uncache_lsm(Word_t eid);
 
 protected:
 	LinearSolver *linear_solver;	// linear solver

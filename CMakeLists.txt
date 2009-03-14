@@ -163,3 +163,28 @@ add_custom_target(test-quick
     COMMAND   /usr/bin/ctest -E \"hnnd|qorder|lobatto|hex-h1-1face\"
 )
 
+# -- package --------
+
+set(CPACK_PACKAGE_VERSION_MAJOR "0")
+set(CPACK_PACKAGE_VERSION_MINOR "1")
+set(CPACK_PACKAGE_VERSION_PATCH "1")
+set(VERSION "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
+
+set(CPACK_PACKAGE_VENDOR "hermes3d development team")
+set(CPACK_SYSTEM_NAME "linux")
+
+# source
+set(CPACK_SOURCE_GENERATOR "TBZ2")
+set(CPACK_SOURCE_PACKAGE_FILE_NAME "hermes3d-${VERSION}")
+set(CPACK_SOURCE_IGNORE_FILES 
+    "${PROJECT_SOURCE_DIR}/.hg/"
+    "${PROJECT_SOURCE_DIR}/.settings/"
+    "${PROJECT_SOURCE_DIR}/.hgignore"
+    "${PROJECT_SOURCE_DIR}/.project"
+    "${PROJECT_SOURCE_DIR}/.cproject"
+    "${PROJECT_SOURCE_DIR}/build/"
+    "${PROJECT_SOURCE_DIR}/CMake.vars$"
+    "${PROJECT_SOURCE_DIR}/utils/"
+)
+
+include(CPack)

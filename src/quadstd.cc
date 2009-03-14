@@ -4158,7 +4158,7 @@ QuadStdTetra::QuadStdTetra() {
 
 	for (int i = 0; i <= MAX_QUAD_ORDER_TETRA; i++) {
 		order3_t o(i);
-		int oi = o.get_idx();
+		Word_t oi = o.get_idx();
 		tables[oi] = std_tables_3d_tet[i];
 		np[oi] = std_np_3d_tet[i];
 	}

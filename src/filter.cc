@@ -84,9 +84,9 @@ void Filter::init() {
 	mesh = meshes[0];
 	unimesh = false;
 
-	// FIXME
+	// FIXME: better detection of same meshes
 	for (int i = 1; i < num; i++)
-		unimesh = true;
+		if (meshes[0] != meshes[1]) unimesh = true;
 
 	if (unimesh) {
 		Traverse trav;

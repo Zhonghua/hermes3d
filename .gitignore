@@ -1,0 +1,8 @@
+.project
+.cproject
+build
+.settings/*
+CMake.vars
+config.h
+doc/Doxyfile
+

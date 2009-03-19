@@ -217,7 +217,8 @@ static int get_hex_split_and_sons(Element *e, Box *cr, Box *er, int *sons) {
 			break;
 	}
 
-	assert(false);
+	EXIT(ERR_NOT_IMPLEMENTED);
+	return -1;
 }
 
 // Hex specific
@@ -309,7 +310,7 @@ static int get_son_idx(Box *cr, Box *r) {
 	else if (cr->z_hi <= zmid) return 24;
 	else if (cr->z_lo >= zmid) return 25;
 
-	assert(false);
+	EXIT(ERR_FAILURE, "Corrupted box definition?");
 	return -1;
 }
 
@@ -321,7 +322,7 @@ static int trans_to_son_idx(int trans) {
 	else if (trans < 22) return trans & 1;
 	else if (trans < 24) return trans & 1;
 	else if (trans < 26) return trans & 1;
-	else assert(false);
+	else { EXIT(ERR_NOT_IMPLEMENTED); return -1; }
 }
 
 static void init_transforms(Transformable *fn, Box *cr, Box *er) {
@@ -368,7 +369,6 @@ void Traverse::set_boundary_info(State *s, bool *bnd, FacePos *fp) {
 	Element *e = s->e[0];
 	Mesh *m = meshes[0];
 
-	bool bb;
 	switch (e->get_mode()) {
 		case MODE_HEXAHEDRON:
 			PRINTF("set_boundary_info (elem # = %d)\n", e->id);
@@ -507,7 +507,7 @@ Element **Traverse::get_next_state(bool *bnd, FacePos *fp) {
 	PRINTF("Traverse::get_next_state\n");
 
 	while (1) {
-		int i, j, son;
+		int i;
 
 		// if the top state was visited already, we are returning through it:
 		// undo all its transformations, pop it and continue with a non-visited one
@@ -755,8 +755,6 @@ void Traverse::hex_union_rec(Box *cr, Element **e, Box *er, uint64 *idx, Element
 }
 
 void Traverse::union_recurrent(Box *cr, Element **e, Box *er, uint64 *idx, Element *uni) {
-	int i, j;
-
 	// are we at the bottom?
 	bool leaf = true;
 	for (int i = 0; i < num; i++)

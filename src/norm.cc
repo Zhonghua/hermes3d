@@ -58,7 +58,6 @@ double calc_error(double (*fn)(MeshFunction*, MeshFunction*, RefMap*, RefMap*), 
 /// Calculates the norm of sln using function fn
 double calc_norm(double (*fn)(MeshFunction*, RefMap*), MeshFunction *sln) {
 	double norm = 0.0;
-	Element *e;
 	Mesh *mesh = sln->get_mesh();
 
 	FOR_ALL_ACTIVE_ELEMENTS(eid, mesh) {

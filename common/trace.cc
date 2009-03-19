@@ -74,7 +74,6 @@ void debug_printf(char const *fmt, ...) {
 
 FILE *trace_file = NULL;
 static int trace_level = 0;
-static int trace_func_level = 0;
 static clock_t trace_time = clock();
 
 // Initialize tracing to the file

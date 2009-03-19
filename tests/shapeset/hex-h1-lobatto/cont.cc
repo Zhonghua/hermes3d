@@ -395,17 +395,10 @@ bool test_cont_values_of_vertex_fns(Mesh *mesh, int pos0, int pos1, Shapeset *sh
 	// on face
 	printf("    - on face\n");
 
-	// orientations of both faces (needed for orientations of coordinates)
-	int face_ori[] =  {
-		hex[0]->get_face_orientation(face_no[0][pos0]),
-		hex[1]->get_face_orientation(face_no[1][pos1])
-	};
-
 	get_face_perm_ori(pos0, perm0, c0);
 	get_face_perm_ori(pos1, perm1, c1);
 
 	order2_t face_order = quad->get_face_max_order(face_no[0][pos0]);
-//	int face_order = MAKE_QUAD_ORDER(4, 3);
 	QuadPt3D *face_pts[] = {
 		quad->get_face_points(face_no[0][pos0], face_order),
 		quad->get_face_points(face_no[1][pos1], face_order)
@@ -438,7 +431,6 @@ bool test_cont_values_of_vertex_fns(Mesh *mesh, int pos0, int pos1, Shapeset *sh
 
 	// on edges
 	order1_t edge_order = MAX_QUAD_ORDER;
-//	int edge_order = 4;
 
 	// on H edge
 	int edge_ori[] =  {
@@ -762,7 +754,7 @@ bool test_continuity(Shapeset *shapeset) {
 		for (int j = 0; j < 24; j++) {
 			// build the mesh
 			Mesh mesh;
-			for (int k = 0; k < countof(vtcs); k++)
+			for (unsigned int k = 0; k < countof(vtcs); k++)
 				mesh.add_vertex(vtcs[k].x, vtcs[k].y, vtcs[k].z);
 			mesh.add_hex(hex[0][i] + 0);
 			mesh.add_hex(hex[1][j] + 0);

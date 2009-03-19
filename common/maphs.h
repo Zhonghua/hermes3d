@@ -51,7 +51,7 @@ public:
 	/// \return
 	/// 	\li true if the key exists, item then contains the value,
 	/// 	\li false otherwise
-	bool lookup(char *key, int length, Word_t &item) const {
+	bool lookup(uint8_t *key, int length, Word_t &item) const {
 		void *pval;
 		// check if the key exists
 		JHSG(pval, judy, key, length);
@@ -68,7 +68,7 @@ public:
 	/// \param[in] key Pointer to the array-of-bytes.
 	/// \param[in] length Size of \c key.
 	/// \param[in] item Item to insert
-	bool set(char *key, int length, Word_t item) {
+	bool set(uint8_t *key, int length, Word_t item) {
 		void *pval;
 		JHSG(pval, judy, key, item);
 		if (pval == NULL) {
@@ -83,7 +83,7 @@ public:
 	/// Delete an item with key \c key from the map.
 	/// \param[in] key Pointer to the array-of-bytes.
 	/// \param[in] length Size of \c key.
-	bool remove(char *key, int length) {
+	bool remove(uint8_t *key, int length) {
 		void *pval;
 		JHSG(pval, judy, key, length);
 		if (pval == NULL) {

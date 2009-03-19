@@ -277,7 +277,7 @@ int main(int argc, char *argv[]) {
 
 	order3_t order(4, 4, 4);
 	space.set_uniform_order(order);
-	int ndofs = space.assign_dofs();
+	space.assign_dofs();
 
 	UMFPackLinearSolver solver;
 
@@ -296,7 +296,7 @@ int main(int argc, char *argv[]) {
 
 	// solve the stiffness matrix
 	Solution sln(&mesh);
-	bool solved = d.solve_system(1, &sln);
+	d.solve_system(1, &sln);
 
 	// test the solution against the exact solution
 	// we do NOT use the norm function to avaoid possible problems in them
@@ -330,7 +330,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	(passed) ? printf("Ok\n") : printf("Failed\n");
-	if (!passed) res == ERR_FAILURE;
+	if (!passed) res = ERR_FAILURE;
 
 	return res;
 }

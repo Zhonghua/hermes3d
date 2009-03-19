@@ -184,8 +184,6 @@ static void check_status(const char *fn_name, int status) {
 
 bool UMFPackLinearSolver::solve_system(scalar *sln) {
 #ifdef WITH_UMFPACK
-	bool res = true;
-
 	void *symbolic, *numeric;
 	int status;
 

@@ -143,7 +143,6 @@ void VtkOutputEngine::dump_points(MeshFunction *fn) {
 	int type_id[] = { VTK_TETRA, VTK_HEXAHEDRON, VTK_WEDGE };
 	Mesh *mesh = fn->get_mesh();
 
-	Word_t idx;
 	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
 		Element *element = mesh->elements[idx];
 		int mode = element->get_mode();
@@ -226,9 +225,9 @@ void VtkOutputEngine::dump_points(MeshFunction *fn) {
 		(Tetra::NUM_VERTICES + 1) * cells[0].count() +
 		(Hex::NUM_VERTICES + 1) * cells[1].count() +
 		(Prism::NUM_VERTICES + 1) * cells[2].count());
-	for (int i = 0; i < countof(type); i++) { // 3 types of elements
+	for (unsigned int i = 0; i < countof(type); i++) { // 3 types of elements
 		int pt_cnt[] = { Tetra::NUM_VERTICES, Hex::NUM_VERTICES, Prism::NUM_VERTICES };
-		for (int j = cells[type[i]].first(); j != INVALID_IDX; j = cells[type[i]].next(j)) {
+		for (Word_t j = cells[type[i]].first(); j != INVALID_IDX; j = cells[type[i]].next(j)) {
 			fprintf(this->out_file, "%d", pt_cnt[i]);
 			for (int k = 0; k < pt_cnt[i]; k++)
 				fprintf(this->out_file, " %d", cells[type[i]][j][k]);
@@ -238,8 +237,8 @@ void VtkOutputEngine::dump_points(MeshFunction *fn) {
 	fprintf(this->out_file, "\n");
 
 	fprintf(this->out_file, "CELL_TYPES %ld\n", cells[0].count() + cells[1].count() + cells[2].count());
-	for (int i = 0; i < countof(type); i++) { // 3 types of elements
-		for (int j = 0; j < cells[type[i]].count(); j++)
+	for (unsigned int i = 0; i < countof(type); i++) { // 3 types of elements
+		for (Word_t j = 0; j < cells[type[i]].count(); j++)
 			fprintf(this->out_file, "%d\n", type_id[i]);
 	}
 
@@ -264,7 +263,6 @@ void VtkOutputEngine::dump_scalars(const char *name, MeshFunction *fn, int item)
 	fprintf(this->out_file, "LOOKUP_TABLE %s\n", "default");
 
 	// values
-	Word_t idx;
 	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
 		Element *element = mesh->elements[idx];
 		int mode = element->get_mode();
@@ -306,7 +304,6 @@ void VtkOutputEngine::dump_vectors(const char *name, MeshFunction *fn, int item)
 	fprintf(this->out_file, "VECTORS %s %s\n", name, "float");
 
 	// values
-	Word_t idx;
 	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
 		Element *element = mesh->elements[idx];
 		int mode = element->get_mode();

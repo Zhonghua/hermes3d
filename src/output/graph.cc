@@ -57,7 +57,7 @@ void Graph::set_row_style(int row, const char *color, const char *line, const ch
 
 void Graph::add_values(int row, double x, double y) {
 	if (!rows.size()) add_row(NULL);
-	if (row < 0 || row >= rows.size()) ERROR("Invalid row number.");
+	if (row < 0 || row >= (int) rows.size()) ERROR("Invalid row number.");
 	Values xy = { x, y };
 	rows[row].data.push_back(xy);
 }
@@ -81,7 +81,8 @@ void Graph::save_numbered(const char *filename, int number) {
 //// MatlabGraph ///////////////////////////////////////////////////////////////////////////////////
 
 void MatlabGraph::save(const char *filename) {
-	int i, j, k;
+	unsigned int i;
+	int j, k;
 
 	if (!rows.size()) ERROR("No data rows defined.");
 
@@ -167,7 +168,8 @@ static void get_style_types(std::string line, std::string mark, std::string col,
 }
 
 void GnuplotGraph::save(const char *filename) {
-	int i, j, k;
+	unsigned int i;
+	int j;
 
 	if (!rows.size()) ERROR("No data rows defined.");
 

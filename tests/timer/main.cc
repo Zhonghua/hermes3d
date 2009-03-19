@@ -67,7 +67,7 @@ bool test_timer_rough() {
 
 	Timer t("LowPrecision timer");
 	t.start();
-	int r = sleep(SECS);
+	sleep(SECS);
 	t.stop();
 
 	bool result = (int) t.get_seconds() == SECS;
@@ -84,7 +84,7 @@ bool test_timer_hiprecision() {
 
 	Timer t("HiPrecision timer");
 	t.start();
-	int r = usleep(123000);
+	usleep(123000);
 	t.stop();
 
 	// take only 2 decimal digits (the rest is beyond all recognition until we will measure time that CPU really spent on the

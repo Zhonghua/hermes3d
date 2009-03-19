@@ -46,13 +46,13 @@ public:
 	/// Inserts an item at position index.
 	/// \param[in] idx Index to insert.
 	/// \return true, if ok, else false
-	bool set(int idx, TYPE *item);
+	bool set(Word_t idx, TYPE *item);
 
 	/// Adds an item to the end of the array
 	///
 	int add(TYPE *item);
 	bool exists(Word_t idx) const;
-	TYPE *get(int idx) const;
+	TYPE *get(Word_t idx) const;
         /// overloaded operator helpers
 	TYPE *operator[](Word_t idx) const;
 	TYPE *&operator[](Word_t idx);
@@ -130,7 +130,7 @@ ArrayPtr<TYPE>::~ArrayPtr() {
 }
 
 template<class TYPE>
-bool ArrayPtr<TYPE>::set(int idx, TYPE *item) {
+bool ArrayPtr<TYPE>::set(Word_t idx, TYPE *item) {
 	void *pval;
 	JLG(pval, judy, idx);
 	if (pval == NULL) {
@@ -169,7 +169,7 @@ bool ArrayPtr<TYPE>::exists(Word_t idx) const {
 }
 
 template<class TYPE>
-TYPE *ArrayPtr<TYPE>::get(int idx) const {
+TYPE *ArrayPtr<TYPE>::get(Word_t idx) const {
 	void *pval;
 	JLG(pval, judy, idx);
 	assert(pval != NULL);

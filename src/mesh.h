@@ -533,13 +533,13 @@ public:
 
 
 	/// Returns the total number of elements stored.
-	int get_num_elements() const { return elements.count(); }
+	Word_t get_num_elements() const { return elements.count(); }
 	/// Returns the number of coarse mesh elements.
-	int get_num_base_elements() const { return nbase; }
+	Word_t get_num_base_elements() const { return nbase; }
 	/// Returns the current number of active elements in the mesh.
-	int get_num_active_elements() const { return nactive; }
+	Word_t get_num_active_elements() const { return nactive; }
 	/// Returns the maximum node id number plus one.
-	int get_max_element_id() const { return elements.last(); }
+	Word_t get_max_element_id() const { return elements.last(); }
 
 	/// Checks wether it is possible to refine an element.
 	/// @return true if it posible to apply the refinement, otherwise false
@@ -629,8 +629,8 @@ public:
 	MapOrd<Facet *>   facets;
 
 protected:
-	int nbase;							/// number of base elements
-	int nactive;						/// number of active elements
+	Word_t nbase;							/// number of base elements
+	Word_t nactive;						/// number of active elements
 
 	Tetra *create_tetra(Word_t vtcs[]);
 	Hex *create_hex(Word_t vtcs[]);

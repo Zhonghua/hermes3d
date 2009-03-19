@@ -373,7 +373,6 @@ void GmshOutputEngine::out(MeshFunction *fn, const char *name, int item/* = FN_V
 //	Space *space = fn->get_space();
 	Mesh *mesh = fn->get_mesh();
 
-	Word_t idx;
 	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
 		Element *element = mesh->elements[idx];
 		int mode = element->get_mode();
@@ -388,7 +387,6 @@ void GmshOutputEngine::out(MeshFunction *fn, const char *name, int item/* = FN_V
 
 		Gmsh::OutputQuad *quad = output_quad[mode];
 		int subdiv_num = quad->get_subdiv_num(order);
-		int *modes = quad->get_subdiv_modes(order);
 
 		fn->set_active_element(element);
 		fn->set_quad(quad);
@@ -436,7 +434,6 @@ void GmshOutputEngine::out(MeshFunction *fn, const char *name, int item/* = FN_V
 
 void GmshOutputEngine::out(Mesh *mesh) {
 	// see Gmsh documentation on details (http://www.geuz.org/gmsh/doc/texinfo/gmsh-full.html)
-	Word_t idx;
 
 	// header
 	fprintf(this->out_file, "$MeshFormat\n");
@@ -454,7 +451,7 @@ void GmshOutputEngine::out(Mesh *mesh) {
 
 	// elements
 	fprintf(this->out_file, "$Elements\n");
-	fprintf(this->out_file, "%d\n", mesh->get_num_active_elements());
+	fprintf(this->out_file, "%ld\n", mesh->get_num_active_elements());
 	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
 		Element *element = mesh->elements[idx];
 		Word_t vtcs[element->get_num_of_vertices()];
@@ -486,7 +483,7 @@ void GmshOutputEngine::out(Mesh *mesh) {
 	// TODO: do not include edges twice or more
 	// FIXME: Hex-specific
 	fprintf(this->out_file, "$Elements\n");
-	fprintf(this->out_file, "%d\n", mesh->get_num_active_elements() * Hex::NUM_EDGES);
+	fprintf(this->out_file, "%ld\n", mesh->get_num_active_elements() * Hex::NUM_EDGES);
 	FOR_ALL_ELEMENTS(idx, mesh) {
 		Element *element = mesh->elements[idx];
 		Word_t vtcs[Edge::NUM_VERTICES];
@@ -500,7 +497,7 @@ void GmshOutputEngine::out(Mesh *mesh) {
 	// faces
 	// TODO: do not include faces twice
 	fprintf(this->out_file, "$Elements\n");
-	fprintf(this->out_file, "%d\n", mesh->get_num_active_elements() * Hex::NUM_FACES);
+	fprintf(this->out_file, "%ld\n", mesh->get_num_active_elements() * Hex::NUM_FACES);
 	FOR_ALL_ELEMENTS(idx, mesh) {
 		Element *element = mesh->elements[idx];
 		Word_t vtcs[Quad::NUM_VERTICES]; // FIXME: HEX-specific
@@ -524,7 +521,7 @@ void GmshOutputEngine::out_orders(Space *space, const char *name) {
 
 	// nodes
 	fprintf(this->out_file, "$Nodes\n");
-	fprintf(this->out_file, "%d\n", mesh->get_num_active_elements() * 15);
+	fprintf(this->out_file, "%ld\n", mesh->get_num_active_elements() * 15);
 	int id = 1;
 	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
 		Element *element = mesh->elements[idx];
@@ -554,7 +551,7 @@ void GmshOutputEngine::out_orders(Space *space, const char *name) {
 	// elements
 	fprintf(this->out_file, "$Elements\n");
 	// FIXME: hex specific
-	fprintf(this->out_file, "%d\n", mesh->get_num_active_elements() + (mesh->get_num_active_elements() * Hex::NUM_EDGES));
+	fprintf(this->out_file, "%ld\n", mesh->get_num_active_elements() + (mesh->get_num_active_elements() * Hex::NUM_EDGES));
 	id = 1;
 	// trick: put the elements first so that they will be visible in gmsh
 	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
@@ -602,12 +599,13 @@ void GmshOutputEngine::out_orders(Space *space, const char *name) {
 	fprintf(this->out_file, "%d\n", 3);
 	fprintf(this->out_file, "0\n"); // time step (not used, but has to be there)
 	fprintf(this->out_file, "1\n"); // 1 value per node
-	fprintf(this->out_file, "%d\n", (mesh->get_num_active_elements() * Hex::NUM_EDGES));
+	fprintf(this->out_file, "%ld\n", (mesh->get_num_active_elements() * Hex::NUM_EDGES));
 
 	id = mesh->get_num_active_elements() + 1;
 	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
 		Element *element = mesh->elements[idx];
 		int mode = element->get_mode();
+		assert(mode == MODE_HEXAHEDRON);			// HEX-specific
 		// get order from the space
 		order3_t order = space->get_element_order(idx);
 

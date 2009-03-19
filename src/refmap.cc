@@ -52,7 +52,6 @@
 
 // TODO: prisms
 
-static Shapeset *ref_map_shapeset[] = { REFMAP_SHAPESET_TETRA, REFMAP_SHAPESET_HEX, NULL };
 static PrecalcShapeset *ref_map_pss[] = { REFMAP_PSS_TETRA, REFMAP_PSS_HEX, NULL };
 
 
@@ -113,7 +112,7 @@ void RefMap::set_active_element(Element *e) {
 
 	// prepare the shapes and coefficients of the reference map
 	Shapeset *shapeset = this->pss->get_shapeset();
-	int i, j, k = 0;
+	int i, k = 0;
 	for (i = 0; i < nvertices; i++)
 		indices[k++] = shapeset->get_vertex_index(i);
 
@@ -127,12 +126,14 @@ void RefMap::set_active_element(Element *e) {
 	switch (mode) {
 		case MODE_TETRAHEDRON: ref_order = order3_t(0); break;
 		case MODE_HEXAHEDRON:  ref_order = order3_t(1, 1, 1); break;
+		case MODE_PRISM: EXIT(ERR_NOT_IMPLEMENTED); break;
 	}
 
 	// calculate the order of the inverse reference map
 	switch (mode) {
 		case MODE_TETRAHEDRON: inv_ref_order = order3_t(0); break;
 		case MODE_HEXAHEDRON:  inv_ref_order = order3_t(1, 1, 1); break;
+		case MODE_PRISM: EXIT(ERR_NOT_IMPLEMENTED); break;
 	}
 
 	// constant inverse reference map

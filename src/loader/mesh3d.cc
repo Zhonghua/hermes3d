@@ -82,7 +82,7 @@ static bool read_n_nums(char *row, int n, Word_t values[]) {
 	return (i == n);
 }
 
-static bool range_check(int max_index, Word_t *vs, int num_vs) {
+static bool range_check(Word_t max_index, Word_t *vs, int num_vs) {
 	for (int i = 0; i < num_vs; i++) {
 		if (vs[i] <= 0 || vs[i] > max_index) return false;
 	}
@@ -167,7 +167,7 @@ bool Mesh3DReader::load(const char *file_name, Mesh *mesh) {
 							throw E_READ_ERROR;
 						}
 
-						Tetra *tetra = mesh->add_tetra(vs);
+						mesh->add_tetra(vs);
 						tetra_count--;
 						if (tetra_count == 0) state = STATE_HEXES_NUM;
 					}
@@ -187,7 +187,7 @@ bool Mesh3DReader::load(const char *file_name, Mesh *mesh) {
 							throw E_READ_ERROR;
 						}
 
-						Hex *hex = mesh->add_hex(vs);
+						mesh->add_hex(vs);
 						hex_count--;
 						if (hex_count == 0) state = STATE_PRISMS_NUM;
 					}
@@ -207,7 +207,7 @@ bool Mesh3DReader::load(const char *file_name, Mesh *mesh) {
 							throw E_READ_ERROR;
 						}
 
-						Prism *prism = mesh->add_prism(vs);
+						mesh->add_prism(vs);
 						prism_count--;
 						if (prism_count == 0) state = STATE_TRIS_NUM;
 					}
@@ -295,8 +295,6 @@ bool Mesh3DReader::save(const char *file_name, Mesh *mesh) {
 
 	FILE *file = fopen(file_name, "w");
 	if (file == NULL) return false;
-
-	int count;
 
 	// save vertices
 	fprintf(file, "# vertices\n");

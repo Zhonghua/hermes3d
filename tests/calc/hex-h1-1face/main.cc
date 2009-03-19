@@ -374,7 +374,7 @@ int main(int argc, char **args) {
 
 				Mesh mesh;
 
-				for (int k = 0; k < countof(vtcs); k++)
+				for (Word_t k = 0; k < countof(vtcs); k++)
 					mesh.add_vertex(vtcs[k].x, vtcs[k].y, vtcs[k].z);
 				Word_t h1[] = {
 						hex[0][i][0] + 1, hex[0][i][1] + 1, hex[0][i][2] + 1, hex[0][i][3] + 1,
@@ -385,7 +385,7 @@ int main(int argc, char **args) {
 						hex[1][j][4] + 1, hex[1][j][5] + 1, hex[1][j][6] + 1, hex[1][j][7] + 1 };
 				mesh.add_hex(h2);
 				// bc
-				for (int k = 0; k < countof(bnd); k++) {
+				for (Word_t k = 0; k < countof(bnd); k++) {
 					Word_t facet_idxs[Quad::NUM_VERTICES] = { bnd[k][0] + 1, bnd[k][1] + 1, bnd[k][2] + 1, bnd[k][3] + 1 };
 					mesh.add_quad_boundary(facet_idxs, bnd[k][4]);
 				}
@@ -437,8 +437,7 @@ int main(int argc, char **args) {
 //				printf("  - Setting uniform order to (%d, %d, %d)\n", dir_x, dir_y, dir_z);
 				space.set_uniform_order(o);
 
-				int ndofs = space.assign_dofs();
-//				printf("  - Number of DOFs: %d\n", ndofs);
+				space.assign_dofs();
 
 //				printf("* Calculating a solution\n");
 

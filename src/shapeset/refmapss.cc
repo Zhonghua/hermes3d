@@ -175,7 +175,6 @@ static shape_fn_t refmap_hex_dz[] = {
 //
 
 static int refmap_hex_vertex_indices[] = { 0, 1, 2, 3, 4, 5, 6, 7 };
-static int refmap_hex_index_to_order[] = { 1, 1, 1, 1, 1, 1, 1, 1 };
 
 static shape_fn_t *refmap_hex_fn_table[] = { refmap_hex_fn };
 static shape_fn_t *refmap_hex_dx_table[] = { refmap_hex_dx };

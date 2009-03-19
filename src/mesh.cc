@@ -264,7 +264,7 @@ int Hex::get_face_orientation(int face_num) const {
 	get_face_vertices(face_num, v);
 
 	Word_t minval = 1000;
-	int min = 0, min2 = 0;
+	int min = 0;
 	for (int i = 0; i < 4; i++) {
 		if (v[i] < minval) {
 			minval = v[i];
@@ -709,6 +709,7 @@ void Mesh::copy(const Mesh &mesh) {
 					break;
 
 				case MODE_TETRAHEDRON:
+				case MODE_PRISM:
 					break;
 			}
 		}
@@ -1035,6 +1036,8 @@ bool Mesh::is_compatible_quad_refinement(Facet *facet, int reft) const {
 			eid = facet->right;
 			face_num = facet->right_face_num;
 		}
+		else
+			EXIT(ERR_FAILURE, "Facet data corrupted or not a CED facet.");
 
 		Element *e = elements[eid];
 		int nv = e->get_face_num_of_vertices(face_num);
@@ -1318,7 +1321,7 @@ bool Mesh::refine_hex_2(Hex *parent, int refinement) {
 	refined &= refine_quad_facet(parent, face_0[1], REFT_FACE_NONE, parent->sons[1]);
 
 	// add a facet between two new elements
-	Facet *ifacet = add_quad_facet(Facet::INNER, parent->sons[0], face_0[1], parent->sons[1], face_0[0]);
+	add_quad_facet(Facet::INNER, parent->sons[0], face_0[1], parent->sons[1], face_0[0]);
 
 	return refined;
 }
@@ -1329,7 +1332,6 @@ bool Mesh::refine_hex_4(Hex *parent, int refinement) {
 	Word_t vtx[Hex::NUM_VERTICES]; // vertices of parent element
 	parent->get_vertices(vtx);
 
-	int edges[2][4];
 	const int *left, *right; // vertex indices for "left" and "right" face
 	switch (refinement) {
 		case REFT_HEX_XY:

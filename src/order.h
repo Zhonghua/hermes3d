@@ -67,8 +67,9 @@ struct order2_t {
 		switch (type) {
 			case MODE_TRIANGLE:	return order2_t(this->order + o.order);
 			case MODE_QUAD: return order2_t(this->x + o.x, this->y + o.y);
-			default: assert(false);
+			default: EXIT(ERR_UNKNOWN_MODE); break;
 		}
+		return order2_t(-1);
 	}
 
 	order2_t operator+=(const order2_t &o) {
@@ -76,17 +77,18 @@ struct order2_t {
 		switch (type) {
 			case MODE_TRIANGLE:	this->order += o.order; break;
 			case MODE_QUAD: this->x += o.x; this->y += o.y; break;
-			default: assert(false);
+			default: EXIT(ERR_UNKNOWN_MODE); break;
 		}
 		return *this;
 	}
 
 	order2_t operator*(const int c) {
 		switch (type) {
-			case MODE_TRIANGLE:	return order2_t(c * this->order);
+			case MODE_TRIANGLE: return order2_t(c * this->order);
 			case MODE_QUAD: return order2_t(c * this->x, c * this->y);
-			default: assert(false);
+			default: EXIT(ERR_UNKNOWN_MODE); break;
 		}
+		return order2_t(-1);
 	}
 
 	order2_t operator*(const order2_t &o) {
@@ -94,15 +96,16 @@ struct order2_t {
 		switch (type) {
 			case MODE_TRIANGLE:	return order2_t(this->order * o.order);
 			case MODE_QUAD: return order2_t(this->x * o.x, this->y * o.y);
-			default: assert(false);
+			default: EXIT(ERR_UNKNOWN_MODE); break;
 		}
+		return order2_t(-1);
 	}
 
 	order2_t operator*=(const int c) {
 		switch (type) {
 			case MODE_TRIANGLE:	this->order *= c; break;
 			case MODE_QUAD: this->x *= c; this->y *= c; break;
-			default: assert(false);
+			default: EXIT(ERR_UNKNOWN_MODE); break;
 		}
 		return *this;
 	}
@@ -112,7 +115,7 @@ struct order2_t {
 		switch (type) {
 			case MODE_TRIANGLE:	this->order *= o.order; break;
 			case MODE_QUAD: this->x *= o.x; this->y *= o.y; break;
-			default: assert(false);
+			default: EXIT(ERR_UNKNOWN_MODE); break;
 		}
 		return *this;
 	}
@@ -123,8 +126,9 @@ struct order2_t {
 		switch (this->type) {
 			case MODE_TRIANGLE: return this->order == o.order;
 			case MODE_QUAD: return (this->x == o.x) && (this->y == o.y);
-			default: assert(false);
+			default: EXIT(ERR_UNKNOWN_MODE); break;
 		}
+		return false;
 	}
 
 	bool operator!=(const order2_t &o) {
@@ -132,8 +136,9 @@ struct order2_t {
 		switch (this->type) {
 			case MODE_TRIANGLE: return this->order != o.order;
 			case MODE_QUAD: return (this->x != o.x) || (this->y != o.y);
-			default: assert(false);
+			default: EXIT(ERR_UNKNOWN_MODE); break;
 		}
+		return false;
 	}
 
 	const char *str() {
@@ -141,7 +146,7 @@ struct order2_t {
 		switch (type) {
 			case MODE_TRIANGLE: sprintf(s, "(%d)", this->order); break;
 			case MODE_QUAD: sprintf(s, "(%d, %d)", this->x, this->y); break;
-			default: assert(false);
+			default: EXIT(ERR_UNKNOWN_MODE); break;
 		}
 		return s;
 	}
@@ -150,8 +155,9 @@ struct order2_t {
 		switch (type) {
 			case MODE_TRIANGLE: return (this->type << 10) | this->order;
 			case MODE_QUAD: return (((this->type << 5) | this->y) << 5) | this->x;
-			default: assert(false);
+			default: assert(false); EXIT(ERR_UNKNOWN_MODE); break;
 		}
+		return -1;
 	}
 
 	static order2_t from_int(int o) {
@@ -159,8 +165,9 @@ struct order2_t {
 		switch (type) {
 			case MODE_TRIANGLE: return order2_t(o & 0x1F); break;
 			case MODE_QUAD: return order2_t(o & 0x1F, (o >> 5) & 0x1F); break;
-			default: assert(false);
+			default: EXIT(ERR_UNKNOWN_MODE); break;
 		}
+		return order2_t(-1);
 	}
 };
 
@@ -169,8 +176,9 @@ inline order2_t max(order2_t a, order2_t b) {
 	switch (a.type) {
 		case MODE_TRIANGLE: return order2_t(std::max(a.order, b.order));
 		case MODE_QUAD: return order2_t(std::max(a.x, b.x), std::max(a.y, b.y));
-		default: assert(false);
+		default: EXIT(ERR_UNKNOWN_MODE); break;
 	}
+	return order2_t(-1);
 }
 
 
@@ -207,8 +215,9 @@ struct order3_t {
 		switch (type) {
 			case MODE_TETRAHEDRON:	return order3_t(this->order + o.order);
 			case MODE_HEXAHEDRON: return order3_t(this->x + o.x, this->y + o.y, this->z + o.z);
-			default: assert(false);
+			default: EXIT(ERR_UNKNOWN_MODE); break;
 		}
+		return order3_t(-1);
 	}
 
 	order3_t operator+=(const order3_t &o) {
@@ -216,7 +225,7 @@ struct order3_t {
 		switch (type) {
 			case MODE_TETRAHEDRON:	this->order += o.order; break;
 			case MODE_HEXAHEDRON: this->x += o.x; this->y += o.y; this->z += o.z; break;
-			default: assert(false);
+			default: EXIT(ERR_UNKNOWN_MODE); break;
 		}
 		return *this;
 	}
@@ -225,8 +234,9 @@ struct order3_t {
 		switch (type) {
 			case MODE_TETRAHEDRON:	return order3_t(c * this->order);
 			case MODE_HEXAHEDRON: return order3_t(c * this->x, c * this->y, c * this->z);
-			default: assert(false);
+			default: EXIT(ERR_UNKNOWN_MODE); break;
 		}
+		return order3_t(-1);
 	}
 
 	order3_t operator*(const order3_t &o) {
@@ -234,15 +244,16 @@ struct order3_t {
 		switch (type) {
 			case MODE_TETRAHEDRON:	return order3_t(this->order * o.order);
 			case MODE_HEXAHEDRON: return order3_t(this->x * o.x, this->y * o.y, this->z * o.z);
-			default: assert(false);
+			default: EXIT(ERR_UNKNOWN_MODE); break;
 		}
+		return order3_t(-1);
 	}
 
 	order3_t operator*=(const int c) {
 		switch (type) {
 			case MODE_TETRAHEDRON:	this->order *= c; break;
 			case MODE_HEXAHEDRON: this->x *= c; this->y *= c; this->z *= c; break;
-			default: assert(false);
+			default: EXIT(ERR_UNKNOWN_MODE); break;
 		}
 		return *this;
 	}
@@ -252,7 +263,7 @@ struct order3_t {
 		switch (type) {
 			case MODE_TETRAHEDRON: this->order *= o.order; break;
 			case MODE_HEXAHEDRON: this->x *= o.x; this->y *= o.y; this->z *= o.z; break;
-			default: assert(false);
+			default: EXIT(ERR_UNKNOWN_MODE); break;
 		}
 		return *this;
 	}
@@ -263,8 +274,9 @@ struct order3_t {
 		switch (this->type) {
 			case MODE_TETRAHEDRON: return this->order == o.order;
 			case MODE_HEXAHEDRON: return (this->x == o.x) && (this->y == o.y) && (this->z == o.z);
-			default: assert(false);
+			default: EXIT(ERR_UNKNOWN_MODE); break;
 		}
+		return false;
 	}
 
 	bool operator!=(const order3_t &o) {
@@ -272,8 +284,9 @@ struct order3_t {
 		switch (this->type) {
 			case MODE_TETRAHEDRON: return this->order != o.order;
 			case MODE_HEXAHEDRON: return (this->x != o.x) || (this->y != o.y) || (this->z != o.z);
-			default: assert(false);
+			default: EXIT(ERR_UNKNOWN_MODE); break;
 		}
+		return false;
 	}
 
 	const char *str() {
@@ -281,7 +294,7 @@ struct order3_t {
 		switch (type) {
 			case MODE_TETRAHEDRON: sprintf(s, "(%d)", this->order); break;
 			case MODE_HEXAHEDRON: sprintf(s, "(%d, %d, %d)", this->x, this->y, this->z); break;
-			default: assert(false);
+			default: EXIT(ERR_UNKNOWN_MODE); break;
 		}
 		return s;
 	}
@@ -291,8 +304,9 @@ struct order3_t {
 		switch (type) {
 			case MODE_TETRAHEDRON: return ((this->type) << 15) | this->order;
 			case MODE_HEXAHEDRON: return (((((this->type << 5) | this->z) << 5) | this->y) << 5) | this->x;
-			default: assert(false);
+			default: EXIT(ERR_UNKNOWN_MODE); break;
 		}
+		return -1;
 	}
 
 	static order3_t from_int(int o) {
@@ -300,8 +314,9 @@ struct order3_t {
 		switch (type) {
 			case MODE_TETRAHEDRON: return order3_t(o & 0x7FFF);
 			case MODE_HEXAHEDRON: return order3_t(o & 0x1F, (o >> 5) & 0x1F, (o >> 10) & 0x1F);
-			default: assert(false);
+			default: EXIT(ERR_UNKNOWN_MODE); break;
 		}
+		return order3_t(-1);
 	}
 
 	order1_t get_edge_order(int edge) {
@@ -313,8 +328,10 @@ struct order3_t {
 				else if((edge == 4) || (edge == 5) || (edge == 6) || (edge == 7)) return this->z;
 				else EXIT(ERR_EDGE_INDEX_OUT_OF_RANGE);
 			default:
-				assert(false);
+				EXIT(ERR_UNKNOWN_MODE);
+				break;
 		}
+		return -1;
 	}
 
 	order2_t get_face_order(int face) {
@@ -326,8 +343,10 @@ struct order3_t {
 				else if ((face == 4) || (face == 5)) return order2_t(this->x, this->y);
 				else EXIT(ERR_FACE_INDEX_OUT_OF_RANGE);
 			default:
-				assert(false);
+				EXIT(ERR_UNKNOWN_MODE);
+				break;
 		}
+		return order2_t(-1);
 	}
 
 	void limit() {
@@ -340,6 +359,10 @@ struct order3_t {
 				if (this->x > MAX_QUAD_ORDER) this->x = MAX_QUAD_ORDER;
 				if (this->y > MAX_QUAD_ORDER) this->y = MAX_QUAD_ORDER;
 				if (this->z > MAX_QUAD_ORDER) this->z = MAX_QUAD_ORDER;
+				break;
+
+			default:
+				EXIT(ERR_UNKNOWN_MODE);
 				break;
 		}
 	}
@@ -355,7 +378,8 @@ struct order3_t {
 				break;
 
 			default:
-				assert(false);
+				EXIT(ERR_UNKNOWN_MODE);
+				break;
 		}
 	}
 };
@@ -365,8 +389,9 @@ inline order3_t max(order3_t a, order3_t b) {
 	switch (a.type) {
 		case MODE_TETRAHEDRON: return order3_t(std::max(a.order, b.order));
 		case MODE_HEXAHEDRON: return order3_t(std::max(a.x, b.x), std::max(a.y, b.y), std::max(a.z, b.z));
-		default: assert(false);
+		default: EXIT(ERR_UNKNOWN_MODE); break;
 	}
+	return order3_t(-1);
 }
 
 inline order3_t turn_hex_face_order(order3_t ord) {

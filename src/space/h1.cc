@@ -116,7 +116,6 @@ void H1Space::assign_dofs_internal() {
 	}
 
 	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
-		Element *e = mesh->elements[idx];
 		assign_bubble_dofs(idx);
 	}
 }
@@ -401,7 +400,6 @@ void H1Space::update_constrained_nodes(Word_t fid) {
 }
 
 void H1Space::update_constraints() {
-	Word_t idx;
 	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
 		Element *e = mesh->elements[idx];
 		for (int face = 0; face < e->get_num_of_faces(); face++) {

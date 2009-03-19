@@ -190,7 +190,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	(passed) ? printf("Ok\n") : printf("Failed\n");
-	if (!passed) res == ERR_FAILURE;
+	if (!passed) res = ERR_FAILURE;
 
 	return res;
 }

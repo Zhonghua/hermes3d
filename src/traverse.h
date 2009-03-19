@@ -62,13 +62,13 @@ private:
 	State *stack;
 	int top, size;
 
-	int id;
+	Word_t id;
 	Element *base;
 	int (*sons)[8];
 	uint64 *subs;
 
 	UniData **unidata;
-	int udsize;
+	Word_t udsize;
 
 	State *push_state();
 	void set_boundary_info(State *s, bool *bnd, FacePos *ep);

@@ -251,7 +251,7 @@ void Map<KEY, TYPE>::remove_all() {
 	void *pval = NULL;
 	Word_t idx = 0;
 	JLF(pval, judy_l, idx);
-	for (; idx != -1 && pval != NULL; ) {
+	for (; idx != INVALID_IDX && pval != NULL; ) {
 		free_item(idx);
 		JLN(pval, judy_l, idx);
 	}

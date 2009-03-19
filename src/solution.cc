@@ -201,7 +201,7 @@ void Solution::precalculate(qorder_t qord, int mask) {
 	MEM_CHECK(node);
 
 	// transform integration points by the current matrix
-	scalar x[np], y[np], z[np], tx[np];
+	scalar x[np], y[np], z[np];
 	for (i = 0; i < np; i++) {
 		x[i] = pt[i].x * ctm->m[0] + ctm->t[0];
 		y[i] = pt[i].y * ctm->m[1] + ctm->t[1];
@@ -211,9 +211,10 @@ void Solution::precalculate(qorder_t qord, int mask) {
 	// reuse old tables, zero new tables
 	for (j = 0; j < num_components; j++)
 		for (i = 0; i < VALUE_TYPES; i++)
-			if (newmask & idx2mask[i][j])
+			if (newmask & idx2mask[i][j]) {
 				if (oldmask & idx2mask[i][j]) memcpy(node->values[j][i], cur_node->values[j][i], np * sizeof(scalar));
 				else memset(node->values[j][i], 0, np * sizeof(scalar));
+			}
 
 	// update ctm, force it to the slave pss
 	slave_pss->force_transform(sub_idx, ctm);
@@ -335,7 +336,7 @@ scalar Solution::get_sln_value(double x, double y, double z, EValueType which, i
 void Solution::save_solution_vector(char *filename, int ndofs) {
 	FILE *f = fopen(filename, "wb");
 	if (f == NULL) ERROR("Cannot open %s for writing.", filename);
-	size_t written = fwrite(vec, sizeof(scalar), ndofs + 1, f);
+	fwrite(vec, sizeof(scalar), ndofs + 1, f);
 	fclose(f);
 }
 
@@ -348,7 +349,7 @@ void Solution::load_solution_vector(char *filename, int ndofs) {
 	vec = new scalar[ndofs + 1];
 	MEM_CHECK(vec);
 	owner = true;
-	size_t read = fread(vec, sizeof(scalar), ndofs + 1, f);
+	fread(vec, sizeof(scalar), ndofs + 1, f);
 	fclose(f);
 }
 

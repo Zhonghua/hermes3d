@@ -46,16 +46,16 @@ public:
 	/// Insert an item at position index.
 	/// \param[in] idx Index to insert.
 	/// \return true, if ok, else false
-	bool set(int idx, TYPE item);
+	bool set(Word_t idx, TYPE item);
 
 	/// Add an item to the end of the array
 	///
 	Word_t add(TYPE item);
 	bool exists(Word_t idx) const;
-	TYPE get(int idx) const;
+	TYPE get(Word_t idx) const;
 	/// overloaded operator helpers
-	TYPE operator[](int idx) const;
-	TYPE &operator[](int idx);
+	TYPE operator[](Word_t idx) const;
+	TYPE &operator[](Word_t idx);
 
 	/// Delete an item at index from the array.
 	/// \param[in] idx Index to delete.
@@ -133,7 +133,7 @@ Array<TYPE>::~Array() {
 }
 
 template<class TYPE>
-bool Array<TYPE>::set(int idx, TYPE item) {
+bool Array<TYPE>::set(Word_t idx, TYPE item) {
 	void *pval;
 	JLG(pval, judy, idx);
 	if (pval == NULL) {
@@ -156,7 +156,7 @@ template<class TYPE>
 Word_t Array<TYPE>::add(TYPE item) {
 	int rc;
 	Word_t idx = last();
-	if (idx == -1) idx = 0;
+	if (idx == INVALID_IDX) idx = 0;
 	JLFE(rc, judy, idx);
 	if (rc) {
 		set(idx, item);
@@ -174,7 +174,7 @@ bool Array<TYPE>::exists(Word_t idx) const {
 }
 
 template<class TYPE>
-TYPE Array<TYPE>::get(int idx) const {
+TYPE Array<TYPE>::get(Word_t idx) const {
 	void *pval;
 	JLG(pval, judy, idx);
 	assert(pval != NULL);
@@ -182,12 +182,12 @@ TYPE Array<TYPE>::get(int idx) const {
 }
 
 template<class TYPE>
-TYPE Array<TYPE>::operator[](int idx) const {
+TYPE Array<TYPE>::operator[](Word_t idx) const {
 	return get(idx);
 }
 
 template<class TYPE>
-TYPE &Array<TYPE>::operator[](int idx) {
+TYPE &Array<TYPE>::operator[](Word_t idx) {
 	void *pval;
 	JLG(pval, judy, idx);
 	if (pval == NULL) {

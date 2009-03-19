@@ -4194,7 +4194,6 @@ QuadStdTetra::QuadStdTetra() {
 
 	// face points
 	face_tables = new Array<QuadPt3D *>[Tetra::NUM_FACES];
-	int n = MAX_QUAD_ORDER_TRI + 1;
 	for (int order = 0; order <= quad_std_tri.get_max_order(); order++) {
 		order3_t o(order);
 		Word_t oi = o.get_idx();

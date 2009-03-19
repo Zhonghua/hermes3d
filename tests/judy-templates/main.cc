@@ -92,13 +92,13 @@ int testArrayInt() {
 	printf("  * Testing iterators\n");
 	r = true;
 	for (Word_t i = int_array.first(); i != INVALID_IDX; i = int_array.next(i))
-		r &= int_array.get(i) == i + 100;
+		r &= int_array.get(i) == (int) (i + 100);
 	if (!testPrint(r, "    - Forward iteration", true))
 		return ERROR_FAILURE;
 
 	r = true;
 	for (Word_t i = int_array.last(); i != INVALID_IDX; i = int_array.prev(i))
-		r &= int_array.get(i) == i + 100;
+		r &= int_array.get(i) == (int) (i + 100);
 	if (!testPrint(r, "    - Backward iteration", true))
 		return ERROR_FAILURE;
 
@@ -191,14 +191,14 @@ int testArrayStruct() {
 	printf("  * Testing iterators\n");
 	r = true;
 	for (Word_t i = pt_array.first(); i != INVALID_IDX; i = pt_array.next(i)) {
-		r &= (pt_array.get(i).X == i + 100) && (pt_array.get(i).Y == i + 1000);
+		r &= (pt_array.get(i).X == (int) (i + 100)) && (pt_array.get(i).Y == (int) (i + 1000));
 	}
 	if (!testPrint(r, "    - Forward iteration", true))
 		return ERROR_FAILURE;
 
 	r = true;
 	for (Word_t i = pt_array.last(); i != INVALID_IDX; i = pt_array.prev(i)) {
-		r &= (pt_array.get(i).X == i + 100) && (pt_array.get(i).Y == i + 1000);
+		r &= (pt_array.get(i).X == (int) (i + 100)) && (pt_array.get(i).Y == (int) (i + 1000));
 	}
 	if (!testPrint(r, "    - Backward iteration", true))
 		return ERROR_FAILURE;
@@ -293,7 +293,7 @@ int testArrayPtrStruct() {
 	r = true;
 	for (Word_t i = ptr_array.first(); i != INVALID_IDX; i = ptr_array.next(i)) {
 		Point *pt = ptr_array.get(i);
-		r &= (pt->X == i + 100) && (pt->Y == i + 1000);
+		r &= (pt->X == (int) (i + 100)) && (pt->Y == (int) (i + 1000));
 	}
 	if (!testPrint(r, "    - Forward iteration", true))
 		return ERROR_FAILURE;
@@ -301,7 +301,7 @@ int testArrayPtrStruct() {
 	r = true;
 	for (Word_t i = ptr_array.last(); i != INVALID_IDX; i = ptr_array.prev(i)) {
 		Point *pt = ptr_array.get(i);
-		r &= (pt->X == i + 100) && (pt->Y == i + 1000);
+		r &= (pt->X == (int) (i + 100)) && (pt->Y == (int) (i + 1000));
 	}
 	if (!testPrint(r, "    - Backward iteration", true))
 		return ERROR_FAILURE;
@@ -426,7 +426,6 @@ int testMapHSOrd() {
 	bool r;
 
 	MapHSOrd map;
-	Word_t idx;
 
 	// fill the array
 	printf("  * Filling the map with items\n");
@@ -480,39 +479,38 @@ int testMapHS() {
 	bool r;
 
 	MapHS map;
-	Word_t idx;
 
 	// fill the array
 	printf("  * Filling the map with items\n");
-	map.set("a", 1, 100);
-	map.set("ab", 2, 101);
-	map.set("abc", 3, 102);
-	map.set("abcd", 4, 103);
+	map.set((uint8_t *) "a", 1, 100);
+	map.set((uint8_t *) "ab", 2, 101);
+	map.set((uint8_t *) "abc", 3, 102);
+	map.set((uint8_t *) "abcd", 4, 103);
 
 	// test the values
 	r = true;
 	Word_t w;
-	r &= (map.lookup("a", 1, w) && w == 100);
-	r &= (map.lookup("ab", 2, w) && w == 101);
-	r &= (map.lookup("abc", 3, w) && w == 102);
-	r &= (map.lookup("abcd", 4, w) && w == 103);
+	r &= (map.lookup((uint8_t *) "a", 1, w) && w == 100);
+	r &= (map.lookup((uint8_t *) "ab", 2, w) && w == 101);
+	r &= (map.lookup((uint8_t *) "abc", 3, w) && w == 102);
+	r &= (map.lookup((uint8_t *) "abcd", 4, w) && w == 103);
 	if (!testPrint(r, "  * Checking if all values were inserted correctly", true))
 		return ERROR_FAILURE;
 
 	// non-existent item
-	r = (map.lookup("xyz", 3, w));
+	r = (map.lookup((uint8_t *) "xyz", 3, w));
 	if (!testPrint(r, "  * Checking non-existent item", false))
 		return ERROR_FAILURE;
 
 	// replace existing item
-	map.set("abcd", 4, 104);
-	r = (map.lookup("abcd", 4, w) && w == 104);
+	map.set((uint8_t *) "abcd", 4, 104);
+	r = (map.lookup((uint8_t *) "abcd", 4, w) && w == 104);
 	if (!testPrint(r, "  * Replacing existing item", true))
 		return ERROR_FAILURE;
 
 	// deleting item
-	map.remove("abcd", 4);
-	r = (map.lookup("abcd", 4, w));
+	map.remove((uint8_t *) "abcd", 4);
+	r = (map.lookup((uint8_t *) "abcd", 4, w));
 	if (!testPrint(r, "  * Deleting item", false))
 		return ERROR_FAILURE;
 

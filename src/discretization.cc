@@ -207,7 +207,6 @@ void Discretization::create_stiffness_matrix() {
 
 	// calculate the total number of DOFs
 	ndofs = 0;
-	Mesh *mesh = space[0]->get_mesh();
 	for (int i = 0; i < neq; i++)
 		ndofs += space[i]->get_dof_count();
 	if (ndofs == 0) return;
@@ -258,7 +257,6 @@ void Discretization::assemble_stiffness_matrix_and_rhs(bool rhsonly) {
 
 	printf("  * assembling");
 
-	static int id = 0;
 	// loop through all elements
 	Element **e;
 	Traverse trav;

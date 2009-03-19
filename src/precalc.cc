@@ -175,7 +175,7 @@ void PrecalcShapeset::dump_info(int quad, FILE *f) {
 	unsigned long key = 0, n1 = 0, m1 = 0, n2 = 0, n3 = 0, size = 0;
 	void **sub = (void **) JudyLFirst(tables, &key, NULL);
 	while (sub != NULL) {
-		if ((key & 7) == quad) {
+		if ((key & 7) == (unsigned) quad) {
 			fprintf(f, "PRIMARY TABLE, index=%ld\n", (key >> 3));
 			unsigned long idx = 0;
 			void **nodes = (void **) JudyLFirst(*sub, &idx, NULL);

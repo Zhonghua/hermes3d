@@ -100,7 +100,6 @@ static bool read_attr(hid_t id, const char *name, unsigned int &count) {
 }
 
 static bool read_vertices(hid_t id, Mesh *mesh) {
-	herr_t status;
 	bool ret = true;
 
 	// open vertices group
@@ -137,7 +136,6 @@ static bool read_vertices(hid_t id, Mesh *mesh) {
 }
 
 static bool read_hexes(hid_t id, Mesh *mesh) {
-	herr_t status;
 	bool ret = true;
 
 	// open group with hexes
@@ -174,7 +172,6 @@ static bool read_hexes(hid_t id, Mesh *mesh) {
 }
 
 static bool read_tetras(hid_t id, Mesh *mesh) {
-	herr_t status;
 	bool ret = true;
 
 	hid_t group_id = H5Gopen(id, "tetra");
@@ -210,7 +207,6 @@ static bool read_tetras(hid_t id, Mesh *mesh) {
 }
 
 static bool read_prisms(hid_t id, Mesh *mesh) {
-	herr_t status;
 	bool ret = true;
 
 	hid_t group_id = H5Gopen(id, "prism");
@@ -246,8 +242,6 @@ static bool read_prisms(hid_t id, Mesh *mesh) {
 }
 
 static bool read_elements(hid_t id, Mesh *mesh) {
-	herr_t status;
-
 	hid_t group_id = H5Gopen(id, "elements");
 	if (group_id < 0) return false;
 
@@ -264,7 +258,6 @@ static bool read_elements(hid_t id, Mesh *mesh) {
 // BCs ////////////////////////////////////////////////////////////////////////
 
 static bool read_tris(hid_t id, Mesh *mesh) {
-	herr_t status;
 	bool ret = true;
 
 	hid_t group_id = H5Gopen(id, "tri");
@@ -301,7 +294,6 @@ static bool read_tris(hid_t id, Mesh *mesh) {
 }
 
 static bool read_quads(hid_t id, Mesh *mesh) {
-	herr_t status;
 	bool ret = true;
 
 	hid_t group_id = H5Gopen(id, "quad");
@@ -338,8 +330,6 @@ static bool read_quads(hid_t id, Mesh *mesh) {
 }
 
 static bool read_bcs(hid_t id, Mesh *mesh) {
-	herr_t status;
-
 	hid_t group_id = H5Gopen(id, "bc");
 	if (group_id < 0) return false;
 
@@ -349,7 +339,7 @@ static bool read_bcs(hid_t id, Mesh *mesh) {
 
 	H5Gclose(group_id); // close the group
 
-	return true;
+	return ret;
 }
 
 #endif
@@ -378,7 +368,7 @@ bool HDF5Reader::load(const char *file_name, Mesh *mesh) {
 
 		H5Gclose(mesh_group_id);
 
-		herr_t status = H5Fclose(file_id);
+		H5Fclose(file_id);
 
 		mesh->ugh();
 	}
@@ -405,7 +395,7 @@ bool HDF5Reader::load(const char *file_name, Mesh *mesh) {
 static bool write_attr(hid_t loc_id, const char *name, uint value) {
 	hid_t dataspace_id = H5Screate(H5S_SCALAR);
 	hid_t attr = H5Acreate(loc_id, name, H5T_NATIVE_UINT32, dataspace_id, H5P_DEFAULT);
-	herr_t status = H5Awrite(attr, H5T_NATIVE_UINT32, &value);
+	H5Awrite(attr, H5T_NATIVE_UINT32, &value);
 	H5Aclose(attr);
 	H5Sclose(dataspace_id);
 	return true;
@@ -425,7 +415,7 @@ static bool save_vertices(hid_t parent_group_id, Mesh *mesh) {
 	hid_t vertex_dataspace_id = H5Screate_simple(1, &dims, NULL);
 
 	// dump vertices
-	for (int i = 0; i < count; i++) {
+	for (uint i = 0; i < count; i++) {
 		char name[256];
 		sprintf(name, "%d", i);
 
@@ -460,7 +450,7 @@ static bool save_hex(hid_t parent_group_id, Array<Element *> &elems) {
 	hid_t elem_dataspace_id = H5Screate_simple(1, &dims, NULL);
 
 	// dump vertices
-	for (int i = 0; i < count; i++) {
+	for (uint i = 0; i < count; i++) {
 		char name[256];
 		sprintf(name, "%d", i);
 
@@ -496,7 +486,7 @@ static bool save_tetra(hid_t parent_group_id, Array<Element *> &elems) {
 	hid_t elem_dataspace_id = H5Screate_simple(1, &dims, NULL);
 
 	// dump vertices
-	for (int i = 0; i < count; i++) {
+	for (uint i = 0; i < count; i++) {
 		char name[256];
 		sprintf(name, "%d", i);
 
@@ -531,7 +521,7 @@ static bool save_prism(hid_t parent_group_id, Array<Element *> &elems) {
 	hid_t elem_dataspace_id = H5Screate_simple(1, &dims, NULL);
 
 	// dump vertices
-	for (int i = 0; i < count; i++) {
+	for (uint i = 0; i < count; i++) {
 		char name[256];
 		sprintf(name, "%d", i);
 
@@ -564,7 +554,7 @@ static bool save_elements(hid_t parent_group_id, Mesh *mesh) {
 
 	///
 	Array<Element *> tet, hex, pri;
-	for (int i = 0; i < count; i++) {
+	for (uint i = 0; i < count; i++) {
 		Element *elem = mesh->elements[i];
 		switch (elem->get_mode()) {
 			case MODE_TETRAHEDRON: tet.add(elem); break;
@@ -600,7 +590,7 @@ static bool save_tri_bc(hid_t parent_group_id, Mesh *mesh, Array<Word_t> &bcs) {
 	hid_t elem_dataspace_id = H5Screate_simple(1, &dims, NULL);
 
 	// dump vertices
-	for (int i = 0; i < count; i++) {
+	for (uint i = 0; i < count; i++) {
 		char name[256];
 		sprintf(name, "%d", i);
 
@@ -643,7 +633,7 @@ static bool save_quad_bc(hid_t parent_group_id, Mesh *mesh, Array<Word_t> &bcs) 
 	hid_t elem_dataspace_id = H5Screate_simple(1, &dims, NULL);
 
 	// dump vertices
-	for (int i = 0; i < count; i++) {
+	for (uint i = 0; i < count; i++) {
 		char name[256];
 		sprintf(name, "%d", i);
 

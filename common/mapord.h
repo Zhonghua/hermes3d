@@ -301,7 +301,7 @@ void MapOrd<TYPE>::remove_all() {
 	void *pval;
 	Word_t idx = 1;
 	JLF(pval, judy_l, idx);
-	for (; idx != -1 && pval != NULL; ) {
+	for (; idx != INVALID_IDX && pval != NULL; ) {
 		free_item(idx);
 		JLN(pval, judy_l, idx);
 	}
@@ -391,7 +391,7 @@ public:
 	/// 	\li false otherwise
 	bool lookup(Word_t *key, int length, Word_t &item) const {
 		Word_t *p = index(key, length);
-		bool ret = MapHS::lookup((char*) p, length * sizeof(Word_t), item);
+		bool ret = MapHS::lookup((uint8_t *) p, length * sizeof(Word_t), item);
 		delete [] p;
 
 		return ret;
@@ -403,7 +403,7 @@ public:
 	/// \param[in] item Item to insert
 	bool set(Word_t *key, int length, Word_t item) {
 		Word_t *p = index(key, length);
-		bool ret = MapHS::set((char*) p, length * sizeof(Word_t), item);
+		bool ret = MapHS::set((uint8_t *) p, length * sizeof(Word_t), item);
 		delete [] p;
 
 		return ret;
@@ -414,7 +414,7 @@ public:
 	/// \param[in] length Number of indices.
 	bool remove(Word_t *key, int length) {
 		Word_t *p = index(key, length);
-		bool ret = MapHS::remove((char*) p, length * sizeof(Word_t));
+		bool ret = MapHS::remove((uint8_t *) p, length * sizeof(Word_t));
 		delete [] p;
 
 		return ret;

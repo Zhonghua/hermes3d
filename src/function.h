@@ -316,11 +316,11 @@ protected:
 	int total_mem;				/// total memory in bytes used by the tables
 	int max_mem;				/// peak memory usage
 
-	int   find_quad(Quad3D *quad); /// searches 'quads' for the given quadrature
-	int   register_quad(Quad3D *quad); ///
-	Node *new_node(int mask, int num_points); /// allocates a new Node structure
-	void  free_nodes(void** nodes);
-	void  free_sub_tables(void **sub);
+	int find_quad(Quad3D *quad); /// searches 'quads' for the given quadrature
+	int register_quad(Quad3D *quad); ///
+	virtual Node *new_node(int mask, int num_points); /// allocates a new Node structure
+	void free_nodes(void **nodes);
+	virtual void free_sub_tables(void **sub);
 
 	void update_nodes_ptr() {
 		nodes = (void**) JudyLIns(sub_tables, sub_idx, NULL);

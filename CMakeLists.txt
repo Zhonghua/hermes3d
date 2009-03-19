@@ -27,7 +27,7 @@ set(WITH_TOOLS  NO)
 
 # Doxygen related
 set(DOXYGEN_BINARY doxygen)
-set(DOXYGEN_CONFIG_FILE ${PROJECT_SOURCE_DIR}/doc/doxygen-config)
+set(DOXYGEN_CONFIG_FILE ${PROJECT_SOURCE_DIR}/doc/Doxyfile)
 
 # allow to override default values via CMake.vars 
 if(EXISTS ${PROJECT_SOURCE_DIR}/CMake.vars)

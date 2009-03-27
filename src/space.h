@@ -81,7 +81,8 @@ public:
 	virtual Space *dup(Mesh *mesh) const = 0;
 
 	void set_bc_types(EBCType (*bc_type_callback)(int marker));
-	void set_bc_values(scalar (*bc_value_callback_by_coord)(int marker, double x, double y, double z, int comp));
+	void set_bc_values(scalar (*bc_value_callback_by_coord)(int marker, double x, double y, double z));
+	void set_bc_values(scalar3 &(*bc_vec_value_callback_by_coord)(int marker, double x, double y, double z));
 
 	void set_element_order(Word_t eid, order3_t order);
 	order3_t get_element_order(Word_t eid) const;
@@ -453,7 +454,8 @@ public: // remove me
 
 public:
 	EBCType (*bc_type_callback)(int);
-	scalar (*bc_value_callback_by_coord)(int marker, double x, double y, double z, int component);
+	scalar (*bc_value_callback_by_coord)(int marker, double x, double y, double z);
+	scalar3 &(*bc_vec_value_callback_by_coord)(int marker, double x, double y, double z);
 };
 
 

@@ -3,7 +3,7 @@ project(shapeset-hex-h1-lobatto)
 include(CMake.vars)
 
 if(WITH_HEX)
-#
+
 add_executable(${PROJECT_NAME}
 	main.cc
 	lindep.cc

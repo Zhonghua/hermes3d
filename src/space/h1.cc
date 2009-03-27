@@ -147,7 +147,7 @@ void H1Space::calc_vertex_boundary_projection(Element *elem, int ivertex) {
 	VertexData *vnode = vn_data[vtx];
 	Vertex *v = mesh->vertices[vtx];
 	if (vnode->bc_type == BC_ESSENTIAL)
-		vnode->bc_proj = bc_value_callback_by_coord(vnode->marker, v->x, v->y, v->z, 0);
+		vnode->bc_proj = bc_value_callback_by_coord(vnode->marker, v->x, v->y, v->z);
 }
 
 void H1Space::calc_edge_boundary_projection(Element *elem, int iedge) {
@@ -232,7 +232,7 @@ void H1Space::calc_edge_boundary_projection(Element *elem, int iedge) {
 				vtx_fn_coef[1] * shapeset->get_fn_value(vtx_fn_idx[1], pt[k].x, pt[k].y, pt[k].z, 0);
 			value += pt[k].w *
 				shapeset->get_fn_value(iidx, pt[k].x, pt[k].y, pt[k].z, 0) *
-				(bc_value_callback_by_coord(enode->marker, edge_phys_x[k], edge_phys_y[k], edge_phys_z[k], 0) - g);
+				(bc_value_callback_by_coord(enode->marker, edge_phys_x[k], edge_phys_y[k], edge_phys_z[k]) - g);
 		}
 		proj_rhs[i] += value;
 	}
@@ -363,7 +363,7 @@ void H1Space::calc_face_boundary_projection(Element *elem, int iface) {
 
 			value += pt[k].w *
 				shapeset->get_fn_value(iidx, pt[k].x, pt[k].y, pt[k].z, 0) *
-				(bc_value_callback_by_coord(fnode->marker, face_phys_x[k], face_phys_y[k], face_phys_z[k], 0) - g);
+				(bc_value_callback_by_coord(fnode->marker, face_phys_x[k], face_phys_y[k], face_phys_z[k]) - g);
 		}
 
 		proj_rhs[i] += value;

@@ -209,7 +209,7 @@ inline scalar surf_int_G_v(RealFunction *fv, RefMap *rv, FacePos *fp) {
 	double *y = rv->get_face_phys_y(fp->face, face_order);
 	double *z = rv->get_face_phys_z(fp->face, face_order);
 
-	H1_INTEGRATE_SURF_EXPRESSION(vval[i] * fp->space->bc_value_callback_by_coord(fp->marker, x[i], y[i], z[i], 0));
+	H1_INTEGRATE_SURF_EXPRESSION(vval[i] * fp->space->bc_value_callback_by_coord(fp->marker, x[i], y[i], z[i]));
 	return result;
 }
 

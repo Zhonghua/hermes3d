@@ -360,15 +360,19 @@ void Solution::enable_transform(bool enable) {
 
 //// ExactSolution /////////////////////////////////////////////////////////////////////////////////
 
-ExactSolution::ExactSolution(Mesh *mesh, exact_fn_t fn0, exact_fn_t fn1, exact_fn_t fn2)
+ExactSolution::ExactSolution(Mesh *mesh, exact_fn_t fn)
 	: MeshFunction(mesh)
 {
-	fn[0] = fn0;
-	fn[1] = fn1;
-	fn[2] = fn2;
-	if (fn1 == NULL) num_components = 1;
-	else if (fn2 == NULL) num_components = 2;
-	else num_components = 3;
+	this->fn = fn;
+	this->num_components = 1;
+	memset(tables, 0, sizeof(tables));
+}
+
+ExactSolution::ExactSolution(Mesh *mesh, exact_vec_fn_t fn)
+	: MeshFunction(mesh)
+{
+	this->fn_vec = fn;
+	this->num_components = 3;
 	memset(tables, 0, sizeof(tables));
 }
 
@@ -458,16 +462,33 @@ void ExactSolution::precalculate(qorder_t qord, int mask) {
     }
 
 	// evaluate the exact solution
-	for (int j = 0; j < num_components; j++) {
+    if (num_components == 1) {
 		for (int i = 0; i < np; i++) {
 			scalar val, dx = 0.0, dy = 0.0, dz = 0.0;
-			val = fn[j](x[i], y[i], z[i], dx, dy, dz);
-			node->values[j][FN][i] = val;
-			node->values[j][DX][i] = dx;
-			node->values[j][DY][i] = dy;
-			node->values[j][DZ][i] = dz;
+			val = fn(x[i], y[i], z[i], dx, dy, dz);
+			node->values[0][FN][i] = val;
+			node->values[0][DX][i] = dx;
+			node->values[0][DY][i] = dy;
+			node->values[0][DZ][i] = dz;
 		}
-	}
+    }
+    else if (num_components == 3) {
+		for (int i = 0; i < np; i++) {
+			scalar3 dx = { 0.0, 0.0, 0.0 };
+			scalar3 dy = { 0.0, 0.0, 0.0 };
+			scalar3 dz = { 0.0, 0.0, 0.0 };
+			scalar3 &val  = fn_vec(x[i], y[i], z[i], dx, dy, dz);
+			for (int j = 0; j < num_components; j++) {
+				node->values[j][FN][i] = val[j];
+				node->values[j][DX][i] = dx[j];
+				node->values[j][DY][i] = dy[j];
+				node->values[j][DZ][i] = dz[j];
+			}
+		}
+    }
+    else {
+    	EXIT(ERR_FAILURE, "Invalid number of components.");
+    }
 
 	// remove the old node and attach the new one
 	replace_cur_node(node);

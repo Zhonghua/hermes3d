@@ -42,7 +42,8 @@ Space::Space(Mesh *mesh, Shapeset *shapeset) :
 	mesh(mesh), shapeset(shapeset)
 {
 	set_bc_types(NULL);
-	set_bc_values((scalar(*)(int, double, double, double, int)) NULL);
+	set_bc_values((scalar(*)(int, double, double, double)) NULL);
+	set_bc_values((scalar3 &(*)(int, double, double, double)) NULL);
 	init_data_tables();
 }
 
@@ -1964,8 +1965,13 @@ static EBCType default_bc_type(int marker) {
 	return BC_ESSENTIAL;
 }
 
-static scalar default_bc_value_by_coord(int marker, double x, double y, double z, int comp) {
+static scalar default_bc_value_by_coord(int marker, double x, double y, double z) {
 	return 0.0;
+}
+
+static scalar3 &default_bc_vec_value_by_coord(int marker, double x, double y, double z) {
+	static scalar3 val = { 0.0, 0.0, 0.0 };
+	return val;
 }
 
 void Space::set_bc_types(EBCType(*bc_type_callback)(int)) {
@@ -1973,14 +1979,20 @@ void Space::set_bc_types(EBCType(*bc_type_callback)(int)) {
 	this->bc_type_callback = bc_type_callback;
 }
 
-void Space::set_bc_values(scalar(*bc_value_callback_by_coord)(int, double, double, double, int)) {
+void Space::set_bc_values(scalar(*bc_value_callback_by_coord)(int, double, double, double)) {
 	if (bc_value_callback_by_coord == NULL) bc_value_callback_by_coord = default_bc_value_by_coord;
 	this->bc_value_callback_by_coord = bc_value_callback_by_coord;
+}
+
+void Space::set_bc_values(scalar3 &(*bc_vec_value_callback_by_coord)(int marker, double x, double y, double z)) {
+	if (bc_vec_value_callback_by_coord == NULL) bc_vec_value_callback_by_coord = default_bc_vec_value_by_coord;
+	this->bc_vec_value_callback_by_coord = bc_vec_value_callback_by_coord;
 }
 
 void Space::copy_callbacks(const Space *space) {
 	bc_type_callback = space->bc_type_callback;
 	bc_value_callback_by_coord = space->bc_value_callback_by_coord;
+	bc_vec_value_callback_by_coord = space->bc_vec_value_callback_by_coord;
 }
 
 void Space::calc_boundary_projections() {

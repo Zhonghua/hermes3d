@@ -71,7 +71,7 @@ EBCType bc_types(int marker) {
 	return BC_ESSENTIAL;
 }
 
-double bc_values(int marker, double x, double y, double z, int comp) {
+double bc_values(int marker, double x, double y, double z) {
 	return fnc(x, y, z);
 }
 

@@ -59,7 +59,7 @@ EBCType bc_types(int marker) {
 	return BC_NATURAL;
 }
 
-double bc_values(int marker, double x, double y, double z, int comp) {
+double bc_values(int marker, double x, double y, double z) {
 	switch (marker) {
 		case 1: return -2 * y + fnc(x, y, z);
 		case 2: return (2.0 / 7.0) * (3 * x + 2 * y + 6 * z) + fnc(x, y, z);

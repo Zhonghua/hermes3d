@@ -33,6 +33,9 @@
 typedef
 	scalar (*exact_fn_t)(double x, double y, double z, scalar &dx, scalar &dy, scalar &dz);
 
+typedef
+	scalar3 &(*exact_vec_fn_t)(double x, double y, double z, scalar3 &dx, scalar3 &dy, scalar3 &dz);
+
 /// Represents a function defined on a mesh.
 ///
 /// MeshFunction is a base class for all classes representing an arbitrary function
@@ -142,14 +145,18 @@ protected:
 /// @ingroup solutions
 class ExactSolution : public MeshFunction {
 public:
-	ExactSolution(Mesh *mesh, exact_fn_t fn0, exact_fn_t fn1 = NULL, exact_fn_t fn2 = NULL);
+	ExactSolution(Mesh *mesh, exact_fn_t fn);
+	ExactSolution(Mesh *mesh, exact_vec_fn_t fn);
 	virtual ~ExactSolution();
 	virtual void free();
 
 	virtual void set_active_element(Element *e);
 
 protected:
-	exact_fn_t fn[COMPONENTS];
+	union {
+		exact_fn_t fn;
+		exact_vec_fn_t fn_vec;
+	};
 	void *tables[8];
 
 	virtual void precalculate(qorder_t qord, int mask);
@@ -163,8 +170,10 @@ protected:
 /// @ingroup solutions
 class ConstantSolution : public ExactSolution {
 public:
-	ConstantSolution(Mesh *mesh, scalar c0, scalar c1 = 0.0, scalar c2 = 0.0)
-		: ExactSolution(mesh, NULL, NULL) { c[0] = c0; c[1] = c1; c[2] = c2; }
+	ConstantSolution(Mesh *mesh, scalar c0)
+		: ExactSolution(mesh, (exact_fn_t) NULL) { c[0] = c0; c[1] = 0.0; c[2] = 0.0; }
+	ConstantSolution(Mesh *mesh, scalar c0, scalar c1, scalar c2)
+		: ExactSolution(mesh, (exact_fn_t) NULL) { c[0] = c0; c[1] = c1; c[2] = c2; }
 
 protected:
 	scalar c[COMPONENTS];

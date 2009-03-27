@@ -283,7 +283,7 @@ EBCType bc_types(int marker) {
 #endif
 }
 
-double bc_values(int marker, double x, double y, double z, int comp) {
+double bc_values(int marker, double x, double y, double z) {
 #ifdef DIRICHLET
 	return fnc(x, y, z);
 #elif defined NEWTON

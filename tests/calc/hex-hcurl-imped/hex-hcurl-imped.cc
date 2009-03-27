@@ -16,16 +16,15 @@
 // along with Hermes3D; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-/*
- * hex-hcurl-imped.cc
- * Time harmonic Maxwell equations with impedance BC
- *
- * calculates solution of the problem:
- *  curl(curl(u)) = f on Omega
- *  u x n = 0 on Gamma_P
- *  curl(u) x n - i (n x u) x n = g on Gamma_I
- *  where n is outer normal
- */
+//
+// Time harmonic Maxwell equations with impedance BC
+//
+// calculates solution of the problem:
+//  curl(curl(u)) = f on Omega
+//  u x n = 0 on Gamma_P
+//  curl(u) x n - i (n x u) x n = g on Gamma_I
+//  where n is outer normal
+//
 
 #include "config.h"
 #ifdef WITH_PETSC
@@ -36,237 +35,120 @@
 #include <common/timer.h>
 #include <common/error.h>
 
-// first two Lobatto shape functions
-#define l0(x) ((1.0 - (x)) * 0.5)
-#define l1(x) ((1.0 + (x)) * 0.5)
-
 // error should be smaller than this epsilon
 #define EPS								10e-10F
 
 std::complex<double> imag(0, 1);
 
-		///**********************************************************/
-		///                    E = (1, 0, 0)
-		///**********************************************************/
-/*
-scalar exact_solution(double x, double y, double z, scalar &dx, scalar &dy, scalar &dz, int comp) {
-	switch(comp){
-		case 0 : dx = dy = dz = 0.; return 1.;
-		case 1 : dx = dy = dz = 0.; return 0.;
-		case 2 : dx = dy = dz = 0.; return 0.;
-}
+// general polynomial function
+
+scalar3 &exact_solution(double x, double y, double z, scalar3 &dx, scalar3 &dy, scalar3 &dz) {
+	dx[0] = 3.*x*x*y*y - 3.*y*y*y*z;
+	dx[1] = 3.*x*x*y*y*y*z*z*z + 4.*x*y*z;
+	dx[2] = -12.*x*x;
+
+	dy[0] = 2.*x*x*x*y - 9.*x*y*y*z;
+	dy[1] = 3.*x*x*x*y*y*z*z*z + 2.*x*x*z;
+	dy[2] = z*z*z;
+
+	dz[0] = -3.*x*y*y*y;
+	dz[1] = 3.*x*x*x*y*y*y*z*z + 2.*x*x*y;
+	dz[2] = 3.*y*z*z;
+
+	static scalar3 val;
+	val[0] = x*x*x*y*y - 3.*x*y*y*y*z;
+	val[1] = x*x*x*y*y*y*z*z*z + 2.*x*x*y*z;
+	val[2] = y*z*z*z - 4.*x*x*x;
+	return val;
 }
 
-scalar f(double x, double y, double z, int comp) {
-	switch(comp){
-		case 0 : return -1.;
-		case 1 : return 0.;
-		case 2 : return 0.;
-}
+scalar3 &f(double x, double y, double z) {
+	scalar3 curlpart = {
+		4*x*z + 18*x*y*z - 2*x*x*x + 9*x*x*y*y*z*z*z,
+		-4*y*z + 3*z*z - 9*z*y*y + 6*y*x*x - 6*x*y*y*y*z*z*z - 6*z*x*x*x*y*y*y,
+		24*x + 2*x*x + 9*x*x*x*y*y*z*z - 3*y*y*y
+	};
+
+	scalar3 dx, dy, dz;
+	scalar3 ev = exact_solution(x, y, z, dx, dy, dz);
+	static scalar3 val;
+	val[0] = curlpart[0] - ev[0];
+	val[1] = curlpart[1] - ev[1];
+	val[2] = curlpart[2] - ev[2];
+	return val;
 }
 
-scalar bc_values(int marker, double x, double y, double z, int comp) {
-	scalar bc[3] = {0., 0., 0.};
+// TODO: this could be written in a much simplier way. Just use curl of exact solution
+// and cross product defined in Scalar3D...
+scalar3 &bc_values(int marker, double x, double y, double z) {
+	static scalar bc[3] = { 0., 0., 0. };
+
 	switch (marker) {
-		case 0: break;
-		case 1: break;
-		case 2: bc[0] = -imag; break;
-		case 3: bc[0] = -imag; break;
-		case 4: bc[0] = -imag; break;
-		case 5: bc[0] = -imag; break;
-		default:assert(0); //EXIT(ERR_FACE_INDEX_OUT_OF_RANGE);
-	}
-	return bc[comp];
-}
-
-EBCType bc_types(int marker) {
-	if((marker == 2) || (marker == 3) || (marker == 4) || (marker == 5))
-		return BC_NATURAL;
-	else
-		return BC_ESSENTIAL;
-}
-*/
-		///**********************************************************/
-		///                    E = (0, x, 0)
-		///**********************************************************/
-/*
-scalar exact_solution(double x, double y, double z, scalar &dx, scalar &dy, scalar &dz, int comp) {
-	switch(comp){
-		case 0 : dx = dy = dz = 0; return 0;
-		case 1 : dx = 1.; dy = dz = 0; return x;
-		case 2 : dx = dy = dz = 0; return 0;
-	}
-}
-
-scalar f(double x, double y, double z, int comp) {
-	switch(comp){
-		case 0 : return 0.;
-		case 1 : return -x;
-		case 2 : return 0.;
-	}
-}
-
-scalar bc_values(int marker, double x, double y, double z, int comp) {
-	scalar bc[3] = {0., 0., 0.};
-	switch (marker) {
-		case 0: bc[1] = -1. - imag * x; break;
-		case 1: bc[1] =  1. - imag * x; break;
-		case 2: break;
-		case 3: break;
-		case 4: bc[1] = - imag * x; break;
-		case 5: bc[1] = - imag * x; break;
-		default: EXIT(ERR_FACE_INDEX_OUT_OF_RANGE);
-	}
-	return bc[comp];
-}
-
-EBCType bc_types(int marker) {
-	if((marker == 0) || (marker == 1) || (marker == 4) || (marker == 5))
-		return BC_NATURAL;
-	else
-		return BC_ESSENTIAL;
-}
-*/
-		///**********************************************************/
-		///                    E = (0, x*x, 0)
-		///**********************************************************/
-/*
-scalar exact_solution(double x, double y, double z, scalar &dx, scalar &dy, scalar &dz, int comp) {
-	switch(comp){
-		case 0 : dx = dy = dz = 0; return 0;
-		case 1 : dx = 2*x; dy = dz = 0; return x*x;
-		case 2 : dx = dy = dz = 0; return 0;
-	}
-}
-
-scalar f(double x, double y, double z, int comp) {
-	switch(comp){
-		case 0 : return 0.;
-		case 1 : return -2. - x*x;
-		case 2 : return 0.;
-	}
-}
-
-scalar bc_values(int marker, double x, double y, double z, int comp) {
-	scalar bc[3] = {0., 0., 0.};
-	switch (marker) {
-		case 0: bc[1] = (-2.*x) - imag * x*x; break;
-		case 1: bc[1] = (2.*x)  - imag * x*x; break;
-		case 2: break;
-		case 3: break;
-		case 4: bc[1] = - imag * x*x; break;
-		case 5: bc[1] = - imag * x*x; break;
-		default: EXIT(ERR_FACE_INDEX_OUT_OF_RANGE);
-	}
-	return bc[comp];
-}
-
-EBCType bc_types(int marker) {
-	if((marker == 0) || (marker == 1) || (marker == 4) || (marker == 5))
-		return BC_NATURAL;
-	else
-		return BC_ESSENTIAL;
-}
-*/
-		///**********************************************************/
-		///            general polynomial function
-		///**********************************************************/
-scalar exact_solution(double x, double y, double z, scalar &dx, scalar &dy, scalar &dz, int comp) {
-	switch(comp){
-		case 0 : {
-			dx = 3.*x*x*y*y - 3.*y*y*y*z;
-			dy = 2.*x*x*x*y - 9.*x*y*y*z;
-			dz = -3.*x*y*y*y;
-			return x*x*x*y*y - 3.*x*y*y*y*z;
-		}
-		case 1 : {
-			dx = 3.*x*x*y*y*y*z*z*z + 4.*x*y*z;
-			dy = 3.*x*x*x*y*y*z*z*z + 2.*x*x*z;
-			dz = 3.*x*x*x*y*y*y*z*z + 2.*x*x*y;
-			return x*x*x*y*y*y*z*z*z + 2.*x*x*y*z;
-		}
-		case 2 : {
-			dx = -12.*x*x;
-			dy = z*z*z;
-			dz = 3.*y*z*z;
-			return y*z*z*z - 4.*x*x*x;
-		}
-	}
-}
-
-scalar f(double x, double y, double z, int comp) {
-	scalar curlpart;
-	scalar dx, dy, dz;
-	switch(comp){
-		case 0 : curlpart = 4*x*z + 18*x*y*z - 2*x*x*x + 9*x*x*y*y*z*z*z; break;
-		case 1 : curlpart = -4*y*z + 3*z*z - 9*z*y*y + 6*y*x*x - 6*x*y*y*y*z*z*z - 6*z*x*x*x*y*y*y; break;
-		case 2 : curlpart = 24*x + 2*x*x + 9*x*x*x*y*y*z*z - 3*y*y*y; break;
-	}
-
-	return curlpart - exact_solution(x, y, z, dx, dy, dz, comp);
-}
-
-//TODO this could be writen in much simplier way. Just use curl of exact solution
-//and cross product defined in Scalar3D..
-scalar bc_values(int marker, double x, double y, double z, int comp) {
-	scalar bc[3] = {0., 0., 0.};
-	switch (marker) {
-		case 0:
+		case 1:
 			bc[1] = -4*x*y*z - 9*x*z*y*y + 2*y*x*x*x - 3*x*x*y*y*y*z*z*z;
 			bc[2] = 12*x*x - 3*x*y*y*y;
 			break;
-		case 1:
+
+		case 2:
 			bc[1] = 4*x*y*z + 9*x*z*y*y - 2*y*x*x*x + 3*x*x*y*y*y*z*z*z;
 			bc[2] = -12*x*x + 3*x*y*y*y;
 			break;
-		case 2:
+
+		case 3:
 			bc[0] = 4*x*y*z + 9*x*z*y*y - 2*y*x*x*x + 3*x*x*y*y*y*z*z*z;
 			bc[2] = 2*y*x*x + 3*x*x*x*y*y*y*z*z - z*z*z;
 			break;
-		case 3:
+
+		case 4:
 			bc[0] = -4*x*y*z - 9*x*z*y*y + 2*y*x*x*x - 3*x*x*y*y*y*z*z*z;
 			bc[2] = -2*y*x*x - 3*x*x*x*y*y*y*z*z + z*z*z;
-		break;
-		case 4:
+			break;
+
+		case 5:
 			bc[0] = -12*x*x + 3*x*y*y*y;
 			bc[1] = -2*y*x*x - 3*x*x*x*y*y*y*z*z + z*z*z;
 			break;
-		case 5:
+
+		case 6:
 			bc[0] = 12*x*x - 3*x*y*y*y;
 			bc[1] = 2*y*x*x + 3*x*x*x*y*y*y*z*z - z*z*z;
 			break;
-		default: EXIT(ERR_FACE_INDEX_OUT_OF_RANGE);
+
+		default:
+			EXIT(ERR_FACE_INDEX_OUT_OF_RANGE);
 	}
-	switch (marker){
-		case 0:
+
+	switch (marker) {
 		case 1:
-			bc[1] -= imag * (2*y*z*x*x + x*x*x*y*y*y*z*z*z);
-			bc[2] -= imag * (-4*x*x*x + y*z*z*z);
-			break;
 		case 2:
+			bc[1] -= imag * (2*y*z*x*x + x*x*x*y*y*y*z*z*z);
+			bc[2] -= imag * (-4*x*x*x + y*z*z*z);
+			break;
+
 		case 3:
+		case 4:
 			bc[0] -= imag * (x*x*x*y*y - 3*x*z*y*y*y);
 			bc[2] -= imag * (-4*x*x*x + y*z*z*z);
 			break;
-		case 4:
+
 		case 5:
+		case 6:
 			bc[0] -= imag * (x*x*x*y*y - 3*x*z*y*y*y);
 			bc[1] -= imag * (2*y*z*x*x + x*x*x*y*y*y*z*z*z);
 			break;
-		default: EXIT(ERR_FACE_INDEX_OUT_OF_RANGE);
+
+		default:
+			EXIT(ERR_FACE_INDEX_OUT_OF_RANGE);
 	}
-	return bc[comp];
+
+	return bc;
 }
 
 EBCType bc_types(int marker) {
 	return BC_NATURAL;
 }
 
-
-
-	///**********************************************************/
-	///              definition of the forms
-	///**********************************************************/
+/// definition of the forms
 
 scalar bilinear_form(RealFunction *fu, RealFunction *fv, RefMap *ru, RefMap *rv) {
 	return hcurl_int_curl_u_curl_v(fu, fv, ru, rv) - hcurl_int_u_v(fu, fv, ru, rv);
@@ -283,21 +165,6 @@ scalar bilinear_form_surf(RealFunction *fu, RealFunction *fv, RefMap *ru, RefMap
 scalar linear_form_surf(RealFunction *fv, RefMap *rv, FacePos *fp) {
 	return hcurl_surf_int_G_v(fv, rv, fp);
 }
-
-scalar exact_solution_0(double x, double y, double z, scalar &dx, scalar &dy, scalar &dz) {
-	return exact_solution(x, y, z, dx, dy, dz, 0);
-}
-
-scalar exact_solution_1(double x, double y, double z, scalar &dx, scalar &dy, scalar &dz) {
-	return exact_solution(x, y, z, dx, dy, dz, 1);
-}
-
-scalar exact_solution_2(double x, double y, double z, scalar &dx, scalar &dy, scalar &dz) {
-	return exact_solution(x, y, z, dx, dy, dz, 2);
-}
-
-
-
 
 // main ///////////////////////////////////////////////////////////////////////////////////////////
 
@@ -317,7 +184,7 @@ int main(int argc, char **args) {
 		return ERR_NOT_ENOUGH_PARAMS;
 	}
 
-	HCurlShapesetLobattoHex shapeset;
+	HcurlShapesetLobattoHex shapeset;
 	PrecalcShapeset pss(&shapeset);
 
 	printf("* Loading mesh '%s'\n", args[1]);
@@ -329,14 +196,14 @@ int main(int argc, char **args) {
 	}
 
 	printf("* Setting the space up\n");
-	HCurlSpace space(&mesh, &shapeset);
+	HcurlSpace space(&mesh, &shapeset);
 	space.set_bc_types(bc_types);
 	space.set_bc_values(bc_values);
 
 	int order;
 	sscanf(args[2], "%d", &order);
 	int dir_x = order, dir_y = order, dir_z = order;
-	int o = MAKE_HEX_ORDER(dir_x, dir_y, dir_z);
+	order3_t o(dir_x, dir_y, dir_z);
 	printf("  - Setting uniform order to (%d, %d, %d)\n", dir_x, dir_y, dir_z);
 	space.set_uniform_order(o);
 
@@ -376,14 +243,11 @@ int main(int argc, char **args) {
 	bool solved = d.solve_system(1, &sln);
 	solve_timer.stop();
 
-	solver.dump_matrix("output/matrix");
-	solver.dump_rhs("output/rhs");
-
 	if (solved) {
 		printf("* Solution:\n");
 		scalar *s = sln.get_solution_vector();
 		for (int i = 1; i <= ndofs; i++) {
-			printf(" x[% 3d] = " SPS "\n", i, SP(s[i]));
+			printf(" x[% 3d] = " SCALAR_FMT "\n", i, SCALAR(s[i]));
 		}
 
 		// output the measured values
@@ -391,15 +255,16 @@ int main(int argc, char **args) {
 		printf("%s: %s (%lf secs)\n", solve_timer.get_name(), solve_timer.get_human_time(), solve_timer.get_seconds());
 
 		// norm
+		ExactSolution ex_sln(&mesh, exact_solution);
 		double hcurl_sln_norm = hcurl_norm(&sln);
-		double hcurl_err_norm = hcurl_error_norm_exact(&sln, exact_solution);
-		printf(" - HCurl solution norm:   % le\n", hcurl_sln_norm);
-		printf(" - HCurl error norm:      % le\n", hcurl_err_norm);
+		double hcurl_err_norm = hcurl_error(&sln, &ex_sln);
+		printf(" - Hcurl solution norm: % le\n", hcurl_sln_norm);
+		printf(" - Hcurl error norm:    % le\n", hcurl_err_norm);
 
-		double l2_sln_norm = hcurl_l2_norm(&sln);
-		double l2_err_norm = hcurl_l2_error_norm_exact(&sln, exact_solution);
-		printf(" - L2 solution norm:   % le\n", l2_sln_norm);
-		printf(" - L2 error norm:      % le\n", l2_err_norm);
+		double l2_sln_norm = l2_norm_hcurl(&sln);
+		double l2_err_norm = l2_error_hcurl(&sln, &ex_sln);
+		printf(" - L2 solution norm:    % le\n", l2_sln_norm);
+		printf(" - L2 error norm:       % le\n", l2_err_norm);
 
 		if (hcurl_err_norm > EPS || l2_err_norm > EPS) {
 			// calculated solution is not enough precise

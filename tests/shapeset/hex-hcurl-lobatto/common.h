@@ -17,12 +17,6 @@
 // along with Hermes3D; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-/*
- * common.h
- *
- * Common stuff for test case
- *
- */
 
 #ifndef COMMON_H_
 #define COMMON_H_

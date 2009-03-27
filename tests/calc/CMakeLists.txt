@@ -16,6 +16,7 @@ endif(WITH_TETRA)
 
 # HEX
 if(WITH_HEX)
+    # H1
 	if(REAL)
 		add_subdirectory(hex-h1)
 		add_subdirectory(hex-h1-1face)
@@ -23,4 +24,12 @@ if(WITH_HEX)
 		add_subdirectory(hex-h1-neumann)
 		add_subdirectory(hex-h1-newton)
 	endif(REAL)
+	# Hcurl
+	if(REAL)
+		add_subdirectory(hex-hcurl)		
+	endif(REAL)
+	if(COMPLEX)
+		add_subdirectory(hex-hcurl-cplx)
+		add_subdirectory(hex-hcurl-imped)
+	endif(COMPLEX)
 endif(WITH_HEX)

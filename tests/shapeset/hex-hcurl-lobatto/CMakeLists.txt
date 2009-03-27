@@ -1,4 +1,4 @@
-project(hex-hcurl-lobatto-shapeset)
+project(shapeset-hex-hcurl-lobatto)
 
 include(CMake.vars)
 
@@ -30,7 +30,7 @@ configure_file(
 # Tests
 
 set(BIN ${PROJECT_BINARY_DIR}/${PROJECT_NAME})
-add_test(hex-curl-lobbato-shapeset-1 ${BIN})
+add_test(${PROJECT_NAME}-1 ${BIN})
 
 endif(WITH_HEX)
 

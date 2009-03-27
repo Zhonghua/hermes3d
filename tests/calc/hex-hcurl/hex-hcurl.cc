@@ -16,13 +16,6 @@
 // along with Hermes3D; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-/*
- * hex.cc
- *
- *
- *
- */
-
 #include "config.h"
 #ifdef WITH_PETSC
 #include <petsc.h>
@@ -32,53 +25,52 @@
 #include <common/timer.h>
 #include <common/error.h>
 
-// first two Lobatto shape functions
-#define l0(x) ((1.0 - (x)) * 0.5)
-#define l1(x) ((1.0 + (x)) * 0.5)
-
 // error should be smaller than this epsilon
 #define EPS								10e-10F
 
 // general polynomial function satisfying perfect conductor bc
+// exact solution has zero tangential component on the boundary on the domain (-1, 1)^3
+// DO NOT TEST on other domains than (-1, 1)^3
 
 const double alpha = 1.0;
 
-scalar exact_solution(double x, double y, double z, scalar &dx, scalar &dy, scalar &dz, int comp) {
-	switch (comp) {
-		case 0:
-			dx = (1 - y*y)*(1 - z*z)*(z - 6*x*x);
-			dy = -2*y*(1 - z*z)*(1 - 2*x*x*x + x*z);
-			dz = x*(1 - y*y)*(1 - z*z) - 2*z*(1 - y*y)*(1 - 2*x*x*x + x*z);
-			return (1-y*y) * (1-z*z) * (x*z - 2*x*x*x + 1);
+scalar3 &exact_solution(double x, double y, double z, scalar3 &dx, scalar3 &dy, scalar3 &dz) {
+	dx[0] = (1 - y*y)*(1 - z*z)*(z - 6*x*x);
+	dx[1] = 2*(1 - x*x)*(1 - z*z) - 2*x*(1 - z*z)*(y*y*y + 2*x);
+	dx[2] = -2*x*(1 - y*y)*(z*z - 3*x*y*z) - 3*y*z*(1 - x*x)*(1 - y*y);
 
-		case 1:
-			dx = 2*(1 - x*x)*(1 - z*z) - 2*x*(1 - z*z)*(y*y*y + 2*x);
-			dy = 3*y*y*(1 - x*x)*(1 - z*z);
-			dz = -2*z*(1 - x*x)*(y*y*y + 2*x);
-			return (1-x*x) * (1-z*z) * (y*y*y + 2*x);
+	dy[0] = -2*y*(1 - z*z)*(1 - 2*x*x*x + x*z);
+	dy[1] = 3*y*y*(1 - x*x)*(1 - z*z);
+	dy[2] = -2*y*(1 - x*x)*(z*z - 3*x*y*z) - 3*x*z*(1 - x*x)*(1 - y*y);
 
-		case 2:
-			dx = -2*x*(1 - y*y)*(z*z - 3*x*y*z) - 3*y*z*(1 - x*x)*(1 - y*y);
-			dy = -2*y*(1 - x*x)*(z*z - 3*x*y*z) - 3*x*z*(1 - x*x)*(1 - y*y);
-			dz = (1 - x*x)*(1 - y*y)*(2*z - 3*x*y);
-			return (1-x*x) * (1-y*y) * (z*z - 3*x*y*z);
-	}
+	dz[0] = x*(1 - y*y)*(1 - z*z) - 2*z*(1 - y*y)*(1 - 2*x*x*x + x*z);
+	dz[1] = -2*z*(1 - x*x)*(y*y*y + 2*x);
+	dz[2] = (1 - x*x)*(1 - y*y)*(2*z - 3*x*y);
+
+	static scalar3 val;
+	val[0] = (1-y*y) * (1-z*z) * (x*z - 2*x*x*x + 1);
+	val[1] = (1-x*x) * (1-z*z) * (y*y*y + 2*x);
+	val[2] = (1-x*x) * (1-y*y) * (z*z - 3*x*y*z);
+
+	return val;
 }
 
-scalar f(double x, double y, double z, int comp) {
-	scalar curlpart;
-	scalar dx, dy, dz;
-	switch(comp) {
-		case 0: curlpart = 2*(1 - y*y)*(1 - 2*x*x*x + x*z) + 2*(1 - z*z)*(1 - 2*x*x*x + x*z) - 6*x*y*y*(1 - z*z) - 3*y*(1 - x*x)*(1 - y*y) - 2*x*(1 - y*y)*(2*z - 3*x*y) + 4*x*z*(1 - y*y); break;
-		case 1: curlpart = 2*(1 - x*x)*(y*y*y + 2*x) + 2*(1 - z*z)*(y*y*y + 2*x) + 8*x*(1 - z*z) - 3*x*(1 - x*x)*(1 - y*y) - 2*y*(1 - x*x)*(2*z - 3*x*y) - 2*y*(1 - z*z)*(z - 6*x*x); break;
-		case 2: curlpart = (1 - y*y)*(1 - z*z) + 2*(1 - x*x)*(z*z - 3*x*y*z) + 2*(1 - y*y)*(z*z - 3*x*y*z) - 6*z*y*y*(1 - x*x) - 2*z*(1 - y*y)*(z - 6*x*x) - 12*x*y*z*(1 - x*x) - 12*x*y*z*(1 - y*y); break;
-	}
+scalar3 &f(double x, double y, double z) {
+	scalar3 curlpart = {
+		2*(1 - y*y)*(1 - 2*x*x*x + x*z) + 2*(1 - z*z)*(1 - 2*x*x*x + x*z) - 6*x*y*y*(1 - z*z) - 3*y*(1 - x*x)*(1 - y*y) - 2*x*(1 - y*y)*(2*z - 3*x*y) + 4*x*z*(1 - y*y),
+		2*(1 - x*x)*(y*y*y + 2*x) + 2*(1 - z*z)*(y*y*y + 2*x) + 8*x*(1 - z*z) - 3*x*(1 - x*x)*(1 - y*y) - 2*y*(1 - x*x)*(2*z - 3*x*y) - 2*y*(1 - z*z)*(z - 6*x*x),
+		(1 - y*y)*(1 - z*z) + 2*(1 - x*x)*(z*z - 3*x*y*z) + 2*(1 - y*y)*(z*z - 3*x*y*z) - 6*z*y*y*(1 - x*x) - 2*z*(1 - y*y)*(z - 6*x*x) - 12*x*y*z*(1 - x*x) - 12*x*y*z*(1 - y*y)
+	};
 
-	return curlpart - alpha * exact_solution(x, y, z, dx, dy, dz, comp);
-}
+	scalar3 dx, dy, dz;
+	scalar3 &ev = exact_solution(x, y, z, dx, dy, dz);
 
-double bc_values(int marker, double x, double y, double z, int comp) {
-	return 0;
+	static scalar3 val;
+	val[0] = curlpart[0] - alpha * ev[0];
+	val[1] = curlpart[1] - alpha * ev[1];
+	val[2] = curlpart[2] - alpha * ev[2];
+
+	return val;
 }
 
 EBCType bc_types(int marker) {
@@ -94,31 +86,6 @@ scalar bilinear_form(RealFunction *fu, RealFunction *fv, RefMap *ru, RefMap *rv)
 scalar linear_form(RealFunction *fv, RefMap *rv) {
 	return hcurl_int_F_v(f, fv, rv);
 }
-
-scalar bilinear_form_surf(RealFunction *fu, RealFunction *fv, RefMap *ru, RefMap *rv, FacePos *fp) {
-	return -hcurl_surf_int_u_v(fu, fv, ru, rv, fp);
-}
-
-scalar linear_form_surf(RealFunction *fv, RefMap *rv, FacePos *fp) {
-	return surf_int_G_v(fv, rv, fp);
-}
-
-// components of the exact solution
-
-scalar exact_solution_0(double x, double y, double z, scalar &dx, scalar &dy, scalar &dz) {
-	return exact_solution(x, y, z, dx, dy, dz, 0);
-}
-
-scalar exact_solution_1(double x, double y, double z, scalar &dx, scalar &dy, scalar &dz) {
-	return exact_solution(x, y, z, dx, dy, dz, 1);
-}
-
-scalar exact_solution_2(double x, double y, double z, scalar &dx, scalar &dy, scalar &dz) {
-	return exact_solution(x, y, z, dx, dy, dz, 2);
-}
-
-
-
 
 // main ///////////////////////////////////////////////////////////////////////////////////////////
 
@@ -138,7 +105,7 @@ int main(int argc, char **args) {
 		return ERR_NOT_ENOUGH_PARAMS;
 	}
 
-	HCurlShapesetLobattoHex shapeset;
+	HcurlShapesetLobattoHex shapeset;
 	PrecalcShapeset pss(&shapeset);
 
 	printf("* Loading mesh '%s'\n", args[1]);
@@ -150,7 +117,7 @@ int main(int argc, char **args) {
 	}
 
 	printf("* Setting the space up\n");
-	HCurlSpace space(&mesh, &shapeset);
+	HcurlSpace space(&mesh, &shapeset);
 	space.set_bc_types(bc_types);
 
 	int o;
@@ -177,8 +144,8 @@ int main(int argc, char **args) {
 	d.set_spaces(1, &space);
 	d.set_pss(1, &pss);
 
-	d.set_bilinear_form(0, 0, bilinear_form, NULL, bilinear_form_surf);
-	d.set_linear_form(0, linear_form, linear_form_surf);
+	d.set_bilinear_form(0, 0, bilinear_form);
+	d.set_linear_form(0, linear_form);
 
 	// assemble siffness matrix
 	d.create_stiffness_matrix();
@@ -206,25 +173,7 @@ int main(int argc, char **args) {
 		printf("%s: %s (%lf secs)\n", assemble_timer.get_name(), assemble_timer.get_human_time(), assemble_timer.get_seconds());
 		printf("%s: %s (%lf secs)\n", solve_timer.get_name(), solve_timer.get_human_time(), solve_timer.get_seconds());
 
-/*		// old norm
-		double hcurl_sln_norm_old = hcurl_norm_old(&sln);
-		double hcurl_err_norm_old = hcurl_error_norm_exact_old(&sln, exact_solution);
-		printf(" - old HCurl solution norm:   % le\n", hcurl_sln_norm_old);
-		printf(" - old HCurl error norm:      % le\n", hcurl_err_norm_old / hcurl_sln_norm_old);
-
-		double l2_sln_norm_old = hcurl_l2_norm_old(&sln);
-		double l2_err_norm_old = hcurl_l2_error_norm_exact_old(&sln, exact_solution);
-		printf(" - old L2 solution norm:   % le\n", l2_sln_norm_old);
-		printf(" - old L2 error norm:      % le\n", l2_err_norm_old / l2_sln_norm_old);
-
-		if (hcurl_err_norm_old > EPS || l2_err_norm_old > EPS) {
-			// calculated solution is not enough precise
-			res = ERR_FAILURE;
-		}
-*/
-		// new norm
-
-		ExactSolution ex_sln(&mesh, exact_solution_0, exact_solution_1, exact_solution_2);
+		ExactSolution ex_sln(&mesh, exact_solution);
 
 		double hcurl_sln_norm = hcurl_norm(&sln);
 		double hcurl_err_norm = hcurl_error(&sln, &ex_sln);
@@ -248,7 +197,7 @@ int main(int argc, char **args) {
 		const char *of_name = OUTPUT_DIR "/solution.vtk";
 		FILE *ofile = fopen(of_name, "w");
 		if (ofile != NULL) {
-			ExactSolution ex_sln(&mesh, exact_solution_0, exact_solution_1, exact_solution_2);
+			ExactSolution ex_sln(&mesh, exact_solution);
 			DiffFilter eh(&sln, &ex_sln);
 			DiffFilter eh_dx(&sln, &ex_sln, FN_DX, FN_DX);
 //			DiffFilter eh_dy(mesh, &sln, &ex_sln, FN_DY, FN_DY);

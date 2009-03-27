@@ -17,12 +17,9 @@
 // along with Hermes3D; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-/*
- * grad.cc
- *
- * testing correctness of a gradients
- *
- */
+//
+// testing correctness of a gradients
+//
 
 #include "config.h"
 #include "common.h"
@@ -67,18 +64,10 @@ bool test_grad(int fn_idx, Shapeset *shapeset) {
 bool test_gradients(Shapeset *shapeset) {
 	printf("IV. gradients\n");
 
-	// vertex fns
-	printf("* Vertex functions\n");
-	for (int i = 0; i < Hex::NUM_VERTICES; i++) {
-		int fn_idx = shapeset->get_vertex_index(i);
-		if (!test_grad(fn_idx, shapeset))
-			return false;
-	}
-
 	// edge fns
 	printf("\n* Edge functions\n");
 	for (int i = 0; i < Hex::NUM_EDGES; i++) {
-		int order = MAX_ELEMENT_ORDER;
+		order1_t order = MAX_ELEMENT_ORDER;
 		int *edge_idx = shapeset->get_edge_indices(i, 0, order);
 		for (int j = 0; j < shapeset->get_num_edge_fns(order); j++) {
 			if (!test_grad(edge_idx[j], shapeset))
@@ -89,7 +78,7 @@ bool test_gradients(Shapeset *shapeset) {
 	// face fns
 	printf("\n* Face functions\n");
 	for (int i = 0; i < Hex::NUM_FACES; i++) {
-		int order = MAKE_QUAD_ORDER(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER);
+		order2_t order(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER);
 		int *face_idx = shapeset->get_face_indices(i, 0, order);
 		for (int j = 0; j < shapeset->get_num_face_fns(order); j++) {
 			if (!test_grad(face_idx[j], shapeset))
@@ -99,7 +88,7 @@ bool test_gradients(Shapeset *shapeset) {
 
 	// bubble
 	printf("\n* Bubble functions\n");
-	int order = MAKE_HEX_ORDER(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER);
+	order3_t order(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER);
 	int *bubble_idx = shapeset->get_bubble_indices(order);
 	for (int j = 0; j < shapeset->get_num_bubble_fns(order); j++) {
 		if (!test_grad(bubble_idx[j], shapeset))

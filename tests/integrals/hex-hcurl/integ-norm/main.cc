@@ -70,7 +70,7 @@ int main(int argc, char **args) {
 	DEBUG_OUTPUT_ON;
 	SET_VERBOSE_LEVEL(0);
 
-	HCurlShapesetLobattoHex shapeset;
+	HcurlShapesetLobattoHex shapeset;
 	PrecalcShapeset pss(&shapeset);
 
 	printf("* Loading mesh '%s'\n", args[1]);
@@ -82,7 +82,7 @@ int main(int argc, char **args) {
 	}
 
 	printf("* Setting the space up\n");
-	HCurlSpace space(&mesh, &shapeset);
+	HcurlSpace space(&mesh, &shapeset);
 	space.set_bc_types(bc_types);
 
 	int element_order = MAKE_HEX_ORDER(3, 4, 5);

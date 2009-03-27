@@ -17,12 +17,9 @@
 // along with Hermes3D; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-/*
- * cont.cc
- *
- * testing continuity of function values over faces
- *
- */
+//
+// testing continuity of tangential components on edges and faces
+//
 
 #include "config.h"
 #include "common.h"
@@ -331,10 +328,11 @@ void get_face_perm_ori(int pos, int perm[], double c[]) {
 	}
 }
 
-Vector3D transform (Mesh *mesh, RefMap *rm, Vector3D orig)
-{
+Vector3D transform(Mesh *mesh, RefMap *rm, Vector3D orig) {
 	Vector3D trans;
-	double3x3 *m = rm->get_inv_ref_map(MAKE_HEX_ORDER(1, 1, 1));
+	order3_t o(1, 1, 1);
+	qorder_t qord = ELEM_QORDER(o);
+	double3x3 *m = rm->get_inv_ref_map(o);
 
 	trans.x = (*m)[0][0] * orig.x + (*m)[0][1] * orig.y + (*m)[0][2] * orig.z;
 	trans.y = (*m)[1][0] * orig.x + (*m)[1][1] * orig.y + (*m)[1][2] * orig.z;
@@ -353,7 +351,7 @@ bool test_cont_values_of_edge_fns(Mesh *mesh, int pos0, int pos1, Shapeset *shap
 	Quad3D *quad = get_quadrature(MODE);
 
 	// functions up to the order 'order' are tested
-	int order = MAX_ELEMENT_ORDER;
+	order1_t order = MAX_ELEMENT_ORDER;
 
 	printf("  - edge = %d, %d\n", edge_no[0][pos0], edge_no[1][pos1]);
 
@@ -365,8 +363,8 @@ bool test_cont_values_of_edge_fns(Mesh *mesh, int pos0, int pos1, Shapeset *shap
 
 	// elements
 	Element *hex[] = {
-		mesh->elements[0],
-		mesh->elements[1]
+		mesh->elements[1],
+		mesh->elements[2]
 	};
 
 	// orientations of both edge functions
@@ -385,8 +383,7 @@ bool test_cont_values_of_edge_fns(Mesh *mesh, int pos0, int pos1, Shapeset *shap
 	get_face_perm_ori(pos1, perm1, c1);
 
 	// on face
-	int face_order = quad->get_face_max_order(face_no[0][pos0]);
-//	int face_order = MAKE_QUAD_ORDER(4, 3);
+	order2_t face_order = quad->get_face_max_order(face_no[0][pos0]);
 	QuadPt3D *face_pts[] = {
 		quad->get_face_points(face_no[0][pos0], face_order),
 		quad->get_face_points(face_no[1][pos1], face_order)
@@ -407,29 +404,24 @@ bool test_cont_values_of_edge_fns(Mesh *mesh, int pos0, int pos1, Shapeset *shap
 			double z1 = c1[2] * face_pts[1][k][perm1[2]];
 
 			Vector3D value1(shapeset->get_fn_value(edge_fn[0][ei], x0, y0, z0, 0),
-								 shapeset->get_fn_value(edge_fn[0][ei], x0, y0, z0, 1),
-								 shapeset->get_fn_value(edge_fn[0][ei], x0, y0, z0, 2));
+							shapeset->get_fn_value(edge_fn[0][ei], x0, y0, z0, 1),
+							shapeset->get_fn_value(edge_fn[0][ei], x0, y0, z0, 2));
 			Vector3D value2(shapeset->get_fn_value(edge_fn[1][ei], x1, y1, z1, 0),
-								 shapeset->get_fn_value(edge_fn[1][ei], x1, y1, z1, 1),
-								 shapeset->get_fn_value(edge_fn[1][ei], x1, y1, z1, 2));
+							shapeset->get_fn_value(edge_fn[1][ei], x1, y1, z1, 1),
+							shapeset->get_fn_value(edge_fn[1][ei], x1, y1, z1, 2));
 
 			Vector3D t_value1 = transform(mesh, rm0, value1);
 			Vector3D t_value2 = transform(mesh, rm1, value2);
+
 			t_value1.subtract(t_value2);
-			double diff = (t_value1).norm();
+			double diff = t_value1.norm();
 
 			if (diff > EPS) {
-				printf("% 5x, % 5x: % lf, % lf, % lf == % lf, % lf, % lf | % lf, % lf (diff = % g)",
+				printf("%5x, %5x: % lf, % lf, % lf == % lf, % lf, % lf (diff = % g)",
 					edge_fn[0][ei], edge_fn[1][ei],
-					x0, y0, z0,
-					x1, y1, z1,
-					shapeset->get_fn_value(edge_fn[0][ei], x0, y0, z0, 0),
-					shapeset->get_fn_value(edge_fn[1][ei], x1, y1, z1, 0),
-					shapeset->get_fn_value(edge_fn[0][ei], x0, y0, z0, 0) - shapeset->get_fn_value(edge_fn[1][ei], x1, y1, z1, 0)
+					x0, y0, z0, x1, y1, z1, diff
 				);
-				printf(" - NE!");
-				printf("\n");
-//				ERROR("Face fn #%d does not match face fn #%d on faces (%d, %d).", face_fn[0][fi], face_fn[1][fi], face0, face1);
+				printf(" - NO!\n");
 				return false;
 			}
 		}
@@ -438,7 +430,6 @@ bool test_cont_values_of_edge_fns(Mesh *mesh, int pos0, int pos1, Shapeset *shap
 	// on edge
 	printf("    - on edge\n");
 	int edge_order = MAX_QUAD_ORDER;
-//	int edge_order = 4;
 
 	get_edge_perm_ori(edge_no[0][pos0], edge_ori[0], c0);
 	get_edge_perm_ori(edge_no[1][pos1], edge_ori[1], c1);
@@ -461,11 +452,11 @@ bool test_cont_values_of_edge_fns(Mesh *mesh, int pos0, int pos1, Shapeset *shap
 			double z1 = c1[2] * edge_pts[1][k][2];
 
 			Vector3D value1(shapeset->get_fn_value(edge_fn[0][ei], x0, y0, z0, 0),
-								 shapeset->get_fn_value(edge_fn[0][ei], x0, y0, z0, 1),
-								 shapeset->get_fn_value(edge_fn[0][ei], x0, y0, z0, 2));
+							shapeset->get_fn_value(edge_fn[0][ei], x0, y0, z0, 1),
+							shapeset->get_fn_value(edge_fn[0][ei], x0, y0, z0, 2));
 			Vector3D value2(shapeset->get_fn_value(edge_fn[1][ei], x1, y1, z1, 0),
-								 shapeset->get_fn_value(edge_fn[1][ei], x1, y1, z1, 1),
-								 shapeset->get_fn_value(edge_fn[1][ei], x1, y1, z1, 2));
+							shapeset->get_fn_value(edge_fn[1][ei], x1, y1, z1, 1),
+							shapeset->get_fn_value(edge_fn[1][ei], x1, y1, z1, 2));
 
 			Vector3D t_value1 = transform(mesh, rm0, value1);
 			Vector3D t_value2 = transform(mesh, rm1, value2);
@@ -473,17 +464,11 @@ bool test_cont_values_of_edge_fns(Mesh *mesh, int pos0, int pos1, Shapeset *shap
 			double diff = (t_value1).norm();
 
 			if (diff > EPS) {
-				printf("% 5x, % 5x: % lf, % lf, % lf == % lf, % lf, % lf | % lf, % lf (diff = % g)",
+				printf("%5x, %5x: % lf, % lf, % lf == % lf, % lf, % lf | (diff = % g)",
 					edge_fn[0][ei], edge_fn[1][ei],
-					x0, y0, z0,
-					x1, y1, z1,
-					shapeset->get_fn_value(edge_fn[0][ei], x0, y0, z0, 0),
-					shapeset->get_fn_value(edge_fn[1][ei], x1, y1, z1, 0),
-					shapeset->get_fn_value(edge_fn[0][ei], x0, y0, z0, 0) - shapeset->get_fn_value(edge_fn[1][ei], x1, y1, z1, 0)
+					x0, y0, z0, x1, y1, z1, diff
 				);
-				printf(" - NE!");
-				printf("\n");
-//				ERROR("Face fn #%d does not match face fn #%d on faces (%d, %d).", face_fn[0][fi], face_fn[1][fi], face0, face1);
+				printf(" - NO!\n");
 				return false;
 			}
 		}
@@ -507,13 +492,12 @@ bool test_cont_values_of_face_fns(Mesh *mesh, int pos0, int pos1, Shapeset *shap
 	double c1[] = { 1, 1, 1 };
 
 	// functions up to the order 'order' are tested
-	int order = MAKE_QUAD_ORDER(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER);
-//	int order = MAKE_QUAD_ORDER(4, 3);
+	order2_t order(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER);
 
 	// elements
 	Element *hex[] = {
-		mesh->elements[0],
-		mesh->elements[1]
+		mesh->elements[1],
+		mesh->elements[2]
 	};
 
 	// face
@@ -533,8 +517,7 @@ bool test_cont_values_of_face_fns(Mesh *mesh, int pos0, int pos1, Shapeset *shap
 	get_face_perm_ori(pos0, perm0, c0);
 	get_face_perm_ori(pos1, perm1, c1);
 
-//	int face_order = MAKE_QUAD_ORDER(4, 3);
-	int face_order = quad->get_face_max_order(face_no[0][pos0]);
+	order2_t face_order = quad->get_face_max_order(face_no[0][pos0]);
 	QuadPt3D *face_pts[] = {
 		quad->get_face_points(face_no[0][pos0], face_order),
 		quad->get_face_points(face_no[1][pos1], face_order)
@@ -556,11 +539,11 @@ bool test_cont_values_of_face_fns(Mesh *mesh, int pos0, int pos1, Shapeset *shap
 			double z1 = c1[2] * face_pts[1][k][perm1[2]];
 
 			Vector3D value1(shapeset->get_fn_value(face_fn[0][fi], x0, y0, z0, 0),
-								 shapeset->get_fn_value(face_fn[0][fi], x0, y0, z0, 1),
-								 shapeset->get_fn_value(face_fn[0][fi], x0, y0, z0, 2));
+							shapeset->get_fn_value(face_fn[0][fi], x0, y0, z0, 1),
+							shapeset->get_fn_value(face_fn[0][fi], x0, y0, z0, 2));
 			Vector3D value2(shapeset->get_fn_value(face_fn[1][fi], x1, y1, z1, 0),
-								 shapeset->get_fn_value(face_fn[1][fi], x1, y1, z1, 1),
-								 shapeset->get_fn_value(face_fn[1][fi], x1, y1, z1, 2));
+							shapeset->get_fn_value(face_fn[1][fi], x1, y1, z1, 1),
+							shapeset->get_fn_value(face_fn[1][fi], x1, y1, z1, 2));
 
 			Vector3D t_value1 = transform(mesh, rm0, value1);
 			Vector3D t_value2 = transform(mesh, rm1, value2);
@@ -568,18 +551,11 @@ bool test_cont_values_of_face_fns(Mesh *mesh, int pos0, int pos1, Shapeset *shap
 			double diff = (t_value1).norm();
 
 			if (diff > EPS) {
-				printf("% 5x, % 5x: % lf, % lf, % lf == % lf, % lf, % lf | % lf, % lf (diff = % g)",
+				printf("%5x, %5x: % lf, % lf, % lf == % lf, % lf, % lf | (diff = % g)",
 					face_fn[0][fi], face_fn[1][fi],
-					x0, y0, z0,
-					x1, y1, z1,
-					shapeset->get_fn_value(face_fn[0][fi], x0, y0, z0, 0),
-					shapeset->get_fn_value(face_fn[1][fi], x1, y1, z1, 0),
-					shapeset->get_fn_value(face_fn[0][fi], x0, y0, z0, 0) - shapeset->get_fn_value(face_fn[1][fi], x1, y1, z1, 0)
+					x0, y0, z0, x1, y1, z1, diff
 				);
-				printf(" - NE!");
-				printf("\n");
-//				printf("\n");
-//				ERROR("Face fn #%d does not match face fn #%d on faces (%d, %d).", face_fn[0][fi], face_fn[1][fi], face0, face1);
+				printf(" - NO!\n");
 				return false;
 			}
 		}
@@ -627,19 +603,26 @@ bool test_continuity(Shapeset *shapeset) {
 		for (int j = 0; j < 24; j++) {
 			// build the mesh
 			Mesh mesh;
-			for (int k = 0; k < countof(vtcs); k++)
+			for (unsigned int k = 0; k < countof(vtcs); k++)
 				mesh.add_vertex(vtcs[k].x, vtcs[k].y, vtcs[k].z);
-			mesh.add_hex(hex[0][i] + 0);
-			mesh.add_hex(hex[1][j] + 0);
+
+			Word_t h1[] = {
+					hex[0][i][0] + 1, hex[0][i][1] + 1, hex[0][i][2] + 1, hex[0][i][3] + 1,
+					hex[0][i][4] + 1, hex[0][i][5] + 1, hex[0][i][6] + 1, hex[0][i][7] + 1 };
+			mesh.add_hex(h1);
+			Word_t h2[] = {
+					hex[1][j][0] + 1, hex[1][j][1] + 1, hex[1][j][2] + 1, hex[1][j][3] + 1,
+					hex[1][j][4] + 1, hex[1][j][5] + 1, hex[1][j][6] + 1, hex[1][j][7] + 1 };
+			mesh.add_hex(h2);
+
 			mesh.ugh();
 
-
-			//we need to transform vectors
+			// we need to transform vectors
 			Quad3D *quad = get_quadrature(MODE_HEXAHEDRON);
 			RefMap rm0(&mesh), rm1(&mesh);
-			rm0.set_active_element(mesh.elements[0]);
+			rm0.set_active_element(mesh.elements[1]);
 			rm0.set_quad(quad);
-			rm1.set_active_element(mesh.elements[1]);
+			rm1.set_active_element(mesh.elements[2]);
 			rm1.set_quad(quad);
 
 			// test

@@ -16,12 +16,6 @@
 // along with Hermes3D; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-/*
- * hex.cc
- *
- *
- *
- */
 #include <math.h>
 
 #include "config.h"
@@ -33,211 +27,46 @@
 #include <common/timer.h>
 #include <common/error.h>
 
-// first two Lobatto shape functions
-#define l0(x) ((1.0 - (x)) * 0.5)
-#define l1(x) ((1.0 + (x)) * 0.5)
 
 // error should be smaller than this epsilon
 #define EPS								10e-10F
 
 std::complex<double> imag(0, -1);
-
-		///**********************************************************/
-		///                      base 1
-		///**********************************************************/
-
-/*
-double alpha = 1.0;
-
-double exact_solution(double x, double y, double z, double &dx, double &dy, double &dz, int comp) {
-	switch(comp){
-		case 0 : {
-			dx = 0.;
-			dy = -3./4. * y * (1. - z*z);
-			dz = -3./4. * z * (1. - y*y);
-			return 3./8. * (1. - y*y) * (1. - z*z);
-		}
-		case 1 : dx = dy = dz = 0; return 0;
-		case 2 : dx = dy = dz = 0; return 0;
-	}
-}
-
-scalar f(double x, double y, double z, int comp) {
-	switch(comp){
-		case 0 : return 3./4. * (2. - y*y - z*z) - alpha * (3./8. * (1. - y*y) * (1. - z*z));
-		case 1 : return 0.;
-		case 2 : return 0.;
-	}
-}
-
-double bc_values(int marker, double x, double y, double z, int comp) {
-	switch (marker) {
-		case 0: return 0.;
-		case 1: {
-			switch(comp){
-				case 0 : return 0.;
-				case 1 : return 3./4. * y * (1 - z*z);
-				case 2 : return 3./4. * z * (1 - y*y);
-			}
-		}
-		case 2: return 0.;
-		case 3: return 0.;
-		case 4: return 0.;
-		case 5: return 0.;
-		default: EXIT(ERR_FACE_INDEX_OUT_OF_RANGE);
-	}
-}
-
-EBCType bc_types(int marker) {
-//	if(marker == 1)
-//		return BC_NATURAL;
-//	else
-		return BC_ESSENTIAL;
-}
-*/
-
-		///**********************************************************/
-		///              base 2 multiplied by i
-		///**********************************************************/
-
 std::complex<double> alpha(-1, 1);
 
-scalar exact_solution(double x, double y, double z, scalar &dx, scalar &dy, scalar &dz, int comp) {
-	switch(comp){
-		case 0 : {
-			dx = imag * 3./8. * (1. - y*y) * (1. - z*z);
-			dy = imag * (-3./4.) * x * y * (1. - z*z);
-			dz = imag * (-3./4.) * x * (1. - y*y) * z;
-			return  imag * 3./8. * x * (1. - y*y) * (1. - z*z);
-		}
-		case 1 :return 0;
-		case 2 :return 0;
-	}
+scalar3 &exact_solution(double x, double y, double z, scalar3 &dx, scalar3 &dy, scalar3 &dz) {
+	dx[0] = imag * 3./8. * (1. - y*y) * (1. - z*z);
+	dx[1] = 0.0;
+	dx[2] = 0.0;
+
+	dy[0] = imag * (-3./4.) * x * y * (1. - z*z);
+	dy[1] = 0.0;
+	dy[2] = 0.0;
+
+	dz[0] = imag * (-3./4.) * x * (1. - y*y) * z;
+	dz[1] = 0.0;
+	dz[2] = 0.0;
+
+	static scalar3 val;
+	val[0] = imag * 3./8. * x * (1. - y*y) * (1. - z*z);
+	val[1] = 0.0;
+	val[2] = 0.0;
+	return val;
 }
 
-scalar f(double x, double y, double z, int comp) {
-	switch(comp){
-		case 0 : return imag * (3./4. * x * (2. - y*y - z*z) - alpha * (3./8. * x * (1. - y*y) * (1. - z*z)));
-		case 1 : return imag * (-3./4. * y * (1. - z*z));
-		case 2 : return imag * (-3./4. * z * (1. - y*y));
-	}
-}
-
-double bc_values(int marker, double x, double y, double z, int comp) {
-	return 0.;
-}
-
-
-EBCType bc_types(int marker) {
-		return BC_ESSENTIAL;
-}
-
-
-		///**********************************************************/
-		///            general polynomial function
-      ///            satisfying perfect condurctor bc
-		///**********************************************************/
-
-/*
-double alpha = 1.0;
-
-double exact_solution(double x, double y, double z, double &dx, double &dy, double &dz, int comp) {
-	switch(comp){
-		case 0 : {
-			dx = 0.;
-			dy = -2*y*(1-z*z);
-			dz = -2*z*(1-y*y);
-			return (1-y*y) * (1-z*z);
-		}
-		case 1 : {
-			dx = -2*x*(1-z*z);
-			dy = 0.;
-			dz = -2*z*(1-x*x);
-			return (1-x*x) * (1-z*z);
-		}
-		case 2 : {
-			dx = -2*x*(1-y*y);
-			dy = -2*y*(1-x*x);
-			dz = 0.;
-			return (1-x*x) * (1-y*y);
-		}
-	}
-}
-
-scalar f(double x, double y, double z, int comp) {
-	scalar curlpart;
-	double dx, dy, dz;
-	switch(comp){
-		case 0 : curlpart = 4 - 2*y*y - 2*z*z; break;
-		case 1 : curlpart = 4 - 2*x*x - 2*z*z; break;
-		case 2 : curlpart = 4 - 2*x*x - 2*y*y; break;
-	}
-
-	return curlpart - alpha * exact_solution(x, y, z, dx, dy, dz, comp);
-}
-
-double bc_values(int marker, double x, double y, double z, int comp) {
-	return 0;
+scalar3 &f(double x, double y, double z) {
+	static scalar3 val;
+	val[0] = imag * (3./4. * x * (2. - y*y - z*z) - alpha * (3./8. * x * (1. - y*y) * (1. - z*z)));
+	val[1] = imag * (-3./4. * y * (1. - z*z));
+	val[2] = imag * (-3./4. * z * (1. - y*y));
+	return val;
 }
 
 EBCType bc_types(int marker) {
 	return BC_ESSENTIAL;
 }
-*/
-		///**********************************************************/
-		///            general polynomial function
-      ///            satisfying perfect condurctor bc
-		///**********************************************************/
 
-/*
-std::complex<double> alpha(-1, 1);
-
-scalar exact_solution(double x, double y, double z, scalar &dx, scalar &dy, scalar &dz, int comp) {
-	switch(comp){
-		case 0 : {
-			dx = 3.*x*x;
-			dy = 0;
-			dz = imag * 3.*z*z;
-			return x*x*x + imag * z*z*z;
-		}
-		case 1 : {
-			dx = y*z + imag * 2.*x*y*y;
-			dy = x*z + imag * 2.*x*x*y;
-			dz = x*y;
-			return x*y*z + imag * x*x*y*y;
-		}
-		case 2 : {
-			dx = -imag * y*y*y*z;
-			dy = -imag * 3.*x*y*y*z;
-			dz = 1. - imag * x*y*y*y;
-			return z - imag * x*y*y*y*z;
-		}
-	}
-}
-
-scalar f(double x, double y, double z, int comp) {
-	scalar curlpart;
-	scalar dx, dy, dz;
-	switch(comp){
-		case 0 : curlpart = z + imag * (4.*x*y - 6.*z + y*y*y); break;
-		case 1 : curlpart = -imag * y*y * (3.*x + 2.); break;
-		case 2 : curlpart = x + imag * 6.*x*y*z; break;
-	}
-
-	return curlpart - alpha * exact_solution(x, y, z, dx, dy, dz, comp);
-}
-
-double bc_values(int marker, double x, double y, double z, int comp) {
-	return 0;
-}
-
-EBCType bc_types(int marker) {
-	return BC_ESSENTIAL;
-}*/
-
-	///**********************************************************/
-	///              definition of the forms
-	///**********************************************************/
+/// definition of the forms
 
 scalar bilinear_form(RealFunction *fu, RealFunction *fv, RefMap *ru, RefMap *rv) {
 	return hcurl_int_curl_u_curl_v(fu, fv, ru, rv) - alpha * hcurl_int_u_v(fu, fv, ru, rv);
@@ -255,28 +84,14 @@ scalar linear_form_surf(RealFunction *fv, RefMap *rv, FacePos *fp) {
 	return surf_int_G_v(fv, rv, fp);
 }
 
-scalar exact_solution_0(double x, double y, double z, scalar &dx, scalar &dy, scalar &dz) {
-	return exact_solution(x, y, z, dx, dy, dz, 0);
-}
-
-scalar exact_solution_1(double x, double y, double z, scalar &dx, scalar &dy, scalar &dz) {
-	return exact_solution(x, y, z, dx, dy, dz, 1);
-}
-
-scalar exact_solution_2(double x, double y, double z, scalar &dx, scalar &dy, scalar &dz) {
-	return exact_solution(x, y, z, dx, dy, dz, 2);
-}
-
-
-
 
 // main ///////////////////////////////////////////////////////////////////////////////////////////
 
-int main(int argc, char **args) {
+int main(int argc, char **argv) {
 	int res = ERR_SUCCESS;
 
 #ifdef WITH_PETSC
-	PetscInitialize(&argc, &args, (char *) PETSC_NULL, PETSC_NULL);
+	PetscInitialize(&argc, &argv, (char *) PETSC_NULL, PETSC_NULL);
 #endif
 
 	TRACE_START("trace.txt");
@@ -288,25 +103,25 @@ int main(int argc, char **args) {
 		return ERR_NOT_ENOUGH_PARAMS;
 	}
 
-	HCurlShapesetLobattoHex shapeset;
+	HcurlShapesetLobattoHex shapeset;
 	PrecalcShapeset pss(&shapeset);
 
-	printf("* Loading mesh '%s'\n", args[1]);
+	printf("* Loading mesh '%s'\n", argv[1]);
 	Mesh mesh;
 	Mesh3DReader mesh_loader;
-	if (!mesh_loader.load(args[1], &mesh)) {
-		fprintf(stderr, "ERROR: loading mesh file '%s'\n", args[1]);
+	if (!mesh_loader.load(argv[1], &mesh)) {
+		fprintf(stderr, "ERROR: loading mesh file '%s'\n", argv[1]);
 		return ERR_FAILURE;
 	}
 
 	printf("* Setting the space up\n");
-	HCurlSpace space(&mesh, &shapeset);
+	HcurlSpace space(&mesh, &shapeset);
 	space.set_bc_types(bc_types);
 
 	int order;
-	sscanf(args[2], "%d", &order);
+	sscanf(argv[2], "%d", &order);
 	int dir_x = order, dir_y = order, dir_z = order;
-	int o = MAKE_HEX_ORDER(dir_x, dir_y, dir_z);
+	order3_t o(dir_x, dir_y, dir_z);
 	printf("  - Setting uniform order to (%d, %d, %d)\n", dir_x, dir_y, dir_z);
 	space.set_uniform_order(o);
 
@@ -346,13 +161,15 @@ int main(int argc, char **args) {
 	bool solved = d.solve_system(1, &sln);
 	solve_timer.stop();
 
-	solver.dump_matrix("output/matrix");
+#ifdef OUTPUT_DIR
+	solver.dump_matrix(OUTPUT_DIR "/matrix");
+#endif
 
 	if (solved) {
 		printf("* Solution:\n");
 		scalar *s = sln.get_solution_vector();
 		for (int i = 1; i <= ndofs; i++) {
-			printf(" x[% 3d] = " SPS "\n", i, SP(s[i]));
+			printf(" x[% 3d] = " SCALAR_FMT "\n", i, SCALAR(s[i]));
 		}
 
 		// output the measured values
@@ -360,15 +177,16 @@ int main(int argc, char **args) {
 		printf("%s: %s (%lf secs)\n", solve_timer.get_name(), solve_timer.get_human_time(), solve_timer.get_seconds());
 
 		// norm
+		ExactSolution ex_sln(&mesh, exact_solution);
 		double hcurl_sln_norm = hcurl_norm(&sln);
-		double hcurl_err_norm = hcurl_error_norm_exact(&sln, exact_solution);
-		printf(" - HCurl solution norm:   % le\n", hcurl_sln_norm);
-		printf(" - HCurl error norm:      % le\n", hcurl_err_norm);
+		double hcurl_err_norm = hcurl_error(&sln, &ex_sln);
+		printf(" - Hcurl solution norm: % le\n", hcurl_sln_norm);
+		printf(" - Hcurl error norm:    % le\n", hcurl_err_norm);
 
-		double l2_sln_norm = hcurl_l2_norm(&sln);
-		double l2_err_norm = hcurl_l2_error_norm_exact(&sln, exact_solution);
-		printf(" - L2 solution norm:   % le\n", l2_sln_norm);
-		printf(" - L2 error norm:      % le\n", l2_err_norm);
+		double l2_sln_norm = l2_norm_hcurl(&sln);
+		double l2_err_norm = l2_error_hcurl(&sln, &ex_sln);
+		printf(" - L2 solution norm:    % le\n", l2_sln_norm);
+		printf(" - L2 error norm:       % le\n", l2_err_norm);
 
 		if (hcurl_err_norm > EPS || l2_err_norm > EPS) {
 			// calculated solution is not enough precise

@@ -29,10 +29,12 @@ set(SRC
 	shapeset/h1lobattotetrady.cc
 	shapeset/h1lobattotetradz.cc
 	shapeset/h1lobattohex.cc
+	shapeset/hcurllobattohex.cc
 	shapeset/refmapss.cc
 	solution.cc
 	space.cc
 	space/h1.cc
+	space/hcurl.cc
 	transform.cc
 	traverse.cc
 	linsolver.cc
@@ -89,6 +91,7 @@ set(INC_COMMON
 
 set(INC_SPACE
 	space/h1.h
+	space/hcurl.h
 )
 
 set(INC_SHAPESET
@@ -120,6 +123,7 @@ set(INC_OUTPUT
 
 set(INC_INTEGRALS
 	integrals/h1.h
+	integrals/hcurl.h
 )
 
 

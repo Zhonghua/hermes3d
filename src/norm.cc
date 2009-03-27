@@ -24,6 +24,7 @@
 #include "discretization.h"
 #include "refmap.h"
 #include "integrals/h1.h"
+#include "integrals/hcurl.h"
 #include "traverse.h"
 
 
@@ -166,4 +167,130 @@ double l2_error(MeshFunction *sln1, MeshFunction *sln2) {
 
 double l2_norm(MeshFunction *sln) {
 	return calc_norm(norm_fn_l2, sln);
+}
+
+
+// Hcurl space /////////////////////////////////////////////////////////////////////////////////////////
+
+// function used to calculate error in HCurl norm
+double error_fn_hcurl(MeshFunction *sln1, MeshFunction *sln2, RefMap *ru, RefMap *rv) {
+	Quad3D *quad = sln1->get_quad();
+
+	order3_t o = max(sln1->get_fn_order(), sln2->get_fn_order()) + ru->get_inv_ref_order();
+	o.limit();
+	qorder_t qord = ELEM_QORDER(o);
+	sln1->set_quad_order(qord);
+	sln2->set_quad_order(qord);
+
+	scalar *u0, *u1, *u2, *du0dx, *du0dy, *du0dz, *du1dx, *du1dy, *du1dz, *du2dx, *du2dy, *du2dz;
+	u0 = sln1->get_fn_values(0);
+	u1 = sln1->get_fn_values(1);
+	u2 = sln1->get_fn_values(2);
+	sln1->get_dx_dy_dz_values(du0dx, du0dy, du0dz, 0);
+	sln1->get_dx_dy_dz_values(du1dx, du1dy, du1dz, 1);
+	sln1->get_dx_dy_dz_values(du2dx, du2dy, du2dz, 2);
+
+	scalar *v0, *v1, *v2, *dv0dx, *dv0dy, *dv0dz, *dv1dx, *dv1dy, *dv1dz, *dv2dx, *dv2dy, *dv2dz;
+	v0 = sln2->get_fn_values(0);
+	v1 = sln2->get_fn_values(1);
+	v2 = sln2->get_fn_values(2);
+	sln2->get_dx_dy_dz_values(dv0dx, dv0dy, dv0dz, 0);
+	sln2->get_dx_dy_dz_values(dv1dx, dv1dy, dv1dz, 1);
+	sln2->get_dx_dy_dz_values(dv2dx, dv2dy, dv2dz, 2);
+
+	HCURL_INTEGRATE_EXPRESSION(
+		sqr(T_U_0 - T_V_0) + sqr(T_U_1 - T_V_1) + sqr(T_U_2 - T_V_2) +
+		sqr(U_CURL_0 - V_CURL_0) + sqr(U_CURL_1 - V_CURL_1) + sqr(U_CURL_2 - V_CURL_2)
+	);
+	return REAL(result);
+}
+
+// function used to calculate HCurl norm of the solution
+double norm_fn_hcurl(MeshFunction *sln, RefMap *ru) {
+	Quad3D *quad = sln->get_quad();
+
+	order3_t o = sln->get_fn_order() + ru->get_inv_ref_order();
+	o.limit();
+	qorder_t qord = ELEM_QORDER(o);
+	sln->set_quad_order(qord);
+
+	scalar *u0, *u1, *u2, *du0dx, *du0dy, *du0dz, *du1dx, *du1dy, *du1dz, *du2dx, *du2dy, *du2dz;
+	u0 = sln->get_fn_values(0);
+	u1 = sln->get_fn_values(1);
+	u2 = sln->get_fn_values(2);
+	sln->get_dx_dy_dz_values(du0dx, du0dy, du0dz, 0);
+	sln->get_dx_dy_dz_values(du1dx, du1dy, du1dz, 1);
+	sln->get_dx_dy_dz_values(du2dx, du2dy, du2dz, 2);
+
+	RefMap *rv = ru; //just to make macro work
+
+	HCURL_INTEGRATE_EXPRESSION(sqr(T_U_0) + sqr(T_U_1) + sqr(T_U_2) + sqr(U_CURL_0) + sqr(U_CURL_1) + sqr(U_CURL_2));
+	return REAL(result);
+}
+
+
+double hcurl_error(MeshFunction *sln1, MeshFunction *sln2) {
+	double error = calc_error(error_fn_hcurl, sln1, sln2);
+	double norm = calc_norm(norm_fn_hcurl, sln2);
+	return sqrt(error / norm);
+}
+
+double hcurl_norm(MeshFunction *sln) {
+	return sqrt(calc_norm(norm_fn_hcurl, sln));
+}
+
+// function used to calculate error in L2 norm
+double error_fn_l2_hcurl(MeshFunction *sln1, MeshFunction *sln2, RefMap *ru, RefMap *rv) {
+	Quad3D *quad = sln1->get_quad();
+
+	order3_t o = max(sln1->get_fn_order(), sln2->get_fn_order()) + ru->get_inv_ref_order();
+	o.limit();
+	qorder_t qord = ELEM_QORDER(o);
+	sln1->set_quad_order(qord);
+	sln2->set_quad_order(qord);
+
+	scalar *u0, *u1, *u2;
+	u0 = sln1->get_fn_values(0);
+	u1 = sln1->get_fn_values(1);
+	u2 = sln1->get_fn_values(2);
+
+	scalar *v0, *v1, *v2;
+	v0 = sln2->get_fn_values(0);
+	v1 = sln2->get_fn_values(1);
+	v2 = sln2->get_fn_values(2);
+
+	HCURL_INTEGRATE_EXPRESSION(sqr(T_U_0 - T_V_0) + sqr(T_U_1 - T_V_1) + sqr(T_U_2 - T_V_2));
+	return REAL(result);
+}
+
+
+// function used to calculate L2 norm of the solution
+double norm_fn_l2_hcurl(MeshFunction *sln, RefMap *ru) {
+	Quad3D *quad = sln->get_quad();
+
+	order3_t o = sln->get_fn_order() + ru->get_inv_ref_order();
+	o.limit();
+	qorder_t qord = ELEM_QORDER(o);
+	sln->set_quad_order(qord);
+
+	scalar *u0, *u1, *u2;
+	u0 = sln->get_fn_values(0);
+	u1 = sln->get_fn_values(1);
+	u2 = sln->get_fn_values(2);
+
+	RefMap *rv = ru; //just to make macro work
+
+	HCURL_INTEGRATE_EXPRESSION(sqr(T_U_0) + sqr(T_U_1) + sqr(T_U_2));
+	return REAL(result);
+}
+
+
+double l2_error_hcurl(MeshFunction *sln1, MeshFunction *sln2) {
+	double error = calc_error(error_fn_l2_hcurl, sln1, sln2);
+	double norm = calc_norm(norm_fn_l2_hcurl, sln2);
+	return sqrt(error / norm);
+}
+
+double l2_norm_hcurl(MeshFunction *sln) {
+	return sqrt(calc_norm(norm_fn_l2_hcurl, sln));
 }

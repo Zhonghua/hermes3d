@@ -17,12 +17,9 @@
 // along with Hermes3D; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-/*
- * lindep.cc
- *
- * testing linear indepenedence of a shape functions
- *
- */
+//
+// testing linear indepenedence of a shape functions
+//
 
 #include "config.h"
 #include "common.h"
@@ -37,20 +34,29 @@ double l2_product(RealFunction *fu, RealFunction *fv) {
 	Quad3D *quad = fu->get_quad();
 
 	// integrate with maximum order
-	int o = quad->get_max_order();
+	order3_t o = fu->get_fn_order();
+	o.set_maximal();
 
-	fu->set_quad_order(o);
-	fv->set_quad_order(o);
+	qorder_t qord = ELEM_QORDER(o);
+	fu->set_quad_order(qord);
+	fv->set_quad_order(qord);
 
-	double *uval = fu->get_fn_values();
-	double *vval = fv->get_fn_values();
+	scalar *u0, *u1, *u2;
+	u0 = fu->get_fn_values(0);
+	u1 = fu->get_fn_values(1);
+	u2 = fu->get_fn_values(2);
+
+	scalar *v0, *v1, *v2;
+	v0 = fv->get_fn_values(0);
+	v1 = fv->get_fn_values(1);
+	v2 = fv->get_fn_values(2);
 
 	// integrating over reference brick -> jacobian is 1.0 (we do not have to bother with refmap)
 	double result = 0.0;
 	QuadPt3D *pt = quad->get_points(o);
 	int np = quad->get_num_points(o);
 	for (int i = 0; i < np; i++)
-		result += pt[i].w * (uval[i] * vval[i]);
+		result += pt[i].w * (REAL(sqr(u0[i] - v0[i]) + sqr(u1[i] - v1[i]) + sqr(u2[i] - v2[i])));
 
 	return result;
 }
@@ -66,18 +72,14 @@ bool test_lin_indep(Shapeset *shapeset) {
 	pss_v.set_quad(get_quadrature(MODE));
 
 	int n =
-		Hex::NUM_VERTICES * 1 +			// 1 vertex fn
 		Hex::NUM_EDGES * shapeset->get_num_edge_fns(MAX_ELEMENT_ORDER) +
-		Hex::NUM_FACES * shapeset->get_num_face_fns(MAKE_QUAD_ORDER(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER)) +
-		shapeset->get_num_bubble_fns(MAKE_HEX_ORDER(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER));
+		Hex::NUM_FACES * shapeset->get_num_face_fns(order2_t(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER)) +
+		shapeset->get_num_bubble_fns(order3_t(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER));
 
 	printf("number of functions = %d\n", n);
 
 	int *fn_idx = new int [n];
 	int m = 0;
-	// vertex fns
-	for (int i = 0; i < Hex::NUM_VERTICES; i++, m++)
-		fn_idx[m] = shapeset->get_vertex_index(i);
 	// edge fns
 	for (int i = 0; i < Hex::NUM_EDGES; i++) {
 		int order = MAX_ELEMENT_ORDER;
@@ -87,13 +89,13 @@ bool test_lin_indep(Shapeset *shapeset) {
 	}
 	// face fns
 	for (int i = 0; i < Hex::NUM_FACES; i++) {
-		int order = MAKE_QUAD_ORDER(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER);
+		order2_t order(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER);
 		int *face_idx = shapeset->get_face_indices(i, 0, order);
 		for (int j = 0; j < shapeset->get_num_face_fns(order); j++, m++)
 			fn_idx[m] = face_idx[j];
 	}
 	// bubble
-	int order = MAKE_HEX_ORDER(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER);
+	order3_t order(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER);
 	int *bubble_idx = shapeset->get_bubble_indices(order);
 	for (int j = 0; j < shapeset->get_num_bubble_fns(order); j++, m++)
 		fn_idx[m] = bubble_idx[j];

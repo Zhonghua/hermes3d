@@ -87,32 +87,32 @@ bool test_gradients_directly(Shapeset *ss)
 
 	maxdif = 0.;
 	bool passed = true;
-	int index, *indices, ii;
+	int *indices, ii;
 
-	int order = MAX_ELEMENT_ORDER;
-	for(int ie = 0; ie < 12; ie++){
-		for(int ori = 0; ori < 2; ori++){
+	order1_t order = MAX_ELEMENT_ORDER;
+	for (int ie = 0; ie < 12; ie++) {
+		for (int ori = 0; ori < 2; ori++) {
 			indices = ss->get_edge_indices(ie, ori, order);
-			for(ii = 0; ii < ss->get_num_edge_fns(order); ii++)
-				if(! test(ss, indices[ii]))
+			for (ii = 0; ii < ss->get_num_edge_fns(order); ii++)
+				if (!test(ss, indices[ii]))
 					passed = false;
 		}
 	}
 
-	order = MAKE_QUAD_ORDER(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER);
-	for(int ic = 0; ic < 6; ic++){
-		for(int ori = 0; ori < 8; ori++){
-			indices = ss->get_face_indices(ic, ori, order);
-			for(ii = 0; ii < ss->get_num_face_fns(order); ii++)
-				if(! test(ss, indices[ii]))
+	order2_t order2(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER);
+	for (int ic = 0; ic < 6; ic++) {
+		for (int ori = 0; ori < 8; ori++) {
+			indices = ss->get_face_indices(ic, ori, order2);
+			for (ii = 0; ii < ss->get_num_face_fns(order2); ii++)
+				if (!test(ss, indices[ii]))
 					passed = false;
 		}
 	}
 
-	order = MAKE_HEX_ORDER(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER);
-	indices = ss->get_bubble_indices(order);
-	for(ii = 0; ii < ss->get_num_bubble_fns(order); ii++)
-		if(! test(ss, indices[ii]))
+	order3_t order3(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER);
+	indices = ss->get_bubble_indices(order3);
+	for (ii = 0; ii < ss->get_num_bubble_fns(order3); ii++)
+		if (!test(ss, indices[ii]))
 			passed = false;
 
 	printf("maximal difference is %g, which is %g * h^2\n", maxdif, maxdif/hh/hh);

@@ -50,7 +50,7 @@ public:
 
 	/// Adds an item to the end of the array
 	///
-	int add(TYPE *item);
+	Word_t add(TYPE *item);
 	bool exists(Word_t idx) const;
 	TYPE *get(Word_t idx) const;
         /// overloaded operator helpers
@@ -149,7 +149,7 @@ bool ArrayPtr<TYPE>::set(Word_t idx, TYPE *item) {
 }
 
 template<class TYPE>
-int ArrayPtr<TYPE>::add(TYPE *item) {
+Word_t ArrayPtr<TYPE>::add(TYPE *item) {
 	int rc;
 	Word_t idx = last();
 	JLFE(rc, judy, idx);

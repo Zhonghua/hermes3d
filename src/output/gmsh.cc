@@ -306,7 +306,7 @@ GmshOutputEngine::GmshOutputEngine(FILE *file) {
 GmshOutputEngine::~GmshOutputEngine() {
 }
 
-void GmshOutputEngine::dump_scalars(int mode, Point3D *pts, double *values, int num_pts) {
+void GmshOutputEngine::dump_scalars(int mode, int num_pts, Point3D *pts, double *value) {
 	const char *id;
 	switch (mode) {
 		case MODE_TETRAHEDRON: id = "SS"; break;
@@ -324,7 +324,7 @@ void GmshOutputEngine::dump_scalars(int mode, Point3D *pts, double *values, int 
 	fprintf(this->out_file, ") { ");
 	// write values
 	for (int j = 0; j < num_pts; j++)
-		fprintf(this->out_file, FORMAT "%s", values[j], j == num_pts - 1 ? "" : ", ");
+		fprintf(this->out_file, FORMAT "%s", value[j], j == num_pts - 1 ? "" : ", ");
 	// end the row
 	fprintf(this->out_file, " };\n");
 }
@@ -388,7 +388,7 @@ void GmshOutputEngine::out(MeshFunction *fn, const char *name, int item/* = FN_V
 			}
 
 			// FIXME
-//			dump_scalars(mode, phys_pt, p_val, num_pts);
+//			dump_scalars(mode, num_pts, phys_pt, p_val);
 		}
 	}
 

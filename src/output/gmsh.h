@@ -45,7 +45,7 @@ protected:
 	/// file into which the output is done
 	FILE *out_file;
 
-	void dump_scalars(int mode, Point3D *pts, double *values, int num_pts);
+	void dump_scalars(int mode, int num_pts, Point3D *pts, double *value);
 	void dump_mesh(Mesh *mesh);
 };
 

@@ -31,6 +31,37 @@
 
 #ifdef WITH_HEX
 
+struct h1s_hex_index_t {
+	unsigned type:2;
+	unsigned ef:4;
+	unsigned ori:3;
+	unsigned x:4;
+	unsigned y:4;
+	unsigned z:4;
+
+	h1s_hex_index_t(int idx) {
+		this->type = (idx >> 19) & 0x03;
+		this->ef =   (idx >> 15) & 0x0F;
+		this->ori =  (idx >> 12) & 0x07;
+		this->x = (idx >> 8) & 0x0F;
+		this->y = (idx >> 4) & 0x0F;
+		this->z = (idx >> 0) & 0x0F;
+	}
+
+	h1s_hex_index_t(int type, int ef, int x, int y, int z, int ori = 0) {
+		this->x = x;
+		this->y = y;
+		this->z = z;
+		this->ori = ori;
+		this->type = type;
+		this->ef = ef;
+	}
+
+	operator int() { return (type << 19) | (ef << 15) | (ori << 12) | (x << 8) | (y << 4) | z; }
+
+	void to_str() { printf("hex = [type=%d, ef=%d, ori=%d, x=%d, y=%d, z=%d]", type, ef, ori, x, y, z); }
+};
+
 static scalar fn_0(double x)  { return l0(x); }
 static scalar fn_1(double x)  { return l1(x); }
 static scalar fn_2(double x)  { return l2(x); }
@@ -60,10 +91,10 @@ static scalar der_10(double x) { return dl10(x); }
 static shape_fn_1d_t der_tab_1d[] = { der_0, der_1, der_2, der_3, der_4, der_5, der_6, der_7, der_8, der_9, der_10 };
 
 static int hex_vertex_indices[] = {
-	hex_index_t(SHFN_VERTEX, 0, 0, 0, 0), hex_index_t(SHFN_VERTEX, 0, 1, 0, 0),
-	hex_index_t(SHFN_VERTEX, 0, 1, 1, 0), hex_index_t(SHFN_VERTEX, 0, 0, 1, 0),
-	hex_index_t(SHFN_VERTEX, 0, 0, 0, 1), hex_index_t(SHFN_VERTEX, 0, 1, 0, 1),
-	hex_index_t(SHFN_VERTEX, 0, 1, 1, 1), hex_index_t(SHFN_VERTEX, 0, 0, 1, 1)
+	h1s_hex_index_t(SHFN_VERTEX, 0, 0, 0, 0), h1s_hex_index_t(SHFN_VERTEX, 0, 1, 0, 0),
+	h1s_hex_index_t(SHFN_VERTEX, 0, 1, 1, 0), h1s_hex_index_t(SHFN_VERTEX, 0, 0, 1, 0),
+	h1s_hex_index_t(SHFN_VERTEX, 0, 0, 0, 1), h1s_hex_index_t(SHFN_VERTEX, 0, 1, 0, 1),
+	h1s_hex_index_t(SHFN_VERTEX, 0, 1, 1, 1), h1s_hex_index_t(SHFN_VERTEX, 0, 0, 1, 1)
 };
 
 static int index_order[] = { 1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
@@ -90,7 +121,7 @@ static void find_permutation(int *indices, int *permut, int &num_01) {
 }
 
 
-static void decompose(hex_index_t index, int indices[3], int ori[3], bool swapori = true) {
+static void decompose(h1s_hex_index_t index, int indices[3], int ori[3], bool swapori = true) {
 	int permut[3];
 	int num_01;
 
@@ -126,7 +157,7 @@ static void decompose(hex_index_t index, int indices[3], int ori[3], bool swapor
 // -- functions that calculate values of fn, dx, dy, dz on the fly -- //
 
 static double calc_fn_value(int index, double x, double y, double z, int component) {
-	hex_index_t idx(index);
+	h1s_hex_index_t idx(index);
 	int indices[3];
 	int oris[3];
 
@@ -141,7 +172,7 @@ static double calc_fn_value(int index, double x, double y, double z, int compone
 
 
 static double calc_dx_value(int index, double x, double y, double z, int component) {
-	hex_index_t idx(index);
+	h1s_hex_index_t idx(index);
 	int indices[3];
 	int oris[3];
 
@@ -162,7 +193,7 @@ static double calc_dx_value(int index, double x, double y, double z, int compone
 
 
 static double calc_dy_value(int index, double x, double y, double z, int component) {
-	hex_index_t idx(index);
+	h1s_hex_index_t idx(index);
 	int indices[3];
 	int oris[3];
 
@@ -183,7 +214,7 @@ static double calc_dy_value(int index, double x, double y, double z, int compone
 
 
 static double calc_dz_value(int index, double x, double y, double z, int component) {
-	hex_index_t idx(index);
+	h1s_hex_index_t idx(index);
 	int indices[3];
 	int oris[3];
 
@@ -244,44 +275,48 @@ H1ShapesetSinHex::~H1ShapesetSinHex() {
 #endif
 }
 
-#ifdef WITH_HEX
-
 order3_t H1ShapesetSinHex::get_order(int index) const {
+#ifdef WITH_HEX
 	if (index >= 0) {
-		hex_index_t idx(index);
+		h1s_hex_index_t idx(index);
 		order3_t ord(index_order[idx.x], index_order[idx.y], index_order[idx.z]);
 		if (idx.ori >= 4) ord = turn_hex_face_order(idx.ef, ord);		// face function is turned due to orientation
 		return ord;
 	}
 	else {
 		EXIT(ERR_NOT_IMPLEMENTED);
-		return 0;
+		return order3_t(0, 0, 0);
 	}
+#else
+	return order3_t(0, 0, 0);
+#endif
 }
 
 void H1ShapesetSinHex::compute_edge_indices(int edge, int ori, order1_t order) {
+#ifdef WITH_HEX
 	assert(order > 1);
 	int *indices = new int[order - 1];
 	MEM_CHECK(indices);
 
 	int idx = 0;
 	switch (edge) {
-		case  0: for (int i = 2; i <= order; i++) indices[idx++] = hex_index_t(SHFN_EDGE, 0, i, 0, 0, ori); break;
-		case  1: for (int i = 2; i <= order; i++) indices[idx++] = hex_index_t(SHFN_EDGE, 1, 1, i, 0, ori); break;
-		case  2: for (int i = 2; i <= order; i++) indices[idx++] = hex_index_t(SHFN_EDGE, 2, i, 1, 0, ori); break;
-		case  3: for (int i = 2; i <= order; i++) indices[idx++] = hex_index_t(SHFN_EDGE, 3, 0, i, 0, ori); break;
-		case  4: for (int i = 2; i <= order; i++) indices[idx++] = hex_index_t(SHFN_EDGE, 4, 0, 0, i, ori); break;
-		case  5: for (int i = 2; i <= order; i++) indices[idx++] = hex_index_t(SHFN_EDGE, 5, 1, 0, i, ori); break;
-		case  6: for (int i = 2; i <= order; i++) indices[idx++] = hex_index_t(SHFN_EDGE, 6, 1, 1, i, ori); break;
-		case  7: for (int i = 2; i <= order; i++) indices[idx++] = hex_index_t(SHFN_EDGE, 7, 0, 1, i, ori); break;
-		case  8: for (int i = 2; i <= order; i++) indices[idx++] = hex_index_t(SHFN_EDGE, 8, i, 0, 1, ori); break;
-		case  9: for (int i = 2; i <= order; i++) indices[idx++] = hex_index_t(SHFN_EDGE, 9, 1, i, 1, ori); break;
-		case 10: for (int i = 2; i <= order; i++) indices[idx++] = hex_index_t(SHFN_EDGE, 10, i, 1, 1, ori); break;
-		case 11: for (int i = 2; i <= order; i++) indices[idx++] = hex_index_t(SHFN_EDGE, 11, 0, i, 1, ori); break;
+		case  0: for (int i = 2; i <= order; i++) indices[idx++] = h1s_hex_index_t(SHFN_EDGE, 0, i, 0, 0, ori); break;
+		case  1: for (int i = 2; i <= order; i++) indices[idx++] = h1s_hex_index_t(SHFN_EDGE, 1, 1, i, 0, ori); break;
+		case  2: for (int i = 2; i <= order; i++) indices[idx++] = h1s_hex_index_t(SHFN_EDGE, 2, i, 1, 0, ori); break;
+		case  3: for (int i = 2; i <= order; i++) indices[idx++] = h1s_hex_index_t(SHFN_EDGE, 3, 0, i, 0, ori); break;
+		case  4: for (int i = 2; i <= order; i++) indices[idx++] = h1s_hex_index_t(SHFN_EDGE, 4, 0, 0, i, ori); break;
+		case  5: for (int i = 2; i <= order; i++) indices[idx++] = h1s_hex_index_t(SHFN_EDGE, 5, 1, 0, i, ori); break;
+		case  6: for (int i = 2; i <= order; i++) indices[idx++] = h1s_hex_index_t(SHFN_EDGE, 6, 1, 1, i, ori); break;
+		case  7: for (int i = 2; i <= order; i++) indices[idx++] = h1s_hex_index_t(SHFN_EDGE, 7, 0, 1, i, ori); break;
+		case  8: for (int i = 2; i <= order; i++) indices[idx++] = h1s_hex_index_t(SHFN_EDGE, 8, i, 0, 1, ori); break;
+		case  9: for (int i = 2; i <= order; i++) indices[idx++] = h1s_hex_index_t(SHFN_EDGE, 9, 1, i, 1, ori); break;
+		case 10: for (int i = 2; i <= order; i++) indices[idx++] = h1s_hex_index_t(SHFN_EDGE, 10, i, 1, 1, ori); break;
+		case 11: for (int i = 2; i <= order; i++) indices[idx++] = h1s_hex_index_t(SHFN_EDGE, 11, 0, i, 1, ori); break;
 		default: EXIT(ERR_FAILURE, "Invalid edge number %d. Can be 0 - 11.", edge); break;
 	}
 
 	edge_indices[edge][ori][order] = indices;
+#endif
 }
 
 void H1ShapesetSinHex::compute_face_indices(int face, int ori, order2_t order) {
@@ -296,37 +331,37 @@ void H1ShapesetSinHex::compute_face_indices(int face, int ori, order2_t order) {
 		case 0:
 			for(int i = 2; i <= horder; i++)
 				for(int j = 2; j <= vorder; j++)
-					indices[idx++] = hex_index_t(SHFN_FACE, 0, 0, i, j, ori);
+					indices[idx++] = h1s_hex_index_t(SHFN_FACE, 0, 0, i, j, ori);
 			break;
 
 		case 1:
 			for(int i = 2; i <= horder; i++)
 				for(int j = 2; j <= vorder; j++)
-					indices[idx++] = hex_index_t(SHFN_FACE, 1, 1, i, j, ori);
+					indices[idx++] = h1s_hex_index_t(SHFN_FACE, 1, 1, i, j, ori);
 			break;
 
 		case 2:
 			for(int i = 2; i <= horder; i++)
 				for(int j = 2; j <= vorder; j++)
-					indices[idx++] = hex_index_t(SHFN_FACE, 2, i, 0, j, ori);
+					indices[idx++] = h1s_hex_index_t(SHFN_FACE, 2, i, 0, j, ori);
 			break;
 
 		case 3:
 			for(int i = 2; i <= horder; i++)
 				for(int j = 2; j <= vorder; j++)
-					indices[idx++] = hex_index_t(SHFN_FACE, 3, i, 1, j, ori);
+					indices[idx++] = h1s_hex_index_t(SHFN_FACE, 3, i, 1, j, ori);
 			break;
 
 		case 4:
 			for(int i = 2; i <= horder; i++)
 				for(int j = 2; j <= vorder; j++)
-					indices[idx++] = hex_index_t(SHFN_FACE, 4, i, j, 0, ori);
+					indices[idx++] = h1s_hex_index_t(SHFN_FACE, 4, i, j, 0, ori);
 			break;
 
 		case 5:
 			for(int i = 2; i <= horder; i++)
 				for(int j = 2; j <= vorder; j++)
-					indices[idx++] = hex_index_t(SHFN_FACE, 5, i, j, 1, ori);
+					indices[idx++] = h1s_hex_index_t(SHFN_FACE, 5, i, j, 1, ori);
 			break;
 
 		default:
@@ -348,7 +383,7 @@ void H1ShapesetSinHex::compute_bubble_indices(order3_t order) {
 	for (int i = 2; i <= order.x; i++)
 		for(int j = 2; j <= order.y; j++)
 			for(int k = 2; k <= order.z; k++)
-				indices[idx++] = hex_index_t(SHFN_BUBBLE, 0, i, j, k, 0);
+				indices[idx++] = h1s_hex_index_t(SHFN_BUBBLE, 0, i, j, k, 0);
 
 	bubble_indices[order.get_idx()] = indices;
 }

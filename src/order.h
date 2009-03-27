@@ -398,13 +398,14 @@ inline order3_t max(order3_t a, order3_t b) {
 	return order3_t(-1);
 }
 
-inline order3_t turn_hex_face_order(order3_t ord) {
+inline order3_t turn_hex_face_order(int iface, order3_t ord) {
 	int o1 = ord.x;
 	int o2 = ord.y;
 	int o3 = ord.z;
-	if (o1 <= 1) std::swap(o2, o3);
-	if (o2 <= 1) std::swap(o1, o3);
-	if (o3 <= 1) std::swap(o1, o2);
+	if (iface == 0 || iface == 1) std::swap(o2, o3);
+	else if (iface == 2 || iface == 3) std::swap(o1, o3);
+	else if (iface == 4 || iface == 5) std::swap(o1, o2);
+	else assert(false);
 	return order3_t(o1, o2, o3);
 }
 

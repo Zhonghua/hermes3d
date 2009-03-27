@@ -58,11 +58,11 @@ int opposite_part(int part);
 inline int opposite_edge_part(int part) { return opposite_part(part - 2) + 2; }
 
 enum EShapeFnType {
-	SHAPE_FN_CONSTRAINED = -1,
-	SHAPE_FN_VERTEX = 0,
-	SHAPE_FN_EDGE = 1,
-	SHAPE_FN_FACE = 2,
-	SHAPE_FN_BUBBLE = 3
+	SHFN_CONSTRAINED = -1,
+	SHFN_VERTEX = 0,
+	SHFN_EDGE = 1,
+	SHFN_FACE = 2,
+	SHFN_BUBBLE = 3
 };
 
 enum ECedKeyType {

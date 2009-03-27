@@ -350,6 +350,7 @@ struct order3_t {
 	}
 
 	void limit() {
+#ifndef DEBUG_ORDER
 		switch (type) {
 			case MODE_TETRAHEDRON:
 				if (this->order > MAX_QUAD_ORDER_TETRA) this->order = MAX_QUAD_ORDER_TETRA;
@@ -365,6 +366,9 @@ struct order3_t {
 				EXIT(ERR_UNKNOWN_MODE);
 				break;
 		}
+#else
+		set_maximal();
+#endif
 	}
 
 	void set_maximal() {

@@ -583,8 +583,7 @@ void RefMap::calc_face_normal(int face, order2_t order) {
 	for (int i = 0; i < np; i++) {
 		Point3D tangent1 = { m[i][0][t_dir_1], m[i][1][t_dir_1], m[i][2][t_dir_1] };
 		Point3D tangent2 = { m[i][0][t_dir_2], m[i][1][t_dir_2], m[i][2][t_dir_2] };
-		normal[i] = cross_product(tangent1, tangent2);
-		normalize(normal[i]);
+		normal[i] = normalize(cross_product(tangent1, tangent2));
 	}
 
 	cur_node->face_normal[face][order.get_idx()] = normal;

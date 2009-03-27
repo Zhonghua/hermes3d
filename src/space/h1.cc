@@ -169,9 +169,9 @@ void H1Space::calc_edge_boundary_projection(Element *elem, int iedge) {
 
 	double **proj_mat = new_matrix<double>(num_fns, num_fns);
 	if (proj_mat == NULL) EXIT(ERR_OUT_OF_MEMORY);
-	double *proj_rhs = new double[num_fns];
+	scalar *proj_rhs = new scalar[num_fns];
 	if (proj_rhs == NULL) EXIT(ERR_OUT_OF_MEMORY);
-	memset(proj_rhs, 0, sizeof(double) * num_fns);
+	memset(proj_rhs, 0, sizeof(scalar) * num_fns);
 
 	RefMap ref_map(mesh);
 	ref_map.set_active_element(elem);
@@ -184,7 +184,7 @@ void H1Space::calc_edge_boundary_projection(Element *elem, int iedge) {
 
 	int vtx_fn_idx[] = { shapeset->get_vertex_index(local_edge_vtx[0]), shapeset->get_vertex_index(local_edge_vtx[1]) };
 	// function values at vertices
-	double vtx_fn_coef[] = { vn_data[edge_vtx[0]]->bc_proj, vn_data[edge_vtx[1]]->bc_proj };
+	scalar vtx_fn_coef[] = { vn_data[edge_vtx[0]]->bc_proj, vn_data[edge_vtx[1]]->bc_proj };
 	int *edge_fn_idx = new int[num_fns];
 	if (enode->ced && enode->edge_ncomponents > 0) {
 		BaseEdgeComponent *ecomp = enode->edge_baselist + 0;
@@ -224,7 +224,7 @@ void H1Space::calc_edge_boundary_projection(Element *elem, int iedge) {
 		double *edge_phys_y = ref_map.get_edge_phys_y(iedge, order_rhs);
 		double *edge_phys_z = ref_map.get_edge_phys_z(iedge, order_rhs);
 
-		double value = 0.0;
+		scalar value = 0.0;
 		QuadPt3D *pt = quad->get_edge_points(iedge, order_rhs);
 		for (int k = 0; k < quad->get_edge_num_points(order_rhs); k++) {
 			scalar g =

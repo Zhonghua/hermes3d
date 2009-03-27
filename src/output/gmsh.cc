@@ -424,7 +424,8 @@ void GmshOutputEngine::out(MeshFunction *fn, const char *name, int item/* = FN_V
 				phys_pt[j].z = phys_z[pt_idx];
 			}
 
-			dump_scalars(mode, phys_pt, p_val, num_pts);
+			// FIXME
+//			dump_scalars(mode, phys_pt, p_val, num_pts);
 		}
 	}
 

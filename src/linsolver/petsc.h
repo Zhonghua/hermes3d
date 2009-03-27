@@ -38,14 +38,14 @@ public:
 	virtual void free();
 
 	virtual void update_matrix(int m, int n, scalar v);
-	virtual void update_matrix(int m, int n, double **mat, int *rows, int *cols);
+	virtual void update_matrix(int m, int n, scalar **mat, int *rows, int *cols);
 	virtual void update_rhs(int idx, scalar y);
 	virtual void update_rhs(int n, int *idx, scalar *y) ;
 
 	virtual void begin_assembling();
 	virtual void finish_assembling();
 
-	virtual bool solve_system(double *sln);
+	virtual bool solve_system(scalar *sln);
 
 	virtual bool dump_matrix(FILE *file, const char *var_name, EMatrixDumpFormat format = DF_MATLAB_SPARSE);
 	virtual bool dump_rhs(FILE *file, const char *var_name, EMatrixDumpFormat format = DF_MATLAB_SPARSE);

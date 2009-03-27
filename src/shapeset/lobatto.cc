@@ -23,19 +23,18 @@
 int lobatto_order_1d[] = { 1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
 int legendre_order_1d[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
 
-static scalar lobatto_fn_0(double x) { return l0(x); }
-static scalar lobatto_fn_1(double x) { return l1(x); }
-static scalar lobatto_fn_2(double x) { return l2(x); }
-static scalar lobatto_fn_3(double x) { return l3(x); }
-static scalar lobatto_fn_4(double x) { return l4(x); }
-static scalar lobatto_fn_5(double x) { return l5(x); }
-static scalar lobatto_fn_6(double x) { return l6(x); }
-static scalar lobatto_fn_7(double x) { return l7(x); }
-static scalar lobatto_fn_8(double x) { return l8(x); }
-static scalar lobatto_fn_9(double x) { return l9(x); }
-static scalar lobatto_fn_10(double x) { return l10(x); }
-static scalar lobatto_fn_11(double x) { return l11(x); }
-
+static double lobatto_fn_0(double x) { return l0(x); }
+static double lobatto_fn_1(double x) { return l1(x); }
+static double lobatto_fn_2(double x) { return l2(x); }
+static double lobatto_fn_3(double x) { return l3(x); }
+static double lobatto_fn_4(double x) { return l4(x); }
+static double lobatto_fn_5(double x) { return l5(x); }
+static double lobatto_fn_6(double x) { return l6(x); }
+static double lobatto_fn_7(double x) { return l7(x); }
+static double lobatto_fn_8(double x) { return l8(x); }
+static double lobatto_fn_9(double x) { return l9(x); }
+static double lobatto_fn_10(double x) { return l10(x); }
+static double lobatto_fn_11(double x) { return l11(x); }
 
 shape_fn_1d_t lobatto_fn_tab_1d[] = {
 	lobatto_fn_0, lobatto_fn_1, lobatto_fn_2, lobatto_fn_3, lobatto_fn_4, lobatto_fn_5,
@@ -43,18 +42,18 @@ shape_fn_1d_t lobatto_fn_tab_1d[] = {
 };
 
 
-static scalar lobatto_der_0(double x) { return dl0(x); }
-static scalar lobatto_der_1(double x) { return dl1(x); }
-static scalar lobatto_der_2(double x) { return dl2(x); }
-static scalar lobatto_der_3(double x) { return dl3(x); }
-static scalar lobatto_der_4(double x) { return dl4(x); }
-static scalar lobatto_der_5(double x) { return dl5(x); }
-static scalar lobatto_der_6(double x) { return dl6(x); }
-static scalar lobatto_der_7(double x) { return dl7(x); }
-static scalar lobatto_der_8(double x) { return dl8(x); }
-static scalar lobatto_der_9(double x) { return dl9(x); }
-static scalar lobatto_der_10(double x) { return dl10(x); }
-static scalar lobatto_der_11(double x) { return dl11(x); }
+static double lobatto_der_0(double x) { return dl0(x); }
+static double lobatto_der_1(double x) { return dl1(x); }
+static double lobatto_der_2(double x) { return dl2(x); }
+static double lobatto_der_3(double x) { return dl3(x); }
+static double lobatto_der_4(double x) { return dl4(x); }
+static double lobatto_der_5(double x) { return dl5(x); }
+static double lobatto_der_6(double x) { return dl6(x); }
+static double lobatto_der_7(double x) { return dl7(x); }
+static double lobatto_der_8(double x) { return dl8(x); }
+static double lobatto_der_9(double x) { return dl9(x); }
+static double lobatto_der_10(double x) { return dl10(x); }
+static double lobatto_der_11(double x) { return dl11(x); }
 
 shape_fn_1d_t lobatto_der_tab_1d[] = {
 	lobatto_der_0, lobatto_der_1, lobatto_der_2, lobatto_der_3, lobatto_der_4, lobatto_der_5,

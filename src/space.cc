@@ -284,12 +284,11 @@ void Space::get_vertex_assembly_list(Element *e, int ivertex, AsmList *al) {
 
 	if (vnode->ced) {
 		for (int i = 0; i < vnode->ncomponents; i++) {
-			if (vnode->baselist[i].coef != 0)
-				al->add(index, vnode->baselist[i].dof, vnode->baselist[i].coef);
+			al->add(index, vnode->baselist[i].dof, vnode->baselist[i].coef);
 		}
 	}
 	else {
-		double coef = vnode->dof >= 0 ? 1.0 : vnode->bc_proj;
+		scalar coef = vnode->dof >= 0 ? 1.0 : vnode->bc_proj;
 		assert(vnode->dof >= DIRICHLET_DOF && vnode->dof < get_dof_count());
 		al->add(index, vnode->dof, coef);
 	}
@@ -402,7 +401,7 @@ void Space::get_face_assembly_list(Element *elem, int iface, AsmList *al) {
 		}
 		else if (fnode->bc_proj != NULL) {
 			for (int j = 0; j < fnode->n; j++) {
-				double coef = fnode->bc_proj[j];
+				scalar coef = fnode->bc_proj[j];
 				al->add(indices[j], DIRICHLET_DOF, coef);
 			}
 		}

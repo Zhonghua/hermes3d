@@ -174,7 +174,7 @@ void PetscLinearSolver::update_rhs(int n, int *idx, scalar *y) {
 #endif
 }
 
-bool PetscLinearSolver::solve_system(double *sln) {
+bool PetscLinearSolver::solve_system(scalar *sln) {
 #ifdef WITH_PETSC
 	KSPSetOperators(ms->ksp, ms->matrix, ms->matrix, DIFFERENT_NONZERO_PATTERN);
 	KSPSetFromOptions(ms->ksp);

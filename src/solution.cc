@@ -270,7 +270,7 @@ void Solution::precalculate(qorder_t qord, int mask) {
 			}
 			else {
 				// array of inverse ref. maps
-				m = refmap->get_inv_ref_map(qord);
+				m = refmap->get_inv_ref_map(order3_t::from_int(qord.order));
 				mstep = 1;
 			}
 
@@ -292,7 +292,7 @@ void Solution::precalculate(qorder_t qord, int mask) {
 			}
 			else {
 				// array of inverse ref. maps
-				m = refmap->get_inv_ref_map(qord);
+				m = refmap->get_inv_ref_map(order3_t::from_int(qord.order));
 				mstep = 1;
 			}
 

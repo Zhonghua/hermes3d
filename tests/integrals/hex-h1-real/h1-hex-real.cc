@@ -43,7 +43,7 @@ inline scalar integral_u(order3_t o, RealFunction *fu, RefMap *ru) {
 	double result = 0.0;
 	QuadPt3D *pt = quad->get_points(o);
 	int np = quad->get_num_points(o);
-	double *jac = ru->get_jacobian(qord);
+	double *jac = ru->get_jacobian(o);
 	for (int i = 0; i < np; i++)
 		result += pt[i].w * jac[i] * (uval[i]);
 
@@ -66,7 +66,7 @@ inline scalar integral_u_v(order3_t o, RealFunction *fu, RealFunction *fv, RefMa
 	double result = 0.0;
 	QuadPt3D *pt = quad->get_points(o);
 	int np = quad->get_num_points(o);
-	double *jac = ru->get_jacobian(qord);
+	double *jac = ru->get_jacobian(o);
 	for (int i = 0; i < np; i++)
 		result += pt[i].w * jac[i] * (uval[i] * vval[i]);
 
@@ -90,9 +90,9 @@ inline scalar integral_grad_u_grad_v(order3_t o, RealFunction *fu, RealFunction 
 	QuadPt3D *pt = quad->get_points(o);
 	int np = quad->get_num_points(o);
 	double3x3 *mv, *mu;
-	mu = ru->get_inv_ref_map(qord);
-	mv = rv->get_inv_ref_map(qord);
-	double *jac = ru->get_jacobian(qord);
+	mu = ru->get_inv_ref_map(o);
+	mv = rv->get_inv_ref_map(o);
+	double *jac = ru->get_jacobian(o);
 	for (int i = 0; i < np; i++, mu++, mv++)
 		result += pt[i].w * jac[i] * (T_DUDX * T_DVDX + T_DUDY * T_DVDY + T_DUDZ * T_DVDZ);
 

@@ -82,28 +82,28 @@ public:
 	/// @return The jacobian of the reference map precalculated at the integration
 	/// points of the specified order. Intended for non-constant jacobian elements.
 	/// @param order [in] Integration order
-	double *get_jacobian(qorder_t order) {
-		if (!cur_node->jacobian.exists(order)) calc_inv_ref_map(order);
-		return cur_node->jacobian[order];
+	double *get_jacobian(order3_t order) {
+		if (!cur_node->jacobian.exists(order.get_idx())) calc_inv_ref_map(order);
+		return cur_node->jacobian[order.get_idx()];
 	}
 
 	/// @return The jacobi matrices of the reference map precalculated at the
 	/// integration points of the specified order. Intended for non-constant
 	/// jacobian elements.
 	/// @param order [in] Integration order
-	double3x3 *get_ref_map(qorder_t order) {
-		if (!cur_node->inv_ref_map.exists(order)) calc_inv_ref_map(order);
-		return cur_node->ref_map[order];
+	double3x3 *get_ref_map(order3_t order) {
+		if (!cur_node->inv_ref_map.exists(order.get_idx())) calc_inv_ref_map(order);
+		return cur_node->ref_map[order.get_idx()];
 	}
 
 	/// @return The transposed inverse matrices of the reference map precalculated at the
 	/// integration points of the specified order. Intended for non-constant
 	/// jacobian elements.
 	/// @param order [in] Integration order
-	double3x3 *get_inv_ref_map(qorder_t order) {
+	double3x3 *get_inv_ref_map(order3_t order) {
 		assert(cur_node != NULL);
-		if (!cur_node->inv_ref_map.exists(order)) calc_inv_ref_map(order);
-		return cur_node->inv_ref_map[order];
+		if (!cur_node->inv_ref_map.exists(order.get_idx())) calc_inv_ref_map(order);
+		return cur_node->inv_ref_map[order.get_idx()];
 	}
 
 	/// @return The x-coordinates of the integration points transformed to the
@@ -208,7 +208,7 @@ public:
  		return &(cur_node->face_const_normal[face]);
  	}
 
-	//outer unit normal to the face (transformed)
+	// outer unit normal to the face (transformed)
  	Point3D *get_face_normal(int face, order2_t order) {
  		if (!cur_node->face_normal[face].exists(order.get_idx())) calc_face_normal(face, order);
  		return cur_node->face_normal[face].get(order.get_idx());
@@ -307,7 +307,7 @@ protected:
 		int nedges, nfaces;
 	};
 
-	void calc_inv_ref_map(qorder_t order);
+	void calc_inv_ref_map(order3_t order);
 	void calc_const_inv_ref_map();
 	int  calc_inv_ref_order();
 

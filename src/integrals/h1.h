@@ -31,13 +31,13 @@
 	double result = 0.0; \
 	QuadPt3D *pt = quad->get_points(o); \
 	int np = quad->get_num_points(o); \
-	if (ru->is_jacobian_const()){ \
+	if (ru->is_jacobian_const()) { \
 		for (int i = 0; i < np; i++) \
 			result += pt[i].w * (exp); \
 		result *= ru->get_const_jacobian(); \
 	} \
 	else { \
-		double *jac = ru->get_jacobian(qord); \
+		double *jac = ru->get_jacobian(o); \
 		for (int i = 0; i < np; i++) \
 			result += pt[i].w * jac[i] * (exp); \
 	}
@@ -56,9 +56,9 @@
 		result *= ru->get_const_jacobian(); \
 	} \
 	else { \
-		mu = ru->get_inv_ref_map(qord); \
-		mv = rv->get_inv_ref_map(qord); \
-		double *jac = ru->get_jacobian(qord); \
+		mu = ru->get_inv_ref_map(o); \
+		mv = rv->get_inv_ref_map(o); \
+		double *jac = ru->get_jacobian(o); \
 		for (int i = 0; i < np; i++, mu++, mv++) \
 			result += pt[i].w * jac[i] * (exp); \
 	}}

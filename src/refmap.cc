@@ -165,14 +165,9 @@ void RefMap::force_transform(uint64 sub_idx, Trf *ctm) {
 
 // helpers
 
-void RefMap::calc_inv_ref_map(qorder_t qord) {
-	int np;
-	switch (qord.type) {
-		case QOT_ELEMENT: np = quad->get_num_points(order3_t::from_int(qord.order)); break;
-		case QOT_FACE:    np = quad->get_face_num_points(qord.face, order2_t::from_int(qord.order)); break;
-		case QOT_EDGE:    np = quad->get_edge_num_points(qord.order); break;
-		case QOT_VERTEX:  np = quad->get_vertex_num_points(); break;
-	}
+void RefMap::calc_inv_ref_map(order3_t order) {
+	qorder_t qord = ELEM_QORDER(order);
+	int np = quad->get_num_points(order3_t::from_int(qord.order));
 
 	double3x3 *m = new double3x3[np];
 	MEM_CHECK(m);
@@ -220,9 +215,9 @@ void RefMap::calc_inv_ref_map(qorder_t qord) {
 	    jac[i] *= trj;
 	}
 
-	cur_node->jacobian[qord] = jac;
-	cur_node->inv_ref_map[qord] = irm;
-	cur_node->ref_map[qord] = m;
+	cur_node->jacobian[order.get_idx()] = jac;
+	cur_node->inv_ref_map[order.get_idx()] = irm;
+	cur_node->ref_map[order.get_idx()] = m;
 }
 
 
@@ -585,7 +580,7 @@ void RefMap::calc_face_normal(int face, order2_t order) {
 		case 4: t_dir_1 = 1; t_dir_2 = 0; break;
 		case 5: t_dir_1 = 0; t_dir_2 = 1; break;
 	}
-	for (int i = 0; i < np; i++){
+	for (int i = 0; i < np; i++) {
 		Point3D tangent1 = { m[i][0][t_dir_1], m[i][1][t_dir_1], m[i][2][t_dir_1] };
 		Point3D tangent2 = { m[i][0][t_dir_2], m[i][1][t_dir_2], m[i][2][t_dir_2] };
 		normal[i] = cross_product(tangent1, tangent2);

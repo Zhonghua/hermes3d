@@ -115,6 +115,7 @@ inline scalar int_u_v(RealFunction *fu, RealFunction *fv, RefMap *ru, RefMap *rv
 	Quad3D *quad = fu->get_quad();
 
 	order3_t o = fu->get_fn_order() + fv->get_fn_order() + ru->get_inv_ref_order();
+	o.limit();
 	qorder_t qord = ELEM_QORDER(o);
 	fu->set_quad_order(qord);
 	fv->set_quad_order(qord);
@@ -244,6 +245,7 @@ inline double int_h1_error(Function<T> *fu, Function<T> *fv, RefMap *ru, RefMap 
 	assert(quad == fv->get_quad());
 
 	order3_t o = fu->get_fn_order() + fv->get_fn_order() + ru->get_inv_ref_order();
+	o.limit();
 	qorder_t qord = ELEM_QORDER(o);
 	fu->set_quad_order(qord);
 	fv->set_quad_order(qord);
@@ -266,6 +268,7 @@ inline double int_h1_semi_error(Function<T> *fu, Function<T> *fv, RefMap *ru, Re
 	assert(quad == fv->get_quad());
 
 	order3_t o = fu->get_fn_order() + fv->get_fn_order() + ru->get_inv_ref_order();
+	o.limit();
 	qorder_t qord = ELEM_QORDER(o);
 	fu->set_quad_order(qord);
 	fv->set_quad_order(qord);
@@ -286,6 +289,7 @@ inline double int_h1_norm(Function<T> *fu, RefMap *ru) {
 	Quad3D *quad = fu->get_quad();
 
 	order3_t o = fu->get_fn_order() + ru->get_inv_ref_order();
+	o.limit();
 	qorder_t qord = ELEM_QORDER(o);
 	fu->set_quad_order(qord);
 
@@ -302,6 +306,7 @@ inline double int_h1_seminorm(Function<T> *fu, RefMap *ru) {
 	Quad3D *quad = fu->get_quad();
 
 	order3_t o = fu->get_fn_order() + ru->get_inv_ref_order();
+	o.limit();
 	qorder_t qord = ELEM_QORDER(o);
 	fu->set_quad_order(qord);
 

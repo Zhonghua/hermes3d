@@ -158,7 +158,7 @@ endif(REAL)
 
 # complex version
 if(COMPLEX)
-    add_library(${HERMES_CPLX_BIN} STATIC ${SRC})
+    add_library(${HERMES_CPLX_BIN} SHARED ${SRC})
     set_target_properties(${HERMES_CPLX_BIN} PROPERTIES COMPILE_FLAGS -DCOMPLEX)
 	LIBRARY_SETTINGS(${HERMES_CPLX_BIN})
 endif(COMPLEX)
@@ -190,6 +190,6 @@ if(REAL)
 endif(REAL)
 
 if(COMPLEX)
-    install(TARGETS ${HERMES_CPLX_BIN} ARCHIVE DESTINATION lib/${PROJECT_NAME})
+    install(TARGETS ${HERMES_CPLX_BIN} LIBRARY DESTINATION lib/${PROJECT_NAME})
 endif(COMPLEX)
 

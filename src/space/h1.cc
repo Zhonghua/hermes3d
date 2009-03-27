@@ -165,6 +165,7 @@ void H1Space::calc_edge_boundary_projection(Element *elem, int iedge) {
 	else {
 		num_fns = enode->n;
 	}
+	if (num_fns <= 0) return;
 
 	double **proj_mat = new_matrix<double>(num_fns, num_fns);
 	if (proj_mat == NULL) EXIT(ERR_OUT_OF_MEMORY);
@@ -256,6 +257,7 @@ void H1Space::calc_face_boundary_projection(Element *elem, int iface) {
 
 	if (fnode->bc_type != BC_ESSENTIAL) return;
 	if (fnode->bc_proj != NULL) return;
+	if (fnode->n <= 0) return;
 
 	double **proj_mat = new_matrix<double>(fnode->n, fnode->n);
 	if (proj_mat == NULL) EXIT(ERR_OUT_OF_MEMORY);
@@ -313,12 +315,14 @@ void H1Space::calc_face_boundary_projection(Element *elem, int iface) {
 				}
 		}
 		else {
-			int edge_ori = elem->get_edge_orientation(local_face_edge[edge]);
-			int *edge_fn_idx = shapeset->get_edge_indices(local_face_edge[edge], edge_ori, enode->order);
+			if (enode->n > 0) {
+				int edge_ori = elem->get_edge_orientation(local_face_edge[edge]);
+				int *edge_fn_idx = shapeset->get_edge_indices(local_face_edge[edge], edge_ori, enode->order);
 
-			for (int i = 0; i < enode->n; i++, m++) {
-				coef[m] = enode->bc_proj[i];
-				fn_idx[m] = edge_fn_idx[i];
+				for (int i = 0; i < enode->n; i++, m++) {
+					coef[m] = enode->bc_proj[i];
+					fn_idx[m] = edge_fn_idx[i];
+				}
 			}
 		}
 	}

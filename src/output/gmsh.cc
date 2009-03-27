@@ -158,15 +158,6 @@ void OutputQuadTetra::recursive_division(const Point3D *tv, QuadPt3D *table, int
 			table[idx].w = 1.0;
 			idx++;
 		}
-		// edges
-		Point3D edge_pt[] = { AVGTV(0, 1), AVGTV(1, 2), AVGTV(0, 2), AVGTV(0, 3), AVGTV(2, 3), AVGTV(1, 3) };
-		for (int i = 0; i < Tetra::NUM_EDGES; i++) {
-			table[idx].x = edge_pt[i].x;
-			table[idx].y = edge_pt[i].y;
-			table[idx].z = edge_pt[i].z;
-			table[idx].w = 1.0;
-			idx++;
-		}
 	}
 	else {
 		Point3D div_vtcs[8][4] = {
@@ -263,34 +254,6 @@ void OutputQuadHex::recursive_division(const Point3D *tv, QuadPt3D *table, int l
 			table[idx].w = 1.0;
 			idx++;
 		}
-		// edges
-		Point3D edge_pts[] = {
-			AVGTV(0, 1), AVGTV(0, 3), AVGTV(0, 4), AVGTV(1, 2), AVGTV(1, 5), AVGTV(2, 3),
-			AVGTV(2, 6), AVGTV(3, 7), AVGTV(4, 5), AVGTV(4, 7), AVGTV(5, 6), AVGTV(6, 7)
-		};
-		for (int i = 0; i < Hex::NUM_EDGES; i++) {
-			table[idx].x = edge_pts[i].x;
-			table[idx].y = edge_pts[i].y;
-			table[idx].z = edge_pts[i].z;
-			table[idx].w = 1.0;
-			idx++;
-		}
-		// faces
-		Point3D face_pts[] = { AVGTV(0, 2), AVGTV(0, 5), AVGTV(0, 7), AVGTV(1, 6), AVGTV(3, 6), AVGTV(4, 6) };
-		for (int i = 0; i < Hex::NUM_FACES; i++) {
-			table[idx].x = face_pts[i].x;
-			table[idx].y = face_pts[i].y;
-			table[idx].z = face_pts[i].z;
-			table[idx].w = 1.0;
-			idx++;
-		}
-		// volume
-		Point3D pt_vol = AVGTV(0, 6);
-		table[idx].x = pt_vol.x;
-		table[idx].y = pt_vol.y;
-		table[idx].z = pt_vol.z;
-		table[idx].w = 1.0;
-		idx++;
 	}
 	else {
 		Point3D div_vtcs[8][8] = {
@@ -346,8 +309,8 @@ GmshOutputEngine::~GmshOutputEngine() {
 void GmshOutputEngine::dump_scalars(int mode, Point3D *pts, double *values, int num_pts) {
 	const char *id;
 	switch (mode) {
-		case MODE_TETRAHEDRON: id = "SS2"; break;
-		case MODE_HEXAHEDRON: id = "SH2"; break;
+		case MODE_TETRAHEDRON: id = "SS"; break;
+		case MODE_HEXAHEDRON: id = "SH"; break;
 		case MODE_PRISM: ERROR("Unsupported mode."); break;
 		default: ERROR("Invalid mode."); break;
 	}
@@ -407,8 +370,8 @@ void GmshOutputEngine::out(MeshFunction *fn, const char *name, int item/* = FN_V
 		for (int i = 0; i < subdiv_num; i++) {
 			int num_pts;
 			switch (mode) {
-				case MODE_TETRAHEDRON: num_pts = 10; break; // quadratic TETRA (see gmsh documentation)
-				case MODE_HEXAHEDRON: num_pts = 27; break; // quadratic HEX (see gmsh documentation)
+				case MODE_TETRAHEDRON: num_pts = 4; break; // quadratic TETRA (see gmsh documentation)
+				case MODE_HEXAHEDRON: num_pts = 8; break; // quadratic HEX (see gmsh documentation)
 				case MODE_PRISM: EXIT(ERR_NOT_IMPLEMENTED); break;
 				default: EXIT(ERR_UNKNOWN_MODE); break;
 			}

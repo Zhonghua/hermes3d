@@ -409,12 +409,6 @@ void H1ShapesetLobattoHex::compute_bubble_indices(order3_t order) {
 
 /// --- CED specific stuff ---
 
-static Part transform_edge_part(int ori, Part part) {
-	Part rp;
-	rp.part = (ori == 0) ? part.part : opposite_part(part.part);
-	return rp;
-}
-
 //
 // constraints are calculated on egde 0
 //
@@ -466,26 +460,6 @@ CEDComb *H1ShapesetLobattoHex::calc_constrained_edge_combination(int ori, int o,
 #else
 	return NULL;
 #endif
-}
-
-static Part transform_face_part(int ori, Part part) {
-	// refer to Pavel Solin's gray book, p. 169 (?)
-	int flags[8][3] = {
-		{ 1, 1, 1 }, { -1, 1, 1 }, { 1, -1, 1 }, { -1, -1, 1 }, { 1, 1, -1 }, { 1, -1, -1 }, { -1, 1, -1 }, { -1, -1, -1 }
-	};
-
-	Part rp;
-	if (flags[ori][2] == 1) {
-		rp.horz = (flags[ori][0] > 0) ? part.horz : opposite_part(part.horz);
-		rp.vert = (flags[ori][1] > 0) ? part.vert : opposite_part(part.vert);
-	}
-	else {
-		// switch hpart and vpart
-		rp.horz = (flags[ori][1] > 0) ? part.vert : opposite_part(part.vert);
-		rp.vert = (flags[ori][0] > 0) ? part.horz : opposite_part(part.horz);
-	}
-
-	return rp;
 }
 
 //

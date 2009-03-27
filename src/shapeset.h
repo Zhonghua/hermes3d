@@ -49,6 +49,9 @@ void get_interval_part(int part, double &lo, double &hi);
 void get_edge_part(int part, double &x);
 double get_edge_coef(int part);
 
+Part transform_edge_part(int ori, Part part);
+Part transform_face_part(int ori, Part part);
+
 inline int get_lower_part(int part) { 	return (part * 2) + 1; }
 inline int get_higher_part(int part) { return (part + 1) * 2; }
 inline int face_to_edge_part(int part) { return part + 2; }

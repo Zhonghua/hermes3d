@@ -78,6 +78,33 @@ double get_edge_coef(int part) {
 	return (x + 1.0) / 2.0;
 }
 
+Part transform_edge_part(int ori, Part part) {
+	Part rp;
+	rp.part = (ori == 0) ? part.part : opposite_part(part.part);
+	return rp;
+}
+
+
+Part transform_face_part(int ori, Part part) {
+	// refer to Pavel Solin's gray book, p. 169 (?)
+	int flags[8][3] = {
+		{ 1, 1, 1 }, { -1, 1, 1 }, { 1, -1, 1 }, { -1, -1, 1 }, { 1, 1, -1 }, { 1, -1, -1 }, { -1, 1, -1 }, { -1, -1, -1 }
+	};
+
+	Part rp;
+	if (flags[ori][2] == 1) {
+		rp.horz = (flags[ori][0] > 0) ? part.horz : opposite_part(part.horz);
+		rp.vert = (flags[ori][1] > 0) ? part.vert : opposite_part(part.vert);
+	}
+	else {
+		// switch hpart and vpart
+		rp.horz = (flags[ori][1] > 0) ? part.vert : opposite_part(part.vert);
+		rp.vert = (flags[ori][0] > 0) ? part.horz : opposite_part(part.horz);
+	}
+
+	return rp;
+}
+
 
 // Shapeset /////
 

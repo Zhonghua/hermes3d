@@ -207,7 +207,7 @@ void SimpleFilter::init_components() {
 	num_components = (vec1 && vec2) ? 3 : 1;
 }
 
-void SimpleFilter::precalculate(qorder_t order, int mask) {
+void SimpleFilter::precalculate(qorder_t qord, int mask) {
 	if (mask & (FN_DX | FN_DY | FN_DZ | FN_DXX | FN_DYY | FN_DZZ | FN_DXY | FN_DXZ | FN_DYZ)) {
 		ERROR("Filter not defined for derivatives.");
 		return;
@@ -215,14 +215,14 @@ void SimpleFilter::precalculate(qorder_t order, int mask) {
 
 	Quad3D *quad = quads[cur_quad];
 
-	assert(order.type == QOT_ELEMENT);
-	int np = quad->get_num_points(order.order);
+	assert(qord.type == QOT_ELEMENT);
+	int np = quad->get_num_points(order3_t::from_int(qord.order));
 	Node *node = new_node(FN_VAL, np);
 	MEM_CHECK(node);
 
 	// precalculate all solutions
 	for (int i = 0; i < num; i++)
-		sln[i]->set_quad_order(order, item[i]);
+		sln[i]->set_quad_order(qord, item[i]);
 
 	for (int j = 0; j < num_components; j++) {
 		// obtain corresponding tables

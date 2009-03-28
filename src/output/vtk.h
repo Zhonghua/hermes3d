@@ -42,8 +42,7 @@ public:
 
 protected:
 	void dump_points(MeshFunction *fn);
-	void dump_scalars(const char *name, MeshFunction *fn, int item);
-	void dump_vectors(const char *name, MeshFunction *fn, int item);
+	order3_t get_order(int mode);
 
 	/// file into which the output is done
 	FILE *out_file;

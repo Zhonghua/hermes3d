@@ -49,6 +49,18 @@ namespace Vtk {
 /// @ingroup visualization
 class OutputQuad : public Quad3D {
 public:
+	virtual QuadPt3D *get_points(order3_t order) {
+		if (!tables.exists(order.get_idx())) calculate_view_points(order);
+		return tables[order.get_idx()];
+	}
+
+	virtual int get_num_points(order3_t order) {
+		if (!np.exists(order.get_idx())) calculate_view_points(order);
+		return np[order.get_idx()];
+	}
+
+protected:
+	virtual void calculate_view_points(order3_t order) = 0;
 };
 
 //// OutputQuadTetra //////////////////////////////////////////////////////////////////////////////
@@ -60,13 +72,18 @@ class OutputQuadTetra : public OutputQuad {
 public:
 	OutputQuadTetra();
 	virtual ~OutputQuadTetra();
+
+protected:
+	virtual void calculate_view_points(order3_t order);
 };
 
 OutputQuadTetra::OutputQuadTetra() {
 }
 
 OutputQuadTetra::~OutputQuadTetra() {
+}
 
+void OutputQuadTetra::calculate_view_points(order3_t order) {
 }
 
 /// Quadrature for visualizing the solution on hexahedron
@@ -77,30 +94,46 @@ public:
 	OutputQuadHex();
 	virtual ~OutputQuadHex();
 
-	virtual QuadPt3D *get_points(order3_t order) {
-		if (tables[order.get_idx()] == NULL) calc_table(order);
-		return tables[order.get_idx()];
-	}
-
 protected:
-	void calc_table(order3_t order);
+	virtual void calculate_view_points(order3_t order);
 };
 
 OutputQuadHex::OutputQuadHex() {
 #ifdef WITH_HEX
 	mode = MODE_HEXAHEDRON;
+#else
+	EXIT(ERR_HEX_NOT_COMPILED);
 #endif
 }
 
 OutputQuadHex::~OutputQuadHex() {
 #ifdef WITH_HEX
+	for (Word_t i = tables.first(); i != INVALID_IDX; i = tables.next(i))
+		delete[] tables[i];
 #endif
 }
 
-void OutputQuadHex::calc_table(order3_t order) {
+void OutputQuadHex::calculate_view_points(order3_t order) {
 #ifdef WITH_HEX
-#else
-	EXIT(ERR_HEX_NOT_COMPILED);
+	int o = order.get_idx();
+	np[o] = (order.x + 1) * (order.y + 1) * (order.z + 1);
+	tables[o] = new QuadPt3D[np[o]];
+	double step_x, step_y, step_z;
+	step_x = 2.0 / order.x;
+	step_y = 2.0 / order.y;
+	step_z = 2.0 / order.z;
+
+	for (int k = 0, n = 0; k < order.x + 1; k++) {
+		for (int l = 0; l < order.y + 1; l++) {
+			for (int m = 0; m < order.z + 1; m++, n++) {
+				assert(n < np[o]);
+				tables[o][n].x = (step_x * k) - 1;
+				tables[o][n].y = (step_y * l) - 1;
+				tables[o][n].z = (step_z * m) - 1;
+				tables[o][n].w = 1.0;	// not used
+			}
+		}
+	}
 #endif
 }
 
@@ -135,6 +168,22 @@ VtkOutputEngine::VtkOutputEngine(FILE *file) {
 VtkOutputEngine::~VtkOutputEngine() {
 }
 
+order3_t VtkOutputEngine::get_order(int mode) {
+	// FIXME: get order from the space and set sufficient division
+	order3_t order(3, 3, 3);
+	switch (mode) {
+		case MODE_HEXAHEDRON:
+			break;
+		case MODE_TETRAHEDRON:
+		case MODE_PRISM:
+			EXIT(ERR_NOT_IMPLEMENTED); break;
+		default:
+			EXIT(ERR_UNKNOWN_MODE); break;
+	}
+
+	return order;
+}
+
 void VtkOutputEngine::dump_points(MeshFunction *fn) {
 	Array<Point3D *> vertices;
 	Array<int *> cells[3]; // 3 types of elements
@@ -147,16 +196,11 @@ void VtkOutputEngine::dump_points(MeshFunction *fn) {
 		Element *element = mesh->elements[idx];
 		int mode = element->get_mode();
 
-		// FIXME: get order from the space and set sufficient division
-		order3_t order;
-		switch (mode) {
-			case MODE_HEXAHEDRON: order = order3_t(8, 8, 8); break;
-			default: EXIT(ERR_NOT_IMPLEMENTED); break;
-		}
-
 		Vtk::OutputQuad *quad = output_quad[mode];
 		fn->set_active_element(element);
 		fn->set_quad(quad);
+
+		order3_t order = get_order(mode);
 
 		// get coordinates of all points
 		RefMap *refmap = fn->get_refmap();
@@ -254,93 +298,6 @@ void VtkOutputEngine::dump_points(MeshFunction *fn) {
 			delete cells[i][j];
 }
 
-void VtkOutputEngine::dump_scalars(const char *name, MeshFunction *fn, int item) {
-	Mesh *mesh = fn->get_mesh();
-
-	// header
-	fprintf(this->out_file, "\n");
-	fprintf(this->out_file, "SCALARS %s %s %d\n", name, "float", 1);
-	fprintf(this->out_file, "LOOKUP_TABLE %s\n", "default");
-
-	// values
-	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
-		Element *element = mesh->elements[idx];
-		int mode = element->get_mode();
-
-		// FIXME: get order from the space and set sufficient division
-		order3_t order(8, 8, 8);
-
-		switch (mode) {
-			// TODO
-			case MODE_TETRAHEDRON:
-			case MODE_HEXAHEDRON:
-			case MODE_PRISM:
-				EXIT(ERR_NOT_IMPLEMENTED); break;
-			default:
-				EXIT(ERR_UNKNOWN_MODE); break;
-		}
-
-		Vtk::OutputQuad *quad = output_quad[mode];
-		fn->set_active_element(element);
-		fn->set_quad(quad);
-		fn->set_quad_order(ELEM_QORDER(order), item);
-		int a = 0, b = 0;
-		mask_to_comp_val(item, a, b);
-		scalar *val = fn->get_values(a, b);
-
-		int np = quad->get_num_points(order);
-		for (int i = 0; i < np; i++) {
-			assert(fabs(IMAG(val[i])) < 1e-12);
-			fprintf(this->out_file, "%e\n", REAL(val[i]));
-		}
-	}
-}
-
-void VtkOutputEngine::dump_vectors(const char *name, MeshFunction *fn, int item) {
-	Mesh *mesh = fn->get_mesh();
-
-	// header
-	fprintf(this->out_file, "\n");
-	fprintf(this->out_file, "VECTORS %s %s\n", name, "float");
-
-	// values
-	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
-		Element *element = mesh->elements[idx];
-		int mode = element->get_mode();
-
-		// FIXME: get order from the space and set sufficient division
-		order3_t order(8, 8, 8);
-
-		switch (mode) {
-			// TODO
-			case MODE_TETRAHEDRON:
-			case MODE_HEXAHEDRON:
-				break;
-			case MODE_PRISM:
-				EXIT(ERR_NOT_IMPLEMENTED); break;
-			default:
-				EXIT(ERR_UNKNOWN_MODE); break;
-		}
-
-		Vtk::OutputQuad *quad = output_quad[mode];
-		fn->set_active_element(element);
-		fn->set_quad(quad);
-		fn->set_quad_order(ELEM_QORDER(order), item);
-		int a = 0, b = 0;
-		mask_to_comp_val(item, a, b);
-		scalar *val[3];
-		for (int comp = 0; comp < 3; comp++) // FIXME: magic number
-			val[comp] = fn->get_values(comp, b);
-
-		int np = quad->get_num_points(order);
-		for (int i = 0; i < np; i++) {
-			assert(fabs(IMAG(val[0][i])) < 1e-12);
-			assert(fabs(IMAG(val[1][i])) < 1e-12);
-			assert(fabs(IMAG(val[2][i])) < 1e-12);
-			fprintf(this->out_file, "%e %e %e\n", REAL(val[0][i]), REAL(val[1][i]), REAL(val[2][i]));
-		}
-	}
-}
 
 void VtkOutputEngine::out(MeshFunction *fn, const char *name, int item/* = FN_VAL_0*/) {
 	if (!has_points) {
@@ -350,16 +307,101 @@ void VtkOutputEngine::out(MeshFunction *fn, const char *name, int item/* = FN_VA
 	}
 
 	assert(fn->get_num_components() == 1 || fn->get_num_components() == 3);
-	// dump data
-	// FIXME: better check for 'item' argument
-	// if (item == FN_VAL_0 | FN_DX_1 | FN_DY_2) then the following condition will be TRUE
-	// but who knows what will happen. For now, let's suppose the user is sane.
-	if ((fn->get_num_components() == 3) && ((item & FN_COMPONENT_0) && (item & FN_COMPONENT_1) && (item & FN_COMPONENT_2)))
-		dump_vectors(name, fn, item);
-	else
-		dump_scalars(name, fn, item);
+
+	int comp[COMPONENTS];		// components to output
+	int nc;						// number of components to output
+	int b = 0;
+	if (fn->get_num_components() == COMPONENTS) {
+		int a = 0;
+		if ((item & FN_COMPONENT_0) && (item & FN_COMPONENT_1) && (item & FN_COMPONENT_2)) {
+			mask_to_comp_val(item, a, b);
+			for (int i = 0; i < COMPONENTS; i++) comp[i] = i;
+			nc = 3;
+		}
+		else if ((item & FN_COMPONENT_0) > 0) {
+			mask_to_comp_val(item & FN_COMPONENT_0, a, b);
+			comp[0] = 0;
+			nc = 1;
+		}
+		else if ((item & FN_COMPONENT_1) > 0) {
+			mask_to_comp_val(item & FN_COMPONENT_1, a, b);
+			comp[0] = 1;
+			nc = 1;
+		}
+		else if ((item & FN_COMPONENT_2) > 0) {
+			mask_to_comp_val(item & FN_COMPONENT_2, a, b);
+			comp[0] = 2;
+			nc = 1;
+		}
+		else {
+			fprintf(this->out_file, "Unable to satisfy your request\n");
+			return;					// Do not know what user wants
+		}
+	}
+	else if (fn->get_num_components() == 1) {
+		mask_to_comp_val(item & FN_COMPONENT_0, comp[0], b);
+		nc = 1;
+	}
+	else {
+		fprintf(this->out_file, "Unable to satisfy your request\n");
+		return;					// Do not know what user wants
+	}
+
+	Mesh *mesh = fn->get_mesh();
+
+	// header
+	fprintf(this->out_file, "\n");
+	if (nc == 1) {
+		fprintf(this->out_file, "SCALARS %s %s %d\n", name, "float", 1);
+		fprintf(this->out_file, "LOOKUP_TABLE %s\n", "default");
+	}
+	else if (nc == 3) {
+		fprintf(this->out_file, "VECTORS %s %s\n", name, "float");
+	}
+	else assert(false);
+
+	// values
+	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
+		Element *element = mesh->elements[idx];
+		int mode = element->get_mode();
+
+		order3_t order = get_order(mode);
+		Vtk::OutputQuad *quad = output_quad[mode];
+		fn->set_active_element(element);
+		fn->set_quad(quad);
+		fn->set_quad_order(ELEM_QORDER(order), item);
+		int a = 0, b = 0;
+		mask_to_comp_val(item, a, b);
+		scalar *val[3];
+		for (int ic = 0; ic < nc; ic++)
+			val[ic] = fn->get_values(ic, b);
+
+		int np = quad->get_num_points(order);
+		for (int i = 0; i < np; i++) {
+			if (nc == 1) {				// scalar
+#ifndef COMPLEX
+				fprintf(this->out_file, "%e\n", val[0][i]);
+#else
+				assert(fabs(IMAG(val[0][i])) < 1e-12);
+				fprintf(this->out_file, "%e\n", REAL(val[0][i]));
+#endif
+			}
+			else if (nc == 3) {			// vector
+#ifndef COMPLEX
+				fprintf(this->out_file, "%e %e %e\n", val[0][i], val[1][i], val[2][i]);
+#else
+				assert(fabs(IMAG(val[0][i])) < 1e-12);
+				assert(fabs(IMAG(val[1][i])) < 1e-12);
+				assert(fabs(IMAG(val[2][i])) < 1e-12);
+				fprintf(this->out_file, "%e %e %e\n", REAL(val[0][i]), REAL(val[1][i]), REAL(val[2][i]));
+#endif
+			}
+		}
+	}
+
 }
 
 void VtkOutputEngine::out(Mesh *mesh) {
 	// Not implemented
+	ERROR(ERR_NOT_IMPLEMENTED);
 }

@@ -46,6 +46,7 @@ protected:
 	FILE *out_file;
 
 	void dump_scalars(int mode, int num_pts, Point3D *pts, double *value);
+	void dump_vectors(int mode, int num_pts, Point3D *pts, double *v0, double *v1, double *v2);
 	void dump_mesh(Mesh *mesh);
 };
 

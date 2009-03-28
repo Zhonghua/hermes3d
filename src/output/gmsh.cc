@@ -128,9 +128,9 @@ void OutputQuadTetra::calculate_view_points(order3_t order) {
 	int levels = int(log(order.order) / log(2)) + 1;
 
 	// each refinement level means that a tetrahedron is divided into 8 subtetrahedra
-	// i.e., there are 8^levels resulting tetrahedra => (8^levels)*10 points
-	np[orderidx] = (1 << (3 * levels)) * 10;
+	// i.e., there are 8^levels resulting tetrahedra
 	subdiv_num[orderidx] = (1 << (3 * levels));
+	np[orderidx] = subdiv_num[orderidx] * Tetra::NUM_VERTICES;
 
 	// the new subelements are tetrahedra only
 	subdiv_modes[orderidx] = new int[subdiv_num[orderidx]];
@@ -160,7 +160,7 @@ void OutputQuadTetra::recursive_division(const Point3D *tv, QuadPt3D *table, int
 		}
 	}
 	else {
-		Point3D div_vtcs[8][4] = {
+		Point3D div_vtcs[8][Tetra::NUM_VERTICES] = {
 			{ { tv[0].x, tv[0].y, tv[0].z }, AVGTV(0,1), AVGTV(0,2), AVGTV(0,3) },
 			{ AVGTV(0,1), { tv[1].x, tv[1].y, tv[1].z }, AVGTV(1,2), AVGTV(1,3) },
 			{ AVGTV(0,2), AVGTV(1,2), { tv[2].x, tv[2].y, tv[2].z }, AVGTV(2,3) },
@@ -201,7 +201,7 @@ protected:
 OutputQuadHex::OutputQuadHex() {
 #ifdef WITH_HEX
 	max_order = MAX_QUAD_ORDER;
-	output_precision = 1;
+	output_precision = 0;
 #else
 	EXIT(ERR_HEX_NOT_COMPILED);
 #endif
@@ -219,14 +219,13 @@ OutputQuadHex::~OutputQuadHex() {
 
 void OutputQuadHex::calculate_view_points(order3_t order) {
 #ifdef WITH_HEX
-	// FIXME:
 //	int o = get_principal_order(order);
 //	int levels = int(log(o) / log(2)) + output_precision;
 	int o = order.get_idx();
-	int levels = 1;
+	int levels = 3;
 
-	np[o] = (1 << (3 * levels)) * 27;
 	subdiv_num[o] = (1 << (3 * levels));
+	np[o] = subdiv_num[o] * Hex::NUM_VERTICES;
 
 	subdiv_modes[o] = new int[subdiv_num[o]];
 	MEM_CHECK(subdiv_modes[o]);
@@ -256,7 +255,7 @@ void OutputQuadHex::recursive_division(const Point3D *tv, QuadPt3D *table, int l
 		}
 	}
 	else {
-		Point3D div_vtcs[8][8] = {
+		Point3D div_vtcs[8][Hex::NUM_VERTICES] = {
 			{ { tv[0].x, tv[0].y, tv[0].z }, AVGTV(0,1), AVGTV(0,2), AVGTV(0,3), AVGTV(0,4), AVGTV(0,5), AVGTV(0,6), AVGTV(0,7) },
 			{ AVGTV(0,1), { tv[1].x, tv[1].y, tv[1].z }, AVGTV(1,2), AVGTV(1,3), AVGTV(1,4), AVGTV(1,5), AVGTV(1,6), AVGTV(1,7) },
 			{ AVGTV(0,2), AVGTV(1,2), { tv[2].x, tv[2].y, tv[2].z }, AVGTV(2,3), AVGTV(2,4), AVGTV(2,5), AVGTV(2,6), AVGTV(2,7) },
@@ -329,12 +328,73 @@ void GmshOutputEngine::dump_scalars(int mode, int num_pts, Point3D *pts, double 
 	fprintf(this->out_file, " };\n");
 }
 
+void GmshOutputEngine::dump_vectors(int mode, int num_pts, Point3D *pts, double *v0, double *v1, double *v2) {
+	const char *id;
+	switch (mode) {
+		case MODE_TETRAHEDRON: id = "VS"; break;
+		case MODE_HEXAHEDRON: id = "VH"; break;
+		case MODE_PRISM: ERROR("Unsupported mode."); break;
+		default: ERROR("Invalid mode."); break;
+	}
+
+	// write id
+	fprintf(this->out_file, "\t%s(", id);
+
+	// write points
+	for (int j = 0; j < num_pts; j++)
+		fprintf(this->out_file, FORMAT ", " FORMAT ", " FORMAT "%s", pts[j].x, pts[j].y, pts[j].z, j == num_pts - 1 ? "" : ", ");
+	fprintf(this->out_file, ") { ");
+	// write values
+	for (int j = 0; j < num_pts; j++)
+		fprintf(this->out_file, FORMAT ", " FORMAT ", " FORMAT "%s", v0[j], v1[j], v2[j], j == num_pts - 1 ? "" : ", ");
+	// end the row
+	fprintf(this->out_file, " };\n");
+}
+
 void GmshOutputEngine::out(MeshFunction *fn, const char *name, int item/* = FN_VAL*/) {
+	int comp[COMPONENTS];		// components to output
+	int nc;						// number of components to output
+	int b = 0;
+	if (fn->get_num_components() == COMPONENTS) {
+		int a = 0;
+		if ((item & FN_COMPONENT_0) && (item & FN_COMPONENT_1) && (item & FN_COMPONENT_2)) {
+			mask_to_comp_val(item, a, b);
+			for (int i = 0; i < COMPONENTS; i++) comp[i] = i;
+			nc = 3;
+		}
+		else if ((item & FN_COMPONENT_0) > 0) {
+			mask_to_comp_val(item & FN_COMPONENT_0, a, b);
+			comp[0] = 0;
+			nc = 1;
+		}
+		else if ((item & FN_COMPONENT_1) > 0) {
+			mask_to_comp_val(item & FN_COMPONENT_1, a, b);
+			comp[0] = 1;
+			nc = 1;
+		}
+		else if ((item & FN_COMPONENT_2) > 0) {
+			mask_to_comp_val(item & FN_COMPONENT_2, a, b);
+			comp[0] = 2;
+			nc = 1;
+		}
+		else {
+			fprintf(this->out_file, "Unable to satisfy your request\n");
+			return;					// Do not know what user wants
+		}
+	}
+	else if (fn->get_num_components() == 1) {
+		mask_to_comp_val(item & FN_COMPONENT_0, comp[0], b);
+		nc = 1;
+	}
+	else {
+		fprintf(this->out_file, "Unable to satisfy your request\n");
+		return;					// Do not know what user wants
+	}
+
+	Mesh *mesh = fn->get_mesh();
+
 	// prepare
 	fprintf(this->out_file, "View \"%s\" {\n", name);
-
-//	Space *space = fn->get_space();
-	Mesh *mesh = fn->get_mesh();
 
 	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
 		Element *element = mesh->elements[idx];
@@ -361,34 +421,52 @@ void GmshOutputEngine::out(MeshFunction *fn, const char *name, int item/* = FN_V
 
 		fn->set_quad_order(ELEM_QORDER(order), item);
 
-		int a = 0, b = 0;
-		mask_to_comp_val(item, a, b);
-		scalar *val;
-		val = fn->get_values(a, b);
+		scalar *val[nc];
+		for (int ic = 0; ic < nc; ic++)
+			val[ic] = fn->get_values(comp[ic], b);
+
 		int pt_idx = 0;
-		// iterate through subelements and output them
+		// iterate through sub-elements and output them
 		for (int i = 0; i < subdiv_num; i++) {
-			int num_pts;
+			int np;
 			switch (mode) {
-				case MODE_TETRAHEDRON: num_pts = 4; break; // quadratic TETRA (see gmsh documentation)
-				case MODE_HEXAHEDRON: num_pts = 8; break; // quadratic HEX (see gmsh documentation)
+				case MODE_TETRAHEDRON: np = Tetra::NUM_VERTICES; break;
+				case MODE_HEXAHEDRON: np = Hex::NUM_VERTICES; break;
 				case MODE_PRISM: EXIT(ERR_NOT_IMPLEMENTED); break;
 				default: EXIT(ERR_UNKNOWN_MODE); break;
 			}
 
-			// small buffers to hold values for one subelement
-			Point3D phys_pt[num_pts];
-			scalar *p_val = val + pt_idx;
-
-			for (int j = 0; j < num_pts; j++, pt_idx++) {
-				// physical coordinates of subelement
+			// small buffers to hold values for one sub-element
+			Point3D phys_pt[np * nc];
+			double v[nc][np];
+			for (int j = 0; j < np; j++, pt_idx++) {
+				// physical coordinates of sub-element
 				phys_pt[j].x = phys_x[pt_idx];
 				phys_pt[j].y = phys_y[pt_idx];
 				phys_pt[j].z = phys_z[pt_idx];
+
+				for (int ic = 0; ic < nc; ic++) {
+#ifndef COMPLEX
+					v[ic][j] = val[ic][pt_idx];
+#else
+					assert(fabs(IMAG(val[ic][pt_idx])) < 1e-12); // output only for real numbers
+					v[ic][j] = REAL(val[ic][pt_idx]);
+#endif
+				}
 			}
 
-			// FIXME
-//			dump_scalars(mode, num_pts, phys_pt, p_val);
+			scalar *p_val;
+			switch (nc) {
+				case 1:
+					dump_scalars(mode, np, phys_pt, v[0]);
+					break;
+
+				case 3:
+					dump_vectors(mode, np, phys_pt, v[0], v[1], v[2]);
+					break;
+
+				default: assert(false); break;
+			}
 		}
 	}
 

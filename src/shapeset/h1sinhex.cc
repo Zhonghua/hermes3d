@@ -320,6 +320,7 @@ void H1ShapesetSinHex::compute_edge_indices(int edge, int ori, order1_t order) {
 }
 
 void H1ShapesetSinHex::compute_face_indices(int face, int ori, order2_t order) {
+#ifdef WITH_HEX
 	assert(order.x > 1);
 	assert(order.y > 1);
 	int horder = order.x, vorder = order.y;
@@ -370,9 +371,11 @@ void H1ShapesetSinHex::compute_face_indices(int face, int ori, order2_t order) {
 	}
 
 	face_indices[face][ori][order.get_idx()] = indices;
+#endif
 }
 
 void H1ShapesetSinHex::compute_bubble_indices(order3_t order) {
+#ifdef WITH_HEX
 	assert(order.x > 1);
 	assert(order.y > 1);
 	assert(order.z > 1);
@@ -386,6 +389,7 @@ void H1ShapesetSinHex::compute_bubble_indices(order3_t order) {
 				indices[idx++] = h1s_hex_index_t(SHFN_BUBBLE, 0, i, j, k, 0);
 
 	bubble_indices[order.get_idx()] = indices;
+#endif
 }
 
 /// --- CED specific stuff ---
@@ -404,5 +408,3 @@ CEDComb *H1ShapesetSinHex::calc_constrained_face_combination(int ori, int order,
 	EXIT(ERR_NOT_IMPLEMENTED);
 	return NULL;
 }
-
-#endif

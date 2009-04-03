@@ -1,5 +1,7 @@
 project(qorder-solution)
 
+if(HAVE_LINEAR_SOLVER)
+
 include(CMake.vars)
 
 add_executable(${PROJECT_NAME}
@@ -30,3 +32,5 @@ add_test(qorder-solution-3 ${PROJECT_NAME} ${MESHES_DIR}/mesh3d/hex2.mesh3d)
 add_test(qorder-solution-4 ${PROJECT_NAME} ${MESHES_DIR}/mesh3d/hex4.mesh3d)
 add_test(qorder-solution-5 ${PROJECT_NAME} ${MESHES_DIR}/mesh3d/hex8.mesh3d)
 add_test(qorder-solution-6 ${PROJECT_NAME} ${MESHES_DIR}/mesh3d/hex27.mesh3d)
+
+endif(HAVE_LINEAR_SOLVER)

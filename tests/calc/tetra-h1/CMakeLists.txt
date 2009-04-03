@@ -1,5 +1,7 @@
 project(calc-tetra-h1)
 
+if(HAVE_LINEAR_SOLVER)
+
 include(CMake.vars)
 
 add_executable(${PROJECT_NAME}
@@ -28,3 +30,5 @@ add_test(${PROJECT_NAME}-1  ${BIN} ${MESHES_DIR}/mesh3d/tetra1-ref.mesh3d 4)
 #add_test(${PROJECT_NAME}-2  ${BIN} ${MESHES_DIR}/mesh3d/tetra2.mesh3d 3)
 #add_test(${PROJECT_NAME}-4  ${BIN} ${MESHES_DIR}/mesh3d/tetra4.mesh3d 2)
 #add_test(${PROJECT_NAME}-8  ${BIN} ${MESHES_DIR}/mesh3d/tetra8.mesh3d 1)
+
+endif(HAVE_LINEAR_SOLVER)

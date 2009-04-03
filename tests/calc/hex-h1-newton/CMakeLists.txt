@@ -1,5 +1,7 @@
 project(calc-hex-h1-newton)
 
+if(HAVE_LINEAR_SOLVER)
+
 include(CMake.vars)
 
 add_executable(${PROJECT_NAME}
@@ -34,3 +36,5 @@ add_test(${PROJECT_NAME}-4x   ${BIN} ${MESHES_DIR}/mesh3d/hex4x.mesh3d 2 2 2)
 add_test(${PROJECT_NAME}-4y   ${BIN} ${MESHES_DIR}/mesh3d/hex4y.mesh3d 2 2 2)
 add_test(${PROJECT_NAME}-4z   ${BIN} ${MESHES_DIR}/mesh3d/hex4z.mesh3d 2 2 2)
 add_test(${PROJECT_NAME}-8    ${BIN} ${MESHES_DIR}/mesh3d/hex8.mesh3d  2 2 2)
+
+endif(HAVE_LINEAR_SOLVER)

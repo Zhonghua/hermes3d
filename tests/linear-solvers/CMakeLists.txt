@@ -1,5 +1,7 @@
 project(solver)
 
+if(HAVE_LINEAR_SOLVER)
+
 include(CMake.vars)
 
 add_executable(${PROJECT_NAME}
@@ -51,3 +53,4 @@ if(WITH_PARDISO)
 	add_test(pardiso-solver-b-4 sh -c "${BIN} pardiso-block ${CMAKE_CURRENT_SOURCE_DIR}/in/linsys-singular | diff - ${CMAKE_CURRENT_SOURCE_DIR}/out/linsys-singular")
 endif(WITH_PARDISO)
 
+endif(HAVE_LINEAR_SOLVER)

@@ -1,5 +1,7 @@
 project(calc-hex-hcurl)
 
+if(HAVE_LINEAR_SOLVER)
+
 if(EXISTS CMake.vars)
     include(CMake.vars)
 endif(EXISTS CMake.vars)
@@ -35,3 +37,4 @@ add_test(${PROJECT_NAME}-4y ${BIN} ${MESHES_DIR}/mesh3d/hex4y.mesh3d 3)
 add_test(${PROJECT_NAME}-4z ${BIN} ${MESHES_DIR}/mesh3d/hex4z.mesh3d 3)
 add_test(${PROJECT_NAME}-8  ${BIN} ${MESHES_DIR}/mesh3d/hex8.mesh3d 3)
 
+endif(HAVE_LINEAR_SOLVER)

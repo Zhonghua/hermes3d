@@ -391,14 +391,18 @@ int main(int argc, char **args) {
 	printf("* Calculating a solution\n");
 
 #if defined WITH_UMFPACK
-	UMFPackLinearSolver solver;
+	UMFPackMatrix mat;
+	UMFPackVector rhs;
+	UMFPackLinearSolver solver(mat, rhs);
 #elif defined WITH_PARDISO
 	PardisoLinearSolver solver;
 #elif defined WITH_PETSC
-	PetscLinearSolver solver;
+	PetscMatrix mat;
+	PetscVector rhs;
+	PetscLinearSolver solver(mat, rhs);
 #endif
 
-	Discretization d(&solver);
+	Discretization d;
 	d.set_num_equations(1);
 	d.set_spaces(1, &space);
 	d.set_pss(1, &pss);
@@ -410,39 +414,39 @@ int main(int argc, char **args) {
 	d.set_linear_form(0, linear_form, linear_form_surf);
 #endif
 
-	// assemble siffness matrix
-	d.create_stiffness_matrix();
+	// assemble stiffness matrix
+	d.create(&mat, &rhs);
+	d.assemble(&mat, &rhs);
 
-	Timer assemble_timer("Assembling stiffness matrix");
-	assemble_timer.start();
-	d.assemble_stiffness_matrix_and_rhs();
-	assemble_timer.stop();
-
+#ifdef OUTPUT_DIR
 	{
 		char file_name[1024];
 		sprintf(file_name, "%s/matrix", OUTPUT_DIR);
 		FILE *file = fopen(file_name, "w");
 		if (file != NULL) {
-			solver.dump_matrix(file, "A");
-			solver.dump_rhs(file, "b");
+			mat.dump(file, "A");
+			rhs.dump(file, "b");
 
 			fclose(file);
 		}
 	}
+#endif
 
 	try {
 		// solve the stiffness matrix
-		Solution sln(&mesh);
-		bool solved = d.solve_system(1, &sln);
+		bool solved = solver.solve();
 
 		if (!solved) throw ERR_FAILURE;
+
+		Solution sln(&mesh);
+		sln.set_space_and_pss(&space, &pss);
+		sln.set_solution_vector(solver.get_solution(), false);
 
 		{
 			double *s = sln.get_solution_vector();
 			for (int i = 0; i <= ndofs; i++)
 				printf("x[% 3d] = % lf\n", i, s[i]);
 		}
-
 
 		ExactSolution exsln(&mesh, exact_solution);
 		// norm
@@ -604,6 +608,8 @@ int main(int argc, char **args) {
 	}
 
 #ifdef WITH_PETSC
+	mat.free();
+	rhs.free();
 	PetscFinalize();
 #endif
 

@@ -131,14 +131,18 @@ int main(int argc, char **argv) {
 	printf("* Calculating a solution\n");
 
 #if defined WITH_UMFPACK
-	UMFPackLinearSolver solver;
+	UMFPackMatrix mat;
+	UMFPackVector rhs;
+	UMFPackLinearSolver solver(mat, rhs);
 #elif defined WITH_PARDISO
 	PardisoLinearSolver solver;
 #elif defined WITH_PETSC
-	PetscLinearSolver solver;
+	PetscMatrix mat;
+	PetscVector rhs;
+	PetscLinearSolver solver(mat, rhs);
 #endif
 
-	Discretization d(&solver);
+	Discretization d;
 	d.set_num_equations(1);
 	d.set_spaces(1, &space);
 	d.set_pss(1, &pss);
@@ -146,19 +150,18 @@ int main(int argc, char **argv) {
 	d.set_bilinear_form(0, 0, bilinear_form, NULL, bilinear_form_surf);
 	d.set_linear_form(0, linear_form, linear_form_surf);
 
-	// assemble siffness matrix
-	d.create_stiffness_matrix();
+	// assemble stiffness matrix
+	d.create(&mat, &rhs);
 
 	Timer assemble_timer("Assembling stiffness matrix");
 	assemble_timer.start();
-	d.assemble_stiffness_matrix_and_rhs();
+	d.assemble(&mat, &rhs);
 	assemble_timer.stop();
 
 	// solve the stiffness matrix
 	Timer solve_timer("Solving stiffness matrix");
 	solve_timer.start();
-	Solution sln(&mesh);
-	bool solved = d.solve_system(1, &sln);
+	bool solved = solver.solve();
 	solve_timer.stop();
 
 #ifdef OUTPUT_DIR
@@ -166,6 +169,10 @@ int main(int argc, char **argv) {
 #endif
 
 	if (solved) {
+		Solution sln(&mesh);
+		sln.set_space_and_pss(&space, &pss);
+		sln.set_solution_vector(solver.get_solution(), false);
+
 		printf("* Solution:\n");
 		scalar *s = sln.get_solution_vector();
 		for (int i = 1; i <= ndofs; i++) {
@@ -233,6 +240,8 @@ int main(int argc, char **argv) {
 	}
 
 #ifdef WITH_PETSC
+	mat.free();
+	rhs.free();
 	PetscFinalize();
 #endif
 

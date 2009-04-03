@@ -279,9 +279,11 @@ int main(int argc, char *argv[]) {
 	space.set_uniform_order(order);
 	space.assign_dofs();
 
-	UMFPackLinearSolver solver;
+	UMFPackMatrix mat;
+	UMFPackVector rhs;
+	UMFPackLinearSolver solver(mat, rhs);
 
-	Discretization d(&solver);
+	Discretization d;
 	d.set_num_equations(1);
 	d.set_spaces(1, &space);
 	d.set_pss(1, &pss);
@@ -290,13 +292,16 @@ int main(int argc, char *argv[]) {
 	d.set_bilinear_form(0, 0, fn1_bilinear_form);
 	d.set_linear_form(0, fn1_linear_form);
 
-	// assemble siffness matrix
-	d.create_stiffness_matrix();
-	d.assemble_stiffness_matrix_and_rhs();
+	// assemble stiffness matrix
+	d.create(&mat, &rhs);
+	d.assemble(&mat, &rhs);
 
 	// solve the stiffness matrix
+	solver.solve();
+
 	Solution sln(&mesh);
-	d.solve_system(1, &sln);
+	sln.set_space_and_pss(&space, &pss);
+	sln.set_solution_vector(solver.get_solution(), false);
 
 	// test the solution against the exact solution
 	// we do NOT use the norm function to avaoid possible problems in them

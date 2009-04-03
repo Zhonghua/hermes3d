@@ -77,7 +77,7 @@ bool read_n_nums(char *row, int n, double values[]) {
 	return (i == n);
 }
 
-int read_matrix_and_rhs(char *file_name, int &n, Array<MatrixEntry> &matrix, Array<double> &rhs) {
+int read_matrix_and_rhs(char *file_name, int &n, Array<MatrixEntry> &mat, Array<double> &rhs) {
 	FILE *file = fopen(file_name, "r");
 	if (file == NULL)
 		return ERR_CAN_NOT_OPEN_FILE;
@@ -101,7 +101,7 @@ int read_matrix_and_rhs(char *file_name, int &n, Array<MatrixEntry> &matrix, Arr
 
 			case STATE_MATRIX:
 				if (read_n_nums(row, 3, buffer)) {
-					matrix.add(MatrixEntry((int) buffer[0], (int) buffer[1], buffer[2]));
+					mat.add(MatrixEntry((int) buffer[0], (int) buffer[1], buffer[2]));
 				}
 				else
 					state = STATE_RHS;
@@ -120,86 +120,35 @@ int read_matrix_and_rhs(char *file_name, int &n, Array<MatrixEntry> &matrix, Arr
 	return ERR_SUCCESS;
 }
 
-//
-// tests themselves
-//
+void build_matrix(int n, Array<MatrixEntry> &ar_mat, Array<double> &ar_rhs, SparseMatrix *mat, Vector *rhs) {
+	// matrix
+	mat->prealloc(n);
+	for (Word_t i = ar_mat.first(); i != INVALID_IDX; i = ar_mat.next(i)) {
+		MatrixEntry &me = ar_mat[i];
+		mat->pre_add_ij(me.m, me.n);
+	}
+	mat->alloc();
 
-void solve(LinearSolver &solver, int n, Array<MatrixEntry> &matrix, Array<double> &rhs) {
-	// precalculate sparse structure
-	solver.prealloc(n);
-
-	for (Word_t i = matrix.first(); i != INVALID_IDX; i = matrix.next(i)) {
-		MatrixEntry &me = matrix[i];
-		solver.pre_add_ij(me.m, me.n);
+	for (Word_t i = ar_mat.first(); i != INVALID_IDX; i = ar_mat.next(i)) {
+		MatrixEntry &me = ar_mat[i];
+		mat->update(me.m, me.n, me.value);
 	}
 
-	solver.alloc();
-
-	//
-	solver.begin_assembling();
-
-	for (Word_t i = matrix.first(); i != INVALID_IDX; i = matrix.next(i)) {
-		MatrixEntry &me = matrix[i];
-		solver.update_matrix(me.m, me.n, me.value);
+	// RHS
+	rhs->alloc(n);
+	for (Word_t i = ar_rhs.first(); i != INVALID_IDX; i = ar_rhs.next(i)) {
+		rhs->update((int) i, ar_rhs[i]);
 	}
-
-	for (Word_t i = rhs.first(); i != INVALID_IDX; i = rhs.next(i)) {
-		solver.update_rhs(i, rhs[i]);
-	}
-
-	// !!! do not forget to call this !!!
-	solver.finish_assembling();
-
-	double *sln = new double [n];
-	if (solver.solve_system(sln)) {
-		for (int i = 0; i < n; i++) {
-			printf("%lf\n", sln[i]);
-		}
-	}
-	else {
-		printf("Unable to solve\n");
-	}
-
-	delete [] sln;
 }
 
-int test_linear_solver(LinearSolver &solver, char *file_name) {
-	Array<MatrixEntry> matrix;		// matrix
-	Array<double> rhs;				// right-hand side
-	int n;							// number of unknowns
-
-	if (read_matrix_and_rhs(file_name, n, matrix, rhs) != ERR_SUCCESS)
-		return ERR_FAILURE;
-
-	solve(solver, n, matrix, rhs);
-
-	return ERR_SUCCESS;
-}
-
-//
-// testing
-//
-
-int test_linear_solver_block(LinearSolver &solver, char *file_name) {
-	Array<MatrixEntry> matrix;		// matrix
-	Array<double> rhs;				// right-hand side
-	int n;							// number of unknowns
-
-	if (read_matrix_and_rhs(file_name, n, matrix, rhs) != ERR_SUCCESS)
-		return ERR_FAILURE;
-
-	// precalculate sparse structure
-	solver.prealloc(n);
-
-	for (Word_t i = matrix.first(); i != INVALID_IDX; i = matrix.next(i)) {
-		MatrixEntry &me = matrix[i];
-		solver.pre_add_ij(me.m, me.n);
+void build_matrix_block(int n, Array<MatrixEntry> &ar_mat, Array<double> &ar_rhs, SparseMatrix *matrix, Vector *rhs) {
+	// matrix
+	matrix->prealloc(n);
+	for (Word_t i = ar_mat.first(); i != INVALID_IDX; i = ar_mat.next(i)) {
+		MatrixEntry &me = ar_mat[i];
+		matrix->pre_add_ij(me.m, me.n);
 	}
-
-	solver.alloc();
-
-	//
-	solver.begin_assembling();
+	matrix->alloc();
 
 	double **mat = new_matrix<double>(n, n);
 	int *cols = new int[n];
@@ -208,39 +157,36 @@ int test_linear_solver_block(LinearSolver &solver, char *file_name) {
 		cols[i] = i;
 		rows[i] = i;
 	}
-
-	for (Word_t i = matrix.first(); i != INVALID_IDX; i = matrix.next(i)) {
-		MatrixEntry &me = matrix[i];
+	for (Word_t i = ar_mat.first(); i != INVALID_IDX; i = ar_mat.next(i)) {
+		MatrixEntry &me = ar_mat[i];
 		mat[me.m][me.n] = me.value;
 	}
-	solver.update_matrix(n, n, mat, rows, cols);
+	matrix->update(n, n, mat, rows, cols);
 
-	// right-hand side
+	// rhs
+	rhs->alloc(n);
 	double *rs = new double[n];
-	for (Word_t i = rhs.first(); i != INVALID_IDX; i = rhs.next(i)) {
-		rs[i] = rhs[i];
+	for (Word_t i = ar_rhs.first(); i != INVALID_IDX; i = ar_rhs.next(i)) {
+		rs[i] = ar_rhs[i];
 	}
-	solver.update_rhs(n, rows, rs);
+	rhs->update(n, rows, rs);
+}
 
-	// !!! do not forget to call this !!!
-	solver.finish_assembling();
+//
+// tests themselves
+//
 
-	double *sln = new double [n];
-	if (solver.solve_system(sln)) {
-		for (int i = 0; i < n; i++) {
+void solve(LinearSolver &solver, int n) {
+	if (solver.solve()) {
+		double *sln = solver.get_solution();
+		for (int i = 1; i < n + 1; i++) {
 			printf("%lf\n", sln[i]);
 		}
 	}
 	else {
 		printf("Unable to solve\n");
 	}
-
-	delete [] sln;
-	delete [] mat;
-
-	return ERR_SUCCESS;
 }
-
 
 int main(int argc, char *argv[]) {
 //	TRACE_START("trace.txt");
@@ -259,40 +205,59 @@ int main(int argc, char *argv[]) {
 	if (argc < 3)
 		return ERR_NOT_ENOUGH_PARAMS;
 
+	int n;
+	Array<MatrixEntry> ar_mat;
+	Array<double> ar_rhs;
+
+	if (read_matrix_and_rhs(argv[2], n, ar_mat, ar_rhs) != ERR_SUCCESS)
+		return ERR_FAILURE;
+
 	if (strcasecmp(argv[1], "petsc") == 0) {
 #ifdef WITH_PETSC
-		PetscLinearSolver solver;
-		ret = test_linear_solver(solver, argv[2]);
+		PetscMatrix mat;
+		PetscVector rhs;
+		build_matrix(n, ar_mat, ar_rhs, &mat, &rhs);
+
+		PetscLinearSolver solver(mat, rhs);
+		solve(solver, n);
 #endif
 	}
 	else if (strcasecmp(argv[1], "petsc-block") == 0) {
 #ifdef WITH_PETSC
-		PetscLinearSolver solver;
-		ret = test_linear_solver_block(solver, argv[2]);
+		PetscMatrix mat;
+		PetscVector rhs;
+		build_matrix_block(n, ar_mat, ar_rhs, &mat, &rhs);
+
+		PetscLinearSolver solver(mat, rhs);
+		solve(solver, n);
 #endif
 	}
 	else if (strcasecmp(argv[1], "umfpack") == 0) {
 #ifdef WITH_UMFPACK
-		UMFPackLinearSolver solver;
-		ret = test_linear_solver(solver, argv[2]);
+		UMFPackMatrix mat;
+		UMFPackVector rhs;
+		build_matrix(n, ar_mat, ar_rhs, &mat, &rhs);
+
+		UMFPackLinearSolver solver(mat, rhs);
+		solve(solver, n);
 #endif
 	}
 	else if (strcasecmp(argv[1], "umfpack-block") == 0) {
 #ifdef WITH_UMFPACK
-		UMFPackLinearSolver solver;
-		ret = test_linear_solver_block(solver, argv[2]);
+		UMFPackMatrix mat;
+		UMFPackVector rhs;
+		build_matrix_block(n, ar_mat, ar_rhs, &mat, &rhs);
+
+		UMFPackLinearSolver solver(mat, rhs);
+		solve(solver, n);
 #endif
 	}
 	else if (strcasecmp(argv[1], "pardiso") == 0) {
 #ifdef WITH_PARDISO
-	    PardisoLinearSolver solver;
-	    ret = test_linear_solver(solver, argv[2]);
 #endif
 	}
 	else if (strcasecmp(argv[1], "pardiso-block") == 0) {
 #ifdef WITH_PARDISO
-	    PardisoLinearSolver solver;
-		ret = test_linear_solver_block(solver, argv[2]);
 #endif
 	}
 	else

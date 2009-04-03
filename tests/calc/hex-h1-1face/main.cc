@@ -442,14 +442,18 @@ int main(int argc, char **args) {
 //				printf("* Calculating a solution\n");
 
 #if defined WITH_UMFPACK
-				UMFPackLinearSolver solver;
+				UMFPackMatrix mat;
+				UMFPackVector rhs;
+				UMFPackLinearSolver solver(mat, rhs);
 #elif defined WITH_PARDISO
 				PardisoLinearSolver solver;
 #elif defined WITH_PETSC
-				PetscLinearSolver solver;
+				PetscMatrix mat;
+				PetscVector rhs;
+				PetscLinearSolver solver(mat, rhs);
 #endif
 
-				Discretization d(&solver);
+				Discretization d;
 				d.set_num_equations(1);
 				d.set_spaces(1, &space);
 				d.set_pss(1, &pss);
@@ -461,17 +465,12 @@ int main(int argc, char **args) {
 				d.set_linear_form(0, linear_form, linear_form_surf);
 #endif
 
-				// assemble siffness matrix
-				d.create_stiffness_matrix();
-
-				Timer assemble_timer("Assembling stiffness matrix");
-				assemble_timer.start();
-				d.assemble_stiffness_matrix_and_rhs();
-				assemble_timer.stop();
+				// assemble stiffness matrix
+				d.create(&mat, &rhs);
+				d.assemble(&mat, &rhs);
 
 				// solve the stiffness matrix
-				Solution sln(&mesh);
-				bool solved = d.solve_system(1, &sln);
+				bool solved = solver.solve();
 				if (!solved) throw ERR_FAILURE;
 
 //				{
@@ -486,11 +485,9 @@ int main(int argc, char **args) {
 //					}
 //				}
 
-
-//				double *s = sln.get_solution_vector();
-//				for (int ii = 0; ii <= ndofs; ii++)
-//					printf("x[% 3d] = % lf\n", ii, s[ii]);
-
+				Solution sln(&mesh);
+				sln.set_space_and_pss(&space, &pss);
+				sln.set_solution_vector(solver.get_solution(), false);
 
 				ExactSolution exsln(&mesh, exact_solution);
 				// norm

@@ -4,6 +4,9 @@ include(CMake.vars)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${hermes3d_SOURCE_DIR})
+if(WITH_PETSC)
+	include_directories(${PETSC_INCLUDE_DIRS})
+endif(WITH_PETSC)
 
 add_executable(${PROJECT_NAME}
 	main.cc

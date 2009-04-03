@@ -65,7 +65,9 @@ double l2_product(RealFunction *fu, RealFunction *fv) {
 bool test_lin_indep(Shapeset *shapeset) {
 	printf("I. linear independency\n");
 
-	UMFPackLinearSolver solver;
+	UMFPackMatrix mat;
+	UMFPackVector rhs;
+	UMFPackLinearSolver solver(mat, rhs);
 
 	PrecalcShapeset pss_u(shapeset), pss_v(shapeset);
 	pss_u.set_quad(get_quadrature(MODE));
@@ -102,11 +104,11 @@ bool test_lin_indep(Shapeset *shapeset) {
 
 
 	// precalc structure
-	solver.prealloc(n);
+	mat.prealloc(n);
 	for (int i = 0; i < n; i++)
 		for (int j = 0; j < n; j++)
-			solver.pre_add_ij(i, j);
-	solver.alloc();
+			mat.pre_add_ij(i, j);
+	mat.alloc();
 
 	printf("assembling matrix ");
 
@@ -121,21 +123,21 @@ bool test_lin_indep(Shapeset *shapeset) {
 
 			double value = l2_product(&pss_u, &pss_v);
 
-			solver.update_matrix(i, j, value);
+			mat.update(i, j, value);
 		}
 	}
 	printf("\n");
 
 	for (int i = 0; i < n; i++)
-		solver.update_rhs(i, 0.0);
+		rhs.update(i, 0.0);
 
 	printf("solving matrix\n");
 
 	// solve the system
-	double *sln = new double [n];
-	if (solver.solve_system(sln)) {
+	if (solver.solve()) {
+		double *sln = solver.get_solution();
 		bool indep = true;
-		for (int i = 0; i < n; i++) {
+		for (int i = 1; i < n + 1; i++) {
 			if (sln[i] >= EPS) {
 				indep = false;
 				break;
@@ -150,8 +152,6 @@ bool test_lin_indep(Shapeset *shapeset) {
 	else {
 		printf("Shape functions are not linearly independent\n");
 	}
-
-	delete [] sln;
 
 	delete [] fn_idx;
 

@@ -108,8 +108,8 @@ void PetscLinearSolver::alloc() {
 
 	//
 	MatCreateSeqAIJ(PETSC_COMM_SELF, this->ndofs, this->ndofs, 0, nnz, &ms->matrix);
-	MatSetOption(ms->matrix, MAT_ROW_ORIENTED);
-	MatSetOption(ms->matrix, MAT_ROWS_SORTED);
+//	MatSetOption(ms->matrix, MAT_ROW_ORIENTED);
+//	MatSetOption(ms->matrix, MAT_ROWS_SORTED);
 
 	// create rhs vector
 	VecCreateSeq(PETSC_COMM_SELF, this->ndofs, &ms->rhs);
@@ -128,10 +128,10 @@ void PetscLinearSolver::free() {
 #ifdef WITH_PETSC
 	if (ms != NULL) {
 		// commented out, becuase it is causing SEGFAULTS
-//		MatDestroy(ms->matrix);
-//		VecDestroy(ms->rhs);
-//		VecDestroy(ms->x);
-//		KSPDestroy(ms->ksp);
+		MatDestroy(ms->matrix);
+		VecDestroy(ms->rhs);
+		VecDestroy(ms->x);
+		KSPDestroy(ms->ksp);
 
 		delete ms;
 		ms = NULL;
@@ -142,7 +142,7 @@ void PetscLinearSolver::free() {
 void PetscLinearSolver::update_matrix(int m, int n, scalar v) {
 #ifdef WITH_PETSC
 	assert(ms != NULL);
-	MatSetValues(ms->matrix, 1, &m, 1, &n, &v, ADD_VALUES);
+	MatSetValues(ms->matrix, 1, &m, 1, &n, (PetscScalar *) &v, ADD_VALUES);
 #endif
 }
 
@@ -153,7 +153,7 @@ void PetscLinearSolver::update_matrix(int m, int n, scalar **mat, int *rows, int
 	for (int i = 0; i < m; i++)				// rows
 		for (int j = 0; j < n; j++)	 {		// cols
 			if (mat[i][j] != 0.0 && rows[i] != DIRICHLET_DOF && cols[j] != DIRICHLET_DOF) {		// ignore "dirichlet DOF"
-				MatSetValues(ms->matrix, 1, rows + i, 1, cols + j, &(mat[i][j]), ADD_VALUES);
+				MatSetValues(ms->matrix, 1, rows + i, 1, cols + j, (PetscScalar *) &(mat[i][j]), ADD_VALUES);
 			}
 		}
 #endif
@@ -162,7 +162,7 @@ void PetscLinearSolver::update_matrix(int m, int n, scalar **mat, int *rows, int
 void PetscLinearSolver::update_rhs(int idx, scalar y) {
 #ifdef WITH_PETSC
 	assert(ms != NULL);
-	if (idx >= 0) VecSetValues(ms->rhs, 1, &idx, &y, ADD_VALUES);
+	if (idx >= 0) VecSetValues(ms->rhs, 1, &idx, (PetscScalar *) &y, ADD_VALUES);
 #endif
 }
 
@@ -170,7 +170,7 @@ void PetscLinearSolver::update_rhs(int n, int *idx, scalar *y) {
 #ifdef WITH_PETSC
 	assert(ms != NULL);
 	for (int i = 0; i < n; i++)
-		if (idx[i] >= 0) VecSetValues(ms->rhs, 1, idx + i, y + i, ADD_VALUES);
+		if (idx[i] >= 0) VecSetValues(ms->rhs, 1, idx + i, (PetscScalar *) (y + i), ADD_VALUES);
 #endif
 }
 
@@ -186,7 +186,7 @@ bool PetscLinearSolver::solve_system(scalar *sln) {
 	int *idx = new int[ndofs];
 	MEM_CHECK(idx);
 	for (int i = 0; i < ndofs; i++) idx[i] = i;
-	VecGetValues(ms->x, ndofs, idx, sln);
+	VecGetValues(ms->x, ndofs, idx, (PetscScalar *) sln);
 	delete[] idx;
 
 	return true;

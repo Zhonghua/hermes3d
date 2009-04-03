@@ -21,42 +21,74 @@
 #define _PETSC_SOLVER_H_
 
 #include "../h3dconfig.h"
+#include "../matrix.h"
 #include "../linsolver.h"
 
-struct msyst;
+#ifdef WITH_PETSC
+#include <petsc.h>
+#include <petscmat.h>
+#include <petscvec.h>
+#include <petscksp.h>
+#endif
+
+/// Wrapper of PETSc matrix, to store matrices used with PETSc in its native format
+///
+class PetscMatrix : public SparseMatrix {
+public:
+	PetscMatrix();
+	virtual ~PetscMatrix();
+
+	virtual void alloc();
+	virtual void free();
+	virtual void update(int m, int n, scalar v);
+	virtual void update(int m, int n, scalar **mat, int *rows, int *cols);
+	virtual bool dump(FILE *file, const char *var_name, EMatrixDumpFormat fmt = DF_MATLAB_SPARSE);
+	virtual int get_matrix_size() const;
+
+protected:
+#ifdef WITH_PETSC
+	Mat matrix;
+#endif
+	bool inited;
+
+	friend class PetscLinearSolver;
+};
+
+/// Wrapper of PETSc vector, to store vectors used with PETSc in its native format
+///
+class PetscVector : public Vector {
+public:
+	PetscVector();
+	virtual ~PetscVector();
+
+	virtual void alloc(int ndofs);
+	virtual void free();
+	virtual void update(int idx, scalar y);
+	virtual void update(int n, int *idx, scalar *y);
+	virtual bool dump(FILE *file, const char *var_name, EMatrixDumpFormat fmt = DF_MATLAB_SPARSE);
+
+protected:
+#ifdef WITH_PETSC
+	Vec vec;
+#endif
+	bool inited;
+
+	friend class PetscLinearSolver;
+};
 
 /// Encapsulation of PETSc linear solver
 ///
 /// @ingroup linearsolvers
 class PetscLinearSolver : public LinearSolver {
 public:
-	PetscLinearSolver();
+	PetscLinearSolver(PetscMatrix &mat, PetscVector &rhs);
 	virtual ~PetscLinearSolver();
 
-	virtual void prealloc(int ndofs);
-	virtual void pre_add_ij(int row, int col);
-	virtual void alloc();
-	virtual void free();
-
-	virtual void update_matrix(int m, int n, scalar v);
-	virtual void update_matrix(int m, int n, scalar **mat, int *rows, int *cols);
-	virtual void update_rhs(int idx, scalar y);
-	virtual void update_rhs(int n, int *idx, scalar *y) ;
-
-	virtual void begin_assembling();
-	virtual void finish_assembling();
-
-	virtual bool solve_system(scalar *sln);
-
-	virtual bool dump_matrix(FILE *file, const char *var_name, EMatrixDumpFormat format = DF_MATLAB_SPARSE);
-	virtual bool dump_rhs(FILE *file, const char *var_name, EMatrixDumpFormat format = DF_MATLAB_SPARSE);
-
-	virtual ESparseMatrixRepresentation matrix_representation() { return SMATRIX_OTHER; }
+	virtual bool solve();
 
 protected:
-	msyst *ms;
-
-	bool initialized;
+	PetscMatrix &m;
+	PetscVector &rhs;
 };
 
 #endif

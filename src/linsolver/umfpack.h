@@ -21,32 +21,18 @@
 #define _UMFPACK_SOLVER_H_
 
 #include "../linsolver.h"
+#include "../matrix.h"
 
-/// Encapsulation of UMFPACK linear solver
-///
-/// @ingroup linearsolvers
-class UMFPackLinearSolver : public LinearSolver {
+class UMFPackMatrix : public SparseMatrix {
 public:
-	UMFPackLinearSolver();
-	virtual ~UMFPackLinearSolver();
+	UMFPackMatrix();
+	virtual ~UMFPackMatrix();
 
-	virtual void prealloc(int ndofs);
-	virtual void pre_add_ij(int row, int col);
 	virtual void alloc();
 	virtual void free();
-
-	virtual void update_matrix(int m, int n, scalar v);
-	virtual void update_matrix(int m, int n, scalar **mat, int *rows, int *cols);
-	virtual void update_rhs(int idx, scalar y);
-	virtual void update_rhs(int n, int *idx, scalar *y);
-
-	virtual bool solve_system(scalar *sln);
-
-	virtual bool dump_matrix(FILE *file, const char *var_name, EMatrixDumpFormat = DF_MATLAB_SPARSE);
-	virtual bool dump_rhs(FILE *file, const char *var_name, EMatrixDumpFormat = DF_MATLAB_SPARSE);
-
-	virtual ESparseMatrixRepresentation matrix_representation() { return SMATRIX_COLUMN; }
-
+	virtual void update(int m, int n, scalar v);
+	virtual void update(int m, int n, scalar **mat, int *rows, int *cols);
+	virtual bool dump(FILE *file, const char *var_name, EMatrixDumpFormat fmt = DF_MATLAB_SPARSE);
 	virtual int get_matrix_size() const;
 
 protected:
@@ -54,10 +40,43 @@ protected:
 	int *Ap;
 	int *Ai;
 	scalar *Ax;
-	scalar *srhs;
 
-	// mem stat
-	int mem_size;
+	static void insert_value(int *Ai, scalar *Ax, int Alen, int idx, scalar value);
+
+	friend class UMFPackLinearSolver;
+};
+
+class UMFPackVector : public Vector {
+public:
+	UMFPackVector();
+	virtual ~UMFPackVector();
+
+	virtual void alloc(int ndofs);
+	virtual void free();
+	virtual void update(int idx, scalar y);
+	virtual void update(int n, int *idx, scalar *y);
+	virtual bool dump(FILE *file, const char *var_name, EMatrixDumpFormat fmt = DF_MATLAB_SPARSE);
+
+protected:
+	scalar *v;
+
+	friend class UMFPackLinearSolver;
+};
+
+
+/// Encapsulation of UMFPACK linear solver
+///
+/// @ingroup linearsolvers
+class UMFPackLinearSolver : public LinearSolver {
+public:
+	UMFPackLinearSolver(UMFPackMatrix &m, UMFPackVector &rhs);
+	virtual ~UMFPackLinearSolver();
+
+	virtual bool solve();
+
+protected:
+	UMFPackMatrix &m;
+	UMFPackVector &rhs;
 };
 
 #endif

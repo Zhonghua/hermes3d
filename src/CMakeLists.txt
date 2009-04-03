@@ -37,7 +37,6 @@ set(SRC
 	space/hcurl.cc
 	transform.cc
 	traverse.cc
-	linsolver.cc
 	linsolver/pardiso.cc
 	linsolver/petsc.cc
 	linsolver/umfpack.cc

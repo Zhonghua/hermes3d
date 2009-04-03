@@ -40,6 +40,7 @@ set(SRC
 	linsolver/pardiso.cc
 	linsolver/petsc.cc
 	linsolver/umfpack.cc
+	eigensolver/slepc.cc
 	${HERMES_COMMON_DIR}/trace.cc
 	${HERMES_COMMON_DIR}/error.cc
 	${HERMES_COMMON_DIR}/utils.cc
@@ -58,9 +59,9 @@ set(INC
 	discretization.h
 	h3dconfig.h
 	hermes3d.h
-	integrals/h1.h
 	matrix.h
 	linsolver.h
+	eigensolver.h
 	norm.h
 	order.h
 	output.h
@@ -115,6 +116,10 @@ set(INC_LINSOLVER
 	linsolver/umfpack.h
 )
 
+set(INC_EIGENSOLVER
+	eigensolver/slepc.h
+)
+
 set(INC_OUTPUT
 	output/gmsh.h
 	output/vtk.h
@@ -128,14 +133,14 @@ set(INC_INTEGRALS
 
 
 macro(LIBRARY_SETTINGS BIN)
-	if(WITH_PETSC)
+	if(WITH_PETSC OR WITH_SLEPC)
 		include_directories(${PETSC_INCLUDE_DIRS})
 		target_link_libraries(${BIN} ${PETSC_LIBRARIES})
 		target_link_libraries(${BIN} ${PETSC_LIBS})
 
        	target_link_libraries(${BIN} ${BLAS_LIBRARIES})
    	    target_link_libraries(${BIN} ${LAPACK_LIBRARIES})
-   	endif(WITH_PETSC)
+   	endif(WITH_PETSC OR WITH_SLEPC)
 
 	if(WITH_UMFPACK)
 		include_directories(${UMFPACK_INCLUDE_DIR} ${AMD_INCLUDE_DIR})
@@ -175,14 +180,15 @@ configure_file(
 #
 
 # install header files
-install(FILES ${INC}           DESTINATION include/${PROJECT_NAME})
-install(FILES ${INC_COMMON}    DESTINATION include/${PROJECT_NAME}/common)
-install(FILES ${INC_SPACE}     DESTINATION include/${PROJECT_NAME}/space)
-install(FILES ${INC_SHAPESET}  DESTINATION include/${PROJECT_NAME}/shapeset)
-install(FILES ${INC_LOADER}    DESTINATION include/${PROJECT_NAME}/loader)
-install(FILES ${INC_LINSOLVER} DESTINATION include/${PROJECT_NAME}/linsolver)
-install(FILES ${INC_OUTPUT}    DESTINATION include/${PROJECT_NAME}/output)
-install(FILES ${INC_INTEGRALS} DESTINATION include/${PROJECT_NAME}/integrals)
+install(FILES ${INC}             DESTINATION include/${PROJECT_NAME})
+install(FILES ${INC_COMMON}      DESTINATION include/${PROJECT_NAME}/common)
+install(FILES ${INC_SPACE}       DESTINATION include/${PROJECT_NAME}/space)
+install(FILES ${INC_SHAPESET}    DESTINATION include/${PROJECT_NAME}/shapeset)
+install(FILES ${INC_LOADER}      DESTINATION include/${PROJECT_NAME}/loader)
+install(FILES ${INC_LINSOLVER}   DESTINATION include/${PROJECT_NAME}/linsolver)
+install(FILES ${INC_EIGENSOLVER} DESTINATION include/${PROJECT_NAME}/eigensolver)
+install(FILES ${INC_OUTPUT}      DESTINATION include/${PROJECT_NAME}/output)
+install(FILES ${INC_INTEGRALS}   DESTINATION include/${PROJECT_NAME}/integrals)
 
 # install library
 if(REAL)

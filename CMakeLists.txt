@@ -21,6 +21,7 @@ set(WITH_PRISM  NO)
 set(WITH_UMFPACK YES)
 set(WITH_PETSC   NO)
 set(WITH_PARDISO NO)
+set(WITH_SLEPC   NO)
 
 set(WITH_TESTS  YES)
 set(WITH_TOOLS  NO)
@@ -93,11 +94,11 @@ else(DEBUG)
 endif(DEBUG)
 
 # If using PETSc or UMFPack, we need to enable Fortran support and look for BLAS and LAPACK
-if(WITH_PETSC OR WITH_UMFPACK)
+if(WITH_PETSC OR WITH_UMFPACK OR WITH_SLEPC)
     enable_language(Fortran)
     find_package(BLAS REQUIRED)
     find_package(LAPACK REQUIRED)
-endif(WITH_PETSC OR WITH_UMFPACK)
+endif(WITH_PETSC OR WITH_UMFPACK OR WITH_SLEPC)
 
 # find necessary packages
 find_package(JUDY REQUIRED)
@@ -118,6 +119,17 @@ if(WITH_PARDISO)
     find_package(PARDISO REQUIRED)
 	set(HAVE_LINEAR_SOLVER YES)
 endif(WITH_PARDISO)
+
+# eigen solvers
+
+if(WITH_SLEPC)
+	# SLEPC need PETSc
+	if(NOT PETSC_FOUND)
+		find_package(PETSC REQUIRED)
+	endif(NOT PETSC_FOUND)
+	find_package(SLEPC REQUIRED)
+	set(HAVE_EIGEN_SOLVER YES)
+endif(WITH_SLEPC)
 
 
 if(WITH_HDF5)

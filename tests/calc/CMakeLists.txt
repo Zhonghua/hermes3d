@@ -23,6 +23,7 @@ if(WITH_HEX)
 		add_subdirectory(hex-h1-dirichlet)
 		add_subdirectory(hex-h1-neumann)
 		add_subdirectory(hex-h1-newton)
+		add_subdirectory(hex-h1-eigen-problem)
 	endif(REAL)
 	# Hcurl
 	if(REAL)

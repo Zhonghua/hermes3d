@@ -83,4 +83,7 @@
 #include "linsolver/pardiso.h"
 #include "linsolver/petsc.h"
 
+// eigen solvers
+#include "eigensolver/slepc.h"
+
 #endif

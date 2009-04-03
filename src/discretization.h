@@ -26,6 +26,7 @@
 #include "function.h"
 #include "refmap.h"
 #include "solution.h"
+#include "matrix.h"
 
 /// @defgroup assembling Assembling
 ///
@@ -37,7 +38,7 @@
 /// @ingroup assembling
 class Discretization {
 public:
-	Discretization(LinearSolver *lsolver);
+	Discretization();
 	virtual ~Discretization();
 
 	void free();
@@ -65,17 +66,14 @@ public:
 		scalar (*linear_form_surf)(RealFunction*, RefMap*, FacePos *) = NULL);
 
 	//
-	void create_stiffness_matrix();
-	void assemble_stiffness_matrix_and_rhs(bool rhsonly = false);
-	bool solve_system(int n, ...);
+	void create(Matrix *matrix, Vector *rhs = NULL);
+	void assemble(Matrix *matrix, Vector *rhs = NULL);
 
 protected:
-	LinearSolver *linear_solver;	// linear solver
 	int neq;						// number of equations
 	int ndofs;						// number of unknowns
 	Space **space;					// spaces
 	PrecalcShapeset **pss;			// shapeset
-	scalar *solution_vector;		// vector of the solution
 
 	struct BiForm {
 		scalar (*unsym)(RealFunction *, RealFunction *, RefMap *, RefMap *);
@@ -101,10 +99,6 @@ protected:
 
 	BiForm **biform;
 	LiForm  *liform;
-
-	void precalculate_sparse_structure(LinearSolver* solver);
-
-	void free_solution_vector();
 };
 
 void update_limit_table(EMode3D mode);

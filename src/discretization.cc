@@ -31,15 +31,13 @@ void update_limit_table(EMode3D mode) {
 
 // Discretization /////////////////////////////////////////////////////////////
 
-Discretization::Discretization(LinearSolver *lsolver) {
-	linear_solver = lsolver;
+Discretization::Discretization() {
 	ndofs = 0;
 	neq = 0;
 	space = NULL;
 	pss = NULL;
 	biform = NULL;
 	liform = NULL;
-	solution_vector = NULL;
 }
 
 Discretization::~Discretization() {
@@ -47,9 +45,6 @@ Discretization::~Discretization() {
 }
 
 void Discretization::free() {
-	linear_solver->free();
-	free_solution_vector();
-
 	delete [] space; space = NULL;
 	delete [] pss; pss = NULL;
 
@@ -153,74 +148,75 @@ void Discretization::set_linear_form(int i,
 	liform[i].surf = linear_form_surf;
 }
 
-
-void Discretization::precalculate_sparse_structure(LinearSolver* solver) {
-	AsmList *al = new AsmList[neq];
-	MEM_CHECK(al);
-
-	// init multi-mesh traversal
-	Mesh **meshes = new Mesh *[neq];
-	MEM_CHECK(meshes);
-	for (int i = 0; i < neq; i++)
-		meshes[i] = space[i]->get_mesh();
-	Traverse trav;
-	trav.begin(neq, meshes);
-
-	Element **e;
-	while ((e = trav.get_next_state(NULL, NULL)) != NULL) {
-		// obtain assembly lists for the element at all spaces
-		for (int i = 0; i < neq; i++)
-			space[i]->get_element_assembly_list(e[i], al + i);
-
-		// go through all equation-blocks of the local stiffness matrix
-		for (int m = 0; m < neq; m++) {
-			for (int n = 0; n < neq; n++) {
-				BiForm *bf = biform[m] + n;
-				if (bf->sym == NULL && bf->unsym == NULL && bf->surf == NULL) continue;
-
-				// pretend assembling of the element stiffness matrix
-				for (int j = 0; j < al[n].cnt; j++) {
-					// skip dirichlet dofs in 'j'
-					if (al[n].dof[j] < 0) continue;
-
-					for (int i = 0; i < al[m].cnt; i++) {
-						// skip dirichlet dofs in 'i'
-						if (al[m].dof[i] < 0) continue;
-
-						// register the corresponding nonzero matrix element
-						solver->pre_add_ij(al[m].dof[i], al[n].dof[j]);
-					}
-				}
-			}
-		}
-	}
-
-	trav.finish();
-	delete [] meshes;
-	delete [] al;
-}
-
-
-void Discretization::create_stiffness_matrix() {
-	// remove any previous matrix
-	linear_solver->free();
-
+void Discretization::create(Matrix *matrix, Vector *rhs) {
 	// calculate the total number of DOFs
 	ndofs = 0;
 	for (int i = 0; i < neq; i++)
 		ndofs += space[i]->get_dof_count();
 	if (ndofs == 0) return;
 
-	linear_solver->prealloc(ndofs);
-	precalculate_sparse_structure(linear_solver);
+	if (matrix != NULL) {
+		SparseMatrix *mat = dynamic_cast<SparseMatrix *>(matrix);
+		if (mat == NULL) {
+			WARNING("Calling Discretization::create() with a pointer to matrix that is not sparse matrix.");
+			return;
+		}
 
-	linear_solver->alloc();
+		mat->free();
+		mat->prealloc(ndofs);
+
+		AsmList *al = new AsmList[neq];
+		MEM_CHECK(al);
+
+		// init multi-mesh traversal
+		Mesh **meshes = new Mesh *[neq];
+		MEM_CHECK(meshes);
+		for (int i = 0; i < neq; i++)
+			meshes[i] = space[i]->get_mesh();
+		Traverse trav;
+		trav.begin(neq, meshes);
+
+		Element **e;
+		while ((e = trav.get_next_state(NULL, NULL)) != NULL) {
+			// obtain assembly lists for the element at all spaces
+			for (int i = 0; i < neq; i++)
+				space[i]->get_element_assembly_list(e[i], al + i);
+
+			// go through all equation-blocks of the local stiffness matrix
+			for (int m = 0; m < neq; m++) {
+				for (int n = 0; n < neq; n++) {
+					BiForm *bf = biform[m] + n;
+					if (bf->sym == NULL && bf->unsym == NULL && bf->surf == NULL) continue;
+
+					// pretend assembling of the element stiffness matrix
+					for (int j = 0; j < al[n].cnt; j++) {
+						// skip dirichlet dofs in 'j'
+						if (al[n].dof[j] < 0) continue;
+
+						for (int i = 0; i < al[m].cnt; i++) {
+							// skip dirichlet dofs in 'i'
+							if (al[m].dof[i] < 0) continue;
+
+							// register the corresponding nonzero matrix element
+							mat->pre_add_ij(al[m].dof[i], al[n].dof[j]);
+						}
+					}
+				}
+			}
+		}
+
+		trav.finish();
+		delete [] meshes;
+		delete [] al;
+
+		mat->alloc();
+	}
+
+	if (rhs != NULL) rhs->alloc(ndofs);
 }
 
-void Discretization::assemble_stiffness_matrix_and_rhs(bool rhsonly) {
+void Discretization::assemble(Matrix *matrix, Vector *rhs) {
 	if (ndofs == 0) return;
-
-	linear_solver->begin_assembling();
 
 	bool bnd[10];
 	FacePos fp[10];					// FIXME: magic number - number of faces
@@ -285,7 +281,7 @@ void Discretization::assemble_stiffness_matrix_and_rhs(bool rhsonly) {
 			MEM_CHECK(lrhs);
 			memset(lrhs, 0, am->cnt * sizeof(scalar));
 
-			if (!rhsonly) {
+			if (matrix != NULL) {
 				AsmList *an = al;
 				for (int n = 0; n < neq; n++, an++) {
 					PrecalcShapeset *fu = pss[n];
@@ -309,30 +305,32 @@ void Discretization::assemble_stiffness_matrix_and_rhs(bool rhsonly) {
 						}
 					}
 
-					// update matrix
-					linear_solver->update_matrix(am->cnt, an->cnt, lsm, am->dof, an->dof);
+					// update the matrix
+					matrix->update(am->cnt, an->cnt, lsm, am->dof, an->dof);
 					delete [] lsm;
 				}
 			}
 
 			// assemble rhs (linear form)
-			if (liform[m].lf != NULL) {
-				for (int i = 0; i < am->cnt; i++) {
-					if (am->dof[i] >= 0) {
-						fv->set_active_shape(am->idx[i]);
-						lrhs[i] += liform[m].lf(fv, refmap + m) * am->coef[i];
+			if (rhs != NULL) {
+				if (liform[m].lf != NULL) {
+					for (int i = 0; i < am->cnt; i++) {
+						if (am->dof[i] >= 0) {
+							fv->set_active_shape(am->idx[i]);
+							lrhs[i] += liform[m].lf(fv, refmap + m) * am->coef[i];
+						}
 					}
-				}
 
-				// update rhs in solver
-				linear_solver->update_rhs(am->cnt, am->dof, lrhs);
+					// update rhs
+					rhs->update(am->cnt, am->dof, lrhs);
+				}
 			}
 
 			delete [] lrhs;
 		}
 
 		// assemble surface integrals now: loop through boundary edges of the element
-		if (rhsonly) continue;
+		if (matrix == NULL) continue;
 
 		for (int iface = 0; iface < e[0]->get_num_of_faces(); iface++) {
 			// check if the face is an outer face
@@ -380,27 +378,26 @@ void Discretization::assemble_stiffness_matrix_and_rhs(bool rhsonly) {
 					}
 
 					// update matrix
-					linear_solver->update_matrix(am->cnt, an->cnt, lsm, am->dof, an->dof);
+					matrix->update(am->cnt, an->cnt, lsm, am->dof, an->dof);
 
 					delete [] lsm;
 				}
 
 				// assemble the surface part of the linear form
 				if (liform[m].surf == NULL) continue;
-				for (int i = 0; i < am->cnt; i++) {
-					if (am->dof[i] < 0) continue;
-					fv->set_active_shape(am->idx[i]);
-					lrhs[i] += liform[m].surf(fv, refmap + m, fp + iface) * am->coef[i];
+				if (rhs != NULL) {
+					for (int i = 0; i < am->cnt; i++) {
+						if (am->dof[i] < 0) continue;
+						fv->set_active_shape(am->idx[i]);
+						lrhs[i] += liform[m].surf(fv, refmap + m, fp + iface) * am->coef[i];
+					}
+					rhs->update(am->cnt, am->dof, lrhs);
 				}
-
-				linear_solver->update_rhs(am->cnt, am->dof, lrhs);
 				delete [] lrhs;
 			}
 		}
 	}
 	trav.finish();
-
-	linear_solver->finish_assembling();
 
 	// free memory
 	for (int i = 0; i < neq; i++)
@@ -411,37 +408,4 @@ void Discretization::assemble_stiffness_matrix_and_rhs(bool rhsonly) {
 	delete [] nat;
 
 	printf("done\n");
-}
-
-bool Discretization::solve_system(int n, ...) {
-	assert(n <= neq);
-
-	if (ndofs == 0) {
-		WARNING("Number of DOFs = 0\n");
-		return false;
-	}
-
-	free_solution_vector();
-	solution_vector = new scalar[ndofs + 1];
-	MEM_CHECK(solution_vector);
-
-	if (!linear_solver->solve_system(solution_vector + 1))
-		return false;
-	solution_vector[0] = 1.0;
-
-	va_list ap;
-	va_start(ap, n);
-	for (int i = 0; i < n; i++) {
-		Solution *sln = va_arg(ap, Solution *);
-		sln->set_space_and_pss(space[i], pss[i]);
-		sln->set_solution_vector(solution_vector, false);
-	}
-	va_end(ap);
-
-	return true;
-}
-
-void Discretization::free_solution_vector() {
-	delete [] solution_vector;
-	solution_vector = NULL;
 }

@@ -28,7 +28,7 @@
 //
 
 #include <common/error.h>
-#include "config.h"
+#include "h3dconfig.h"
 #include "common.h"
 #include "transform.h"
 

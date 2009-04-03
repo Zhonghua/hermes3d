@@ -19,7 +19,6 @@
 #include <cstdio>
 #include <cstdarg>
 #include <ctime>
-#include <config.h>
 
 #include "trace.h"
 
@@ -43,8 +42,6 @@ void verbose_printf(int level, char const *fmt, ...) {
 
 // DEBUGGING stuff
 
-#ifdef DEBUG
-
 static int debug_level = 0;
 
 void debug_output_on() {
@@ -66,15 +63,20 @@ void debug_printf(char const *fmt, ...) {
 	}
 }
 
-#endif
-
 // TRACING stuff
-
-#ifdef TRACING
 
 FILE *trace_file = NULL;
 static int trace_level = 0;
 static clock_t trace_time = clock();
+
+void trace_on() {
+	trace_level++;
+}
+
+void trace_off() {
+	if (trace_level > 0)
+		trace_level--;
+}
 
 // Initialize tracing to the file
 void trace_start(const char *file_name) {
@@ -90,15 +92,6 @@ void trace_start(const char *file_name) {
 void trace_end() {
 	fclose(trace_file);
 	trace_file = NULL;
-}
-
-void trace_on() {
-	trace_level++;
-}
-
-void trace_off() {
-	if (trace_level > 0)
-		trace_level--;
 }
 
 void trace(int line, const char *func, const char *file, char const *fmt, ...) {
@@ -119,6 +112,3 @@ void trace(int line, const char *func, const char *file, char const *fmt, ...) {
 		}
 	}
 }
-
-#endif
-

@@ -21,7 +21,7 @@
 // h1lobbatohex.cc
 //
 
-#include "../config.h"
+#include "../h3dconfig.h"
 #include "common.h"
 #include "lobatto.h"
 #include "h1lobattohex.h"

@@ -20,7 +20,7 @@
 #include <common/trace.h>
 #include <common/error.h>
 
-#include "../config.h"
+#include "../h3dconfig.h"
 #include "pardiso.h"
 
 #ifdef __cplusplus

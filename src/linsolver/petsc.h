@@ -20,6 +20,7 @@
 #ifndef _PETSC_SOLVER_H_
 #define _PETSC_SOLVER_H_
 
+#include "../h3dconfig.h"
 #include "../linsolver.h"
 
 struct msyst;

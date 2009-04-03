@@ -57,6 +57,7 @@ set(INC
 	mesh.h
 	meshloader.h
 	discretization.h
+	h3dconfig.h
 	hermes3d.h
 	integrals/h1.h
 	matrix.h
@@ -166,7 +167,7 @@ endif(COMPLEX)
 #
 configure_file(
 	${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake
-	${CMAKE_CURRENT_SOURCE_DIR}/config.h
+	${CMAKE_CURRENT_SOURCE_DIR}/h3dconfig.h
 )
 
 

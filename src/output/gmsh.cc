@@ -22,7 +22,7 @@
 //
 //
 
-#include "../config.h"
+#include "../h3dconfig.h"
 #include "gmsh.h"
 #include "../refdomain.h"
 #include "../quadstd.h"

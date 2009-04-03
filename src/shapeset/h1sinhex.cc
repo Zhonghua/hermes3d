@@ -20,7 +20,7 @@
 // h1sinhex.cc
 //
 
-#include "../config.h"
+#include "../h3dconfig.h"
 #include "common.h"
 #include "h1sinhex.h"
 #include <common/error.h>

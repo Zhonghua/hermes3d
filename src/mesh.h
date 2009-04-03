@@ -113,6 +113,7 @@ public:
 	Vertex();
 	Vertex(double _x, double _y, double _z);
 	Vertex(const Vertex &o);			// copy-constructor
+	virtual ~Vertex();
 
 	virtual Vertex *copy();
 
@@ -652,9 +653,9 @@ protected:
 	/// @param[in] iface Local number of a face whose facet will be refined
 	/// @param[in] face_refinement How to refine the face (see REFT_QUAD_XXX for possible values)
 	/// @param[in] eid ID of son element
-	bool refine_quad_facet(Hex *parent, int iface, int face_refinement, Word_t eid);
-	bool refine_quad_facet(Hex *parent, int iface, int face_refinement, Word_t eid0, Word_t eid1);
-	bool refine_quad_facet(Hex *parent, int iface, int face_refinement, Word_t eid0, Word_t eid1, Word_t eid2, Word_t eid3);
+	bool refine_quad_facet(Hex *parent, int iface, unsigned int face_refinement, Word_t eid);
+	bool refine_quad_facet(Hex *parent, int iface, unsigned int face_refinement, Word_t eid0, Word_t eid1);
+	bool refine_quad_facet(Hex *parent, int iface, unsigned int face_refinement, Word_t eid0, Word_t eid1, Word_t eid2, Word_t eid3);
 
 	/// @return true if we can refine the face, otherwise false
 	/// @param[in] facet - facet to refine

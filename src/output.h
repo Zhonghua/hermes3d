@@ -30,6 +30,8 @@
 /// @ingroup visualization
 class OutputEngine {
 public:
+	virtual ~OutputEngine() { }
+
 	/// Run the output with specified output engine
 	///
 	/// @return true if ok

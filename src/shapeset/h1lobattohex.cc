@@ -398,9 +398,9 @@ void H1ShapesetLobattoHex::compute_bubble_indices(order3_t order) {
 	MEM_CHECK(indices);
 
 	int idx = 0;
-	for (int i = 2; i <= order.x; i++)
-		for(int j = 2; j <= order.y; j++)
-			for(int k = 2; k <= order.z; k++)
+	for (unsigned int i = 2; i <= order.x; i++)
+		for (unsigned int j = 2; j <= order.y; j++)
+			for (unsigned int k = 2; k <= order.z; k++)
 				indices[idx++] = h1_hex_index_t(SHFN_BUBBLE, 0, i, j, k, 0);
 
 	bubble_indices[order.get_idx()] = indices;

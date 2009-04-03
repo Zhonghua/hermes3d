@@ -130,7 +130,7 @@ struct CEDComb {
 class Shapeset {
 public:
 	Shapeset();
-	~Shapeset();
+	virtual ~Shapeset();
 
 	int get_mode() const { return mode; }
 	int get_num_components() const { return num_components; }

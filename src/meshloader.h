@@ -28,6 +28,8 @@
 /// @ingroup meshloaders
 class MeshLoader {
 public:
+	virtual ~MeshLoader() { }
+
 	/// Loads the mesh from a file. Aborts the program on error.
 	/// @param filename [in] The name of the file.
 	/// @param mesh [out] The mesh.

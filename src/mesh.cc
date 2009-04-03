@@ -46,6 +46,9 @@ Vertex::Vertex(const Vertex &o) {
 	z = o.z;
 }
 
+Vertex::~Vertex() {
+}
+
 Vertex *Vertex::copy() {
 	return new Vertex(*this);
 }
@@ -1541,7 +1544,7 @@ bool Mesh::refine_hex_8(Hex *parent, int refinement) {
 	return refined;
 }
 
-bool Mesh::refine_quad_facet(Hex *parent_elem, int iface, int face_refinement, Word_t eid) {
+bool Mesh::refine_quad_facet(Hex *parent_elem, int iface, unsigned int face_refinement, Word_t eid) {
 	assert(face_refinement == REFT_FACE_NONE);
 
 	Word_t fid = get_facet_id(parent_elem, iface);
@@ -1556,7 +1559,7 @@ bool Mesh::refine_quad_facet(Hex *parent_elem, int iface, int face_refinement, W
 	return true;
 }
 
-bool Mesh::refine_quad_facet(Hex *parent_elem, int iface, int face_refinement, Word_t eid0, Word_t eid1) {
+bool Mesh::refine_quad_facet(Hex *parent_elem, int iface, unsigned int face_refinement, Word_t eid0, Word_t eid1) {
 	assert(face_refinement == REFT_QUAD_HORZ || face_refinement == REFT_QUAD_VERT);
 
 	Word_t fid = get_facet_id(parent_elem, iface);
@@ -1747,7 +1750,7 @@ bool Mesh::refine_quad_facet(Hex *parent_elem, int iface, int face_refinement, W
 	return true;
 }
 
-bool Mesh::refine_quad_facet(Hex *parent_elem, int iface, int face_refinement, Word_t eid0, Word_t eid1, Word_t eid2, Word_t eid3) {
+bool Mesh::refine_quad_facet(Hex *parent_elem, int iface, unsigned int face_refinement, Word_t eid0, Word_t eid1, Word_t eid2, Word_t eid3) {
 	assert(face_refinement == REFT_QUAD_BOTH);
 
 	Word_t fid = get_facet_id(parent_elem, iface);

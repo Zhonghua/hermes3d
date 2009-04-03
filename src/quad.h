@@ -154,6 +154,8 @@ protected:
 /// @ingroup quadratures
 class Quad3D {
 public:
+	virtual ~Quad3D() { }
+
 	virtual QuadPt3D *get_points(order3_t order) { return tables[order.get_idx()]; }
 	virtual int get_num_points(order3_t order) { return np[order.get_idx()]; }
 

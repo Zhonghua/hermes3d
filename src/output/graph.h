@@ -35,6 +35,7 @@
 class Graph {
 public:
 	Graph(const char *title = NULL, const char *x_axis_name = NULL, const char *y_axis_name = NULL);
+	virtual ~Graph() { }
 
 	void set_captions(const char *title = NULL, const char *x_axis_name = NULL, const char *y_axis_name = NULL);
 

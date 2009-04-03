@@ -455,7 +455,6 @@ void GmshOutputEngine::out(MeshFunction *fn, const char *name, int item/* = FN_V
 				}
 			}
 
-			scalar *p_val;
 			switch (nc) {
 				case 1:
 					dump_scalars(mode, np, phys_pt, v[0]);
@@ -479,7 +478,7 @@ void GmshOutputEngine::out(Mesh *mesh) {
 
 	// header
 	fprintf(this->out_file, "$MeshFormat\n");
-	fprintf(this->out_file, "%.1lf %d %d\n", 2.0, 0, sizeof(double));
+	fprintf(this->out_file, "%.1lf %d %ld\n", 2.0, 0, sizeof(double));
 	fprintf(this->out_file, "$EndMeshFormat\n");
 
 	// vertices
@@ -556,7 +555,7 @@ void GmshOutputEngine::out_orders(Space *space, const char *name) {
 
 	// prepare
 	fprintf(this->out_file, "$MeshFormat\n");
-	fprintf(this->out_file, "%.1lf %d %d\n", 2.0, 0, sizeof(double));
+	fprintf(this->out_file, "%.1lf %d %ld\n", 2.0, 0, sizeof(double));
 	fprintf(this->out_file, "$EndMeshFormat\n");
 
 	// HEX specific

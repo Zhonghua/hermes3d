@@ -123,9 +123,10 @@ void OutputQuadHex::calculate_view_points(order3_t order) {
 	step_y = 2.0 / order.y;
 	step_z = 2.0 / order.z;
 
-	for (int k = 0, n = 0; k < order.x + 1; k++) {
-		for (int l = 0; l < order.y + 1; l++) {
-			for (int m = 0; m < order.z + 1; m++, n++) {
+	int n = 0;
+	for (unsigned int k = 0; k < order.x + 1; k++) {
+		for (unsigned int l = 0; l < order.y + 1; l++) {
+			for (unsigned int m = 0; m < order.z + 1; m++, n++) {
 				assert(n < np[o]);
 				tables[o][n].x = (step_x * k) - 1;
 				tables[o][n].y = (step_y * l) - 1;
@@ -221,9 +222,9 @@ void VtkOutputEngine::dump_points(MeshFunction *fn) {
 		// insert cells
 		switch (mode) {
 			case MODE_HEXAHEDRON:
-				for (int i = 0; i < order.x; i++) {
-					for (int j = 0; j < order.y; j++) {
-						for (int o = 0; o < order.z; o++) {
+				for (unsigned int i = 0; i < order.x; i++) {
+					for (unsigned int j = 0; j < order.y; j++) {
+						for (unsigned int o = 0; o < order.z; o++) {
 							int *cell = new int [Hex::NUM_VERTICES];
 							cell[0] = (order.z + 1) * (i * (order.y + 1) + j) + o;
 							cell[1] = cell[0] + ((order.y + 1) * (order.z + 1));

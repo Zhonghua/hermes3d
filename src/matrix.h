@@ -91,5 +91,112 @@ void cholsl(double **a, int n, double p[], T b[], T x[]) {
 	}
 }
 
+//  ///////
+
+enum EMatrixDumpFormat {
+	DF_MATLAB_SPARSE,
+	DF_PLAIN_ASCII,
+	DF_HERMES_BIN,
+	DF_NATIVE					// native format for the linear solver
+};
+
+class Matrix {
+public:
+	virtual ~Matrix() { }
+
+	/// allocate the memory for stiffness matrix and right-hand side
+	virtual void alloc() = 0;
+
+	/// free the memory associated with stiffness matrix and right-hand side
+	virtual void free() = 0;
+
+	/// update the stiffness matrix
+	///
+	/// @param[in] m    - the row where to update
+	/// @param[in] n    - the column where to update
+	/// @param[in] v    - value
+	virtual void update(int m, int n, scalar v) = 0;
+
+	/// update the stiffness matrix
+	///
+	/// @param[in] m         - number of rows of given block
+	/// @param[in] n         - number of columns of given block
+	/// @param[in] matrix    - block of values
+	/// @param[in] rows      - array with row indexes
+	/// @param[in] cols      - array with column indexes
+	virtual void update(int m, int n, scalar **mat, int *rows, int *cols) = 0;
+
+	/// dumping matrix and right-hand side
+	///
+	virtual bool dump(FILE *file, const char *var_name, EMatrixDumpFormat = DF_MATLAB_SPARSE) = 0;
+
+	virtual int get_matrix_size() const = 0;
+};
+
+class SparseMatrix : public Matrix {
+public:
+	SparseMatrix();
+	virtual ~SparseMatrix();
+
+	/// prepare memory
+	///
+	/// @param[in] ndofs - number of unknowns
+	virtual void prealloc(int ndofs);
+
+	/// add indices of nonzero matrix element
+	///
+	/// @param[in] row  - row index
+	/// @param[in] col  - column index
+	virtual void pre_add_ij(int row, int col);
+
+
+protected:
+	static const int PAGE_SIZE = 62;
+
+	struct Page {
+		int count;
+		int idx[PAGE_SIZE];
+		Page *next;
+	};
+
+	int ndofs; // number of unknowns
+	Page **pages;
+
+	int sort_and_store_indices(Page *page, int *buffer, int *max);
+	int get_num_indices();
+
+	// mem stat
+	int mem_size;
+};
+
+class Vector {
+public:
+	virtual ~Vector() { }
+
+	/// allocate memory for storing ndofs elements
+	///
+	/// @param[in] ndofs - number of elements of the vector
+	virtual void alloc(int ndofs) = 0;
+	/// free the memory
+	virtual void free() = 0;
+
+	/// update element on the specified position
+	///
+	/// @param[in] idx - indices where to update
+	/// @param[in] y   - value
+	virtual void update(int idx, scalar y) = 0;
+
+	/// update subset of the elements
+	///
+	/// @param[in] n   - number of positions to update
+	/// @param[in] idx - indices where to update
+	/// @param[in] y   - values
+	virtual void update(int n, int *idx, scalar *y) = 0;
+
+	virtual bool dump(FILE *file, const char *var_name, EMatrixDumpFormat = DF_MATLAB_SPARSE) = 0;
+
+protected:
+	int ndofs;
+};
 
 #endif

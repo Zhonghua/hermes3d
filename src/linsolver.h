@@ -33,13 +33,6 @@ enum ESparseMatrixRepresentation {
 	SMATRIX_OTHER
 };
 
-enum EMatrixDumpFormat {
-	DF_MATLAB_SPARSE,
-	DF_PLAIN_ASCII,
-	DF_HERMES_BIN,
-	DF_NATIVE					// native format for the linear solver
-};
-
 void qsort_int(int* pbase, size_t total_elems); // defined in qsort.cpp
 
 /// Abstract class for encapsulation of a linear solver

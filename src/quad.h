@@ -30,7 +30,7 @@
 /// quadratures in X dimensions. Each class holds quadratures points for every order.
 /// The order of integration is bounded by max_order. The class provides interface
 /// for getting quadratures points, numbers of points and maximal order of integration.
-/// Numerical quadratures of higher dimendions (2, 3) also provides integration points
+/// Numerical quadratures of higher dimensions (2, 3) also provides integration points
 /// for surface integrals. This simplifies evaluating of these integrals on elements
 /// (one do NOT have to take care about transformations, it is done by the QuadXXX
 /// class).

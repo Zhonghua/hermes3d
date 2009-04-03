@@ -1,5 +1,7 @@
 project(shapeset-hex-h1-lobatto)
 
+if(HAVE_LINEAR_SOLVER)
+
 include(CMake.vars)
 
 if(WITH_HEX)
@@ -34,3 +36,4 @@ add_test(${PROJECT_NAME}-1 ${BIN})
 
 endif(WITH_HEX)
 
+endif(HAVE_LINEAR_SOLVER)

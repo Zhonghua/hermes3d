@@ -1,5 +1,7 @@
 project(hnnd-hex-h1)
 
+if(HAVE_LINEAR_SOLVER)
+
 include(CMake.vars)
 
 set(BIN_DIRICHLET ${PROJECT_NAME}-dirichlet)
@@ -49,3 +51,4 @@ set(BIN ${PROJECT_BINARY_DIR}/${BIN_NEWTON})
 set(NAME ${PROJECT_NAME}-nwt)
 include(../CMake.tests.hex)
 
+endif(HAVE_LINEAR_SOLVER)

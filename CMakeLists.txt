@@ -106,14 +106,17 @@ find_package(JUDY REQUIRED)
 # linear solvers
 if(WITH_PETSC)
 	find_package(PETSC REQUIRED)
+	set(HAVE_LINEAR_SOLVER YES)
 endif(WITH_PETSC)
 
 if(WITH_UMFPACK)
     find_package(UMFPACK REQUIRED)
+	set(HAVE_LINEAR_SOLVER YES)
 endif(WITH_UMFPACK)
 
 if(WITH_PARDISO)
     find_package(PARDISO REQUIRED)
+	set(HAVE_LINEAR_SOLVER YES)
 endif(WITH_PARDISO)
 
 

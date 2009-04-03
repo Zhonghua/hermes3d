@@ -1,5 +1,7 @@
 project(hex-h1-1face)
 
+if(HAVE_LINEAR_SOLVER)
+
 include(CMake.vars)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
@@ -24,3 +26,4 @@ configure_file(
 enable_testing()
 add_test(${PROJECT_NAME}-1 ${PROJECT_NAME})
 
+endif(HAVE_LINEAR_SOLVER)

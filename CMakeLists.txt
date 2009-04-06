@@ -25,6 +25,8 @@ set(WITH_PARDISO NO)
 set(WITH_TESTS  YES)
 set(WITH_TOOLS  NO)
 
+set(WITH_PYTHON NO)
+
 # Doxygen related
 set(DOXYGEN_BINARY doxygen)
 set(DOXYGEN_CONFIG_FILE ${PROJECT_SOURCE_DIR}/doc/Doxyfile)
@@ -140,6 +142,13 @@ endif(WITH_TESTS)
 if(WITH_TOOLS)
     add_subdirectory(tools)
 endif(WITH_TOOLS)
+
+if(WITH_PYTHON)
+	find_package(PythonLibs REQUIRED)
+	find_package(Cython REQUIRED)
+	add_subdirectory(python)
+	message(STATUS "Compiling with python support")
+endif(WITH_PYTHON)
 
 # doc
 add_subdirectory(doc)

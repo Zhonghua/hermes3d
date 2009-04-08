@@ -2078,3 +2078,56 @@ Word_t Mesh::get_facet_id(int nv, ...) const {
 
 	return facets.get_idx(k + 0, nv);
 }
+
+void Mesh::regularize() {
+	// FIXME: implements only 1-irregularity rule (quite dirty hack this is)
+	// Assumes only XYZ refinements of elements (i.e. no anisotropic refinements, no incompatible refinements)
+
+	// NOTE: this is very stupid implementation. It checks the parent facet of a half-active facet. If this parent facet is
+	// active on the opposite side, we found a hanging node of 1. order. If it is inactive, we check super parent (parent of
+	// this parent facet) the same way. If it is active, we found hanging node of a  2. order and we refine this super parent.
+	// If it is inactive, hanging node of a higher order was found and we report an error.
+
+	FOR_ALL_FACETS(idx, this) {
+		Facet *facet = facets.get(idx);
+		assert(facet != NULL);
+		if (facet->lactive && !facet->ractive) {
+			if (facet->parent != INVALID_IDX) {
+				Facet *parent = facets.get(facet->parent);
+				if (parent->ractive) {
+					// OK: 1. order hanging node
+				}
+				else {
+					if (parent->parent != INVALID_IDX) {
+						Facet *super_parent = facets.get(parent->parent);
+						if (super_parent->ractive) {
+							refine_element(super_parent->right, REFT_HEX_XYZ);
+						}
+						else {
+							EXIT(ERR_FAILURE, "Cannot handle hanging node of order > 1");
+						}
+					}
+				}
+			}
+		}
+		else if (!facet->lactive && facet->ractive) {
+			if (facet->parent != INVALID_IDX) {
+				Facet *parent = facets.get(facet->parent);
+				if (parent->lactive) {
+					// OK: 1. order hanging node
+				}
+				else {
+					if (parent->parent != INVALID_IDX) {
+						Facet *super_parent = facets.get(parent->parent);
+						if (super_parent->lactive) {
+							refine_element(super_parent->left, REFT_HEX_XYZ);
+						}
+						else {
+							EXIT(ERR_FAILURE, "Cannot handle hanging node of order > 1");
+						}
+					}
+				}
+			}
+		}
+	}
+}

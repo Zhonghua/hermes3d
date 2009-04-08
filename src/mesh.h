@@ -576,6 +576,8 @@ public:
 	/// refine_all_elements().
 	void unrefine_all_elements();
 
+	/// Regularize mesh (only 1-irregularity rule implemented)
+	void regularize();
 
 	//
 	Word_t get_facet_id(Element *e, int face_num) const;

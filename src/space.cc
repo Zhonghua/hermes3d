@@ -700,26 +700,33 @@ inline void Space::output_component(BaseVertexComponent *&current, BaseVertexCom
 	// if the edge is already in the list, just add half of the other coef
 	if (last != NULL && last->dof == min->dof) {
 		PRINTF(" * dof already in list (%d, last->coef = % lf, min->coef = % lf.\n", min->dof, last->coef, min->coef);
-		if (add)
-			last->coef += min->coef;
-		else
-			last->coef += min->coef * 0.5;
+		if (add) last->coef += min->coef;
+		else last->coef += min->coef * 0.5;
 		return;
 	}
 
 	// output new vertex component
 	current->dof = min->dof;
-	if (add)
-		current->coef = min->coef;
-	else
-		current->coef = min->coef * 0.5;
+	if (add) current->coef = min->coef;
+	else current->coef = min->coef * 0.5;
 	last = current++;
+}
+
+/// Duplicate base list
+///
+/// @param[in] l - list
+/// @param[in] n - number of elements in the list
+template<typename T>
+static T *duplicate_baselist(T *l, int n) {
+	T *dup = (T *) malloc(n * sizeof(T));
+	memcpy(dup, l, n * sizeof(T));
+	return dup;
 }
 
 Space::BaseVertexComponent *Space::merge_baselist(BaseVertexComponent *l1, int n1, BaseVertexComponent *l2, int n2, int &ncomponents, bool add) {
 	if (l1 == NULL && l2 == NULL) { ncomponents = 0; return NULL; }
-	if (l1 == NULL) { ncomponents = n2; return l2; }
-	if (l2 == NULL) { ncomponents = n1; return l1; }
+	if (l1 == NULL) { ncomponents = n2; return duplicate_baselist<BaseVertexComponent>(l2, n2); }
+	if (l2 == NULL) { ncomponents = n1; return duplicate_baselist<BaseVertexComponent>(l1, n1); }
 
 	// estimate the upper bound of the result size
 	int max_result = n1 + n2;
@@ -742,13 +749,14 @@ Space::BaseVertexComponent *Space::merge_baselist(BaseVertexComponent *l1, int n
 	// if we produced less components than we expected, reallocate the resulting array
 	// ...this should be OK as we are always shrinking the array so no copying should occur
 	ncomponents = current - result;
-	return result;
+	if (ncomponents < max_result) return (BaseVertexComponent *) realloc(result, ncomponents * sizeof(BaseVertexComponent));
+	else return result;
 }
 
 inline void Space::output_component(BaseEdgeComponent *&current, BaseEdgeComponent *&last, BaseEdgeComponent *min, bool add) {
 	// if the edge is already in the list, just add half of the other coef
 	if (last != NULL && last->edge_id == min->edge_id) {
-		PRINTF(" * edge already in list (%d, last->coef = % lf, min->coef = % lf.\n", min->edge_id, last->coef, min->coef);
+		PRINTF(" * edge already in list (%ld, last->coef = % lf, min->coef = % lf.\n", min->edge_id, last->coef, min->coef);
 		if (add) last->coef += min->coef;
 		else last->coef += min->coef * 0.5;
 		return;
@@ -765,8 +773,8 @@ inline void Space::output_component(BaseEdgeComponent *&current, BaseEdgeCompone
 
 Space::BaseEdgeComponent *Space::merge_baselist(BaseEdgeComponent *l1, int n1, BaseEdgeComponent *l2, int n2, int &ncomponents, bool add) {
 	if (l1 == NULL && l2 == NULL) { ncomponents = 0; return NULL; }
-	if (l1 == NULL) { ncomponents = n2; return l2; }
-	if (l2 == NULL) { ncomponents = n1; return l1; }
+	if (l1 == NULL) { ncomponents = n2; return duplicate_baselist<BaseEdgeComponent>(l2, n2); }
+	if (l2 == NULL) { ncomponents = n1; return duplicate_baselist<BaseEdgeComponent>(l1, n1); }
 
 	int max_result = n1 + n2;
 	BaseEdgeComponent *result = (BaseEdgeComponent *) malloc(max_result * sizeof(BaseEdgeComponent));
@@ -785,7 +793,8 @@ Space::BaseEdgeComponent *Space::merge_baselist(BaseEdgeComponent *l1, int n1, B
 	while (i2 < n2) output_component(current, last, l2 + i2++, add);
 
 	ncomponents = current - result;
-	return result;
+	if (ncomponents < max_result) return (BaseEdgeComponent *) realloc(result, ncomponents * sizeof(BaseEdgeComponent));
+	else return result;
 }
 
 inline void Space::output_component_over(BaseFaceComponent *&current, BaseFaceComponent *min, BaseFaceComponent *m) {
@@ -811,7 +820,7 @@ inline void Space::output_component_over(BaseFaceComponent *&current, BaseFaceCo
 inline void Space::output_component(BaseFaceComponent *&current, BaseFaceComponent *&last, BaseFaceComponent *min, bool add) {
 	if (last != NULL && last->face_id == min->face_id &&
 		last->part.vert == min->part.vert && last->part.horz == min->part.horz && last->dir == min->dir) {
-		PRINTF(" * face already in list (%d, last->coef = % lf, min->coef = % lf, last->part = %d, min->part = %d)\n",
+		PRINTF(" * face already in list (%ld, last->coef = % lf, min->coef = % lf, last->part = %d, min->part = %d)\n",
 			min->face_id, last->coef, min->coef, last->part.horz, min->part.horz);
 		last->coef += min->coef * 0.5;
 		return;
@@ -878,7 +887,8 @@ Space::BaseFaceComponent *Space::merge_baselist(BaseFaceComponent *l1, int n1, B
 		ncomponents = current - result;
 	}
 
-	return result;
+	if (ncomponents < max_result) return (BaseFaceComponent *) realloc(result, ncomponents * sizeof(BaseFaceComponent));
+	else return result;
 }
 
 /// @param[in] vtx1 - vertex 1
@@ -891,7 +901,7 @@ void Space::calc_vertex_vertex_ced(Word_t vtx1, Word_t vtx2) {
 	Word_t mid_pt = mesh->peek_midpoint(vtx1, vtx2);
 	assert(mid_pt != INVALID_IDX);
 
-	PRINTF("calc vertex/vertex #%d\n", mid_pt);
+	PRINTF("calc vertex/vertex #%ld\n", mid_pt);
 
 	VertexData *vd_mid = vn_data[mid_pt];
 	assert(vd_mid != NULL);
@@ -913,6 +923,7 @@ void Space::calc_vertex_vertex_ced(Word_t vtx1, Word_t vtx2) {
 		}
 	}
 
+	::free(vd_mid->baselist);
 	int ncomp = 0;
 	vd_mid->baselist = merge_baselist(bl[0], nc[0], bl[1], nc[1], ncomp, false);
 	vd_mid->ncomponents = ncomp;
@@ -932,7 +943,7 @@ void Space::calc_mid_vertex_vertex_ced(Word_t mid, Word_t vtx1, Word_t vtx2, Wor
 	assert(vtx4 != INVALID_IDX);
 	VertexData *vd[] = { vn_data[vtx1], vn_data[vtx2], vn_data[vtx3], vn_data[vtx4] };
 
-	PRINTF("calc mid vertex/vertex #%d (%d, %d, %d, %d)\n", mid, vtx1, vtx2, vtx3, vtx4);
+	PRINTF("calc mid vertex/vertex #%ld (%ld, %ld, %ld, %ld)\n", mid, vtx1, vtx2, vtx3, vtx4);
 
 	VertexData *vd_mid = vn_data[mid];
 	assert(vd_mid != NULL);
@@ -959,18 +970,22 @@ void Space::calc_mid_vertex_vertex_ced(Word_t mid, Word_t vtx1, Word_t vtx2, Wor
 	tmp_bl[0] = merge_baselist(bl[0], nc[0], bl[2], nc[2], tmp_nc[0], false);
 	tmp_bl[1] = merge_baselist(bl[1], nc[1], bl[3], nc[3], tmp_nc[1], false);
 
+	::free(vd_mid->baselist);
 	int ncomp = 0;
 	vd_mid->baselist = merge_baselist(tmp_bl[0], tmp_nc[0], tmp_bl[1], tmp_nc[1], ncomp, false);
 	vd_mid->ncomponents = ncomp;
 
 	for (int i = 0; i < ncomp; i++)
 		PRINTF(" - [%d]: dof = %d, coef = %lf\n", i, vd_mid->baselist[i].dof, vd_mid->baselist[i].coef);
+
+	::free(tmp_bl[0]);
+	::free(tmp_bl[1]);
 }
 
 void Space::calc_vertex_edge_ced(Word_t vtx, Word_t eid, int ori, int part) {
-	PRINTF("calc vertex/edge #%d\n", vtx);
+	PRINTF("calc vertex/edge #%ld\n", vtx);
 
-	PRINTF(" - eid = %d, part = %d, ori = %d\n", eid, part, ori);
+	PRINTF(" - eid = %ld, part = %d, ori = %d\n", eid, part, ori);
 
 	assert(eid != INVALID_IDX);
 	EdgeData *ed = en_data[eid];
@@ -1035,8 +1050,12 @@ void Space::calc_vertex_edge_ced(Word_t vtx, Word_t eid, int ori, int part) {
 			}
 		}
 
+		BaseVertexComponent *tmp = vd->baselist;
 		vd->baselist = merge_baselist(vd->baselist, vd->ncomponents, baselist, nc, ncomp, true);
 		vd->ncomponents = ncomp;
+
+		::free(tmp);
+		::free(baselist);
 	}
 	else {
 		get_interval_part(part, lo, hi);
@@ -1053,13 +1072,17 @@ void Space::calc_vertex_edge_ced(Word_t vtx, Word_t eid, int ori, int part) {
 			}
 		}
 
+		BaseVertexComponent *tmp = vd->baselist;
 		vd->baselist = merge_baselist(vd->baselist, vd->ncomponents, baselist, ed->n, ncomp, true);
 		vd->ncomponents = ncomp;
+
+		::free(tmp);
+		::free(baselist);
 	}
 }
 
 void Space::calc_mid_vertex_edge_ced(Word_t vtx, Word_t fmp, Word_t eid, int ori, int part) {
-	PRINTF("calc mid vertex/edge #%d, [%d | %d]\n", vtx, eid, fmp);
+	PRINTF("calc mid vertex/edge #%ld, [%ld | %ld]\n", vtx, eid, fmp);
 
 	assert(eid != INVALID_IDX);
 
@@ -1098,12 +1121,12 @@ void Space::calc_mid_vertex_edge_ced(Word_t vtx, Word_t fmp, Word_t eid, int ori
 
 	for (int i = 0; i < en_comp; i++) {
 		BaseEdgeComponent ec = edge_baselist[i];
-		PRINTF(" - [%d]: edge_id = %d, ori = %d, part = %d, coef = %lf\n",
+		PRINTF(" - [%d]: edge_id = %ld, ori = %d, part = %d, coef = %lf\n",
 			i, ec.edge_id, ec.ori, ec.part.part, ec.coef);
 	}
 	for (int i = 0; i < fn_comp; i++) {
 		BaseFaceComponent fc = face_baselist[i];
-		PRINTF(" - [%d]: face_id = %d, part = (%d, %d), dir = %d, ori = %d, coef = %lf\n",
+		PRINTF(" - [%d]: face_id = %ld, part = (%d, %d), dir = %d, ori = %d, coef = %lf\n",
 			i, fc.face_id, fc.part.horz, fc.part.vert, fc.dir, fc.ori, fc.coef);
 	}
 
@@ -1136,7 +1159,7 @@ void Space::calc_mid_vertex_edge_ced(Word_t vtx, Word_t fmp, Word_t eid, int ori
 		BaseEdgeComponent *ecomp = edge_baselist + i;
 		EdgeData *cng_enode = en_data[ecomp->edge_id]; 						// constraining edge node
 
-		PRINTF("   - ECOMP: edge_id = %d, part = %d, coef = %lf, order = %d\n",
+		PRINTF("   - ECOMP: edge_id = %ld, part = %d, coef = %lf, order = %d\n",
 			ecomp->edge_id, ecomp->part.part, ecomp->coef, cng_enode->order);
 
 		if (cng_enode->n > 0) {
@@ -1155,7 +1178,7 @@ void Space::calc_mid_vertex_edge_ced(Word_t vtx, Word_t fmp, Word_t eid, int ori
 		BaseFaceComponent *fcomp = face_baselist + i;
 		FaceData *cng_fnode = fn_data[fcomp->face_id]; 						// constraining edge node
 
-		PRINTF("   - FCOMP = %d, part = (%d, %d), dir = %d, ori = %d, coef = %lf\n",
+		PRINTF("   - FCOMP = %ld, part = (%d, %d), dir = %d, ori = %d, coef = %lf\n",
 			fcomp->face_id, fcomp->part.horz, fcomp->part.vert, fcomp->dir, fcomp->ori, fcomp->coef);
 
 		if (cng_fnode->n > 0) {
@@ -1173,6 +1196,7 @@ void Space::calc_mid_vertex_edge_ced(Word_t vtx, Word_t fmp, Word_t eid, int ori
 		}
 	}
 
+	BaseVertexComponent *tmp = vd->baselist;
 	int ncomp = 0;
 	vd->baselist = merge_baselist(vd->baselist, vd->ncomponents, baselist, nc, ncomp, true);
 	vd->ncomponents = ncomp;
@@ -1180,33 +1204,38 @@ void Space::calc_mid_vertex_edge_ced(Word_t vtx, Word_t fmp, Word_t eid, int ori
 	for (int i = 0; i < ncomp; i++)
 		PRINTF(" - [%d]: dof = %d, coef = %lf\n", i, vd->baselist[i].dof, vd->baselist[i].coef);
 
-	{
-		assert(fmp != INVALID_IDX);
-		VertexData *fmp_vd = vn_data[fmp];
-		assert(fmp_vd != NULL);
+	::free(tmp);
 
-		//
-		for (int i = 0; i < nc; i++)
-			baselist[i].coef *= 0.5;
+	// ----
+	assert(fmp != INVALID_IDX);
+	VertexData *fmp_vd = vn_data[fmp];
+	assert(fmp_vd != NULL);
 
-		BaseVertexComponent *bl, dummy_bl;	// base lists of vtx1-4
-		int fnc = 0; // number of components of bl[0-3]
+	//
+	for (int i = 0; i < nc; i++)
+		baselist[i].coef *= 0.5;
 
-		// get baselists of vn[0] and vn[1] - pretend we have them even if they are unconstrained
-		if (fmp_vd->ced) {
-			bl = fmp_vd->baselist;
-			fnc = fmp_vd->ncomponents;
-		}
-		else {	// make up an artificial baselist
-			dummy_bl.dof = fmp_vd->dof;
-			dummy_bl.coef = (fmp_vd->dof >= 0) ? 1.0 : fmp_vd->bc_proj;
-			bl = &dummy_bl;
-			fnc = 1;
-		}
+	BaseVertexComponent *bl, dummy_bl;	// base lists of vtx1-4
+	fnc = 0; // number of components of bl[0-3]
 
-		fmp_vd->baselist = merge_baselist(bl, fnc, baselist, nc, ncomp, true);
-		fmp_vd->ncomponents = ncomp;
+	// get baselists of vn[0] and vn[1] - pretend we have them even if they are unconstrained
+	if (fmp_vd->ced) {
+		bl = fmp_vd->baselist;
+		fnc = fmp_vd->ncomponents;
 	}
+	else {	// make up an artificial baselist
+		dummy_bl.dof = fmp_vd->dof;
+		dummy_bl.coef = (fmp_vd->dof >= 0) ? 1.0 : fmp_vd->bc_proj;
+		bl = &dummy_bl;
+		fnc = 1;
+	}
+
+	tmp = fmp_vd->baselist;
+	fmp_vd->baselist = merge_baselist(bl, fnc, baselist, nc, ncomp, true);
+	fmp_vd->ncomponents = ncomp;
+
+	::free(tmp);
+	::free(baselist);
 }
 
 
@@ -1214,7 +1243,7 @@ void Space::calc_mid_vertex_edge_ced(Word_t vtx, Word_t fmp, Word_t eid, int ori
 /// @param fid - id of the constraining facet
 /// @param ori - the orientation of the constraining facet
 void Space::calc_vertex_face_ced(Word_t vtx, Word_t fid, int ori, int iface, int hpart, int vpart) {
-	PRINTF("calc vertex/face #%d\n", vtx);
+	PRINTF("calc vertex/face #%ld\n", vtx);
 
 	FaceData *fd = fn_data[fid];
 	assert(fd != NULL);
@@ -1226,7 +1255,7 @@ void Space::calc_vertex_face_ced(Word_t vtx, Word_t fid, int ori, int iface, int
 	get_interval_part(hpart, h_lo, h_hi);
 	get_interval_part(vpart, v_lo, v_hi);
 
-	PRINTF(" - fid = %d, ori = %d, iface = %d, part = (%d, %d), comp = %d\n", fid, ori, iface, hpart, vpart, vd->ncomponents);
+	PRINTF(" - fid = %ld, ori = %d, iface = %d, part = (%d, %d), comp = %d\n", fid, ori, iface, hpart, vpart, vd->ncomponents);
 
 	if (fd->ced) {
 		EXIT(ERR_FAILURE, "Unusual vertex/face CED situation, please report.");
@@ -1252,6 +1281,7 @@ void Space::calc_vertex_face_ced(Word_t vtx, Word_t fid, int ori, int iface, int
 			}
 		}
 
+		BaseVertexComponent *tmp = vd->baselist;
 		int ncomp = 0;
 		vd->baselist = merge_baselist(vd->baselist, vd->ncomponents, baselist, fd->n, ncomp, true);
 		vd->ncomponents = ncomp;
@@ -1259,6 +1289,9 @@ void Space::calc_vertex_face_ced(Word_t vtx, Word_t fid, int ori, int iface, int
 		PRINTF("--\n");
 		for (int i = 0; i < vd->ncomponents; i++)
 			PRINTF(" - [%d]: dof = %d, coef = %lf\n", i, vd->baselist[i].dof, vd->baselist[i].coef);
+
+		::free(tmp);
+		::free(baselist);
 	}
 }
 
@@ -1268,7 +1301,7 @@ void Space::calc_vertex_face_ced(Word_t vtx, Word_t fid, int ori, int iface, int
 /// @param[in] epart - part of the edge
 /// @param[in] part - part of the edge
 void Space::calc_edge_edge_ced(Word_t seid, Word_t eid, int ori, int epart, int part) {
-	PRINTF("calc edge/edge #%d, #%d\n", seid, eid);
+	PRINTF("calc edge/edge #%ld, #%ld\n", seid, eid);
 
 	assert(eid != INVALID_IDX);
 	EdgeData *cng_ed = en_data[eid]; // constraining edge
@@ -1278,7 +1311,7 @@ void Space::calc_edge_edge_ced(Word_t seid, Word_t eid, int ori, int epart, int 
 	EdgeData *ed = en_data[seid];
 	assert(ed != NULL);
 
-	PRINTF(" *** part = %d, cng_eid = %d\n", part, eid);
+	PRINTF(" *** part = %d, cng_eid = %ld\n", part, eid);
 
 	if (cng_ed->ced) {
 		PRINTF(" - CED version\n");
@@ -1289,6 +1322,7 @@ void Space::calc_edge_edge_ced(Word_t seid, Word_t eid, int ori, int epart, int 
 			edge_bl[i] = cng_ed->edge_baselist[i];
 			edge_bl[i].part.part = combine_face_part(edge_bl[i].part.part, epart);
 		}
+		::free(ed->edge_baselist);
 		ed->edge_baselist = edge_bl;
 		ed->edge_ncomponents = ncomp;
 
@@ -1301,18 +1335,19 @@ void Space::calc_edge_edge_ced(Word_t seid, Word_t eid, int ori, int epart, int 
 			if (face_bl[i].dir == PART_ORI_VERT) face_bl[i].part.vert = combine_face_part(face_bl[i].part.vert, epart);
 			else face_bl[i].part.horz = combine_face_part(face_bl[i].part.horz, epart);
 		}
+		::free(ed->face_baselist);
 		ed->face_baselist = face_bl;
 		ed->face_ncomponents = ncomp;
 
 		for (int i = 0; i < ed->edge_ncomponents; i++) {
 			BaseEdgeComponent ec = ed->edge_baselist[i];
-			PRINTF(" - [%d]: edge_id = %d, ori = %d, part = %d, coef = %lf\n",
+			PRINTF(" - [%d]: edge_id = %ld, ori = %d, part = %d, coef = %lf\n",
 				i, ec.edge_id, ec.ori, ec.part.part, ec.coef);
 		}
 
 		for (int i = 0; i < ed->face_ncomponents; i++) {
 			BaseFaceComponent fc = ed->face_baselist[i];
-			PRINTF(" - [%d]: face_id = %d, ori = %d, part = (%d, %d), dir = %d, coef = %lf\n",
+			PRINTF(" - [%d]: face_id = %ld, ori = %d, part = (%d, %d), dir = %d, coef = %lf\n",
 				i, fc.face_id, fc.ori, fc.part.horz, fc.part.vert, fc.dir, fc.coef);
 		}
 
@@ -1325,20 +1360,24 @@ void Space::calc_edge_edge_ced(Word_t seid, Word_t eid, int ori, int epart, int 
 		baselist[0].part.part = part;
 		baselist[0].coef = 1.0;
 
+		BaseEdgeComponent *tmp = ed->edge_baselist;
 		int ncomp = 0;
 		ed->edge_baselist = merge_baselist(ed->edge_baselist, ed->edge_ncomponents, baselist, nc, ncomp, false);
 		ed->edge_ncomponents = ncomp;
 
 		for (int i = 0; i < ncomp; i++) {
 			BaseEdgeComponent ec = ed->edge_baselist[i];
-			PRINTF(" - [%d]: edge_id = %d, ori = %d, part = %d, coef = %lf\n",
+			PRINTF(" - [%d]: edge_id = %ld, ori = %d, part = %d, coef = %lf\n",
 				i, ec.edge_id, ec.ori, ec.part.part, ec.coef);
 		}
+
+		::free(tmp);
+		::free(baselist);
 	}
 }
 
 void Space::calc_mid_edge_edge_ced(Word_t meid, Word_t eid[], int ori[], int epart, int part) {
-	PRINTF("calc mid edge/edge #%d\n", meid);
+	PRINTF("calc mid edge/edge #%ld\n", meid);
 
 	assert(eid[0] != INVALID_IDX);
 	assert(eid[1] != INVALID_IDX);
@@ -1350,6 +1389,7 @@ void Space::calc_mid_edge_edge_ced(Word_t meid, Word_t eid[], int ori[], int epa
 	EdgeData *ed[] = { en_data[eid[0]], en_data[eid[1]] };
     BaseEdgeComponent *bl[2], dummy_bl[2];		// base lists of eid1 and eid2
 	int nc[2] = { 0, 0 };						// number of components of bl[0] and bl[1]
+	bool free_bl[2];							// tru if the bl[i] should be freed
 
 	// get baselists of vn[0] and vn[1] - pretend we have them even if they are unconstrained
 	for (int k = 0; k < 2; k++) {
@@ -1365,8 +1405,7 @@ void Space::calc_mid_edge_edge_ced(Word_t meid, Word_t eid[], int ori[], int epa
 
 			bl[k] = edge_bl;
 			nc[k] = ncomp;
-
-			// FIXME: edge_bl was allocated, but not deallocated
+			free_bl[k] = true;
 		}
 		else {	// make up an artificial baselist
 			dummy_bl[k].edge_id = eid[k];
@@ -1376,6 +1415,7 @@ void Space::calc_mid_edge_edge_ced(Word_t meid, Word_t eid[], int ori[], int epa
 
 			bl[k] = &dummy_bl[k];
 			nc[k] = 1;
+			free_bl[k] = false;
 		}
 	}
 
@@ -1385,9 +1425,12 @@ void Space::calc_mid_edge_edge_ced(Word_t meid, Word_t eid[], int ori[], int epa
 
 	for (int i = 0; i < ncomp; i++) {
 		BaseEdgeComponent ec = mid_ed->edge_baselist[i];
-		PRINTF(" - [%d]: edge_id = %d, ori = %d, part = %d, coef = %lf\n",
+		PRINTF(" - [%d]: edge_id = %ld, ori = %d, part = %d, coef = %lf\n",
 			i, ec.edge_id, ec.ori, ec.part.part, ec.coef);
 	}
+
+	if (free_bl[0]) ::free(bl[0]);
+	if (free_bl[1]) ::free(bl[1]);
 }
 
 
@@ -1398,7 +1441,7 @@ void Space::calc_mid_edge_edge_ced(Word_t meid, Word_t eid[], int ori[], int epa
 /// @param[in] fpart - face part
 /// @param[in] epart - edge part
 void Space::calc_edge_face_ced(Word_t mid_eid, Word_t eid[], Word_t fid, int ori, int iface, int part_ori, int fpart, int epart) {
-	PRINTF("calc edge/face #%d\n", mid_eid);
+	PRINTF("calc edge/face #%ld\n", mid_eid);
 
 	assert(fid != INVALID_IDX);
 	FaceData *cng_fnode = fn_data[fid]; // constraining face
@@ -1408,7 +1451,7 @@ void Space::calc_edge_face_ced(Word_t mid_eid, Word_t eid[], Word_t fid, int ori
 	EdgeData *mid_ed = en_data[mid_eid];
 	assert(mid_ed != NULL);
 
-	PRINTF(" - n = %d | face_id = %d, ori = %d, iface = %d, part (%d, %d), dir = %d\n",
+	PRINTF(" - n = %d | face_id = %ld, ori = %d, iface = %d, part (%d, %d), dir = %d\n",
 		cng_fnode->n, fid, ori, iface, fpart, epart, part_ori);
 
 	EdgeData *ed[] = { en_data[eid[0]], en_data[eid[1]] };
@@ -1439,15 +1482,18 @@ void Space::calc_edge_face_ced(Word_t mid_eid, Word_t eid[], Word_t fid, int ori
 	dummy_bl.dir = part_ori;
 	dummy_bl.coef = 1.0;
 
+	::free(mid_ed->face_baselist);
 	int ncomp = 0;
 	mid_ed->face_baselist = merge_baselist(&dummy_bl, 1, mbl, mnc, ncomp, fid, true);
 	mid_ed->face_ncomponents = ncomp;
 
 	for (int i = 0; i < ncomp; i++) {
 		BaseFaceComponent fc = mid_ed->face_baselist[i];
-		PRINTF(" - [%d]: face_id = %d, ori = %d, iface = %d, part = (%d, %d), dir = %d, coef = %lf\n",
+		PRINTF(" - [%d]: face_id = %ld, ori = %d, iface = %d, part = (%d, %d), dir = %d, coef = %lf\n",
 			i, fc.face_id, fc.ori, fc.iface, fc.part.horz, fc.part.vert, fc.dir, fc.coef);
 	}
+
+	::free(mbl);
 }
 
 /// @param[in] sfid - small facet id (constrained)
@@ -1456,7 +1502,7 @@ void Space::calc_edge_face_ced(Word_t mid_eid, Word_t eid[], Word_t fid, int ori
 /// @param[in] hpart - horizontal part
 /// @param[in] vpart - vertical part
 void Space::calc_face_face_ced(Word_t sfid, Word_t fid, int ori, int hpart, int vpart) {
-	PRINTF("calc face/face #%d\n", sfid);
+	PRINTF("calc face/face #%ld\n", sfid);
 
 	FaceData *fd = fn_data[sfid];
 	assert(fd != NULL);

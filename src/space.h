@@ -168,8 +168,7 @@ public: //remove me
 		}
 
 		~VertexData() {
-			if (ced)
-				free(baselist);
+			if (ced) ::free(baselist);
 		}
 
 		void dump(int id) {
@@ -217,8 +216,8 @@ public: //remove me
 		virtual ~EdgeData() {
 			delete [] bc_proj;
 			if (ced) {
-				free(edge_baselist);
-				free(face_baselist);
+				::free(edge_baselist);
+				::free(face_baselist);
 			}
 		}
 

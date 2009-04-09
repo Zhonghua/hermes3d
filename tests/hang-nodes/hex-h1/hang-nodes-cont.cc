@@ -193,7 +193,7 @@ public:
 //		max_order = max_edge_order = max_face_order = NUM_RULES;
 
 		int my_np_1d[MAX_LEVEL + 1];
-		double my_tables_1d[MAX_LEVEL + 1][100];
+		double my_tables_1d[MAX_LEVEL + 1][1000];
 
 		my_np_1d[0] = 4;
 		my_tables_1d[0][0] = -0.71;  my_tables_1d[0][1] = -0.59;
@@ -346,7 +346,7 @@ int main(int argc, char **args) {
 		reft_id = parse_reft(args[i + 1]);
 		mesh.refine_element(elem_id + 1, reft_id);
 	}
-	mesh.dump();
+//	mesh.dump();
 
 
 #ifdef OUTPUT_DIR
@@ -487,7 +487,7 @@ int main(int argc, char **args) {
 		int ipt = 0;
 
 		// find points
-		for(int order = 0; order < NUM_RULES; order++) {
+		for (int order = 0; order < NUM_RULES; order++) {
 			FOR_ALL_ACTIVE_ELEMENTS(idx, &mesh) {
 				Element *e = mesh.elements[idx];
 				ref_map.set_active_element(e);
@@ -547,7 +547,7 @@ int main(int argc, char **args) {
 
 
 		// loop over all basis functions
-		for (int dof = 0; dof < ndofs; dof++) {
+		for (int dof = 0; dof <= ndofs; dof++) {
 			printf("processing dof %d...\n", dof);
 
 			// prepare solution correspondig to basis function with dof dof
@@ -596,8 +596,38 @@ int main(int argc, char **args) {
 		delete [] pairs;
 		delete [] points;
 
-		printf("continuity tested in %d points and %d inner faces with at least one active adjacat element were not tested\n", num_pairs, nonchecked_faces);
+		printf("continuity tested in %d points and %d inner faces with at least one active adjacent element were not tested\n", num_pairs, nonchecked_faces);
 #endif
+
+#if 0
+		// loop over all basis functions
+		for (int dof = 0; dof <= ndofs; dof++) {
+			printf("dumping fn %d...\n", dof);
+
+			// prepare solution corresponding to basis function with dof 'dof'
+			double sln_vector[ndofs + 1];
+			memset(sln_vector, 0, (ndofs + 1) * sizeof(double));
+			sln_vector[dof] = 1.0;
+			sln.set_solution_vector(sln_vector, false);
+
+#ifdef OUTPUT_DIR
+			char of_name[512];
+			sprintf(of_name, "%s/f%d.gmsh", OUTPUT_DIR, dof);
+			FILE *ofile = fopen(of_name, "w");
+			if (ofile != NULL) {
+				GmshOutputEngine output(ofile);
+				output.out(&sln, "U");
+
+				fclose(ofile);
+			}
+			else {
+				ERROR("Cannot not open '%s' for writing.", of_name);
+			}
+#endif
+		}
+
+#endif
+
 		if (res != ERR_SUCCESS) throw res;
 
 		printf("Passed\n");

@@ -156,6 +156,7 @@ UMFPackVector::~UMFPackVector() {
 void UMFPackVector::alloc(int n) {
 	free();
 	v = new scalar[n];
+	memset(v, 0, n * sizeof(scalar));
 	ndofs = n;
 }
 

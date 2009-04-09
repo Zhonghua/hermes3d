@@ -79,7 +79,7 @@ void UMFPackMatrix::update(int m, int n, scalar v) {
 void UMFPackMatrix::update(int m, int n, scalar **mat, int *rows, int *cols) {
 	for (int i = 0; i < m; i++)				// rows
 		for (int j = 0; j < n; j++)			// cols
-			if (mat[i][j] != 0.0 && rows[i] != -1 && cols[j] != -1)			// -1 is a "dirichlet DOF" -> ignore it
+			if (mat[i][j] != 0.0 && rows[i] != DIRICHLET_DOF && cols[j] != DIRICHLET_DOF)		// ignore dirichlet DOFs
 				update(rows[i], cols[j], mat[i][j]);
 }
 

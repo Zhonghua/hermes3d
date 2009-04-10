@@ -135,6 +135,11 @@ public:
 
 	// Edges //////////////////////////////////////////////////////////////////////////////////////
 
+	double3x3 *get_edge_inv_ref_map(int edge, order1_t order) {
+		if (!cur_node->edge_inv_ref_map[edge].exists(order)) calc_edge_inv_ref_map(edge, order);
+		return cur_node->edge_inv_ref_map[edge][order];
+	}
+
 	/// @return The x-coordinates of the integration points transformed to the
 	/// physical domain of the element. Intended for integrals containing spatial
 	/// variables.
@@ -231,6 +236,11 @@ public:
 
 	// Vertices /////////
 
+	double3x3 *get_vertex_inv_ref_map() {
+		if (cur_node->vertex_inv_ref_map == NULL) calc_vertex_inv_ref_map();
+		return cur_node->vertex_inv_ref_map;
+	}
+
 	double *get_vertex_phys_x() {
 		if (cur_node->vertex_phys_x == NULL) calc_vertex_phys();
 		return cur_node->vertex_phys_x;
@@ -282,6 +292,7 @@ protected:
 		Array<double *>     phys_y;
 		Array<double *>     phys_z;
 
+		ArrayPtr<double3x3> *edge_inv_ref_map;
 		Array<double *>     *edge_phys_x;
 		Array<double *>     *edge_phys_y;
 		Array<double *>     *edge_phys_z;
@@ -299,6 +310,7 @@ protected:
 		ArrayPtr<Point3D>   *face_normal;
 		Point3D             *face_const_normal;
 
+		double3x3			*vertex_inv_ref_map;
 		double				*vertex_phys_x;
 		double				*vertex_phys_y;
 		double				*vertex_phys_z;
@@ -315,6 +327,7 @@ protected:
 	void calc_phys_y(order3_t order);
 	void calc_phys_z(order3_t order);
 
+	void calc_edge_inv_ref_map(int edge, order1_t order);
 	void calc_edge_phys_x(int edge, order1_t order);
 	void calc_edge_phys_y(int edge, order1_t order);
 	void calc_edge_phys_z(int edge, order1_t order);
@@ -327,6 +340,7 @@ protected:
 	void calc_face_phys_y(int face, order2_t order);
 	void calc_face_phys_z(int face, order2_t order);
 
+	void calc_vertex_inv_ref_map();
 	void calc_vertex_phys();
 
 	void *nodes;

@@ -37,7 +37,7 @@
 #define ERROR_FAILURE								-1
 
 // error should be smaller than this epsilon
-#define EPS								10e-12F
+#define EPS								10e-11F
 
 double (*exact_solution)(double x, double y, double z, double &dx, double &dy, double &dz);
 

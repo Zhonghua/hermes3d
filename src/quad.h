@@ -214,7 +214,7 @@ struct qorder_t {
 		unsigned edge: 4;			// the number of the local edge (if type == QOT_EDGE)
 		unsigned face: 4;			// the number of the local face (if type == QOT_FACE)
 	};
-	int order;				// order (has to be 32 bits long, since orderX_t types are designed to have such the length)
+	int order;						// order (has to be at least 32 bits long, since orderX_t types are designed to have such the length)
 
 	qorder_t(unsigned type) {
 		this->type = type;

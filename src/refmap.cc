@@ -444,7 +444,7 @@ void RefMap::calc_face_jacobian(int face, order2_t order) {
 			break;
 	}
 
-	// it is in fact not jacobian, but vector product
+	// in fact, it is not jacobian, but vector product
 	double *jac = new double[np];
 	MEM_CHECK(jac);
 	for (int i = 0; i < np; i++) {
@@ -623,6 +623,7 @@ void RefMap::init_node(Node **pp) {
 	node->nfaces = element->get_num_of_faces();
 
 	// edges
+	node->edge_inv_ref_map = new ArrayPtr<double3x3>[node->nedges]; MEM_CHECK(node->edge_inv_ref_map);
 	node->edge_phys_x = new Array<double *>[node->nedges]; MEM_CHECK(node->edge_phys_x);
 	node->edge_phys_y = new Array<double *>[node->nedges]; MEM_CHECK(node->edge_phys_y);
 	node->edge_phys_z = new Array<double *>[node->nedges]; MEM_CHECK(node->edge_phys_z);
@@ -648,6 +649,7 @@ void RefMap::init_node(Node **pp) {
 	node->face_phys_y = new Array<double *>[node->nfaces]; MEM_CHECK(node->face_phys_y);
 	node->face_phys_z = new Array<double *>[node->nfaces]; MEM_CHECK(node->face_phys_z);
 
+	node->vertex_inv_ref_map = NULL;
 	node->vertex_phys_x = NULL;
 	node->vertex_phys_y = NULL;
 	node->vertex_phys_z = NULL;
@@ -677,6 +679,11 @@ void RefMap::free_node(Node *node) {
 
 	// edges
 	for (int edge = 0; edge < node->nedges; edge++) {
+		if (node->edge_inv_ref_map != NULL) {
+			for (Word_t idx = node->edge_inv_ref_map[edge].first(); idx != INVALID_IDX; idx = node->edge_inv_ref_map[edge].next(idx))
+				delete [] node->edge_inv_ref_map[edge][idx];
+			node->edge_inv_ref_map[edge].remove_all();
+		}
 		if (node->edge_phys_x != NULL)
 			for (Word_t idx = node->edge_phys_x[edge].first(); idx != INVALID_IDX; idx = node->edge_phys_x[edge].next(idx))
 				delete [] node->edge_phys_x[edge][idx];
@@ -724,6 +731,7 @@ void RefMap::free_node(Node *node) {
 	delete [] node->face_phys_y;
 	delete [] node->face_phys_z;
 
+	delete node->vertex_inv_ref_map;
 	delete [] node->vertex_phys_x;
 	delete [] node->vertex_phys_y;
 	delete [] node->vertex_phys_z;
@@ -762,4 +770,115 @@ RefMap::Node **RefMap::handle_overflow() {
 	if (overflow != NULL) free_node(overflow);
 	overflow = NULL;
 	return &overflow;
+}
+
+void RefMap::calc_edge_inv_ref_map(int edge, order1_t order) {
+	qorder_t qord = EDGE_QORDER(edge, order);
+	int np = quad->get_edge_num_points(order1_t(qord.order));
+
+	double3x3 *m = new double3x3[np];
+	MEM_CHECK(m);
+	memset(m, 0, np * sizeof(double3x3));
+	pss->force_transform(sub_idx, ctm);
+	for (int i = 0; i < num_coefs; i++) {
+		double *dx, *dy, *dz;
+		pss->set_active_shape(indices[i]);
+		pss->set_quad_order(qord);
+		pss->get_dx_dy_dz_values(dx, dy, dz);
+		for (int j = 0; j < np; j++) {
+			m[j][0][0] += coefs[i].x * dx[j];
+			m[j][0][1] += coefs[i].x * dy[j];
+			m[j][0][2] += coefs[i].x * dz[j];
+			m[j][1][0] += coefs[i].y * dx[j];
+			m[j][1][1] += coefs[i].y * dy[j];
+			m[j][1][2] += coefs[i].y * dz[j];
+			m[j][2][0] += coefs[i].z * dx[j];
+			m[j][2][1] += coefs[i].z * dy[j];
+			m[j][2][2] += coefs[i].z * dz[j];
+		}
+	}
+
+	double trj = get_transform_jacobian();
+	double3x3 *irm = new double3x3[np];
+	MEM_CHECK(irm);
+	double *jac = new double[np];
+	MEM_CHECK(jac);
+	for (int i = 0; i < np; i++) {
+		jac[i] =
+			m[i][0][0] * m[i][1][1] * m[i][2][2] + m[i][0][1] * m[i][1][2] * m[i][2][0] + m[i][0][2] * m[i][1][0] * m[i][2][1] -
+			m[i][2][0] * m[i][1][1] * m[i][0][2] - m[i][2][1] * m[i][1][2] * m[i][0][0] - m[i][2][2] * m[i][1][0] * m[i][0][1];
+
+		double ij = 1.0 / jac[i];
+		irm[i][0][0] = (m[i][1][1] * m[i][2][2] - m[i][1][2] * m[i][2][1]) * ij;
+		irm[i][1][0] = (m[i][0][2] * m[i][2][1] - m[i][0][1] * m[i][2][2]) * ij;
+		irm[i][2][0] = (m[i][0][1] * m[i][1][2] - m[i][0][2] * m[i][1][1]) * ij;
+		irm[i][0][1] = (m[i][1][2] * m[i][2][0] - m[i][1][0] * m[i][2][2]) * ij;
+		irm[i][1][1] = (m[i][0][0] * m[i][2][2] - m[i][0][2] * m[i][2][0]) * ij;
+		irm[i][2][1] = (m[i][0][2] * m[i][1][0] - m[i][0][0] * m[i][1][2]) * ij;
+		irm[i][0][2] = (m[i][1][0] * m[i][2][1] - m[i][1][1] * m[i][2][0]) * ij;
+		irm[i][1][2] = (m[i][0][1] * m[i][2][0] - m[i][0][0] * m[i][2][1]) * ij;
+		irm[i][2][2] = (m[i][0][0] * m[i][1][1] - m[i][0][1] * m[i][1][0]) * ij;
+
+	    jac[i] *= trj;
+	}
+
+	cur_node->edge_inv_ref_map[edge][order] = irm;
+
+	delete [] m;
+	delete [] jac;
+}
+
+void RefMap::calc_vertex_inv_ref_map() {
+	int np = quad->get_vertex_num_points();
+
+	double3x3 *m = new double3x3[np];
+	MEM_CHECK(m);
+	memset(m, 0, np * sizeof(double3x3));
+	pss->force_transform(sub_idx, ctm);
+	for (int i = 0; i < num_coefs; i++) {
+		double *dx, *dy, *dz;
+		pss->set_active_shape(indices[i]);
+		pss->set_quad_order(VTX_QORDER());
+		pss->get_dx_dy_dz_values(dx, dy, dz);
+		for (int j = 0; j < np; j++) {
+			m[j][0][0] += coefs[i].x * dx[j];
+			m[j][0][1] += coefs[i].x * dy[j];
+			m[j][0][2] += coefs[i].x * dz[j];
+			m[j][1][0] += coefs[i].y * dx[j];
+			m[j][1][1] += coefs[i].y * dy[j];
+			m[j][1][2] += coefs[i].y * dz[j];
+			m[j][2][0] += coefs[i].z * dx[j];
+			m[j][2][1] += coefs[i].z * dy[j];
+			m[j][2][2] += coefs[i].z * dz[j];
+		}
+	}
+
+	double trj = get_transform_jacobian();
+	double3x3 *irm = new double3x3[np];
+	MEM_CHECK(irm);
+	double *jac = new double[np];
+	MEM_CHECK(jac);
+	for (int i = 0; i < np; i++) {
+		jac[i] =
+			m[i][0][0] * m[i][1][1] * m[i][2][2] + m[i][0][1] * m[i][1][2] * m[i][2][0] + m[i][0][2] * m[i][1][0] * m[i][2][1] -
+			m[i][2][0] * m[i][1][1] * m[i][0][2] - m[i][2][1] * m[i][1][2] * m[i][0][0] - m[i][2][2] * m[i][1][0] * m[i][0][1];
+
+		double ij = 1.0 / jac[i];
+		irm[i][0][0] = (m[i][1][1] * m[i][2][2] - m[i][1][2] * m[i][2][1]) * ij;
+		irm[i][1][0] = (m[i][0][2] * m[i][2][1] - m[i][0][1] * m[i][2][2]) * ij;
+		irm[i][2][0] = (m[i][0][1] * m[i][1][2] - m[i][0][2] * m[i][1][1]) * ij;
+		irm[i][0][1] = (m[i][1][2] * m[i][2][0] - m[i][1][0] * m[i][2][2]) * ij;
+		irm[i][1][1] = (m[i][0][0] * m[i][2][2] - m[i][0][2] * m[i][2][0]) * ij;
+		irm[i][2][1] = (m[i][0][2] * m[i][1][0] - m[i][0][0] * m[i][1][2]) * ij;
+		irm[i][0][2] = (m[i][1][0] * m[i][2][1] - m[i][1][1] * m[i][2][0]) * ij;
+		irm[i][1][2] = (m[i][0][1] * m[i][2][0] - m[i][0][0] * m[i][2][1]) * ij;
+		irm[i][2][2] = (m[i][0][0] * m[i][1][1] - m[i][0][1] * m[i][1][0]) * ij;
+
+	    jac[i] *= trj;
+	}
+
+	cur_node->vertex_inv_ref_map = irm;
+
+	delete [] m;
+	delete [] jac;
 }

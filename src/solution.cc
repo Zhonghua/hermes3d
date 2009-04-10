@@ -259,7 +259,7 @@ void Solution::precalculate(qorder_t qord, int mask) {
 		}
 
 		if (trans) {
-			double3x3 *m;
+			double3x3 *m = NULL;
 			int mstep;
 
 	        update_refmap();
@@ -270,8 +270,15 @@ void Solution::precalculate(qorder_t qord, int mask) {
 			}
 			else {
 				// array of inverse ref. maps
-				m = refmap->get_inv_ref_map(order3_t::from_int(qord.order));
 				mstep = 1;
+				switch (qord.type) {
+					case QOT_ELEMENT: m = refmap->get_inv_ref_map(order3_t::from_int(qord.order)); break;
+					case QOT_FACE: m = refmap->get_face_inv_ref_map(qord.face, order2_t::from_int(qord.order)); break;
+					case QOT_EDGE: m = refmap->get_edge_inv_ref_map(qord.face, order1_t(qord.order)); break;
+					case QOT_VERTEX: m = refmap->get_vertex_inv_ref_map(); break;
+					default: assert(false);
+				}
+
 			}
 
 			for (i = 0; i < np; i++, m += mstep) {

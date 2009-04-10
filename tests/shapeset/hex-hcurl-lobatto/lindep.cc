@@ -109,6 +109,7 @@ bool test_lin_indep(Shapeset *shapeset) {
 		for (int j = 0; j < n; j++)
 			mat.pre_add_ij(i, j);
 	mat.alloc();
+	rhs.alloc(n);
 
 	printf("assembling matrix ");
 

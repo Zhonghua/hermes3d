@@ -34,7 +34,7 @@
 
 /// Represents the discretization of the solved problem
 ///
-/// TODO
+/// TODO: description
 /// @ingroup assembling
 class Discretization {
 public:

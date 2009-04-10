@@ -342,7 +342,7 @@ void Solution::save_solution_vector(char *filename, int ndofs) {
 
 
 void Solution::load_solution_vector(char *filename, int ndofs) {
-	// todo: check that set_space_and_pss has been called
+	// TODO: check that set_space_and_pss has been called
 	FILE *f = fopen(filename, "rb");
 	if (f == NULL) ERROR("Cannot open %s.", filename);
 	free();

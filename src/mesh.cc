@@ -1957,15 +1957,15 @@ void Mesh::refine_all_elements(int refinement) {
 }
 
 void Mesh::refine_by_criterion(int(*criterion)(Element* e), int depth) {
-	// TODO
+	// TODO: implement me
 }
 
 void Mesh::unrefine_element(Word_t id) {
-	// TODO
+	// TODO: implement me
 }
 
 void Mesh::unrefine_all_elements() {
-	// TODO
+	// TODO: implement me
 }
 
 Word_t Mesh::create_midpoint(Word_t a, Word_t b) {

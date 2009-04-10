@@ -353,7 +353,7 @@ void RefMap::calc_edge_phys_z(int edge, order1_t order) {
 
 // face related //
 
-//TODO rewrite in simmilar way to nonconst function
+// TODO: rewrite in similar way for non-constant functions
 void RefMap::calc_face_const_jacobian(int face) {
 	assert(cur_node->face_mode[face] == MODE_TRIANGLE);
 

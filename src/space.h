@@ -386,7 +386,7 @@ public: // remove me
 				double v_lo, v_hi;		// limits in vertical direction
 			};
 			struct {					// triangle part
-				// TODO
+				// TODO: implement me
 			};
 		};
 

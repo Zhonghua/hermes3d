@@ -1730,7 +1730,6 @@ void Space::uc_face(Word_t eid, int iface) {
 		case REFT_QUAD_BOTH:
 			PRINTF("BOTH\n");
 
-			// TODO
 			emp[0] = mesh->peek_midpoint(vtcs[0], vtcs[1]);
 			emp[1] = mesh->peek_midpoint(vtcs[1], vtcs[2]);
 			emp[2] = mesh->peek_midpoint(vtcs[2], vtcs[3]);

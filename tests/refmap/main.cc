@@ -64,7 +64,7 @@ int main(int argc, char *argv[]) {
 	    bool const_jac = refmap.is_jacobian_const();
 	    printf(" - const jacobian: %s\n", const_jac ? "yes" : "no");
 	    if (const_jac) {
-	    	// TODO
+	    	// TODO: implement me
 	    }
 	    else {
 	    	order3_t o3(2, 2, 2);

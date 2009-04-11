@@ -89,7 +89,7 @@ void PetscMatrix::update(int m, int n, scalar **mat, int *rows, int *cols) {
 #endif
 }
 
-bool PetscMatrix::dump(FILE *file, const char *var_name, EMatrixDumpFormat) {
+bool PetscMatrix::dump(FILE *file, const char *var_name, EMatrixDumpFormat fmt) {
 #ifdef WITH_PETSC
 #endif
 	return false;
@@ -99,6 +99,12 @@ int PetscMatrix::get_matrix_size() const {
 	return 0;
 }
 
+void PetscMatrix::finish() {
+#ifdef WITH_PETSC
+	MatAssemblyBegin(matrix, MAT_FINAL_ASSEMBLY);
+	MatAssemblyEnd(matrix, MAT_FINAL_ASSEMBLY);
+#endif
+}
 
 // PETSc vector //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -147,6 +153,13 @@ bool PetscVector::dump(FILE *file, const char *var_name, EMatrixDumpFormat) {
 	return false;
 }
 
+void PetscVector::finish() {
+#ifdef WITH_PETSC
+	VecAssemblyBegin(vec);
+	VecAssemblyEnd(vec);
+#endif
+}
+
 // PETSc linear solver ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 PetscLinearSolver::PetscLinearSolver(PetscMatrix &mat, PetscVector &rhs)
@@ -170,10 +183,8 @@ bool PetscLinearSolver::solve() {
 #ifdef WITH_PETSC
 	assert(m.ndofs == rhs.ndofs);
 
-	MatAssemblyBegin(m.matrix, MAT_FINAL_ASSEMBLY);
-	MatAssemblyEnd(m.matrix, MAT_FINAL_ASSEMBLY);
-	VecAssemblyBegin(rhs.vec);
-	VecAssemblyEnd(rhs.vec);
+	m.finish();
+	rhs.finish();
 
 	PetscErrorCode ec;
 	KSP ksp;

@@ -45,6 +45,9 @@ public:
 	virtual bool dump(FILE *file, const char *var_name, EMatrixDumpFormat fmt = DF_MATLAB_SPARSE);
 	virtual int get_matrix_size() const;
 
+	// finish assembling of the matrix
+	virtual void finish();
+
 protected:
 #ifdef WITH_PETSC
 	Mat matrix;
@@ -66,6 +69,9 @@ public:
 	virtual void update(int idx, scalar y);
 	virtual void update(int n, int *idx, scalar *y);
 	virtual bool dump(FILE *file, const char *var_name, EMatrixDumpFormat fmt = DF_MATLAB_SPARSE);
+
+	// finish assembling of the vector
+	virtual void finish();
 
 protected:
 #ifdef WITH_PETSC

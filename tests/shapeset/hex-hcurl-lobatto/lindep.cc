@@ -22,10 +22,10 @@
 //
 
 #include "config.h"
-#include "common.h"
 #include <hermes3d.h>
 #include <common/trace.h>
 #include <common/error.h>
+#include "common.h"
 
 // TODO: Mostly the same as for H1 => review the code
 

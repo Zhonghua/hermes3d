@@ -33,7 +33,7 @@
 #include <common/error.h>
 
 #define BEGIN_BLOCK						{
-#define END_BLOCK							}
+#define END_BLOCK						}
 
 //#define DIRICHLET
 //#define NEWTON
@@ -303,7 +303,7 @@ int compare(Point **pt1, Point **pt2) {
 	else return 0;
 }
 
-const double EPS = 1e-13;
+const double EPSILON = 1e-13;
 const double TOLERANCE = 1e-10;
 
 bool equal(Point *pt1, Point *pt2) {
@@ -460,7 +460,7 @@ int main(int argc, char **args) {
 		printf(" - L2 solution norm:   % le\n", l2_sln_norm);
 		printf(" - L2 error norm:      % le\n", l2_err_norm);
 
-		if (h1_err_norm > EPS || l2_err_norm > EPS) {
+		if (h1_err_norm > EPSILON || l2_err_norm > EPSILON) {
 			// calculated solution is not enough precise
 			res = ERR_FAILURE;
 			printf("Solution is not precise enough.\n");

@@ -1,6 +1,7 @@
 #cmakedefine WITH_UMFPACK
 #cmakedefine WITH_PARDISO
 #cmakedefine WITH_PETSC
+#cmakedefine WITH_SLEPC
 #cmakedefine WITH_HDF5
 #cmakedefine WITH_MPI
 

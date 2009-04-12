@@ -121,7 +121,6 @@ if(WITH_PARDISO)
 endif(WITH_PARDISO)
 
 # eigen solvers
-
 if(WITH_SLEPC)
 	# SLEPC need PETSc
 	if(NOT PETSC_FOUND)
@@ -129,6 +128,7 @@ if(WITH_SLEPC)
 	endif(NOT PETSC_FOUND)
 	find_package(SLEPC REQUIRED)
 	set(HAVE_EIGEN_SOLVER YES)
+	set(WITH_PETSC YES)                # SLEPC implies PETSc
 endif(WITH_SLEPC)
 
 

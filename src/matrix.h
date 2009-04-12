@@ -195,6 +195,8 @@ public:
 
 	virtual bool dump(FILE *file, const char *var_name, EMatrixDumpFormat = DF_MATLAB_SPARSE) = 0;
 
+	virtual int get_length() { return ndofs; }
+
 protected:
 	int ndofs;
 };

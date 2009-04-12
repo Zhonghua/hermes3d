@@ -18,15 +18,61 @@
 
 #include "slepc.h"
 
-SlepcEigenSolver::SlepcEigenSolver(SlepcMatrix &a, SlepcMatrix &b)
+SlepcEigenSolver::SlepcEigenSolver(PetscMatrix &a, PetscMatrix &b)
 	: a(a), b(b)
 {
+#ifdef WITH_SLEPC
+	EPSCreate(PETSC_COMM_WORLD, &eps);
+	EPSSetOperators(eps, a.matrix, b.matrix);
+#endif
 }
 
 SlepcEigenSolver::~SlepcEigenSolver() {
+#ifdef WITH_SLEPC
+	EPSDestroy(eps);
+#endif
 }
 
 bool SlepcEigenSolver::solve() {
-	// TODO
+#ifdef WITH_SLEPC
+	// default initialization
+	PetscErrorCode ec;
+	ec = EPSSolve(eps);
+	return !ec;
+#else
 	return false;
+#endif
+}
+
+int SlepcEigenSolver::get_converged() {
+#ifdef WITH_SLEPC
+	int nconv;
+	EPSGetConverged(eps, &nconv);
+	return nconv;
+#else
+	return 0;
+#endif
+}
+
+void SlepcEigenSolver::get_eigen_pair(int j, scalar *kr, scalar *ki, PetscVector *xr, PetscVector *xi) {
+#ifdef WITH_SLEPC
+	MatGetVecs(a.matrix, PETSC_NULL, &xr->vec);
+	MatGetVecs(a.matrix, PETSC_NULL, &xi->vec);
+
+	EPSGetEigenpair(eps, (PetscInt) j, (PetscScalar *) kr, (PetscScalar *) ki, xr->vec, xi->vec);
+
+	// set size of the xr, xi vector
+	VecGetSize(xr->vec, &xr->ndofs);
+	VecGetSize(xi->vec, &xi->ndofs);
+#endif
+}
+
+double SlepcEigenSolver::compute_relative_error(int j) {
+#ifdef WITH_SLEPC
+	PetscReal err = 1.0;
+	EPSComputeRelativeError(eps, j, &err);
+	return (double) err;
+#else
+	return 0.0;
+#endif
 }

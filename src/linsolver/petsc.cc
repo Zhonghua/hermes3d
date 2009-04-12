@@ -21,6 +21,7 @@
 #include "petsc.h"
 #include <common/trace.h>
 #include <common/error.h>
+#include <common/utils.h>
 
 PetscMatrix::PetscMatrix() {
 	inited = false;
@@ -91,6 +92,23 @@ void PetscMatrix::update(int m, int n, scalar **mat, int *rows, int *cols) {
 
 bool PetscMatrix::dump(FILE *file, const char *var_name, EMatrixDumpFormat fmt) {
 #ifdef WITH_PETSC
+	switch (fmt) {
+		case DF_MATLAB_SPARSE:
+			EXIT(ERR_NOT_IMPLEMENTED);
+			return false;
+
+		case DF_HERMES_BIN: {
+			EXIT(ERR_NOT_IMPLEMENTED);
+			return false;
+		}
+
+		case DF_PLAIN_ASCII:
+			EXIT(ERR_NOT_IMPLEMENTED);
+			return false;
+
+		default:
+			return false;
+	}
 #endif
 	return false;
 }
@@ -147,8 +165,38 @@ void PetscVector::update(int n, int *idx, scalar *y) {
 #endif
 }
 
-bool PetscVector::dump(FILE *file, const char *var_name, EMatrixDumpFormat) {
+bool PetscVector::dump(FILE *file, const char *var_name, EMatrixDumpFormat fmt) {
 #ifdef WITH_PETSC
+	PetscScalar *a;
+
+	switch (fmt) {
+		case DF_MATLAB_SPARSE:
+			fprintf(file, "%% Size: %dx1\n%s = [\n", this->ndofs, var_name);
+			a = get_vector();
+			for (int i = 0; i < this->ndofs; i++)
+				fprintf(file, SCALAR_FMT "\n", SCALAR(a[i]));
+			fprintf(file, " ];\n");
+			restore(a);
+			return true;
+
+		case DF_HERMES_BIN: {
+			hermes_fwrite("H2DR\001\000\000\000", 1, 8, file);
+			a = get_vector();
+			int ssize = sizeof(scalar);
+			hermes_fwrite(&ssize, sizeof(int), 1, file);
+			hermes_fwrite(&ndofs, sizeof(int), 1, file);
+			hermes_fwrite(a, sizeof(scalar), ndofs, file);
+			restore(a);
+			return true;
+		}
+
+		case DF_PLAIN_ASCII:
+			EXIT(ERR_NOT_IMPLEMENTED);
+			return false;
+
+		default:
+			return false;
+	}
 #endif
 	return false;
 }
@@ -157,6 +205,22 @@ void PetscVector::finish() {
 #ifdef WITH_PETSC
 	VecAssemblyBegin(vec);
 	VecAssemblyEnd(vec);
+#endif
+}
+
+scalar *PetscVector::get_vector() {
+#ifdef WITH_PETSC
+	scalar *a;
+	VecGetArray(vec, &a);
+	return a;
+#else
+	return NULL;
+#endif
+}
+
+void PetscVector::restore(scalar *v) {
+#ifdef WITH_PETSC
+	VecRestoreArray(vec, &v);
 #endif
 }
 

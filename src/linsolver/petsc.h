@@ -55,6 +55,7 @@ protected:
 	bool inited;
 
 	friend class PetscLinearSolver;
+	friend class SlepcEigenSolver;
 };
 
 /// Wrapper of PETSc vector, to store vectors used with PETSc in its native format
@@ -73,6 +74,9 @@ public:
 	// finish assembling of the vector
 	virtual void finish();
 
+	virtual double *get_vector();
+	virtual void restore(double *v);
+
 protected:
 #ifdef WITH_PETSC
 	Vec vec;
@@ -80,6 +84,7 @@ protected:
 	bool inited;
 
 	friend class PetscLinearSolver;
+	friend class SlepcEigenSolver;
 };
 
 /// Encapsulation of PETSc linear solver

@@ -40,6 +40,7 @@ set(SRC
 	linsolver/pardiso.cc
 	linsolver/petsc.cc
 	linsolver/umfpack.cc
+	${HERMES_COMMON_DIR}/callstack.cc
 	${HERMES_COMMON_DIR}/trace.cc
 	${HERMES_COMMON_DIR}/error.cc
 	${HERMES_COMMON_DIR}/utils.cc
@@ -87,6 +88,7 @@ set(INC_COMMON
 	${HERMES_COMMON_DIR}/error.h
 	${HERMES_COMMON_DIR}/trace.h
 	${HERMES_COMMON_DIR}/timer.h
+	${HERMES_COMMON_DIR}/callstack.h
 )
 
 set(INC_SPACE

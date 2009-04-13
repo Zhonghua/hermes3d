@@ -84,6 +84,8 @@ int main(int argc, char **args) {
 
 #if defined GMSH
 	GmshOutputEngine output(stdout);
+#elif defined VTK
+	VtkOutputEngine output(stdout);
 #endif
 
 	if (strcmp(type, "sln") == 0) {

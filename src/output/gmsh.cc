@@ -559,11 +559,12 @@ void GmshOutputEngine::out_orders(Space *space, const char *name) {
 	fprintf(this->out_file, "$EndMeshFormat\n");
 
 	// HEX specific
+	Array<Vertex *> out_vtcs;	// vertices
+	Array<int> vtx_pt;			// mapping from mesh vertex id to output vertex id
+	MapHSOrd face_pts;			// id of points on faces
+	MapHSOrd ctr_pts;			// id of points in the center
 
 	// nodes
-	fprintf(this->out_file, "$Nodes\n");
-	fprintf(this->out_file, "%ld\n", mesh->get_num_active_elements() * 15);
-	int id = 1;
 	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
 		Element *element = mesh->elements[idx];
 		int nv = Hex::NUM_VERTICES;
@@ -572,61 +573,71 @@ void GmshOutputEngine::out_orders(Space *space, const char *name) {
 
 		for (int i = 0; i < nv; i++) {
 			Vertex *v = mesh->vertices[vtcs[i]];
-			fprintf(this->out_file, "%d %lf %lf %lf\n", id++, v->x, v->y, v->z);
+			Word_t idx = out_vtcs.add(new Vertex(*v));
+			vtx_pt[vtcs[i]] = idx;
 		}
 
 		for (int iface = 0; iface < Hex::NUM_FACES; iface++) {
 			Word_t fvtcs[Quad::NUM_VERTICES];
 			element->get_face_vertices(iface, fvtcs);
-			Vertex *v[4] = {mesh->vertices[fvtcs[0]], mesh->vertices[fvtcs[1]], mesh->vertices[fvtcs[2]], mesh->vertices[fvtcs[3]]};
-			Vertex fcenter((v[0]->x + v[2]->x) / 2.0, (v[0]->y + v[2]->y) / 2.0, (v[0]->z + v[2]->z) / 2.0);
-			fprintf(this->out_file, "%d %lf %lf %lf\n", id++, fcenter.x, fcenter.y, fcenter.z);
+
+			Word_t k[] = { fvtcs[0], fvtcs[1], fvtcs[2], fvtcs[3] };
+			Word_t idx = INVALID_IDX;
+			if (!face_pts.lookup(k, Quad::NUM_VERTICES, idx)) {
+				// create new vertex
+				Vertex *v[4] = { mesh->vertices[fvtcs[0]], mesh->vertices[fvtcs[1]], mesh->vertices[fvtcs[2]], mesh->vertices[fvtcs[3]] };
+				Vertex *fcenter = new Vertex((v[0]->x + v[2]->x) / 2.0, (v[0]->y + v[2]->y) / 2.0, (v[0]->z + v[2]->z) / 2.0);
+				Word_t idx = out_vtcs.add(fcenter);
+				face_pts.set(k, Quad::NUM_VERTICES, idx);
+			}
 		}
 
-		Vertex *v[4] = {mesh->vertices[vtcs[0]], mesh->vertices[vtcs[1]], mesh->vertices[vtcs[3]], mesh->vertices[vtcs[4]]};
-		Vertex center((v[0]->x + v[1]->x) / 2.0, (v[0]->y + v[2]->y) / 2.0, (v[0]->z + v[3]->z) / 2.0);
-		fprintf(this->out_file, "%d %lf %lf %lf\n", id++, center.x, center.y, center.z);
+		Word_t c[] = { vtcs[0], vtcs[1], vtcs[2], vtcs[3], vtcs[4], vtcs[5], vtcs[6], vtcs[7] };
+		Word_t idx = INVALID_IDX;
+		if (!ctr_pts.lookup(c, Hex::NUM_VERTICES, idx)) {
+			// create new vertex
+			Vertex *v[4] = { mesh->vertices[vtcs[0]], mesh->vertices[vtcs[1]], mesh->vertices[vtcs[3]], mesh->vertices[vtcs[4]] };
+			Vertex *center = new Vertex((v[0]->x + v[1]->x) / 2.0, (v[0]->y + v[2]->y) / 2.0, (v[0]->z + v[3]->z) / 2.0);
+			Word_t idx = out_vtcs.add(center);
+			ctr_pts.set(c, Hex::NUM_VERTICES, idx);
+		}
+	}
+
+	fprintf(this->out_file, "$Nodes\n");
+	fprintf(this->out_file, "%ld\n", out_vtcs.count());
+	for (Word_t i = out_vtcs.first(); i != INVALID_IDX; i = out_vtcs.next(i)) {
+		Vertex *v = out_vtcs[i];
+		fprintf(this->out_file, "%ld %lf %lf %lf\n", i + 1, v->x, v->y, v->z);			// IDs for GMSH are indexed from 1
+		delete v;																		// we no longer need the vertex data
 	}
 	fprintf(this->out_file, "$EndNodes\n");
 
-	// elements
+	// faces that edges coincide with
+	int eface[][2] = {
+		{ 2, 4 }, { 1, 4 }, { 3, 4 }, { 0, 4 },
+		{ 2, 0 }, { 1, 2 }, { 3, 1 }, { 0, 3 },
+		{ 2, 5 }, { 1, 5 }, { 3, 5 }, { 0, 5 }
+	};
+	int id = 1;
 	fprintf(this->out_file, "$Elements\n");
-	// FIXME: hex specific
-	fprintf(this->out_file, "%ld\n", mesh->get_num_active_elements() + (mesh->get_num_active_elements() * Hex::NUM_EDGES));
-	id = 1;
-	// trick: put the elements first so that they will be visible in gmsh
+	fprintf(this->out_file, "%ld\n", mesh->get_num_active_elements() * Hex::NUM_EDGES);
 	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
 		Element *element = mesh->elements[idx];
 		Word_t vtcs[element->get_num_of_vertices()];
 		element->get_vertices(vtcs);
 
-		fprintf(this->out_file, "%d 5 0 %ld %ld %ld %ld %ld %ld %ld %ld\n",
-			id++, vtcs[0], vtcs[1], vtcs[2], vtcs[3], vtcs[4], vtcs[5], vtcs[6], vtcs[7]);
-	}
-	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
-		Element *element = mesh->elements[idx];
-		Word_t vtcs[element->get_num_of_vertices()];
-		element->get_vertices(vtcs);
+		for (int iedge = 0; iedge < Hex::NUM_EDGES; iedge++) {
+			Word_t fvtcs[2][Quad::NUM_VERTICES];
+			element->get_face_vertices(eface[iedge][0], fvtcs[0]);
+			element->get_face_vertices(eface[iedge][1], fvtcs[1]);
 
-		// orders
-		int pyrel[][4] = {
-			{  1,  9,  5, 10 },
-			{  2, 11,  6,  9 },
-			{  7,  8,  3, 11 },
-			{  0, 10,  4,  8 },
-			{  0, 10,  1, 12 },
-			{  1,  9,  2, 12 },
-			{  2, 11,  3, 12 },
-			{  3, 12,  0,  8 },
-			{  4, 10,  5, 13 },
-			{  5,  9,  6, 13 },
-			{  6, 11,  7, 13 },
-			{  7, 13,  4,  8 }
-		};
+			Word_t fidx[2] = { INVALID_IDX, INVALID_IDX };
+			face_pts.lookup(fvtcs[0], Quad::NUM_VERTICES, fidx[0]);
+			face_pts.lookup(fvtcs[1], Quad::NUM_VERTICES, fidx[1]);
 
-		for (int i = 0; i < Hex::NUM_EDGES; i++) {
-			Word_t base = (idx - 1) * 15;
-			Word_t v[4] = { base + pyrel[i][0] + 1, base + pyrel[i][1] + 1, base + pyrel[i][2] + 1, base + pyrel[i][3] + 1 };
+			Word_t evtcs[2];
+			element->get_edge_vertices(iedge, evtcs);
+			Word_t v[4] = { vtx_pt[evtcs[0]] + 1, fidx[0] + 1, vtx_pt[evtcs[1]] + 1, fidx[1] + 1 };
 			fprintf(this->out_file, "%d 3 0 %ld %ld %ld %ld\n", id++, v[0], v[1], v[2], v[3]);
 		}
 	}
@@ -640,9 +651,8 @@ void GmshOutputEngine::out_orders(Space *space, const char *name) {
 	fprintf(this->out_file, "%d\n", 3);
 	fprintf(this->out_file, "0\n"); // time step (not used, but has to be there)
 	fprintf(this->out_file, "1\n"); // 1 value per node
-	fprintf(this->out_file, "%ld\n", (mesh->get_num_active_elements() * Hex::NUM_EDGES));
-
-	id = mesh->get_num_active_elements() + 1;
+	fprintf(this->out_file, "%ld\n", mesh->get_num_active_elements() * Hex::NUM_EDGES);
+	id = 1;
 	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
 		Element *element = mesh->elements[idx];
 		int mode = element->get_mode();
@@ -650,16 +660,15 @@ void GmshOutputEngine::out_orders(Space *space, const char *name) {
 		// get order from the space
 		order3_t order = space->get_element_order(idx);
 
-		for (int i = 0; i < Hex::NUM_EDGES; i++) {
+		for (int iedge = 0; iedge < Hex::NUM_EDGES; iedge++) {
 			int dord;
-			if (i == 0 || i == 1 || i == 2 || i == 3) dord = order.z;
-			else if (i == 4 || i == 6 || i == 8 || i == 10) dord = order.x;
-			else if (i == 5 || i == 7 || i == 9 || i == 11) dord = order.y;
+			if (iedge == 0 || iedge == 2 || iedge == 8 || iedge == 10) dord = order.x;
+			else if (iedge == 1 || iedge == 3 || iedge == 9 || iedge == 11) dord = order.y;
+			else if (iedge == 4 || iedge == 5 || iedge == 6 || iedge == 7) dord = order.z;
 			else assert(false);
 			fprintf(this->out_file, "%d 4 %d %d %d %d\n", id++, dord, dord, dord, dord);
 		}
 
 	}
-
 	fprintf(this->out_file, "$EndElementNodeData\n");
 }

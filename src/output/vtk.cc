@@ -194,6 +194,7 @@ void VtkOutputEngine::dump_points(MeshFunction *fn) {
 	int type_id[] = { VTK_TETRA, VTK_HEXAHEDRON, VTK_WEDGE };
 	Mesh *mesh = fn->get_mesh();
 
+	Word_t base = 0;
 	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
 		Element *element = mesh->elements[idx];
 		int mode = element->get_mode();
@@ -210,7 +211,7 @@ void VtkOutputEngine::dump_points(MeshFunction *fn) {
 		double *phys_y = refmap->get_phys_y(order);
 		double *phys_z = refmap->get_phys_z(order);
 
-		// insert points int the vertex array
+		// insert points in the vertex array
 		int np = quad->get_num_points(order);
 		for (int i = 0; i < np; i++) {
 			Point3D *pt = new Point3D;
@@ -227,7 +228,7 @@ void VtkOutputEngine::dump_points(MeshFunction *fn) {
 					for (unsigned int j = 0; j < order.y; j++) {
 						for (unsigned int o = 0; o < order.z; o++) {
 							int *cell = new int [Hex::NUM_VERTICES];
-							cell[0] = (order.z + 1) * (i * (order.y + 1) + j) + o;
+							cell[0] = base + (order.z + 1) * (i * (order.y + 1) + j) + o;
 							cell[1] = cell[0] + ((order.y + 1) * (order.z + 1));
 							cell[2] = cell[1] + (order.z + 1);
 							cell[3] = cell[0] + (order.z + 1);
@@ -240,6 +241,7 @@ void VtkOutputEngine::dump_points(MeshFunction *fn) {
 						}
 					}
 				}
+				base += (order.x + 1) * (order.y + 1) * (order.z + 1);
 				break;
 
 			case MODE_PRISM:
@@ -374,7 +376,7 @@ void VtkOutputEngine::out(MeshFunction *fn, const char *name, int item/* = FN_VA
 		fn->set_quad_order(ELEM_QORDER(order), item);
 		int a = 0, b = 0;
 		mask_to_comp_val(item, a, b);
-		scalar *val[3];
+		scalar *val[COMPONENTS];
 		for (int ic = 0; ic < nc; ic++)
 			val[ic] = fn->get_values(ic, b);
 

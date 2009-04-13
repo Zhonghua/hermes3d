@@ -411,35 +411,19 @@ void VtkOutputEngine::out(Mesh *mesh) {
 void VtkOutputEngine::out_orders(Space *space, const char *name) {
 	Mesh *mesh = space->get_mesh();
 
-	// FIXME: this function is hex-specific
-
-	// local indices of subelements that build up the element
-	int pyrel[][4] = {
-		{  0, 10,  1, 12 },
-		{  1,  9,  2, 12 },
-		{  2, 11,  3, 12 },
-		{  3, 12,  0,  8 },
-
-		{  0, 10,  4,  8 },
-		{  1,  9,  5, 10 },
-		{  2, 11,  6,  9 },
-		{  3, 11,  7,  8 },
-
-		{  4, 10,  5, 13 },
-		{  5,  9,  6, 13 },
-		{  6, 11,  7, 13 },
-		{  7, 13,  4,  8 }
-	};
-
-	// start the output
 	fprintf(this->out_file, "# vtk DataFile Version 2.0\n");
 	fprintf(this->out_file, "\n");
 	fprintf(this->out_file, "ASCII\n");
 
-	// dataset
-	fprintf(this->out_file, "\n");
-	fprintf(this->out_file, "DATASET UNSTRUCTURED_GRID\n");
-	fprintf(this->out_file, "POINTS %ld %s\n", mesh->get_num_active_elements() * 14, "float");
+	// FIXME: this function is hex-specific
+
+	// HEX specific
+	Array<Vertex *> out_vtcs;	// vertices
+	Array<int> vtx_pt;			// mapping from mesh vertex id to output vertex id
+	MapHSOrd face_pts;			// id of points on faces
+	MapHSOrd ctr_pts;			// id of points in the center
+
+	// nodes
 	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
 		Element *element = mesh->elements[idx];
 		int nv = Hex::NUM_VERTICES;
@@ -448,37 +432,80 @@ void VtkOutputEngine::out_orders(Space *space, const char *name) {
 
 		for (int i = 0; i < nv; i++) {
 			Vertex *v = mesh->vertices[vtcs[i]];
-			fprintf(this->out_file, "%e %e %e\n", v->x, v->y, v->z);
+			Word_t idx = out_vtcs.add(new Vertex(*v));
+			vtx_pt[vtcs[i]] = idx;
 		}
+
 		for (int iface = 0; iface < Hex::NUM_FACES; iface++) {
 			Word_t fvtcs[Quad::NUM_VERTICES];
 			element->get_face_vertices(iface, fvtcs);
-			Vertex *fv[4] = { mesh->vertices[fvtcs[0]], mesh->vertices[fvtcs[1]], mesh->vertices[fvtcs[2]], mesh->vertices[fvtcs[3]] };
-			Vertex fctr((fv[0]->x + fv[2]->x) / 2.0, (fv[0]->y + fv[2]->y) / 2.0, (fv[0]->z + fv[2]->z) / 2.0);
-			fprintf(this->out_file, "%e %e %e\n", fctr.x, fctr.y, fctr.z);
+
+			Word_t k[] = { fvtcs[0], fvtcs[1], fvtcs[2], fvtcs[3] };
+			Word_t idx = INVALID_IDX;
+			if (!face_pts.lookup(k, Quad::NUM_VERTICES, idx)) {
+				// create new vertex
+				Vertex *v[4] = { mesh->vertices[fvtcs[0]], mesh->vertices[fvtcs[1]], mesh->vertices[fvtcs[2]], mesh->vertices[fvtcs[3]] };
+				Vertex *fcenter = new Vertex((v[0]->x + v[2]->x) / 2.0, (v[0]->y + v[2]->y) / 2.0, (v[0]->z + v[2]->z) / 2.0);
+				Word_t idx = out_vtcs.add(fcenter);
+				face_pts.set(k, Quad::NUM_VERTICES, idx);
+			}
+		}
+
+		Word_t c[] = { vtcs[0], vtcs[1], vtcs[2], vtcs[3], vtcs[4], vtcs[5], vtcs[6], vtcs[7] };
+		Word_t idx = INVALID_IDX;
+		if (!ctr_pts.lookup(c, Hex::NUM_VERTICES, idx)) {
+			// create new vertex
+			Vertex *v[4] = { mesh->vertices[vtcs[0]], mesh->vertices[vtcs[1]], mesh->vertices[vtcs[3]], mesh->vertices[vtcs[4]] };
+			Vertex *center = new Vertex((v[0]->x + v[1]->x) / 2.0, (v[0]->y + v[2]->y) / 2.0, (v[0]->z + v[3]->z) / 2.0);
+			Word_t idx = out_vtcs.add(center);
+			ctr_pts.set(c, Hex::NUM_VERTICES, idx);
 		}
 	}
-	fprintf(this->out_file, "\n");
 
+	// dataset
+	fprintf(this->out_file, "\n");
+	fprintf(this->out_file, "DATASET UNSTRUCTURED_GRID\n");
+	fprintf(this->out_file, "POINTS %ld %s\n", out_vtcs.count(), "float");
+	for (Word_t i = out_vtcs.first(); i != INVALID_IDX; i = out_vtcs.next(i)) {
+		Vertex *v = out_vtcs[i];
+		fprintf(this->out_file, "%e %e %e\n", v->x, v->y, v->z);
+		delete v;																	// we no longer need the vertex data
+	}
+
+	// faces that edges coincide with
+	fprintf(this->out_file, "\n");
 	fprintf(this->out_file, "CELLS %ld %ld\n",
 	        mesh->get_num_active_elements() * Hex::NUM_EDGES,
 	        mesh->get_num_active_elements() * Hex::NUM_EDGES * 5
 	);
+
+	int eface[][2] = {
+		{ 2, 4 }, { 1, 4 }, { 3, 4 }, { 0, 4 },
+		{ 2, 0 }, { 1, 2 }, { 3, 1 }, { 0, 3 },
+		{ 2, 5 }, { 1, 5 }, { 3, 5 }, { 0, 5 }
+	};
 	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
 		Element *element = mesh->elements[idx];
 		Word_t vtcs[element->get_num_of_vertices()];
 		element->get_vertices(vtcs);
 
-		// orders
-		for (int i = 0; i < Hex::NUM_EDGES; i++) {
-			Word_t base = (idx - 1) * 14;
-			Word_t v[4] = { base + pyrel[i][0], base + pyrel[i][1], base + pyrel[i][2], base + pyrel[i][3] };
+		for (int iedge = 0; iedge < Hex::NUM_EDGES; iedge++) {
+			Word_t fvtcs[2][Quad::NUM_VERTICES];
+			element->get_face_vertices(eface[iedge][0], fvtcs[0]);
+			element->get_face_vertices(eface[iedge][1], fvtcs[1]);
+
+			Word_t fidx[2] = { INVALID_IDX, INVALID_IDX };
+			face_pts.lookup(fvtcs[0], Quad::NUM_VERTICES, fidx[0]);
+			face_pts.lookup(fvtcs[1], Quad::NUM_VERTICES, fidx[1]);
+
+			Word_t evtcs[2];
+			element->get_edge_vertices(iedge, evtcs);
+			Word_t v[4] = { vtx_pt[evtcs[0]] + 1, fidx[0] + 1, vtx_pt[evtcs[1]] + 1, fidx[1] + 1 };
 			fprintf(this->out_file, "%d %ld %ld %ld %ld\n", 4, v[0], v[1], v[2], v[3]);
 		}
 	}
 
 	fprintf(this->out_file, "\n");
-
 	fprintf(this->out_file, "CELL_TYPES %ld\n", mesh->get_num_active_elements() * Hex::NUM_EDGES);
 	for (unsigned int i = 0; i < mesh->get_num_active_elements() * Hex::NUM_EDGES; i++) {
 		fprintf(this->out_file, "%d\n", VTK_TETRA);

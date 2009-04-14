@@ -24,6 +24,7 @@
 #include <common/bitarray.h>
 #include <common/trace.h>
 #include <common/error.h>
+#include <common/callstack.h>
 
 //#define ADD_ASMLIST_THRESHOLD					1e-13
 #define ADD_ASMLIST_THRESHOLD					0
@@ -31,12 +32,15 @@
 H1Space::H1Space(Mesh *mesh, Shapeset *ss) :
 	Space(mesh, ss)
 {
+	_F_
 }
 
 H1Space::~H1Space() {
+	_F_
 }
 
 Space *H1Space::dup(Mesh *mesh) const {
+	_F_
 	H1Space *space = new H1Space(mesh, shapeset);
 	space->copy_callbacks(this);
 	return space;
@@ -69,6 +73,7 @@ int H1Space::get_element_ndofs(order3_t order) {
 }
 
 void H1Space::assign_dofs_internal() {
+	_F_
 	BitArray init_vertices;
 	BitArray init_edges;
 	BitArray init_faces;
@@ -123,6 +128,7 @@ void H1Space::assign_dofs_internal() {
 // assembly lists ////
 
 void H1Space::get_element_assembly_list(Element *e, AsmList *al) {
+	_F_
 	al->clear();
 	for (int i = 0; i < e->get_num_of_vertices(); i++) get_vertex_assembly_list(e, i, al);
 	for (int i = 0; i < e->get_num_of_edges(); i++) get_edge_assembly_list(e, i, al);
@@ -131,6 +137,7 @@ void H1Space::get_element_assembly_list(Element *e, AsmList *al) {
 }
 
 void H1Space::get_boundary_assembly_list(Element *e, int face, AsmList *al) {
+	_F_
 	al->clear();
 	const int *face_vtcs = e->get_face_vertices(face);
 	const int *face_edges = e->get_face_edges(face);
@@ -143,6 +150,7 @@ void H1Space::get_boundary_assembly_list(Element *e, int face, AsmList *al) {
 // boundary projections ////
 
 void H1Space::calc_vertex_boundary_projection(Element *elem, int ivertex) {
+	_F_
 	Word_t vtx = elem->get_vertex(ivertex);
 	VertexData *vnode = vn_data[vtx];
 	Vertex *v = mesh->vertices[vtx];
@@ -151,6 +159,7 @@ void H1Space::calc_vertex_boundary_projection(Element *elem, int ivertex) {
 }
 
 void H1Space::calc_edge_boundary_projection(Element *elem, int iedge) {
+	_F_
 	Word_t edge_id = mesh->get_edge_id(elem, iedge);
 	EdgeData *enode = en_data[edge_id];
 	if (enode->bc_type != BC_ESSENTIAL) return;			// process only Dirichlet BC
@@ -249,6 +258,7 @@ void H1Space::calc_edge_boundary_projection(Element *elem, int iedge) {
 }
 
 void H1Space::calc_face_boundary_projection(Element *elem, int iface) {
+	_F_
 #ifdef COMPLEX
 	assert(0); //not implemented
 #else
@@ -386,6 +396,7 @@ void H1Space::calc_face_boundary_projection(Element *elem, int iface) {
 // CED stuff ////
 
 void H1Space::update_constrained_nodes(Word_t fid) {
+	_F_
 	Facet *facet = mesh->facets.get(fid);
 	assert(facet != NULL);
 
@@ -404,6 +415,7 @@ void H1Space::update_constrained_nodes(Word_t fid) {
 }
 
 void H1Space::update_constraints() {
+	_F_
 	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
 		Element *e = mesh->elements[idx];
 		for (int face = 0; face < e->get_num_of_faces(); face++) {

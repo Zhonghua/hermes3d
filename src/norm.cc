@@ -26,10 +26,12 @@
 #include "integrals/h1.h"
 #include "integrals/hcurl.h"
 #include "traverse.h"
+#include <common/callstack.h>
 
 
 /// Calculates the absolute error between sln1 and sln2 using function fn
 double calc_error(double (*fn)(MeshFunction*, MeshFunction*, RefMap*, RefMap*), MeshFunction *sln1, MeshFunction *sln2) {
+	_F_
 	Mesh *meshes[2] = { sln1->get_mesh(), sln2->get_mesh() };
 	Transformable *tr[2] = { sln1, sln2 };
 	Traverse trav;
@@ -58,6 +60,7 @@ double calc_error(double (*fn)(MeshFunction*, MeshFunction*, RefMap*, RefMap*), 
 
 /// Calculates the norm of sln using function fn
 double calc_norm(double (*fn)(MeshFunction*, RefMap*), MeshFunction *sln) {
+	_F_
 	double norm = 0.0;
 	Mesh *mesh = sln->get_mesh();
 
@@ -79,6 +82,7 @@ double calc_norm(double (*fn)(MeshFunction*, RefMap*), MeshFunction *sln) {
 
 // function used to calculate error in H1 norm
 double error_fn_h1(MeshFunction *sln1, MeshFunction *sln2, RefMap *ru, RefMap *rv) {
+	_F_
 	Quad3D *quad = sln1->get_quad();
 
 	order3_t o = max(sln1->get_fn_order(), sln2->get_fn_order()) + ru->get_inv_ref_order();
@@ -99,6 +103,7 @@ double error_fn_h1(MeshFunction *sln1, MeshFunction *sln2, RefMap *ru, RefMap *r
 
 // function used to calculate H1 norm of the solution
 double norm_fn_h1(MeshFunction *sln, RefMap *ru) {
+	_F_
 	Quad3D *quad = sln->get_quad();
 
 	order3_t o = sln->get_fn_order() + ru->get_inv_ref_order();
@@ -116,17 +121,20 @@ double norm_fn_h1(MeshFunction *sln, RefMap *ru) {
 
 
 double h1_error(MeshFunction *sln1, MeshFunction *sln2) {
+	_F_
 	double error = calc_error(error_fn_h1, sln1, sln2);
 	double norm = calc_norm(norm_fn_h1, sln2);
 	return error / norm;
 }
 
 double h1_norm(MeshFunction *sln) {
+	_F_
 	return calc_norm(norm_fn_h1, sln);
 }
 
 // function used to calculate error in L2 norm
 double error_fn_l2(MeshFunction *sln1, MeshFunction *sln2, RefMap *ru, RefMap *rv) {
+	_F_
 	Quad3D *quad = sln1->get_quad();
 
 	order3_t o = max(sln1->get_fn_order(), sln2->get_fn_order()) + ru->get_inv_ref_order();
@@ -146,6 +154,7 @@ double error_fn_l2(MeshFunction *sln1, MeshFunction *sln2, RefMap *ru, RefMap *r
 
 // function used to calculate L2 norm of the solution
 double norm_fn_l2(MeshFunction *sln, RefMap *ru) {
+	_F_
 	Quad3D *quad = sln->get_quad();
 
 	order3_t o = sln->get_fn_order() + ru->get_inv_ref_order();
@@ -160,12 +169,14 @@ double norm_fn_l2(MeshFunction *sln, RefMap *ru) {
 
 
 double l2_error(MeshFunction *sln1, MeshFunction *sln2) {
+	_F_
 	double error = calc_error(error_fn_l2, sln1, sln2);
 	double norm = calc_norm(norm_fn_l2, sln2);
 	return error / norm;
 }
 
 double l2_norm(MeshFunction *sln) {
+	_F_
 	return calc_norm(norm_fn_l2, sln);
 }
 
@@ -174,6 +185,7 @@ double l2_norm(MeshFunction *sln) {
 
 // function used to calculate error in HCurl norm
 double error_fn_hcurl(MeshFunction *sln1, MeshFunction *sln2, RefMap *ru, RefMap *rv) {
+	_F_
 	Quad3D *quad = sln1->get_quad();
 
 	order3_t o = max(sln1->get_fn_order(), sln2->get_fn_order()) + ru->get_inv_ref_order();
@@ -207,6 +219,7 @@ double error_fn_hcurl(MeshFunction *sln1, MeshFunction *sln2, RefMap *ru, RefMap
 
 // function used to calculate HCurl norm of the solution
 double norm_fn_hcurl(MeshFunction *sln, RefMap *ru) {
+	_F_
 	Quad3D *quad = sln->get_quad();
 
 	order3_t o = sln->get_fn_order() + ru->get_inv_ref_order();
@@ -230,17 +243,20 @@ double norm_fn_hcurl(MeshFunction *sln, RefMap *ru) {
 
 
 double hcurl_error(MeshFunction *sln1, MeshFunction *sln2) {
+	_F_
 	double error = calc_error(error_fn_hcurl, sln1, sln2);
 	double norm = calc_norm(norm_fn_hcurl, sln2);
 	return sqrt(error / norm);
 }
 
 double hcurl_norm(MeshFunction *sln) {
+	_F_
 	return sqrt(calc_norm(norm_fn_hcurl, sln));
 }
 
 // function used to calculate error in L2 norm
 double error_fn_l2_hcurl(MeshFunction *sln1, MeshFunction *sln2, RefMap *ru, RefMap *rv) {
+	_F_
 	Quad3D *quad = sln1->get_quad();
 
 	order3_t o = max(sln1->get_fn_order(), sln2->get_fn_order()) + ru->get_inv_ref_order();
@@ -266,6 +282,7 @@ double error_fn_l2_hcurl(MeshFunction *sln1, MeshFunction *sln2, RefMap *ru, Ref
 
 // function used to calculate L2 norm of the solution
 double norm_fn_l2_hcurl(MeshFunction *sln, RefMap *ru) {
+	_F_
 	Quad3D *quad = sln->get_quad();
 
 	order3_t o = sln->get_fn_order() + ru->get_inv_ref_order();
@@ -286,11 +303,13 @@ double norm_fn_l2_hcurl(MeshFunction *sln, RefMap *ru) {
 
 
 double l2_error_hcurl(MeshFunction *sln1, MeshFunction *sln2) {
+	_F_
 	double error = calc_error(error_fn_l2_hcurl, sln1, sln2);
 	double norm = calc_norm(norm_fn_l2_hcurl, sln2);
 	return sqrt(error / norm);
 }
 
 double l2_norm_hcurl(MeshFunction *sln) {
+	_F_
 	return sqrt(calc_norm(norm_fn_l2_hcurl, sln));
 }

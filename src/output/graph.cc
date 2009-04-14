@@ -2,6 +2,7 @@
 //
 // Copyright 2005-2008 Jakub Cerveny <jakub.cerveny@gmail.com>
 // Copyright 2006-2008 Lenka Dubcova <dubcova@gmail.com>
+// Copyright 2009 David Andrs <dandrs@unr.edu>
 //
 // Hermes2D is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,24 +19,28 @@
 
 #include <common/error.h>
 #include <common/trace.h>
+#include <common/callstack.h>
 #include "../common.h"
 #include "graph.h"
 
 //// Graph /////////////////////////////////////////////////////////////////////////////////////////
 
 Graph::Graph(const char *title, const char *x_axis_name, const char *y_axis_name) {
+	_F_
 	set_captions(title, x_axis_name, y_axis_name);
 	logx = logy = false;
 	legend = grid = true;
 }
 
 void Graph::set_captions(const char *title, const char *x_axis_name, const char *y_axis_name) {
+	_F_
 	this->title = title ? title : "";
 	xname = x_axis_name ? x_axis_name : "";
 	yname = y_axis_name ? y_axis_name : "";
 }
 
 int Graph::add_row(const char *name, const char *color, const char *line, const char *marker) {
+	_F_
 	Row row;
 	if (name == NULL) name = "";
 	row.name = name;
@@ -49,6 +54,7 @@ int Graph::add_row(const char *name, const char *color, const char *line, const 
 }
 
 void Graph::set_row_style(int row, const char *color, const char *line, const char *marker) {
+	_F_
 	if (!rows.size()) add_row(NULL);
 	rows[row].color = color;
 	rows[row].line = line;
@@ -56,6 +62,7 @@ void Graph::set_row_style(int row, const char *color, const char *line, const ch
 }
 
 void Graph::add_values(int row, double x, double y) {
+	_F_
 	if (!rows.size()) add_row(NULL);
 	if (row < 0 || row >= (int) rows.size()) ERROR("Invalid row number.");
 	Values xy = { x, y };
@@ -63,16 +70,19 @@ void Graph::add_values(int row, double x, double y) {
 }
 
 void Graph::add_values(int row, int n, double *x, double *y) {
+	_F_
 	for (int i = 0; i < n; i++)
 		add_values(row, x[i], y[i]);
 }
 
 void Graph::add_values(int row, int n, double2 *xy) {
+	_F_
 	for (int i = 0; i < n; i++)
 		add_values(row, xy[i][0], xy[i][1]);
 }
 
 void Graph::save_numbered(const char *filename, int number) {
+	_F_
 	char buffer[1000];
 	sprintf(buffer, filename, number);
 	save(buffer);
@@ -81,6 +91,7 @@ void Graph::save_numbered(const char *filename, int number) {
 //// MatlabGraph ///////////////////////////////////////////////////////////////////////////////////
 
 void MatlabGraph::save(const char *filename) {
+	_F_
 	unsigned int i;
 	int j, k;
 
@@ -132,6 +143,7 @@ void MatlabGraph::save(const char *filename) {
 //// GnuplotGraph //////////////////////////////////////////////////////////////////////////////////
 
 static void get_style_types(std::string line, std::string mark, std::string col, int &lt, int &pt, int &ct) {
+	_F_
 	if (line == "-") lt = 1; // solid
 	else if (line == ":") lt = 4; // dotted
 	else if (line == "-.") lt = 5; // dash dot
@@ -168,6 +180,7 @@ static void get_style_types(std::string line, std::string mark, std::string col,
 }
 
 void GnuplotGraph::save(const char *filename) {
+	_F_
 	unsigned int i;
 	int j;
 

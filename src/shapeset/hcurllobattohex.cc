@@ -23,6 +23,7 @@
 #include "lobatto.h"
 #include "hcurllobattohex.h"
 #include <common/error.h>
+#include <common/callstack.h>
 #include "matrix.h"
 
 #include "mesh.h"
@@ -64,6 +65,7 @@ struct hc_hex_index_t {
 
 
 static void decompose(hc_hex_index_t ind, double point[3], int indices[3], int oris[3], int &which_legendre) {
+	_F_
 	indices[0] = ind.x;
 	indices[1] = ind.y;
 	indices[2] = ind.z;
@@ -101,6 +103,7 @@ static void decompose(hc_hex_index_t ind, double point[3], int indices[3], int o
 }
 
 static double calc_fn_value(int index, double x, double y, double z, int component) {
+	_F_
 	hc_hex_index_t ind(index);
 	int indices[3];
 	double point[3] = { x, y, z };
@@ -128,6 +131,7 @@ static double calc_fn_value(int index, double x, double y, double z, int compone
 }
 
 static double calc_der_value(int index, double x, double y, double z, int component, int which_der) {
+	_F_
 	hc_hex_index_t ind(index);
 	int indices[3];
 	double point[3] = { x, y, z };
@@ -163,20 +167,24 @@ static double calc_der_value(int index, double x, double y, double z, int compon
 }
 
 static double calc_dx_value(int index, double x, double y, double z, int component) {
+	_F_
 	return calc_der_value(index, x, y, z, component, 0);
 }
 
 static double calc_dy_value(int index, double x, double y, double z, int component) {
+	_F_
 	return calc_der_value(index, x, y, z, component, 1);
 }
 
 static double calc_dz_value(int index, double x, double y, double z, int component) {
+	_F_
 	return calc_der_value(index, x, y, z, component, 2);
 }
 
 #endif
 
 HcurlShapesetLobattoHex::HcurlShapesetLobattoHex() {
+	_F_
 #ifdef WITH_HEX
 	mode = MODE_HEXAHEDRON;
 
@@ -198,6 +206,7 @@ HcurlShapesetLobattoHex::HcurlShapesetLobattoHex() {
 }
 
 HcurlShapesetLobattoHex::~HcurlShapesetLobattoHex() {
+	_F_
 #ifdef WITH_HEX
 	for (int edge = 0; edge < Hex::NUM_EDGES; edge++)
 		for (int ori = 0; ori < NUM_EDGE_ORIS; ori++)
@@ -215,6 +224,7 @@ HcurlShapesetLobattoHex::~HcurlShapesetLobattoHex() {
 }
 
 order3_t HcurlShapesetLobattoHex::get_order(int index) const {
+	_F_
 #ifdef WITH_HEX
 	if (index >= 0) {
 		order3_t ord;
@@ -234,6 +244,7 @@ order3_t HcurlShapesetLobattoHex::get_order(int index) const {
 }
 
 void HcurlShapesetLobattoHex::compute_edge_indices(int edge, int ori, order1_t order) {
+	_F_
 #ifdef WITH_HEX
 	int *indices = new int[get_num_edge_fns(order)];
 	MEM_CHECK(indices);
@@ -260,6 +271,7 @@ void HcurlShapesetLobattoHex::compute_edge_indices(int edge, int ori, order1_t o
 }
 
 void HcurlShapesetLobattoHex::compute_face_indices(int face, int ori, order2_t order) {
+	_F_
 #ifdef WITH_HEX
 	int *indices = new int[get_num_face_fns(order)];
 	MEM_CHECK(indices);
@@ -330,6 +342,7 @@ void HcurlShapesetLobattoHex::compute_face_indices(int face, int ori, order2_t o
 }
 
 void HcurlShapesetLobattoHex::compute_bubble_indices(order3_t order) {
+	_F_
 #ifdef WITH_HEX
 	int *indices = new int[get_num_bubble_fns(order)];
 	MEM_CHECK(indices);
@@ -353,16 +366,19 @@ void HcurlShapesetLobattoHex::compute_bubble_indices(order3_t order) {
 }
 
 CEDComb *HcurlShapesetLobattoHex::calc_constrained_edge_combination(int ori, order1_t order, Part part) {
+	_F_
 	EXIT(ERR_NOT_IMPLEMENTED);
 	return NULL;
 }
 
 CEDComb *HcurlShapesetLobattoHex::calc_constrained_edge_face_combination(int ori, order2_t order, Part part) {
+	_F_
 	EXIT(ERR_NOT_IMPLEMENTED);
 	return NULL;
 }
 
 CEDComb *HcurlShapesetLobattoHex::calc_constrained_face_combination(int ori, order2_t order, Part part) {
+	_F_
 	EXIT(ERR_NOT_IMPLEMENTED);
 	return NULL;
 }

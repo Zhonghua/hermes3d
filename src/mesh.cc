@@ -21,6 +21,7 @@
 #include "h3dconfig.h"
 #include <common/error.h>
 #include <common/bitarray.h>
+#include <common/callstack.h>
 
 #include "mesh.h"
 #include "meshloader.h"
@@ -70,6 +71,7 @@ void Edge::dump() {
 // Facet //////////////////////////////////////////////////////////////////////
 
 Facet::Facet(EMode2D mode) {
+	_F_
 	this->mode = mode;
 	this->type = INNER;
 	this->left = INVALID_IDX;
@@ -86,6 +88,7 @@ Facet::Facet(EMode2D mode) {
 }
 
 Facet::Facet(const Facet &o) {
+	_F_
 	mode = o.mode;
 	lactive = o.lactive;
 	ractive = o.ractive;
@@ -102,13 +105,16 @@ Facet::Facet(const Facet &o) {
 }
 
 Facet::~Facet() {
+	_F_
 }
 
 Facet *Facet::copy() {
+	_F_
 	return new Facet(*this);
 }
 
 Facet *Facet::copy_base() {
+	_F_
 	Facet *copy = new Facet(mode);
 	MEM_CHECK(copy);
 
@@ -125,6 +131,7 @@ Facet *Facet::copy_base() {
 
 // for debugging
 void Facet::dump() {
+	_F_
 	const char *s_type[] = { "INNER", "OUTER" };
 	const char *s_mode[] = { "TRI", "QUAD" };
 
@@ -140,6 +147,7 @@ void Facet::dump() {
 // Element ////////////////////////////////////////////////////////////////////
 
 Element::Element() {
+	_F_
 	id = INVALID_IDX;
 	iro_cache = -1;
 
@@ -149,6 +157,7 @@ Element::Element() {
 }
 
 Element::Element(const Element &o) {
+	_F_
 	id = o.id;
 
 	iro_cache = o.iro_cache;
@@ -158,15 +167,18 @@ Element::Element(const Element &o) {
 }
 
 Element::~Element() {
+	_F_
 }
 
 void Element::dump() {
+	_F_
 	printf("id = %ld\n", id);
 }
 
 // Hex ////////////////////////////////////////////////////////////////////////
 
 Hex::Hex() {
+	_F_
 #ifdef WITH_HEX
 	for (int i = 0; i < NUM_SONS; i++)
 		sons[i] = INVALID_IDX;
@@ -176,6 +188,7 @@ Hex::Hex() {
 }
 
 Hex::Hex(Word_t v[]) {
+	_F_
 #ifdef WITH_HEX
 	for (int i = 0; i < NUM_VERTICES; i++)
 		vtcs[i] = v[i];
@@ -188,6 +201,7 @@ Hex::Hex(Word_t v[]) {
 }
 
 Hex::Hex(Word_t v1, Word_t v2, Word_t v3, Word_t v4, Word_t v5, Word_t v6, Word_t v7, Word_t v8) {
+	_F_
 #ifdef WITH_HEX
 	vtcs[0] = v1;
 	vtcs[1] = v2;
@@ -206,6 +220,7 @@ Hex::Hex(Word_t v1, Word_t v2, Word_t v3, Word_t v4, Word_t v5, Word_t v6, Word_
 }
 
 Hex::Hex(const Hex &o) : Element(o) {
+	_F_
 #ifdef WITH_HEX
 	for (int i = 0; i < NUM_VERTICES; i++)
 		vtcs[i] = o.vtcs[i];
@@ -217,9 +232,11 @@ Hex::Hex(const Hex &o) : Element(o) {
 }
 
 Hex::~Hex() {
+	_F_
 }
 
 int Hex::get_edge_vertices(int edge_num, Word_t *vtcs) const {
+	_F_
 	assert((edge_num >= 0) && (edge_num < NUM_EDGES));
 	const int *local_vetrex = RefHex::get_edge_vertices(edge_num);
 	vtcs[0] = this->vtcs[local_vetrex[0]];
@@ -228,11 +245,13 @@ int Hex::get_edge_vertices(int edge_num, Word_t *vtcs) const {
 }
 
 const int *Hex::get_edge_vertices(int edge_num) const {
+	_F_
 	assert((edge_num >= 0) && (edge_num < NUM_EDGES));
 	return RefHex::get_edge_vertices(edge_num);
 }
 
 int Hex::get_face_vertices(int face_num, Word_t *vtcs) const {
+	_F_
 	assert(face_num >= 0 && face_num < NUM_FACES);
 	const int *local_numbers = RefHex::get_face_vertices(face_num);
 	for (int i = 0; i < Quad::NUM_VERTICES; i++)
@@ -241,16 +260,19 @@ int Hex::get_face_vertices(int face_num, Word_t *vtcs) const {
 }
 
 const int *Hex::get_face_vertices(int face_num) const {
+	_F_
 	assert(face_num >= 0 && face_num < NUM_FACES);
 	return RefHex::get_face_vertices(face_num);
 }
 
 const int *Hex::get_face_edges(int face_num) const {
+	_F_
 	assert(face_num >= 0 && face_num < NUM_FACES);
 	return RefHex::get_face_edges(face_num);
 }
 
 int Hex::get_edge_orientation(int edge_num) const {
+	_F_
 	assert((edge_num >= 0) && (edge_num < NUM_EDGES));
 	const int *vert_idx = RefHex::get_edge_vertices(edge_num);
 	// 0 - the edge orientation on the physical domain agrees with the orientation on reference domain
@@ -262,6 +284,7 @@ int Hex::get_edge_orientation(int edge_num) const {
 }
 
 int Hex::get_face_orientation(int face_num) const {
+	_F_
 	assert(face_num >= 0 && face_num < NUM_FACES);
 	Word_t v[4];
 	get_face_vertices(face_num, v);
@@ -285,10 +308,12 @@ int Hex::get_face_orientation(int face_num) const {
 }
 
 Element *Hex::copy() {
+	_F_
 	return new Hex(*this);
 }
 
 Element *Hex::copy_base() {
+	_F_
 #ifdef WITH_HEX
 	Hex *copy = new Hex(vtcs);
 	MEM_CHECK(copy);
@@ -308,6 +333,7 @@ void Hex::unref_all_nodes() {
 
 // for debugging
 void Hex::dump() {
+	_F_
 	printf("id = %ld (%d, %d, %d), vertices(%ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld), ", id, active, used, reft,
 		vtcs[0], vtcs[1], vtcs[2], vtcs[3], vtcs[4], vtcs[5], vtcs[6], vtcs[7]);
 	printf("sons(%ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld)\n",
@@ -317,6 +343,7 @@ void Hex::dump() {
 // Tetra //////////////////////////////////////////////////////////////////////
 
 Tetra::Tetra() {
+	_F_
 #ifdef WITH_TETRA
 #else
 	EXIT(ERR_TETRA_NOT_COMPILED);
@@ -324,6 +351,7 @@ Tetra::Tetra() {
 }
 
 Tetra::Tetra(Word_t v[]) {
+	_F_
 #ifdef WITH_TETRA
 	for (int i = 0; i < NUM_VERTICES; i++)
 		vtcs[i] = v[i];
@@ -333,6 +361,7 @@ Tetra::Tetra(Word_t v[]) {
 }
 
 Tetra::Tetra(Word_t v1, Word_t v2, Word_t v3, Word_t v4) {
+	_F_
 #ifdef WITH_TETRA
 	vtcs[0] = v1;
 	vtcs[1] = v2;
@@ -344,7 +373,9 @@ Tetra::Tetra(Word_t v1, Word_t v2, Word_t v3, Word_t v4) {
 }
 
 Tetra::Tetra(const Tetra &o) :
-	Element(o) {
+	Element(o)
+{
+	_F_
 #ifdef WITH_TETRA
 	for (int i = 0; i < NUM_VERTICES; i++)
 		vtcs[i] = o.vtcs[i];
@@ -354,9 +385,11 @@ Tetra::Tetra(const Tetra &o) :
 }
 
 Tetra::~Tetra() {
+	_F_
 }
 
 int Tetra::get_edge_vertices(int edge_num, Word_t *vtcs) const {
+	_F_
 	assert((edge_num >= 0) && (edge_num < NUM_EDGES));
 	vtcs[0] = this->vtcs[RefTetra::get_edge_vertices(edge_num)[0]];
 	vtcs[1] = this->vtcs[RefTetra::get_edge_vertices(edge_num)[1]];
@@ -364,11 +397,13 @@ int Tetra::get_edge_vertices(int edge_num, Word_t *vtcs) const {
 }
 
 const int *Tetra::get_edge_vertices(int edge_num) const {
+	_F_
 	assert((edge_num >= 0) && (edge_num < NUM_EDGES));
 	return RefTetra::get_edge_vertices(edge_num);
 }
 
 int Tetra::get_face_vertices(int face_num, Word_t *vtcs) const {
+	_F_
 	assert(face_num >= 0 && face_num < NUM_FACES);
 	const int *local_numbers = RefTetra::get_face_vertices(face_num);
 	for (int i = 0; i < Tri::NUM_VERTICES; i++)
@@ -377,16 +412,19 @@ int Tetra::get_face_vertices(int face_num, Word_t *vtcs) const {
 }
 
 const int *Tetra::get_face_vertices(int face_num) const {
+	_F_
 	assert(face_num >= 0 && face_num < NUM_FACES);
 	return RefTetra::get_face_vertices(face_num);
 }
 
 const int *Tetra::get_face_edges(int face_num) const {
+	_F_
 	assert(face_num >= 0 && face_num < NUM_FACES);
 	return RefTetra::get_face_edges(face_num);
 }
 
 int Tetra::get_edge_orientation(int edge_num) const {
+	_F_
 	assert((edge_num >= 0) && (edge_num < NUM_EDGES));
 	static int map[6][2] = { { 0, 1 }, { 1, 2 }, { 0, 2 }, { 0, 3 }, { 1, 3 }, { 2, 3 } };
 
@@ -399,6 +437,7 @@ int Tetra::get_edge_orientation(int edge_num) const {
 }
 
 int Tetra::get_face_orientation(int face_num) const {
+	_F_
 	assert(face_num >= 0 && face_num < NUM_FACES);
 	static int map[4][3] = { { 0, 1, 3 }, { 1, 2, 3 }, { 0, 2, 3 }, { 0, 1, 2 } };
 
@@ -416,10 +455,12 @@ int Tetra::get_face_orientation(int face_num) const {
 }
 
 Element *Tetra::copy() {
+	_F_
 	return new Tetra(*this);
 }
 
 Element *Tetra::copy_base() {
+	_F_
 #ifdef WITH_TETRA
 	Tetra *copy = new Tetra();
 	for (int i = 0; i < NUM_VERTICES; i++)
@@ -445,6 +486,7 @@ void Tetra::dump() {
 // Prism //////////////////////////////////////////////////////////////////////
 
 Prism::Prism() {
+	_F_
 #ifdef WITH_PRISM
 #else
 	EXIT(ERR_PRISM_NOT_COMPILED);
@@ -452,6 +494,7 @@ Prism::Prism() {
 }
 
 Prism::Prism(Word_t v[]) {
+	_F_
 #ifdef WITH_PRISM
 	for (int i = 0; i < NUM_VERTICES; i++)
 		vtcs[i] = v[i];
@@ -461,6 +504,7 @@ Prism::Prism(Word_t v[]) {
 }
 
 Prism::Prism(Word_t v1, Word_t v2, Word_t v3, Word_t v4, Word_t v5, Word_t v6) {
+	_F_
 #ifdef WITH_PRISM
 	vtcs[0] = v1;
 	vtcs[1] = v2;
@@ -474,7 +518,9 @@ Prism::Prism(Word_t v1, Word_t v2, Word_t v3, Word_t v4, Word_t v5, Word_t v6) {
 }
 
 Prism::Prism(const Prism &o) :
-	Element(o) {
+	Element(o)
+{
+	_F_
 #ifdef WITH_PRISM
 	for (int i = 0; i < NUM_VERTICES; i++)
 		vtcs[i] = o.vtcs[i];
@@ -487,6 +533,7 @@ Prism::~Prism() {
 }
 
 int Prism::get_edge_vertices(int edge_num, Word_t *vtcs) const {
+	_F_
 	assert((edge_num >= 0) && (edge_num < NUM_EDGES));
 	vtcs[0] = this->vtcs[RefPrism::get_edge_vertices(edge_num)[0]];
 	vtcs[1] = this->vtcs[RefPrism::get_edge_vertices(edge_num)[1]];
@@ -494,26 +541,31 @@ int Prism::get_edge_vertices(int edge_num, Word_t *vtcs) const {
 }
 
 const int *Prism::get_edge_vertices(int edge_num) const {
+	_F_
 	assert((edge_num >= 0) && (edge_num < NUM_EDGES));
 	return RefPrism::get_edge_vertices(edge_num);
 }
 
 EMode2D Prism::get_face_mode(int face_num) const {
+	_F_
 	assert((face_num >= 0) && (face_num < NUM_FACES));
 	return RefPrism::get_face_mode(face_num);
 }
 
 int Prism::get_face_num_of_vertices(int face_num) const {
+	_F_
 	assert((face_num >= 0) && (face_num < NUM_FACES));
 	return RefPrism::get_face_num_of_vertices(face_num);
 }
 
 int Prism::get_face_num_of_edges(int face_num) const {
+	_F_
 	assert((face_num >= 0) && (face_num < NUM_FACES));
 	return RefPrism::get_face_num_of_edges(face_num);
 }
 
 int Prism::get_face_vertices(int face_num, Word_t *vtcs) const {
+	_F_
 	assert((face_num >= 0) && (face_num < NUM_FACES));
 	int nvert = RefPrism::get_face_num_of_vertices(face_num);
 	const int *local_numbers = RefPrism::get_face_vertices(face_num);
@@ -523,32 +575,38 @@ int Prism::get_face_vertices(int face_num, Word_t *vtcs) const {
 }
 
 const int *Prism::get_face_vertices(int face_num) const {
+	_F_
 	assert((face_num >= 0) && (face_num < NUM_FACES));
 	return RefPrism::get_face_vertices(face_num);
 }
 
 const int *Prism::get_face_edges(int face_num) const {
+	_F_
 	assert(face_num >= 0 && face_num < NUM_FACES);
 	return RefPrism::get_face_edges(face_num);
 }
 
 int Prism::get_edge_orientation(int edge_num) const {
+	_F_
 	EXIT(ERR_NOT_IMPLEMENTED);
 	// FIXME
 	return -1;
 }
 
 int Prism::get_face_orientation(int face_num) const {
+	_F_
 	EXIT(ERR_NOT_IMPLEMENTED);
 	// FIXME
 	return -1;
 }
 
 Element *Prism::copy() {
+	_F_
 	return new Prism(*this);
 }
 
 Element *Prism::copy_base() {
+	_F_
 #ifdef WITH_PRISM
 	Prism *copy = new Prism();
 	for (int i = 0; i < NUM_VERTICES; i++)
@@ -605,38 +663,45 @@ BoundaryTri::~BoundaryTri() {
 }
 
 Boundary *BoundaryTri::copy() {
+	_F_
 	return new BoundaryTri(*this);
 }
 
 // BoundaryQuad ///////////////////////////////////////////////////////////////
 
 BoundaryQuad::BoundaryQuad(int marker) :
-	Boundary(marker) {
+	Boundary(marker)
+{
 }
 
 BoundaryQuad::BoundaryQuad(const BoundaryQuad &o) :
-	Boundary(o) {
+	Boundary(o)
+{
 }
 
 BoundaryQuad::~BoundaryQuad() {
 }
 
 Boundary *BoundaryQuad::copy() {
+	_F_
 	return new BoundaryQuad(*this);
 }
 
 // Mesh ///////////////////////////////////////////////////////////////////////
 
 Mesh::Mesh() {
+	_F_
 	nactive = 0;
 	nbase = 0;
 }
 
 Mesh::~Mesh() {
+	_F_
 	free();
 }
 
 void Mesh::free() {
+	_F_
 	for (Word_t i = vertices.first(); i != INVALID_IDX; i = vertices.next(i))
 		delete vertices[i];
 	vertices.remove_all();
@@ -658,6 +723,7 @@ void Mesh::free() {
 }
 
 void Mesh::copy(const Mesh &mesh) {
+	_F_
 	free();
 
 	// copy vertices
@@ -742,6 +808,7 @@ void Mesh::copy(const Mesh &mesh) {
 }
 
 void Mesh::copy_base(const Mesh &mesh) {
+	_F_
 	// TODO: improve this, it is not very nice, especially facet copying
 
 	free();
@@ -799,6 +866,7 @@ void Mesh::copy_base(const Mesh &mesh) {
 }
 
 Word_t Mesh::get_facet_id(Element *e, int face_num) const {
+	_F_
 	assert(e != NULL);
 	Word_t facet_idxs[Quad::NUM_VERTICES]; // quad is shape with the largest number of vertices
 	int nvts = e->get_face_vertices(face_num, facet_idxs);
@@ -806,6 +874,7 @@ Word_t Mesh::get_facet_id(Element *e, int face_num) const {
 }
 
 Word_t Mesh::get_edge_id(Element *e, int edge_num) const {
+	_F_
 	assert(e != NULL);
 	Word_t edge_idxs[Edge::NUM_VERTICES];
 	int nvtcs = e->get_edge_vertices(edge_num, edge_idxs);
@@ -813,6 +882,7 @@ Word_t Mesh::get_edge_id(Element *e, int edge_num) const {
 }
 
 void Mesh::dump() {
+	_F_
 	printf("Vertices (count = %ld)\n", vertices.count());
 	for (Word_t i = vertices.first(); i != INVALID_IDX; i = vertices.next(i)) {
 		Vertex *v = vertices[i];
@@ -843,12 +913,14 @@ void Mesh::dump() {
 }
 
 Word_t Mesh::add_vertex(double x, double y, double z) {
+	_F_
 	Word_t idx = vertices.count() + 1;
 	vertices.set(idx, new Vertex(x, y, z));
 	return idx;
 }
 
 Tetra *Mesh::create_tetra(Word_t vtcs[]) {
+	_F_
 	Tetra *tetra = new Tetra(vtcs);
 	MEM_CHECK(tetra);
 	Word_t id = elements.count() + 1;
@@ -861,6 +933,7 @@ Tetra *Mesh::create_tetra(Word_t vtcs[]) {
 }
 
 Tetra *Mesh::add_tetra(Word_t vtcs[]) {
+	_F_
 	Tetra *tetra = create_tetra(vtcs);
 
 	// edges
@@ -886,6 +959,7 @@ Tetra *Mesh::add_tetra(Word_t vtcs[]) {
 }
 
 Hex *Mesh::create_hex(Word_t vtcs[]) {
+	_F_
 	// build up the element
 	Hex *hex = new Hex(vtcs);
 	MEM_CHECK(hex);
@@ -899,6 +973,7 @@ Hex *Mesh::create_hex(Word_t vtcs[]) {
 }
 
 Hex *Mesh::add_hex(Word_t vtcs[]) {
+	_F_
 	Hex *hex = create_hex(vtcs);
 
 	// edges
@@ -925,6 +1000,7 @@ Hex *Mesh::add_hex(Word_t vtcs[]) {
 }
 
 Prism *Mesh::create_prism(Word_t vtcs[]) {
+	_F_
 	Prism *prism = new Prism(vtcs);
 	MEM_CHECK(prism);
 	Word_t id = elements.count() + 1;
@@ -937,6 +1013,7 @@ Prism *Mesh::create_prism(Word_t vtcs[]) {
 }
 
 Prism *Mesh::add_prism(Word_t vtcs[]) {
+	_F_
 	Prism *prism = create_prism(vtcs);
 
 	// edges
@@ -963,6 +1040,7 @@ Prism *Mesh::add_prism(Word_t vtcs[]) {
 }
 
 Boundary *Mesh::add_tri_boundary(Word_t vtcs[], int marker) {
+	_F_
 	Facet *facet = NULL;
 	if (facets.lookup(vtcs + 0, Tri::NUM_VERTICES, facet)) {
 		Boundary *bdr = new BoundaryTri(marker);
@@ -981,6 +1059,7 @@ Boundary *Mesh::add_tri_boundary(Word_t vtcs[], int marker) {
 }
 
 Boundary *Mesh::add_quad_boundary(Word_t vtcs[], int marker) {
+	_F_
 	Facet *facet = NULL;
 	if (facets.lookup(vtcs + 0, Quad::NUM_VERTICES, facet)) {
 		Boundary *bdr = new BoundaryQuad(marker);
@@ -999,6 +1078,7 @@ Boundary *Mesh::add_quad_boundary(Word_t vtcs[], int marker) {
 }
 
 void Mesh::ugh() {
+	_F_
 	// set the number of active/base elements
 	nactive = nbase = elements.count();
 
@@ -1022,6 +1102,7 @@ void Mesh::ugh() {
 }
 
 bool Mesh::is_compatible_quad_refinement(Facet *facet, int reft) const {
+	_F_
 	if (facet->type == Facet::INNER) {
 		// BOTH or NONE on the facet => refinement makes no problem
 		if (facet->ref_mask == REFT_QUAD_BOTH || facet->ref_mask == REFT_FACE_NONE) return true;
@@ -1067,6 +1148,7 @@ bool Mesh::is_compatible_quad_refinement(Facet *facet, int reft) const {
 }
 
 bool Mesh::can_refine_element(Word_t eid, int reft) const {
+	_F_
 	bool can_refine = false;
 
 	Element *elem = elements.get(eid);
@@ -1083,6 +1165,7 @@ bool Mesh::can_refine_element(Word_t eid, int reft) const {
 }
 
 bool Mesh::can_refine_hex(Hex *elem, int refinement) const {
+	_F_
 	int nf; // number of faces to check
 	int iface[Hex::NUM_FACES]; // face numbers to check
 	int face_reft[Hex::NUM_FACES]; // refinements to apply on each face
@@ -1177,6 +1260,7 @@ bool Mesh::can_refine_hex(Hex *elem, int refinement) const {
 }
 
 bool Mesh::refine_element(Word_t id, int refinement) {
+	_F_
 	bool refined = false;
 	Element *elem = elements.get(id);
 	assert(elem != NULL);
@@ -1195,6 +1279,7 @@ bool Mesh::refine_element(Word_t id, int refinement) {
 }
 
 bool Mesh::refine_hex(Hex *elem, int refinement) {
+	_F_
 	assert(elem->active);		// Refinement already applied to element
 
 	bool refined = false;
@@ -1237,6 +1322,7 @@ static const int hex_face_vtcs_4[] = { 0, 1, 2, 3 };
 static const int hex_face_vtcs_5[] = { 4, 5, 6, 7 };
 
 bool Mesh::refine_hex_2(Hex *parent, int refinement) {
+	_F_
 	bool refined = true;
 
 	Word_t vtx[Hex::NUM_VERTICES]; // vertices of parent element
@@ -1330,6 +1416,7 @@ bool Mesh::refine_hex_2(Hex *parent, int refinement) {
 }
 
 bool Mesh::refine_hex_4(Hex *parent, int refinement) {
+	_F_
 	bool refined = true;
 
 	Word_t vtx[Hex::NUM_VERTICES]; // vertices of parent element
@@ -1466,6 +1553,7 @@ bool Mesh::refine_hex_4(Hex *parent, int refinement) {
 }
 
 bool Mesh::refine_hex_8(Hex *parent, int refinement) {
+	_F_
 	bool refined = true;
 
 	Word_t vtx[Hex::NUM_VERTICES]; // vertices of parent element
@@ -1545,6 +1633,7 @@ bool Mesh::refine_hex_8(Hex *parent, int refinement) {
 }
 
 bool Mesh::refine_quad_facet(Hex *parent_elem, int iface, unsigned int face_refinement, Word_t eid) {
+	_F_
 	assert(face_refinement == REFT_FACE_NONE);
 
 	Word_t fid = get_facet_id(parent_elem, iface);
@@ -1560,6 +1649,7 @@ bool Mesh::refine_quad_facet(Hex *parent_elem, int iface, unsigned int face_refi
 }
 
 bool Mesh::refine_quad_facet(Hex *parent_elem, int iface, unsigned int face_refinement, Word_t eid0, Word_t eid1) {
+	_F_
 	assert(face_refinement == REFT_QUAD_HORZ || face_refinement == REFT_QUAD_VERT);
 
 	Word_t fid = get_facet_id(parent_elem, iface);
@@ -1751,6 +1841,7 @@ bool Mesh::refine_quad_facet(Hex *parent_elem, int iface, unsigned int face_refi
 }
 
 bool Mesh::refine_quad_facet(Hex *parent_elem, int iface, unsigned int face_refinement, Word_t eid0, Word_t eid1, Word_t eid2, Word_t eid3) {
+	_F_
 	assert(face_refinement == REFT_QUAD_BOTH);
 
 	Word_t fid = get_facet_id(parent_elem, iface);
@@ -1893,6 +1984,7 @@ bool Mesh::refine_quad_facet(Hex *parent_elem, int iface, unsigned int face_refi
 }
 
 Facet *Mesh::add_quad_facet(Facet::Type type, Word_t left_elem, int left_iface, Word_t right_elem, int right_iface) {
+	_F_
 	Word_t elem_id;
 	int iface;
 	if (left_elem != INVALID_IDX) {
@@ -1951,9 +2043,10 @@ Facet *Mesh::add_quad_facet(Facet::Type type, Word_t left_elem, int left_iface, 
 }
 
 void Mesh::refine_all_elements(int refinement) {
-	FOR_ALL_ACTIVE_ELEMENTS(idx, this){
-	refine_element(idx, refinement);
-}
+	_F_
+	FOR_ALL_ACTIVE_ELEMENTS(idx, this) {
+		refine_element(idx, refinement);
+	}
 }
 
 void Mesh::refine_by_criterion(int(*criterion)(Element* e), int depth) {
@@ -1969,6 +2062,7 @@ void Mesh::unrefine_all_elements() {
 }
 
 Word_t Mesh::create_midpoint(Word_t a, Word_t b) {
+	_F_
 	// get vertices
 	Vertex *v1 = vertices.get(a);
 	Vertex *v2 = vertices.get(b);
@@ -1977,6 +2071,7 @@ Word_t Mesh::create_midpoint(Word_t a, Word_t b) {
 }
 
 Word_t Mesh::get_midpoint(Word_t a, Word_t b) {
+	_F_
 	Word_t idx = peek_midpoint(a, b);
 	if (idx == INVALID_IDX) {
 		idx = create_midpoint(a, b);
@@ -1987,6 +2082,7 @@ Word_t Mesh::get_midpoint(Word_t a, Word_t b) {
 }
 
 Word_t Mesh::peek_midpoint(Word_t a, Word_t b) const {
+	_F_
 	Word_t pt[] = { a, b };
 	Word_t idx = INVALID_IDX;
 	midpoints.lookup(pt, Edge::NUM_VERTICES, idx);
@@ -1994,17 +2090,20 @@ Word_t Mesh::peek_midpoint(Word_t a, Word_t b) const {
 }
 
 void Mesh::set_midpoint(Word_t a, Word_t b, Word_t idx) {
+	_F_
 	Word_t pt[] = { a, b };
 	midpoints.set(pt, Edge::NUM_VERTICES, idx);
 }
 
 Word_t Mesh::get_edge_id(Word_t a, Word_t b) const {
+	_F_
 	Word_t pt[] = { a, b };
 	return edges.get_idx(pt + 0, Edge::NUM_VERTICES);
 }
 
 /// referencing edges
 void Mesh::ref_edges(Element *e) {
+	_F_
 	assert(e != NULL);
 
 	for (int iedge = 0; iedge < e->get_num_of_edges(); iedge++) {
@@ -2025,6 +2124,7 @@ void Mesh::ref_edges(Element *e) {
 }
 
 void Mesh::unref_edges(Element *e) {
+	_F_
 	assert(e != NULL);
 
 	for (int iedge = 0; iedge < e->get_num_of_edges(); iedge++) {
@@ -2041,6 +2141,7 @@ void Mesh::unref_edges(Element *e) {
 }
 
 Word_t Mesh::get_facing_facet(Word_t fid, Word_t elem_id) {
+	_F_
 	Facet *facet = facets[fid];
 
 	if (facet != NULL) {
@@ -2068,6 +2169,7 @@ Word_t Mesh::get_facing_facet(Word_t fid, Word_t elem_id) {
 }
 
 Word_t Mesh::get_facet_id(int nv, ...) const {
+	_F_
 	Word_t k[nv];
 
 	va_list ap;
@@ -2080,6 +2182,7 @@ Word_t Mesh::get_facet_id(int nv, ...) const {
 }
 
 void Mesh::regularize() {
+	_F_
 	// FIXME: implements only 1-irregularity rule (quite dirty hack this is)
 	// Assumes only XYZ refinements of elements (i.e. no anisotropic refinements, no incompatible refinements)
 

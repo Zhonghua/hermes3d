@@ -24,6 +24,7 @@
 #include "refdomain.h"
 #include <common/error.h>
 #include <common/trace.h>
+#include <common/callstack.h>
 
 #include "shapeset/common.h"
 #include "shapeset/refmapss.h"
@@ -58,6 +59,7 @@ static PrecalcShapeset *ref_map_pss[] = { REFMAP_PSS_TETRA, REFMAP_PSS_HEX, NULL
 // RefMap /////////////////////////////////////////////////////////////////////////////////////////
 
 RefMap::RefMap() {
+	_F_
 	this->mesh = NULL;
 	this->quad = NULL;
 	this->pss = NULL;
@@ -68,6 +70,7 @@ RefMap::RefMap() {
 }
 
 RefMap::RefMap(Mesh *mesh) {
+	_F_
 	this->mesh = mesh;
 	this->quad = NULL;
 	this->pss = NULL;
@@ -78,16 +81,19 @@ RefMap::RefMap(Mesh *mesh) {
 }
 
 RefMap::~RefMap() {
+	_F_
 	free();
 }
 
 void RefMap::set_quad(Quad3D *quad) {
+	_F_
 	this->quad = quad;
 	assert(this->pss != NULL);		// if this asserts, check that you called set_active_element() before calling set_quad()
 	this->pss->set_quad(quad);
 }
 
 void RefMap::set_active_element(Element *e) {
+	_F_
 	assert(e != NULL);
 
 	if (e != element) free();
@@ -143,18 +149,21 @@ void RefMap::set_active_element(Element *e) {
 
 
 void RefMap::push_transform(int son) {
+	_F_
 	Transformable::push_transform(son);
 	update_cur_node();
 	const_jacobian *= 0.125;
 }
 
 void RefMap::pop_transform() {
+	_F_
 	Transformable::pop_transform();
 	update_cur_node();
 	const_jacobian *= 8;
 }
 
 void RefMap::force_transform(uint64 sub_idx, Trf *ctm) {
+	_F_
 	this->sub_idx = sub_idx;
 	stack[top] = *ctm;
 	ctm = stack + top;
@@ -166,6 +175,7 @@ void RefMap::force_transform(uint64 sub_idx, Trf *ctm) {
 // helpers
 
 void RefMap::calc_inv_ref_map(order3_t order) {
+	_F_
 	qorder_t qord = ELEM_QORDER(order);
 	int np = quad->get_num_points(order3_t::from_int(qord.order));
 
@@ -222,6 +232,7 @@ void RefMap::calc_inv_ref_map(order3_t order) {
 
 
 void RefMap::calc_const_inv_ref_map() {
+	_F_
 	// for linear tetrahedra only
 	// TODO: does not take in account the transformation (we do not have it for tetras, so this will probably work)
 
@@ -252,6 +263,7 @@ void RefMap::calc_const_inv_ref_map() {
 
 
 void RefMap::calc_phys_x(order3_t order) {
+	_F_
 	// transform all x coordinates of the integration points
 	int np = quad->get_num_points(order);
 	double *x = cur_node->phys_x[order.get_idx()] = new double[np];
@@ -269,6 +281,7 @@ void RefMap::calc_phys_x(order3_t order) {
 
 
 void RefMap::calc_phys_y(order3_t order) {
+	_F_
 	// transform all y coordinates of the integration points
 	int np = quad->get_num_points(order);
 	double *y = cur_node->phys_y[order.get_idx()] = new double[np];
@@ -286,6 +299,7 @@ void RefMap::calc_phys_y(order3_t order) {
 
 
 void RefMap::calc_phys_z(order3_t order) {
+	_F_
 	// transform all z coordinates of the integration points
 	int np = quad->get_num_points(order);
 	double *z = cur_node->phys_z[order.get_idx()] = new double[np];
@@ -304,6 +318,7 @@ void RefMap::calc_phys_z(order3_t order) {
 // edge related //
 
 void RefMap::calc_edge_phys_x(int edge, order1_t order) {
+	_F_
 	// transform all x coordinates of the integration points
 	int np = quad->get_edge_num_points(order);
 	double *x = cur_node->edge_phys_x[edge][order] = new double[np];
@@ -320,6 +335,7 @@ void RefMap::calc_edge_phys_x(int edge, order1_t order) {
 }
 
 void RefMap::calc_edge_phys_y(int edge, order1_t order) {
+	_F_
 	// transform all y coordinates of the integration points
 	int np = quad->get_edge_num_points(order);
 	double *y = cur_node->edge_phys_y[edge][order] = new double[np];
@@ -336,6 +352,7 @@ void RefMap::calc_edge_phys_y(int edge, order1_t order) {
 }
 
 void RefMap::calc_edge_phys_z(int edge, order1_t order) {
+	_F_
 	// transform all z coordinates of the integration points
 	int np = quad->get_edge_num_points(order);
 	double *z = cur_node->edge_phys_z[edge][order] = new double[np];
@@ -355,6 +372,7 @@ void RefMap::calc_edge_phys_z(int edge, order1_t order) {
 
 // TODO: rewrite in similar way for non-constant functions
 void RefMap::calc_face_const_jacobian(int face) {
+	_F_
 	assert(cur_node->face_mode[face] == MODE_TRIANGLE);
 
 	// physical triangle
@@ -396,6 +414,7 @@ void RefMap::calc_face_const_jacobian(int face) {
 
 
 void RefMap::calc_face_jacobian(int face, order2_t order) {
+	_F_
 	assert(mesh != NULL);
 
 	int np = quad->get_face_num_points(face, order);
@@ -461,6 +480,7 @@ void RefMap::calc_face_jacobian(int face, order2_t order) {
 // this is in fact identical to calc_inv_ref_map
 // the only difference is, that everything is calculated in integration points on given face
 void RefMap::calc_face_inv_ref_map(int face, order2_t order) {
+	_F_
 	int np = quad->get_face_num_points(face, order);
 
 	double3x3 *m = new double3x3[np];
@@ -516,6 +536,7 @@ void RefMap::calc_face_inv_ref_map(int face, order2_t order) {
 }
 
 void RefMap::calc_face_phys_x(int face, order2_t order) {
+	_F_
 	// transform all x coordinates of the integration points
 	int np = quad->get_face_num_points(face, order);
 	double *x = cur_node->face_phys_x[face][order.get_idx()] = new double[np];
@@ -532,6 +553,7 @@ void RefMap::calc_face_phys_x(int face, order2_t order) {
 }
 
 void RefMap::calc_face_phys_y(int face, order2_t order) {
+	_F_
 	// transform all y coordinates of the integration points
 	int np = quad->get_face_num_points(face, order);
 	double *y = cur_node->face_phys_y[face][order.get_idx()] = new double[np];
@@ -548,6 +570,7 @@ void RefMap::calc_face_phys_y(int face, order2_t order) {
 }
 
 void RefMap::calc_face_phys_z(int face, order2_t order) {
+	_F_
 	// transform all z coordinates of the integration points
 	int np = quad->get_face_num_points(face, order);
 	double *z = cur_node->face_phys_z[face][order.get_idx()] = new double[np];
@@ -564,6 +587,7 @@ void RefMap::calc_face_phys_z(int face, order2_t order) {
 }
 
 void RefMap::calc_face_normal(int face, order2_t order) {
+	_F_
 	assert(mesh != NULL);
 
 	int np = quad->get_face_num_points(face, order);
@@ -590,6 +614,7 @@ void RefMap::calc_face_normal(int face, order2_t order) {
 }
 
 void RefMap::calc_vertex_phys() {
+	_F_
 	int nvtx = element->get_num_of_vertices();
 	double *x = cur_node->vertex_phys_x = new double [nvtx]; MEM_CHECK(x);
 	double *y = cur_node->vertex_phys_y = new double [nvtx]; MEM_CHECK(y);
@@ -615,6 +640,7 @@ void RefMap::calc_vertex_phys() {
 //
 
 void RefMap::init_node(Node **pp) {
+	_F_
 	Node *node = *pp = new Node;
 	MEM_CHECK(node);
 
@@ -657,6 +683,7 @@ void RefMap::init_node(Node **pp) {
 
 
 void RefMap::free_node(Node *node) {
+	_F_
 	for (Word_t idx = node->jacobian.first(); idx != INVALID_IDX; idx = node->jacobian.next(idx))
 		delete [] node->jacobian[idx];
 	node->jacobian.remove_all();
@@ -748,12 +775,14 @@ void RefMap::free_node(Node *node) {
 }
 
 void RefMap::update_cur_node() {
+	_F_
 	Node **pp = (sub_idx > max_idx) ? handle_overflow() : (Node **) JudyLIns(&nodes, sub_idx, NULL);
 	if (*pp == NULL) init_node(pp);
 	cur_node = *pp;
 }
 
 void RefMap::free() {
+	_F_
 	unsigned long idx = 0;
 	Node **pp = (Node **) JudyLFirst(nodes, &idx, NULL);
 	while (pp != NULL) {
@@ -767,12 +796,14 @@ void RefMap::free() {
 
 
 RefMap::Node **RefMap::handle_overflow() {
+	_F_
 	if (overflow != NULL) free_node(overflow);
 	overflow = NULL;
 	return &overflow;
 }
 
 void RefMap::calc_edge_inv_ref_map(int edge, order1_t order) {
+	_F_
 	qorder_t qord = EDGE_QORDER(edge, order);
 	int np = quad->get_edge_num_points(order1_t(qord.order));
 
@@ -829,6 +860,7 @@ void RefMap::calc_edge_inv_ref_map(int edge, order1_t order) {
 }
 
 void RefMap::calc_vertex_inv_ref_map() {
+	_F_
 	int np = quad->get_vertex_num_points();
 
 	double3x3 *m = new double3x3[np];

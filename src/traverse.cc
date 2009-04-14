@@ -22,6 +22,7 @@
 #include "transform.h"
 #include "traverse.h"
 #include <common/error.h>
+#include <common/callstack.h>
 
 #define PRINTF(...)
 //#define PRINTF printf
@@ -52,6 +53,7 @@ inline uint64 next_idx(uint64 idx, int son) {
 
 
 static int get_hex_split_and_sons(Element *e, Box *cr, Box *er, int *sons) {
+	_F_
 	PRINTF("get_hex_split_and_sons\n");
 
 	PRINTF(" * element # = %d, reft = %d\n", e->id, e->reft);
@@ -223,6 +225,7 @@ static int get_hex_split_and_sons(Element *e, Box *cr, Box *er, int *sons) {
 
 // Hex specific
 static void hex_move_to_son(Box *rnew, Box *rold, int son) {
+	_F_
 	PRINTF("hex_move_to_son: son = %d\n", son);
 
 	uint64 xmid = (rold->x_lo + rold->x_hi) >> 1;
@@ -272,6 +275,7 @@ static void hex_move_to_son(Box *rnew, Box *rold, int son) {
 /// @param cr[in]
 /// @param r[in]
 static int get_son_idx(Box *cr, Box *r) {
+	_F_
 	assert(cr != NULL && r != NULL);
 
 	uint64 xmid = (r->x_lo + r->x_hi) >> 1;
@@ -315,6 +319,7 @@ static int get_son_idx(Box *cr, Box *r) {
 }
 
 static int trans_to_son_idx(int trans) {
+	_F_
 	if (trans >= 0 && trans < 8) return trans & 7;
 	else if (trans < 12) return trans & 3;
 	else if (trans < 16) return trans & 3;
@@ -326,6 +331,7 @@ static int trans_to_son_idx(int trans) {
 }
 
 static void init_transforms(Transformable *fn, Box *cr, Box *er) {
+	_F_
 	PRINTF("init_transforms\n");
 
 	Box r;
@@ -351,6 +357,7 @@ static void init_transforms(Transformable *fn, Box *cr, Box *er) {
 
 
 State *Traverse::push_state() {
+	_F_
 	if (top >= size) EXIT(ERR_FAILURE, "Stack overflow. Increase stack size.");
 
 	if (stack[top].e == NULL) {
@@ -366,6 +373,7 @@ State *Traverse::push_state() {
 
 
 void Traverse::set_boundary_info(State *s, bool *bnd, FacePos *fp) {
+	_F_
 	Element *e = s->e[0];
 	Mesh *m = meshes[0];
 
@@ -415,6 +423,7 @@ void Traverse::set_boundary_info(State *s, bool *bnd, FacePos *fp) {
 }
 
 void Traverse::hex_push_son_states(State *s) {
+	_F_
 	PRINTF("Traverse::hex_push_son_states\n");
 
 	// obtain split types and son numbers for the current Box on all elements
@@ -504,6 +513,7 @@ void Traverse::hex_push_son_states(State *s) {
 }
 
 Element **Traverse::get_next_state(bool *bnd, FacePos *fp) {
+	_F_
 	PRINTF("Traverse::get_next_state\n");
 
 	while (1) {
@@ -594,6 +604,7 @@ Element **Traverse::get_next_state(bool *bnd, FacePos *fp) {
 
 
 void Traverse::begin(int n, Mesh **meshes, Transformable **fn) {
+	_F_
 	assert(n > 0);
 	num = n;
 
@@ -617,6 +628,7 @@ void Traverse::begin(int n, Mesh **meshes, Transformable **fn) {
 
 
 static void free_state(State *state) {
+	_F_
 	delete [] state->e;
 	delete [] state->er;
 	delete [] state->trans;
@@ -625,6 +637,7 @@ static void free_state(State *state) {
 
 
 void Traverse::finish() {
+	_F_
 	if (stack == NULL) return;
 
 	for (int i = 0; i < size; i++)
@@ -643,6 +656,7 @@ void Traverse::finish() {
 //// union mesh ////////////////////////////////////////////////////////////////////////////////////
 
 uint64 hex_init_idx(Box *cr, Box *er) {
+	_F_
 	Box r;
 	memcpy(&r, er, sizeof(Box));
 
@@ -660,6 +674,7 @@ uint64 hex_init_idx(Box *cr, Box *er) {
 }
 
 void Traverse::hex_union_rec(Box *cr, Element **e, Box *er, uint64 *idx, Element *uni) {
+	_F_
 	// state arrays
 	Element *e_new[num];
 	Box er_new[num], cr_new;
@@ -755,6 +770,7 @@ void Traverse::hex_union_rec(Box *cr, Element **e, Box *er, uint64 *idx, Element
 }
 
 void Traverse::union_recurrent(Box *cr, Element **e, Box *er, uint64 *idx, Element *uni) {
+	_F_
 	// are we at the bottom?
 	bool leaf = true;
 	for (int i = 0; i < num; i++)
@@ -785,6 +801,7 @@ void Traverse::union_recurrent(Box *cr, Element **e, Box *er, uint64 *idx, Eleme
 
 
 UniData **Traverse::construct_union_mesh(Mesh *unimesh) {
+	_F_
 	int i;
 	Element *e[num];
 	Box er[num], cr;

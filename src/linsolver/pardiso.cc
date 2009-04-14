@@ -19,6 +19,7 @@
 
 #include <common/trace.h>
 #include <common/error.h>
+#include <common/callstack.h>
 
 #include "../h3dconfig.h"
 #include "pardiso.h"
@@ -40,6 +41,7 @@ extern int
 #endif
 
 PardisoLinearSolver::PardisoLinearSolver() {
+	_F_
 #ifdef WITH_PARDISO
 #else
 	EXIT(ERR_PARDISO_NOT_COMPILED);
@@ -47,11 +49,13 @@ PardisoLinearSolver::PardisoLinearSolver() {
 }
 
 PardisoLinearSolver::~PardisoLinearSolver() {
+	_F_
 #ifdef WITH_PARDISO
 #endif
 }
 
 bool PardisoLinearSolver::solve() {
+	_F_
 	EXIT(ERR_NOT_IMPLEMENTED);
 	return false;
 }

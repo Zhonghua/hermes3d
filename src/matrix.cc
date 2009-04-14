@@ -21,6 +21,7 @@
 #include "matrix.h"
 
 #include <common/error.h>
+#include <common/callstack.h>
 
 
 #define TINY 1.0e-20
@@ -30,6 +31,7 @@
 // the book Numerical Recipes in C, adjusted to zero-based indexing
 
 void ludcmp(double **a, int n, int *indx, double *d) {
+	_F_
 	int i, imax = 0, j, k;
 	double big, dum, sum, temp;
 	double *vv = new double[n];
@@ -81,6 +83,7 @@ void ludcmp(double **a, int n, int *indx, double *d) {
 
 
 void lubksb(double **a, int n, int *indx, double *b) {
+	_F_
 	int i, ip, j;
 	double sum;
 
@@ -103,6 +106,7 @@ void lubksb(double **a, int n, int *indx, double *b) {
 // the book Numerical Recipes in C, adjusted to zero-based indexing
 
 void choldc(double **a, int n, double p[]) {
+	_F_
 	int i, j, k;
 	for (i = 0; i < n; i++) {
 		for (j = i; j < n; j++) {
@@ -130,15 +134,18 @@ void choldc(double **a, int n, double p[]) {
 void qsort_int(int* pbase, size_t total_elems); // defined in qsort.cpp
 
 SparseMatrix::SparseMatrix() {
+	_F_
 	ndofs = 0;
 	pages = NULL;
 }
 
 SparseMatrix::~SparseMatrix() {
+	_F_
 	delete [] pages;
 }
 
 void SparseMatrix::prealloc(int ndofs) {
+	_F_
 	this->ndofs = ndofs;
 
 	pages = new Page *[ndofs];
@@ -147,6 +154,7 @@ void SparseMatrix::prealloc(int ndofs) {
 }
 
 void SparseMatrix::pre_add_ij(int row, int col) {
+	_F_
 	if (pages[col] == NULL || pages[col]->count >= PAGE_SIZE) {
 		Page *new_page = new Page;
 		if (new_page == NULL) EXIT(ERR_OUT_OF_MEMORY, "Out of memory. Error allocating a page.");
@@ -159,6 +167,7 @@ void SparseMatrix::pre_add_ij(int row, int col) {
 
 
 int SparseMatrix::sort_and_store_indices(Page *page, int *buffer, int *max) {
+	_F_
 	// gather all pages in the buffer, deleting them along the way
 	int *end = buffer;
 	while (page != NULL) {
@@ -180,6 +189,7 @@ int SparseMatrix::sort_and_store_indices(Page *page, int *buffer, int *max) {
 }
 
 int SparseMatrix::get_num_indices() {
+	_F_
 	int total = 0;
 	for (int i = 0; i < ndofs; i++)
 		for (Page *page = pages[i]; page != NULL; page = page->next)

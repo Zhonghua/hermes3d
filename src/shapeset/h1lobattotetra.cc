@@ -27,6 +27,7 @@
 #include "h1lobattotetra.h"
 #include "lobatto.h"
 #include <common/error.h>
+#include <common/callstack.h>
 
 #ifdef WITH_TETRA
 
@@ -4794,6 +4795,7 @@ static shape_fn_t *lobatto_tetra_dz_table[] = {
 
 
 H1ShapesetLobattoTetra::H1ShapesetLobattoTetra() {
+	_F_
 #ifdef WITH_TETRA
 	mode = MODE_TETRAHEDRON;
 	num_components = 1;
@@ -4824,9 +4826,11 @@ H1ShapesetLobattoTetra::H1ShapesetLobattoTetra() {
 
 
 H1ShapesetLobattoTetra::~H1ShapesetLobattoTetra() {
+	_F_
 }
 
 order3_t H1ShapesetLobattoTetra::get_order(int index) const {
+	_F_
 #ifdef WITH_TETRA
 	return order3_t(lobatto_tetra_index_to_order[index]);
 #else

@@ -29,6 +29,7 @@
 #include "../common.h"
 #include <stdio.h>
 #include <errno.h>
+#include <common/callstack.h>
 
 // size of the buffer that is used for copying files
 #define FORMAT							"%.17g"
@@ -46,26 +47,31 @@ namespace Gmsh {
 class OutputQuad : public Quad3D {
 public:
 	virtual QuadPt3D *get_points(order3_t order) {
+		_F_
 		if (!tables.exists(order.get_idx())) calculate_view_points(order);
 		return tables[order.get_idx()];
 	}
 
 	virtual int get_num_points(order3_t order) {
+		_F_
 		if (!np.exists(order.get_idx())) calculate_view_points(order);
 		return np[order.get_idx()];
 	}
 
 	virtual int *get_subdiv_modes(order3_t order) {
+		_F_
 		if (!subdiv_modes.exists(order.get_idx())) calculate_view_points(order);
 		return subdiv_modes[order.get_idx()];
 	}
 
 	virtual int get_subdiv_num(order3_t order) {
+		_F_
 		if (!subdiv_num.exists(order.get_idx())) calculate_view_points(order);
 		return subdiv_num[order.get_idx()];
 	}
 
 	virtual QuadPt3D *get_face_points(int face, order2_t order) {
+		_F_
 		EXIT(ERR_NOT_IMPLEMENTED);
 		return NULL;
 	}
@@ -97,6 +103,7 @@ protected:
 };
 
 OutputQuadTetra::OutputQuadTetra() {
+	_F_
 #ifdef WITH_TETRA
 	max_order = MAX_QUAD_ORDER;
 
@@ -107,6 +114,7 @@ OutputQuadTetra::OutputQuadTetra() {
 }
 
 OutputQuadTetra::~OutputQuadTetra() {
+	_F_
 #ifdef WITH_TETRA
 	for (Word_t i = tables.first(); i != INVALID_IDX; i = tables.next(i))
 		delete[] tables[i];
@@ -118,6 +126,7 @@ OutputQuadTetra::~OutputQuadTetra() {
 
 
 void OutputQuadTetra::calculate_view_points(order3_t order) {
+	_F_
 #ifdef WITH_TETRA
 	int orderidx = order.get_idx();
 	// check if the order is greater than 0, because we are taking log(o)
@@ -148,6 +157,7 @@ void OutputQuadTetra::calculate_view_points(order3_t order) {
 }
 
 void OutputQuadTetra::recursive_division(const Point3D *tv, QuadPt3D *table, int levels, int &idx) {
+	_F_
 #ifdef WITH_TETRA
 	if (levels == 0) {
 		// vertices
@@ -199,6 +209,7 @@ protected:
 };
 
 OutputQuadHex::OutputQuadHex() {
+	_F_
 #ifdef WITH_HEX
 	max_order = MAX_QUAD_ORDER;
 	output_precision = 0;
@@ -208,6 +219,7 @@ OutputQuadHex::OutputQuadHex() {
 }
 
 OutputQuadHex::~OutputQuadHex() {
+	_F_
 #ifdef WITH_HEX
 	for (Word_t i = tables.first(); i != INVALID_IDX; i = tables.next(i))
 		delete[] tables[i];
@@ -218,6 +230,7 @@ OutputQuadHex::~OutputQuadHex() {
 }
 
 void OutputQuadHex::calculate_view_points(order3_t order) {
+	_F_
 #ifdef WITH_HEX
 //	int o = get_principal_order(order);
 //	int levels = int(log(o) / log(2)) + output_precision;
@@ -243,6 +256,7 @@ void OutputQuadHex::calculate_view_points(order3_t order) {
 }
 
 void OutputQuadHex::recursive_division(const Point3D *tv, QuadPt3D *table, int levels, int &idx) {
+	_F_
 #ifdef WITH_HEX
 	if (levels == 0) {
 		// vertices
@@ -299,13 +313,16 @@ static Gmsh::OutputQuad *output_quad[] = { OUTPUT_QUAD_TETRA, OUTPUT_QUAD_HEX, N
 ///
 
 GmshOutputEngine::GmshOutputEngine(FILE *file) {
+	_F_
 	this->out_file = file;
 }
 
 GmshOutputEngine::~GmshOutputEngine() {
+	_F_
 }
 
 void GmshOutputEngine::dump_scalars(int mode, int num_pts, Point3D *pts, double *value) {
+	_F_
 	const char *id;
 	switch (mode) {
 		case MODE_TETRAHEDRON: id = "SS"; break;
@@ -329,6 +346,7 @@ void GmshOutputEngine::dump_scalars(int mode, int num_pts, Point3D *pts, double 
 }
 
 void GmshOutputEngine::dump_vectors(int mode, int num_pts, Point3D *pts, double *v0, double *v1, double *v2) {
+	_F_
 	const char *id;
 	switch (mode) {
 		case MODE_TETRAHEDRON: id = "VS"; break;
@@ -352,6 +370,7 @@ void GmshOutputEngine::dump_vectors(int mode, int num_pts, Point3D *pts, double 
 }
 
 void GmshOutputEngine::out(MeshFunction *fn, const char *name, int item/* = FN_VAL*/) {
+	_F_
 	int comp[COMPONENTS];		// components to output
 	int nc;						// number of components to output
 	int b = 0;
@@ -474,6 +493,7 @@ void GmshOutputEngine::out(MeshFunction *fn, const char *name, int item/* = FN_V
 }
 
 void GmshOutputEngine::out(Mesh *mesh) {
+	_F_
 	// see Gmsh documentation on details (http://www.geuz.org/gmsh/doc/texinfo/gmsh-full.html)
 
 	// header
@@ -551,6 +571,7 @@ void GmshOutputEngine::out(Mesh *mesh) {
 }
 
 void GmshOutputEngine::out_orders(Space *space, const char *name) {
+	_F_
 	Mesh *mesh = space->get_mesh();
 
 	// prepare

@@ -22,10 +22,12 @@
 #include "refdomain.h"
 #include <common/trace.h>
 #include <common/error.h>
+#include <common/callstack.h>
 
 /// TODO: move to common/shapeset?
 
 int combine_face_part(int part, int finer_part) {
+	_F_
 	assert(finer_part == 0 || finer_part == 1 || finer_part == 2);
 
 	if (finer_part == 0) return part;							// stay the same
@@ -34,6 +36,7 @@ int combine_face_part(int part, int finer_part) {
 }
 
 int opposite_part(int part) {
+	_F_
 	int n;
 	int m = part;
 	for (n = 1; n <= part; n <<= 1)
@@ -46,6 +49,7 @@ int opposite_part(int part) {
 /// @param lo[out] lower bound of the part the interval
 /// @param hi[out] higher bound of the part the interval
 void get_interval_part(int part, double &lo, double &hi) {
+	_F_
 	int n;											// number of pieces of the interval
 	for (n = 1; n <= part; n <<= 1)
 		part -= n;
@@ -60,6 +64,7 @@ void get_interval_part(int part, double &lo, double &hi) {
 /// @param part[in] ID of the position on the edge (see PIC)
 /// @param x[out] position on the edge
 void get_edge_part(int part, double &x) {
+	_F_
 	if (part == 0)
 		x = -1.0;
 	else if (part == 1)
@@ -72,6 +77,7 @@ void get_edge_part(int part, double &x) {
 }
 
 double get_edge_coef(int part) {
+	_F_
 	// FIXME: handle endpoints (i.e. part == 0, part == 1) separately (?)
 	double x;
 	get_edge_part(part, x);
@@ -79,6 +85,7 @@ double get_edge_coef(int part) {
 }
 
 Part transform_edge_part(int ori, Part part) {
+	_F_
 	Part rp;
 	rp.part = (ori == 0) ? part.part : opposite_part(part.part);
 	return rp;
@@ -86,6 +93,7 @@ Part transform_edge_part(int ori, Part part) {
 
 
 Part transform_face_part(int ori, Part part) {
+	_F_
 	// refer to Pavel Solin's gray book, p. 169 (?)
 	int flags[8][3] = {
 		{ 1, 1, 1 }, { -1, 1, 1 }, { 1, -1, 1 }, { -1, -1, 1 }, { 1, 1, -1 }, { 1, -1, -1 }, { -1, 1, -1 }, { -1, -1, -1 }
@@ -109,6 +117,7 @@ Part transform_face_part(int ori, Part part) {
 // Shapeset /////
 
 Shapeset::Shapeset() {
+	_F_
 	mode = 0;
 	ced_idx = -1;
 	num_components = -1;
@@ -122,6 +131,7 @@ Shapeset::Shapeset() {
 }
 
 Shapeset::~Shapeset() {
+	_F_
 #ifdef PRELOADING
 	delete [] fn_prods;
 	delete [] dx_prods;
@@ -132,6 +142,7 @@ Shapeset::~Shapeset() {
 }
 
 int Shapeset::get_constrained_edge_index(int edge, int ori, order1_t order, Part part) {
+	_F_
 	CEDKey cedkey(CED_KEY_TYPE_EDGE, edge, order, ori, part);
 	int fn_idx;
 	if (ced_id.lookup(cedkey, fn_idx))
@@ -146,6 +157,7 @@ int Shapeset::get_constrained_edge_index(int edge, int ori, order1_t order, Part
 }
 
 int Shapeset::get_constrained_edge_face_index(int edge, int ori, order2_t order, Part part, int dir) {
+	_F_
 	CEDKey ck(CED_KEY_TYPE_EDGE_FACE, edge, order, ori, part, dir);
 	int fn_idx;
 	if (ced_id.lookup(ck, fn_idx))
@@ -160,6 +172,7 @@ int Shapeset::get_constrained_edge_face_index(int edge, int ori, order2_t order,
 }
 
 int Shapeset::get_constrained_face_index(int face, int ori, order2_t order, Part part) {
+	_F_
 	CEDKey cedkey(CED_KEY_TYPE_FACE, face, order, ori, part);
 	int fn_idx;
 	if (ced_id.lookup(cedkey, fn_idx))
@@ -174,6 +187,7 @@ int Shapeset::get_constrained_face_index(int face, int ori, order2_t order, Part
 }
 
 void Shapeset::free_constrained_combinations() {
+	_F_
 	for (Word_t i = ced_comb.first(); i != INVALID_IDX; i = ced_comb.next(i))
 		delete ced_comb.get(i);
 	ced_id.remove_all();
@@ -182,6 +196,7 @@ void Shapeset::free_constrained_combinations() {
 }
 
 CEDComb *Shapeset::get_ced_comb(const CEDKey &key) {
+	_F_
 	CEDComb *comb;
 	if (ced_comb.lookup(key, comb)) {
 		// ok, already calculated combination
@@ -200,6 +215,7 @@ CEDComb *Shapeset::get_ced_comb(const CEDKey &key) {
 }
 
 int *Shapeset::get_ced_indices(const CEDKey &key) {
+	_F_
 	int *idx;
 	if (key.type == CED_KEY_TYPE_EDGE) {
 		order1_t order = key.order;
@@ -224,6 +240,7 @@ int *Shapeset::get_ced_indices(const CEDKey &key) {
 }
 
 double Shapeset::get_constrained_value(int n, int index, double x, double y, double z, int component) {
+	_F_
 	assert(ced_key.exists(-1 - index));
 	CEDKey key = ced_key[-1 - index];
 
@@ -242,6 +259,7 @@ double Shapeset::get_constrained_value(int n, int index, double x, double y, dou
 #ifdef PRELOADING
 
 bool Shapeset::load_prods(const char *file_name, double *&mat) {
+	_F_
 	FILE *file = fopen(file_name, "r");
 	if (file != NULL) {
 		fread(&num_fns, sizeof(num_fns), 1, file);
@@ -269,6 +287,7 @@ bool Shapeset::load_prods(const char *file_name, double *&mat) {
 }
 
 bool Shapeset::preload_products() {
+	_F_
 	// we do not need this for fichera
 //	printf("Loading FN products.\n");
 //	if (!load_prods("fn-fn", fn_prods)) return false;
@@ -282,6 +301,7 @@ bool Shapeset::preload_products() {
 }
 
 scalar Shapeset::get_product_val(int idx1, int idx2, double *vals) {
+	_F_
 	assert(fnidx2idx.count() > 0 && vals != NULL);
 
 	int idx[] = { idx1, idx2 };

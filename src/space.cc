@@ -23,6 +23,7 @@
 #include "matrix.h"
 #include <common/error.h>
 #include <common/timer.h>
+#include <common/callstack.h>
 
 //#define ADD_ASMLIST_THRESHOLD					1e-13
 #define ADD_ASMLIST_THRESHOLD					0
@@ -41,6 +42,7 @@
 Space::Space(Mesh *mesh, Shapeset *shapeset) :
 	mesh(mesh), shapeset(shapeset)
 {
+	_F_
 	set_bc_types(NULL);
 	set_bc_values((scalar(*)(int, double, double, double)) NULL);
 	set_bc_values((scalar3 &(*)(int, double, double, double)) NULL);
@@ -49,6 +51,7 @@ Space::Space(Mesh *mesh, Shapeset *shapeset) :
 
 
 Space::~Space() {
+	_F_
 	free_data_tables();
 
 	for (Word_t i = fi_data.first(); i != INVALID_IDX; i = fi_data.next(i))
@@ -61,6 +64,7 @@ Space::~Space() {
 }
 
 void Space::init_data_tables() {
+	_F_
 	assert(mesh != NULL);
 
 	FOR_ALL_ELEMENTS(idx, mesh) {
@@ -72,6 +76,7 @@ void Space::init_data_tables() {
 }
 
 void Space::free_data_tables() {
+	_F_
 	FOR_ALL_VERTEX_NODES(i)
 		delete vn_data[i];
 	vn_data.remove_all();
@@ -93,6 +98,7 @@ void Space::free_data_tables() {
 
 
 void Space::set_element_order(Word_t eid, order3_t order) {
+	_F_
 	CHECK_ELEMENT_ID(eid);
 
 	// TODO: check for validity of order
@@ -105,6 +111,7 @@ void Space::set_element_order(Word_t eid, order3_t order) {
 }
 
 order3_t Space::get_element_order(Word_t eid) const {
+	_F_
 	CHECK_ELEMENT_ID(eid);
 	assert(elm_data.exists(eid));
 	assert(elm_data[eid] != NULL);
@@ -112,6 +119,7 @@ order3_t Space::get_element_order(Word_t eid) const {
 }
 
 void Space::set_uniform_order(order3_t order) {
+	_F_
 	FOR_ALL_ACTIVE_ELEMENTS(eid, mesh) {
 		assert(elm_data.exists(eid));
 		assert(elm_data[eid] != NULL);
@@ -120,6 +128,7 @@ void Space::set_uniform_order(order3_t order) {
 }
 
 void Space::set_order_recurrent(Word_t eid, order3_t order) {
+	_F_
 	Element *e = mesh->elements[eid];
 	if (e->active) {
 		assert(elm_data.exists(e->id));
@@ -136,11 +145,13 @@ void Space::set_order_recurrent(Word_t eid, order3_t order) {
 }
 
 inline int LIMIT_ELEMENT_ORDER(int a) {
+	_F_
 	if (a > MAX_ELEMENT_ORDER) return MAX_ELEMENT_ORDER;
 	else return a;
 }
 
 void Space::copy_orders(const Space &space, int inc) {
+	_F_
 	Mesh *cmesh = space.get_mesh();
 	FOR_ALL_ACTIVE_ELEMENTS(eid, cmesh) {
 		order3_t oo = space.get_element_order(eid);
@@ -159,6 +170,7 @@ void Space::copy_orders(const Space &space, int inc) {
 }
 
 void Space::enforce_minimum_rule() {
+	_F_
 	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
 		Element *elem = mesh->elements[idx];
 		ElementData *elem_node = elm_data[idx];
@@ -229,6 +241,7 @@ void Space::enforce_minimum_rule() {
 //// dof assignment ////////////////////////////////////////////////////////////////////////////////
 
 void Space::assign_vertex_dofs(Word_t vid) {
+	_F_
 	VertexData *node = vn_data[vid];
 	int ndofs = get_vertex_ndofs();
 	if (node->bc_type == BC_ESSENTIAL) {
@@ -242,6 +255,7 @@ void Space::assign_vertex_dofs(Word_t vid) {
 }
 
 void Space::assign_edge_dofs(Word_t idx) {
+	_F_
 	EdgeData *node = en_data[idx];
 	int ndofs = get_edge_ndofs(node->order);
 	if (node->bc_type == BC_ESSENTIAL) {
@@ -255,6 +269,7 @@ void Space::assign_edge_dofs(Word_t idx) {
 }
 
 void Space::assign_face_dofs(Word_t idx) {
+	_F_
 	FaceData *node = fn_data[idx];
 	int ndofs = get_face_ndofs(node->order);
 	if (node->bc_type == BC_ESSENTIAL) {
@@ -268,6 +283,7 @@ void Space::assign_face_dofs(Word_t idx) {
 }
 
 void Space::assign_bubble_dofs(Word_t idx) {
+	_F_
 	ElementData *enode = elm_data[idx];
 	int ndofs = get_element_ndofs(enode->order);
 	enode->n = ndofs;
@@ -278,6 +294,7 @@ void Space::assign_bubble_dofs(Word_t idx) {
 // assembly lists ////
 
 void Space::get_vertex_assembly_list(Element *e, int ivertex, AsmList *al) {
+	_F_
 	Word_t vtx = e->get_vertex(ivertex);
 	VertexData *vnode = vn_data[vtx];
 	int index = shapeset->get_vertex_index(ivertex);
@@ -295,6 +312,7 @@ void Space::get_vertex_assembly_list(Element *e, int ivertex, AsmList *al) {
 }
 
 void Space::get_edge_assembly_list(Element *elem, int iedge, AsmList *al) {
+	_F_
 	Word_t edge_id = mesh->get_edge_id(elem, iedge);
 	EdgeData *enode = en_data[edge_id];
 	int ori = elem->get_edge_orientation(iedge);
@@ -368,6 +386,7 @@ void Space::get_edge_assembly_list(Element *elem, int iedge, AsmList *al) {
 }
 
 void Space::get_face_assembly_list(Element *elem, int iface, AsmList *al) {
+	_F_
 	Word_t face_id = mesh->get_facet_id(elem, iface);
 	FaceData *fnode = fn_data[face_id];
 
@@ -409,6 +428,7 @@ void Space::get_face_assembly_list(Element *elem, int iface, AsmList *al) {
 }
 
 void Space::get_bubble_assembly_list(Element *e, AsmList *al) {
+	_F_
 	ElementData *enode = elm_data[e->id];
 
 	if (enode->n > 0) {
@@ -421,6 +441,7 @@ void Space::get_bubble_assembly_list(Element *e, AsmList *al) {
 // BC ////
 
 void Space::set_bc_info(NodeData *node, EBCType bc, int marker) {
+	_F_
 	if (bc == BC_ESSENTIAL || (bc == BC_NATURAL && node->bc_type == BC_NONE)) {
 		node->bc_type = bc;
 		node->marker = marker;
@@ -428,6 +449,7 @@ void Space::set_bc_info(NodeData *node, EBCType bc, int marker) {
 }
 
 void Space::set_bc_information() {
+	_F_
 	FOR_ALL_FACETS(idx, mesh) {
 		Facet *facet = mesh->facets.get(idx);
 		assert(facet != NULL);
@@ -471,6 +493,7 @@ void Space::set_bc_information() {
 // find constraints ///////////////////////////////////////////////////////////
 
 Space::VertexData *Space::create_vertex_node_data(Word_t vid, bool ced) {
+	_F_
 	VertexData *vd = vn_data[vid];
 	if (vd == NULL) {
 		vd = vn_data[vid] = new VertexData;
@@ -498,6 +521,7 @@ Space::VertexData *Space::create_vertex_node_data(Word_t vid, bool ced) {
 }
 
 Space::EdgeData *Space::create_edge_node_data(Word_t eid, bool ced) {
+	_F_
 	EdgeData *ed = en_data[eid];
 	if (ed == NULL) {
 		ed = en_data[eid] = new EdgeData;
@@ -530,6 +554,7 @@ Space::EdgeData *Space::create_edge_node_data(Word_t eid, bool ced) {
 }
 
 Space::FaceData *Space::create_face_node_data(Word_t fid, bool ced) {
+	_F_
 	FaceData *fd = fn_data[fid];
 	if (fd == NULL) {
 		fd = fn_data[fid] = new FaceData;
@@ -560,6 +585,7 @@ Space::FaceData *Space::create_face_node_data(Word_t fid, bool ced) {
 }
 
 void Space::fc_face(Word_t eid, int iface, bool ced) {
+	_F_
 	Element *elem = mesh->elements[eid];
 	// vertices
 	int nv = elem->get_face_num_of_vertices(iface);
@@ -637,6 +663,7 @@ void Space::fc_face(Word_t eid, int iface, bool ced) {
 }
 
 void Space::fc_face_left(Word_t fid) {
+	_F_
 	if (fid == INVALID_IDX) return;
 
 	Facet *facet = mesh->facets[fid];
@@ -647,6 +674,7 @@ void Space::fc_face_left(Word_t fid) {
 }
 
 void Space::fc_face_right(Word_t fid) {
+	_F_
 	if (fid == INVALID_IDX) return;
 
 	Facet *facet = mesh->facets[fid];
@@ -657,6 +685,7 @@ void Space::fc_face_right(Word_t fid) {
 }
 
 void Space::fc_element(Word_t idx) {
+	_F_
 	if (idx == INVALID_IDX) return;
 
 	Element *elem = mesh->elements[idx];
@@ -697,6 +726,7 @@ void Space::fc_element(Word_t idx) {
 }
 
 inline void Space::output_component(BaseVertexComponent *&current, BaseVertexComponent *&last, BaseVertexComponent *min, bool add) {
+	_F_
 	// if the edge is already in the list, just add half of the other coef
 	if (last != NULL && last->dof == min->dof) {
 		PRINTF(" * dof already in list (%d, last->coef = % lf, min->coef = % lf.\n", min->dof, last->coef, min->coef);
@@ -718,12 +748,14 @@ inline void Space::output_component(BaseVertexComponent *&current, BaseVertexCom
 /// @param[in] n - number of elements in the list
 template<typename T>
 static T *duplicate_baselist(T *l, int n) {
+	_F_
 	T *dup = (T *) malloc(n * sizeof(T));
 	memcpy(dup, l, n * sizeof(T));
 	return dup;
 }
 
 Space::BaseVertexComponent *Space::merge_baselist(BaseVertexComponent *l1, int n1, BaseVertexComponent *l2, int n2, int &ncomponents, bool add) {
+	_F_
 	if (l1 == NULL && l2 == NULL) { ncomponents = 0; return NULL; }
 	if (l1 == NULL) { ncomponents = n2; return duplicate_baselist<BaseVertexComponent>(l2, n2); }
 	if (l2 == NULL) { ncomponents = n1; return duplicate_baselist<BaseVertexComponent>(l1, n1); }
@@ -754,6 +786,7 @@ Space::BaseVertexComponent *Space::merge_baselist(BaseVertexComponent *l1, int n
 }
 
 inline void Space::output_component(BaseEdgeComponent *&current, BaseEdgeComponent *&last, BaseEdgeComponent *min, bool add) {
+	_F_
 	// if the edge is already in the list, just add half of the other coef
 	if (last != NULL && last->edge_id == min->edge_id) {
 		PRINTF(" * edge already in list (%ld, last->coef = % lf, min->coef = % lf.\n", min->edge_id, last->coef, min->coef);
@@ -772,6 +805,7 @@ inline void Space::output_component(BaseEdgeComponent *&current, BaseEdgeCompone
 }
 
 Space::BaseEdgeComponent *Space::merge_baselist(BaseEdgeComponent *l1, int n1, BaseEdgeComponent *l2, int n2, int &ncomponents, bool add) {
+	_F_
 	if (l1 == NULL && l2 == NULL) { ncomponents = 0; return NULL; }
 	if (l1 == NULL) { ncomponents = n2; return duplicate_baselist<BaseEdgeComponent>(l2, n2); }
 	if (l2 == NULL) { ncomponents = n1; return duplicate_baselist<BaseEdgeComponent>(l1, n1); }
@@ -798,6 +832,7 @@ Space::BaseEdgeComponent *Space::merge_baselist(BaseEdgeComponent *l1, int n1, B
 }
 
 inline void Space::output_component_over(BaseFaceComponent *&current, BaseFaceComponent *min, BaseFaceComponent *m) {
+	_F_
 	if (min != NULL) {
 		current->face_id = min->face_id;
 		current->ori = min->ori;
@@ -818,6 +853,7 @@ inline void Space::output_component_over(BaseFaceComponent *&current, BaseFaceCo
 }
 
 inline void Space::output_component(BaseFaceComponent *&current, BaseFaceComponent *&last, BaseFaceComponent *min, bool add) {
+	_F_
 	if (last != NULL && last->face_id == min->face_id &&
 		last->part.vert == min->part.vert && last->part.horz == min->part.horz && last->dir == min->dir) {
 		PRINTF(" * face already in list (%ld, last->coef = % lf, min->coef = % lf, last->part = %d, min->part = %d)\n",
@@ -838,6 +874,7 @@ inline void Space::output_component(BaseFaceComponent *&current, BaseFaceCompone
 }
 
 Space::BaseFaceComponent *Space::merge_baselist(BaseFaceComponent *l1, int n1, BaseFaceComponent *l2, int n2, int &ncomponents, Word_t fid, bool add) {
+	_F_
 	if (l1 == NULL && l2 == NULL) { ncomponents = 0; return NULL; }
 
 	int max_result = n1 + n2;
@@ -895,6 +932,7 @@ Space::BaseFaceComponent *Space::merge_baselist(BaseFaceComponent *l1, int n1, B
 /// @param[in] vtx2 - vertex 2
 ///
 void Space::calc_vertex_vertex_ced(Word_t vtx1, Word_t vtx2) {
+	_F_
 	assert(vtx1 != INVALID_IDX);
 	assert(vtx2 != INVALID_IDX);
 	VertexData *vd[] = { vn_data[vtx1], vn_data[vtx2] };
@@ -937,6 +975,7 @@ void Space::calc_vertex_vertex_ced(Word_t vtx1, Word_t vtx2) {
 /// @param[in] vtx2 - vertex 2
 ///
 void Space::calc_mid_vertex_vertex_ced(Word_t mid, Word_t vtx1, Word_t vtx2, Word_t vtx3, Word_t vtx4) {
+	_F_
 	assert(vtx1 != INVALID_IDX);
 	assert(vtx2 != INVALID_IDX);
 	assert(vtx3 != INVALID_IDX);
@@ -983,6 +1022,7 @@ void Space::calc_mid_vertex_vertex_ced(Word_t mid, Word_t vtx1, Word_t vtx2, Wor
 }
 
 void Space::calc_vertex_edge_ced(Word_t vtx, Word_t eid, int ori, int part) {
+	_F_
 	PRINTF("calc vertex/edge #%ld\n", vtx);
 
 	PRINTF(" - eid = %ld, part = %d, ori = %d\n", eid, part, ori);
@@ -1082,6 +1122,7 @@ void Space::calc_vertex_edge_ced(Word_t vtx, Word_t eid, int ori, int part) {
 }
 
 void Space::calc_mid_vertex_edge_ced(Word_t vtx, Word_t fmp, Word_t eid, int ori, int part) {
+	_F_
 	PRINTF("calc mid vertex/edge #%ld, [%ld | %ld]\n", vtx, eid, fmp);
 
 	assert(eid != INVALID_IDX);
@@ -1243,6 +1284,7 @@ void Space::calc_mid_vertex_edge_ced(Word_t vtx, Word_t fmp, Word_t eid, int ori
 /// @param fid - id of the constraining facet
 /// @param ori - the orientation of the constraining facet
 void Space::calc_vertex_face_ced(Word_t vtx, Word_t fid, int ori, int iface, int hpart, int vpart) {
+	_F_
 	PRINTF("calc vertex/face #%ld\n", vtx);
 
 	FaceData *fd = fn_data[fid];
@@ -1301,6 +1343,7 @@ void Space::calc_vertex_face_ced(Word_t vtx, Word_t fid, int ori, int iface, int
 /// @param[in] epart - part of the edge
 /// @param[in] part - part of the edge
 void Space::calc_edge_edge_ced(Word_t seid, Word_t eid, int ori, int epart, int part) {
+	_F_
 	PRINTF("calc edge/edge #%ld, #%ld\n", seid, eid);
 
 	assert(eid != INVALID_IDX);
@@ -1377,6 +1420,7 @@ void Space::calc_edge_edge_ced(Word_t seid, Word_t eid, int ori, int epart, int 
 }
 
 void Space::calc_mid_edge_edge_ced(Word_t meid, Word_t eid[], int ori[], int epart, int part) {
+	_F_
 	PRINTF("calc mid edge/edge #%ld\n", meid);
 
 	assert(eid[0] != INVALID_IDX);
@@ -1441,6 +1485,7 @@ void Space::calc_mid_edge_edge_ced(Word_t meid, Word_t eid[], int ori[], int epa
 /// @param[in] fpart - face part
 /// @param[in] epart - edge part
 void Space::calc_edge_face_ced(Word_t mid_eid, Word_t eid[], Word_t fid, int ori, int iface, int part_ori, int fpart, int epart) {
+	_F_
 	PRINTF("calc edge/face #%ld\n", mid_eid);
 
 	assert(fid != INVALID_IDX);
@@ -1502,6 +1547,7 @@ void Space::calc_edge_face_ced(Word_t mid_eid, Word_t eid[], Word_t fid, int ori
 /// @param[in] hpart - horizontal part
 /// @param[in] vpart - vertical part
 void Space::calc_face_face_ced(Word_t sfid, Word_t fid, int ori, int hpart, int vpart) {
+	_F_
 	PRINTF("calc face/face #%ld\n", sfid);
 
 	FaceData *fd = fn_data[sfid];
@@ -1515,6 +1561,7 @@ void Space::calc_face_face_ced(Word_t sfid, Word_t fid, int ori, int hpart, int 
 }
 
 void Space::uc_edge(Word_t eid, int iedge) {
+	_F_
 	Element *elem = mesh->elements[eid];
 
 	Word_t edge_id = mesh->get_edge_id(elem, iedge);
@@ -1563,6 +1610,7 @@ void Space::uc_edge(Word_t eid, int iedge) {
 }
 
 void Space::uc_face(Word_t eid, int iface) {
+	_F_
 	Element *elem = mesh->elements[eid];
 
 	Word_t fid = mesh->get_facet_id(elem, iface);
@@ -1882,6 +1930,7 @@ void Space::uc_face(Word_t eid, int iface) {
 }
 
 void Space::uc_element(Word_t idx) {
+	_F_
 	if (idx == INVALID_IDX) return;
 
 	Element *e = mesh->elements[idx];
@@ -1929,6 +1978,7 @@ void Space::uc_element(Word_t idx) {
 //
 
 int Space::assign_dofs(int first_dof, int stride) {
+	_F_
 	this->first_dof = next_dof = first_dof;
 	this->stride = stride;
 
@@ -1967,6 +2017,7 @@ int Space::assign_dofs(int first_dof, int stride) {
 }
 
 void Space::update_constraints() {
+	_F_
 	FOR_ALL_ACTIVE_ELEMENTS(elm_idx, mesh) {
 		Element *e = mesh->elements[elm_idx];
 		for (int iface = 0; iface < e->get_num_of_faces(); iface++) {
@@ -2019,27 +2070,32 @@ static scalar3 &default_bc_vec_value_by_coord(int marker, double x, double y, do
 }
 
 void Space::set_bc_types(EBCType(*bc_type_callback)(int)) {
+	_F_
 	if (bc_type_callback == NULL) bc_type_callback = default_bc_type;
 	this->bc_type_callback = bc_type_callback;
 }
 
 void Space::set_bc_values(scalar(*bc_value_callback_by_coord)(int, double, double, double)) {
+	_F_
 	if (bc_value_callback_by_coord == NULL) bc_value_callback_by_coord = default_bc_value_by_coord;
 	this->bc_value_callback_by_coord = bc_value_callback_by_coord;
 }
 
 void Space::set_bc_values(scalar3 &(*bc_vec_value_callback_by_coord)(int marker, double x, double y, double z)) {
+	_F_
 	if (bc_vec_value_callback_by_coord == NULL) bc_vec_value_callback_by_coord = default_bc_vec_value_by_coord;
 	this->bc_vec_value_callback_by_coord = bc_vec_value_callback_by_coord;
 }
 
 void Space::copy_callbacks(const Space *space) {
+	_F_
 	bc_type_callback = space->bc_type_callback;
 	bc_value_callback_by_coord = space->bc_value_callback_by_coord;
 	bc_vec_value_callback_by_coord = space->bc_vec_value_callback_by_coord;
 }
 
 void Space::calc_boundary_projections() {
+	_F_
 	FOR_ALL_ACTIVE_ELEMENTS(elm_idx, mesh) {
 		Element *e = mesh->elements[elm_idx];
 		for (int iface = 0; iface < e->get_num_of_faces(); iface++) {

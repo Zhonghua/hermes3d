@@ -21,16 +21,20 @@
 #include "petsc.h"
 #include <common/trace.h>
 #include <common/error.h>
+#include <common/callstack.h>
 
 PetscMatrix::PetscMatrix() {
+	_F_
 	inited = false;
 }
 
 PetscMatrix::~PetscMatrix() {
+	_F_
 	free();
 }
 
 void PetscMatrix::alloc() {
+	_F_
 #ifdef WITH_PETSC
 	assert(pages != NULL);
 
@@ -64,6 +68,7 @@ void PetscMatrix::alloc() {
 }
 
 void PetscMatrix::free() {
+	_F_
 #ifdef WITH_PETSC
 	if (inited) MatDestroy(matrix);
 	inited = false;
@@ -71,12 +76,14 @@ void PetscMatrix::free() {
 }
 
 void PetscMatrix::update(int m, int n, scalar v) {
+	_F_
 #ifdef WITH_PETSC
 	MatSetValues(matrix, 1, &m, 1, &n, (PetscScalar *) &v, ADD_VALUES);
 #endif
 }
 
 void PetscMatrix::update(int m, int n, scalar **mat, int *rows, int *cols) {
+	_F_
 #ifdef WITH_PETSC
 	// TODO: pass in just the block of the matrix without DIRICHLET_DOFs (so that can use MatSetValues directly without checking
 	// row and cols for -1)
@@ -90,12 +97,14 @@ void PetscMatrix::update(int m, int n, scalar **mat, int *rows, int *cols) {
 }
 
 bool PetscMatrix::dump(FILE *file, const char *var_name, EMatrixDumpFormat) {
+	_F_
 #ifdef WITH_PETSC
 #endif
 	return false;
 }
 
 int PetscMatrix::get_matrix_size() const {
+	_F_
 	return 0;
 }
 
@@ -103,16 +112,19 @@ int PetscMatrix::get_matrix_size() const {
 // PETSc vector //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 PetscVector::PetscVector() {
+	_F_
 #ifdef WITH_PETSC
 	inited = false;
 #endif
 }
 
 PetscVector::~PetscVector() {
+	_F_
 	free();
 }
 
 void PetscVector::alloc(int n) {
+	_F_
 #ifdef WITH_PETSC
 	free();
 	ndofs = n;
@@ -122,6 +134,7 @@ void PetscVector::alloc(int n) {
 }
 
 void PetscVector::free() {
+	_F_
 #ifdef WITH_PETSC
 	if (inited) VecDestroy(vec);
 	inited = false;
@@ -129,12 +142,14 @@ void PetscVector::free() {
 }
 
 void PetscVector::update(int idx, scalar y) {
+	_F_
 #ifdef WITH_PETSC
 	if (idx >= 0) VecSetValues(vec, 1, &idx, (PetscScalar *) &y, ADD_VALUES);
 #endif
 }
 
 void PetscVector::update(int n, int *idx, scalar *y) {
+	_F_
 #ifdef WITH_PETSC
 	for (int i = 0; i < n; i++)
 		if (idx[i] >= 0) VecSetValues(vec, 1, idx + i, (PetscScalar *) (y + i), ADD_VALUES);
@@ -142,6 +157,7 @@ void PetscVector::update(int n, int *idx, scalar *y) {
 }
 
 bool PetscVector::dump(FILE *file, const char *var_name, EMatrixDumpFormat) {
+	_F_
 #ifdef WITH_PETSC
 #endif
 	return false;
@@ -152,6 +168,7 @@ bool PetscVector::dump(FILE *file, const char *var_name, EMatrixDumpFormat) {
 PetscLinearSolver::PetscLinearSolver(PetscMatrix &mat, PetscVector &rhs)
 	: LinearSolver(), m(mat), rhs(rhs)
 {
+	_F_
 #ifdef WITH_PETSC
 #else
 	EXIT(ERR_PETSC_NOT_COMPILED);
@@ -160,6 +177,7 @@ PetscLinearSolver::PetscLinearSolver(PetscMatrix &mat, PetscVector &rhs)
 
 
 PetscLinearSolver::~PetscLinearSolver() {
+	_F_
 #ifdef WITH_PETSC
 #else
 	EXIT(ERR_PETSC_NOT_COMPILED);
@@ -167,6 +185,7 @@ PetscLinearSolver::~PetscLinearSolver() {
 }
 
 bool PetscLinearSolver::solve() {
+	_F_
 #ifdef WITH_PETSC
 	assert(m.ndofs == rhs.ndofs);
 

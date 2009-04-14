@@ -23,6 +23,7 @@
 
 #include <common/error.h>
 #include <common/trace.h>
+#include <common/callstack.h>
 
 //// 1D quadrature tables //////////////////////////////////////////////////////////////////////////
 
@@ -4149,6 +4150,7 @@ static QuadPt3D *std_tables_3d_tet[] = {
 
 
 QuadStdTetra::QuadStdTetra() {
+	_F_
 #ifdef WITH_TETRA
 	mode = MODE_TETRAHEDRON;
 
@@ -4253,6 +4255,7 @@ QuadStdTetra::QuadStdTetra() {
 }
 
 QuadStdTetra::~QuadStdTetra() {
+	_F_
 #ifdef WITH_TETRA
 	// face
 	for (int iface = 0; iface < Tetra::NUM_FACES; iface++) {
@@ -4274,6 +4277,7 @@ QuadStdTetra::~QuadStdTetra() {
 // QuadStdHex /////////////////////////////////////////////////////////////////
 
 QuadStdHex::QuadStdHex() {
+	_F_
 #ifdef WITH_HEX
 	mode = MODE_HEXAHEDRON;
 
@@ -4338,6 +4342,7 @@ QuadStdHex::QuadStdHex() {
 }
 
 QuadStdHex::~QuadStdHex() {
+	_F_
 #ifdef WITH_HEX
 	// element
 	for (Word_t idx = tables.first(); idx != INVALID_IDX; idx = tables.next(idx))
@@ -4360,6 +4365,7 @@ QuadStdHex::~QuadStdHex() {
 }
 
 void QuadStdHex::calc_table(order3_t order) {
+	_F_
 #ifdef WITH_HEX
 //	assert(order.type == mode);
 	int idx = order.get_idx();
@@ -4382,6 +4388,7 @@ void QuadStdHex::calc_table(order3_t order) {
 }
 
 void QuadStdHex::calc_face_table(int face, order2_t order) {
+	_F_
 #ifdef WITH_HEX
 	int idx = order.get_idx();
 	face_tables[face][idx] = new QuadPt3D[np_face[idx]];
@@ -4436,6 +4443,7 @@ void QuadStdHex::calc_face_table(int face, order2_t order) {
 }
 
 order3_t QuadStdHex::lower_order_same_accuracy(order3_t ord) {
+	_F_
 #ifdef WITH_HEX
 //	assert(ord.type == MODE_HEXAHEDRON);
 	int x = (ord.x % 2) ? ord.x-- : ord.x;
@@ -4453,6 +4461,7 @@ order3_t QuadStdHex::lower_order_same_accuracy(order3_t ord) {
 // TODO: numerical quadrature for prism elements
 
 QuadStdPrism::QuadStdPrism() {
+	_F_
 #ifdef WITH_PRISM
 	mode = MODE_PRISM;
 	max_order = MAKE_PRISM_ORDER(MAX_QUAD_ORDER_TRI, MAX_QUAD_ORDER);
@@ -4503,6 +4512,7 @@ QuadStdPrism::QuadStdPrism() {
 }
 
 QuadStdPrism::~QuadStdPrism() {
+	_F_
 #ifdef WITH_PRISM
 	delete [] np;
 

@@ -24,6 +24,7 @@
 #include "common.h"
 #include "h1sinhex.h"
 #include <common/error.h>
+#include <common/callstack.h>
 #include "matrix.h"
 #include "lobatto.h"
 
@@ -102,6 +103,7 @@ static int index_order[] = { 1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
 // -- helpers -- //
 
 static void find_permutation(int *indices, int *permut, int &num_01) {
+	_F_
 	for (int i = 0; i < 3; i++)
 		permut[i] = i;
 	num_01 = 0;
@@ -122,6 +124,7 @@ static void find_permutation(int *indices, int *permut, int &num_01) {
 
 
 static void decompose(h1s_hex_index_t index, int indices[3], int ori[3], bool swapori = true) {
+	_F_
 	int permut[3];
 	int num_01;
 
@@ -157,6 +160,7 @@ static void decompose(h1s_hex_index_t index, int indices[3], int ori[3], bool sw
 // -- functions that calculate values of fn, dx, dy, dz on the fly -- //
 
 static double calc_fn_value(int index, double x, double y, double z, int component) {
+	_F_
 	h1s_hex_index_t idx(index);
 	int indices[3];
 	int oris[3];
@@ -172,6 +176,7 @@ static double calc_fn_value(int index, double x, double y, double z, int compone
 
 
 static double calc_dx_value(int index, double x, double y, double z, int component) {
+	_F_
 	h1s_hex_index_t idx(index);
 	int indices[3];
 	int oris[3];
@@ -193,6 +198,7 @@ static double calc_dx_value(int index, double x, double y, double z, int compone
 
 
 static double calc_dy_value(int index, double x, double y, double z, int component) {
+	_F_
 	h1s_hex_index_t idx(index);
 	int indices[3];
 	int oris[3];
@@ -214,6 +220,7 @@ static double calc_dy_value(int index, double x, double y, double z, int compone
 
 
 static double calc_dz_value(int index, double x, double y, double z, int component) {
+	_F_
 	h1s_hex_index_t idx(index);
 	int indices[3];
 	int oris[3];
@@ -238,6 +245,7 @@ static double calc_dz_value(int index, double x, double y, double z, int compone
 // -- -- //
 
 H1ShapesetSinHex::H1ShapesetSinHex() {
+	_F_
 #ifdef WITH_HEX
 	mode = MODE_HEXAHEDRON;
 	num_components = 1;
@@ -259,6 +267,7 @@ H1ShapesetSinHex::H1ShapesetSinHex() {
 }
 
 H1ShapesetSinHex::~H1ShapesetSinHex() {
+	_F_
 #ifdef WITH_HEX
 	for (int edge = 0; edge < Hex::NUM_EDGES; edge++)
 		for (int ori = 0; ori < NUM_EDGE_ORIS; ori++)
@@ -276,6 +285,7 @@ H1ShapesetSinHex::~H1ShapesetSinHex() {
 }
 
 order3_t H1ShapesetSinHex::get_order(int index) const {
+	_F_
 #ifdef WITH_HEX
 	if (index >= 0) {
 		h1s_hex_index_t idx(index);
@@ -293,6 +303,7 @@ order3_t H1ShapesetSinHex::get_order(int index) const {
 }
 
 void H1ShapesetSinHex::compute_edge_indices(int edge, int ori, order1_t order) {
+	_F_
 #ifdef WITH_HEX
 	assert(order > 1);
 	int *indices = new int[order - 1];
@@ -320,6 +331,7 @@ void H1ShapesetSinHex::compute_edge_indices(int edge, int ori, order1_t order) {
 }
 
 void H1ShapesetSinHex::compute_face_indices(int face, int ori, order2_t order) {
+	_F_
 #ifdef WITH_HEX
 	assert(order.x > 1);
 	assert(order.y > 1);
@@ -375,6 +387,7 @@ void H1ShapesetSinHex::compute_face_indices(int face, int ori, order2_t order) {
 }
 
 void H1ShapesetSinHex::compute_bubble_indices(order3_t order) {
+	_F_
 #ifdef WITH_HEX
 	assert(order.x > 1);
 	assert(order.y > 1);
@@ -395,16 +408,19 @@ void H1ShapesetSinHex::compute_bubble_indices(order3_t order) {
 /// --- CED specific stuff ---
 
 CEDComb *H1ShapesetSinHex::calc_constrained_edge_combination(int ori, int order, Part part) {
+	_F_
 	EXIT(ERR_NOT_IMPLEMENTED);
 	return NULL;
 }
 
 CEDComb *H1ShapesetSinHex::calc_constrained_edge_face_combination(int ori, int order, Part part, int dir) {
+	_F_
 	EXIT(ERR_NOT_IMPLEMENTED);
 	return NULL;
 }
 
 CEDComb *H1ShapesetSinHex::calc_constrained_face_combination(int ori, int order, Part part) {
+	_F_
 	EXIT(ERR_NOT_IMPLEMENTED);
 	return NULL;
 }

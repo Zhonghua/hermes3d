@@ -22,6 +22,7 @@
 #include "refmap.h"
 #include <common/trace.h>
 #include <common/error.h>
+#include <common/callstack.h>
 
 /// @defgroup hcurlintergrals HCurl intergals
 
@@ -140,6 +141,7 @@
 ///
 /// @ingroup hcurlintergrals
 inline scalar hcurl_int_u_v(RealFunction *fu, RealFunction *fv, RefMap *ru, RefMap *rv) {
+	_F_
 	Quad3D *quad = fu->get_quad();
 
 	order3_t o = fu->get_fn_order() + fv->get_fn_order() + ru->get_inv_ref_order();
@@ -162,6 +164,7 @@ inline scalar hcurl_int_u_v(RealFunction *fu, RealFunction *fv, RefMap *ru, RefM
 ///
 /// @ingroup hcurlintergrals
 inline scalar hcurl_int_curl_u_curl_v(RealFunction *fu, RealFunction *fv, RefMap *ru, RefMap *rv) {
+	_F_
 	Quad3D *quad = fu->get_quad();
 
 	order3_t o = fu->get_fn_order() + fv->get_fn_order() + ru->get_ref_order();
@@ -188,6 +191,7 @@ inline scalar hcurl_int_curl_u_curl_v(RealFunction *fu, RealFunction *fv, RefMap
 ///
 /// @ingroup hcurlintergrals
 inline scalar hcurl_int_F_u(scalar3 &(*F)(double x, double y, double z), RealFunction *fu, RefMap *ru) {
+	_F_
 	Quad3D *quad = fu->get_quad();
 
 	order3_t o = fu->get_fn_order();
@@ -236,6 +240,7 @@ inline scalar hcurl_int_F_u(scalar3 &(*F)(double x, double y, double z), RealFun
 ///
 /// @ingroup hcurlintergrals
 inline scalar hcurl_surf_int_G_v(RealFunction *fv, RefMap *rv, FacePos *fp) {
+	_F_
 	Quad3D *quad = fv->get_quad();
 
 	order3_t order = fv->get_fn_order();
@@ -285,6 +290,7 @@ inline scalar hcurl_surf_int_G_v(RealFunction *fv, RefMap *rv, FacePos *fp) {
 ///
 /// @ingroup h1intergrals
 inline scalar hcurl_surf_int_u_v(RealFunction *fu, RealFunction *fv, RefMap *ru, RefMap *rv, FacePos *fp) {
+	_F_
 	Quad3D *quad = fu->get_quad();
 
 	order3_t order = fu->get_fn_order() + fv->get_fn_order() + ru->get_inv_ref_order();

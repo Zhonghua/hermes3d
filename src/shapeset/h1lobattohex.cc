@@ -26,6 +26,7 @@
 #include "lobatto.h"
 #include "h1lobattohex.h"
 #include <common/error.h>
+#include <common/callstack.h>
 #include "matrix.h"
 
 #include "mesh.h"
@@ -74,6 +75,7 @@ static int lobatto_hex_vertex_indices[] = {
 // -- helpers -- //
 
 static void find_permutation(int *indices, int *permut, int &num_01) {
+	_F_
 	for (int i = 0; i < 3; i++)
 		permut[i] = i;
 	num_01 = 0;
@@ -94,6 +96,7 @@ static void find_permutation(int *indices, int *permut, int &num_01) {
 
 
 static void decompose(h1_hex_index_t index, int indices[3], int ori[3], bool swapori = true) {
+	_F_
 	int permut[3];
 	int num_01;
 
@@ -129,6 +132,7 @@ static void decompose(h1_hex_index_t index, int indices[3], int ori[3], bool swa
 // -- functions that calculate values of fn, dx, dy, dz on the fly -- //
 
 static double calc_fn_value(int index, double x, double y, double z, int component) {
+	_F_
 	h1_hex_index_t idx(index);
 	int indices[3];
 	int oris[3];
@@ -144,6 +148,7 @@ static double calc_fn_value(int index, double x, double y, double z, int compone
 
 
 static double calc_dx_value(int index, double x, double y, double z, int component) {
+	_F_
 	h1_hex_index_t idx(index);
 	int indices[3];
 	int oris[3];
@@ -165,6 +170,7 @@ static double calc_dx_value(int index, double x, double y, double z, int compone
 
 
 static double calc_dy_value(int index, double x, double y, double z, int component) {
+	_F_
 	h1_hex_index_t idx(index);
 	int indices[3];
 	int oris[3];
@@ -186,6 +192,7 @@ static double calc_dy_value(int index, double x, double y, double z, int compone
 
 
 static double calc_dz_value(int index, double x, double y, double z, int component) {
+	_F_
 	h1_hex_index_t idx(index);
 	int indices[3];
 	int oris[3];
@@ -210,6 +217,7 @@ static double calc_dz_value(int index, double x, double y, double z, int compone
 // -- -- //
 
 H1ShapesetLobattoHex::H1ShapesetLobattoHex() {
+	_F_
 #ifdef WITH_HEX
 	mode = MODE_HEXAHEDRON;
 	num_components = 1;
@@ -231,6 +239,7 @@ H1ShapesetLobattoHex::H1ShapesetLobattoHex() {
 }
 
 H1ShapesetLobattoHex::~H1ShapesetLobattoHex() {
+	_F_
 #ifdef WITH_HEX
 	for (int edge = 0; edge < Hex::NUM_EDGES; edge++)
 		for (int ori = 0; ori < NUM_EDGE_ORIS; ori++)
@@ -248,6 +257,7 @@ H1ShapesetLobattoHex::~H1ShapesetLobattoHex() {
 }
 
 order3_t H1ShapesetLobattoHex::get_order(int index) const {
+	_F_
 #ifdef WITH_HEX
 	if (index >= 0) {
 		h1_hex_index_t idx(index);
@@ -308,6 +318,7 @@ order3_t H1ShapesetLobattoHex::get_order(int index) const {
 }
 
 void H1ShapesetLobattoHex::compute_edge_indices(int edge, int ori, order1_t order) {
+	_F_
 #ifdef WITH_HEX
 	assert(order > 1);
 	int *indices = new int[order - 1];
@@ -335,6 +346,7 @@ void H1ShapesetLobattoHex::compute_edge_indices(int edge, int ori, order1_t orde
 }
 
 void H1ShapesetLobattoHex::compute_face_indices(int face, int ori, order2_t order) {
+	_F_
 #ifdef WITH_HEX
 	assert(order.x > 1);
 	assert(order.y > 1);
@@ -390,6 +402,7 @@ void H1ShapesetLobattoHex::compute_face_indices(int face, int ori, order2_t orde
 }
 
 void H1ShapesetLobattoHex::compute_bubble_indices(order3_t order) {
+	_F_
 #ifdef WITH_HEX
 	assert(order.x > 1);
 	assert(order.y > 1);
@@ -413,6 +426,7 @@ void H1ShapesetLobattoHex::compute_bubble_indices(order3_t order) {
 // constraints are calculated on egde 0
 //
 CEDComb *H1ShapesetLobattoHex::calc_constrained_edge_combination(int ori, int o, Part part) {
+	_F_
 #ifdef WITH_HEX
 	order1_t order = o;
 	Part rp = transform_edge_part(ori, part);
@@ -466,6 +480,7 @@ CEDComb *H1ShapesetLobattoHex::calc_constrained_edge_combination(int ori, int o,
 // constraints are calculated on face 5
 //
 CEDComb *H1ShapesetLobattoHex::calc_constrained_edge_face_combination(int ori, int o, Part part, int dir) {
+	_F_
 #ifdef WITH_HEX
 	order2_t order = order2_t::from_int(o);
 	Part rp = transform_face_part(ori, part);
@@ -601,6 +616,7 @@ CEDComb *H1ShapesetLobattoHex::calc_constrained_edge_face_combination(int ori, i
 //     h_lo  edge0  h_hi
 //
 CEDComb *H1ShapesetLobattoHex::calc_constrained_face_combination(int ori, int o, Part part) {
+	_F_
 #ifdef WITH_HEX
 	order2_t order = order2_t::from_int(o);
 	order2_t old_order = order;

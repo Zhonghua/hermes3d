@@ -29,18 +29,22 @@ extern "C" {
 #include <common/trace.h>
 #include <common/error.h>
 #include <common/utils.h>
+#include <common/callstack.h>
 
 UMFPackMatrix::UMFPackMatrix() {
+	_F_
 	Ap = NULL;
 	Ai = NULL;
 	Ax = NULL;
 }
 
 UMFPackMatrix::~UMFPackMatrix() {
+	_F_
 	free();
 }
 
 void UMFPackMatrix::alloc() {
+	_F_
 	assert(pages != NULL);
 
 	// initialize the arrays Ap and Ai
@@ -67,16 +71,19 @@ void UMFPackMatrix::alloc() {
 }
 
 void UMFPackMatrix::free() {
+	_F_
 	delete [] Ap; Ap = NULL;
 	delete [] Ai; Ai = NULL;
 	delete [] Ax; Ax = NULL;
 }
 
 void UMFPackMatrix::update(int m, int n, scalar v) {
+	_F_
 	insert_value(Ai + Ap[n], Ax + Ap[n], Ap[n + 1] - Ap[n], m, v);
 }
 
 void UMFPackMatrix::update(int m, int n, scalar **mat, int *rows, int *cols) {
+	_F_
 	for (int i = 0; i < m; i++)				// rows
 		for (int j = 0; j < n; j++)			// cols
 			if (mat[i][j] != 0.0 && rows[i] != DIRICHLET_DOF && cols[j] != DIRICHLET_DOF)		// ignore dirichlet DOFs
@@ -86,6 +93,7 @@ void UMFPackMatrix::update(int m, int n, scalar **mat, int *rows, int *cols) {
 /// dumping matrix and right-hand side
 ///
 bool UMFPackMatrix::dump(FILE *file, const char *var_name, EMatrixDumpFormat fmt) {
+	_F_
 	switch (fmt) {
 		case DF_MATLAB_SPARSE:
 			fprintf(file, "%% Size: %dx%d\n%% Nonzeros: %d\ntemp = zeros(%d, 3);\ntemp = [\n", ndofs, ndofs, Ap[ndofs], Ap[ndofs]);
@@ -119,11 +127,13 @@ bool UMFPackMatrix::dump(FILE *file, const char *var_name, EMatrixDumpFormat fmt
 }
 
 int UMFPackMatrix::get_matrix_size() const {
+	_F_
 	assert(Ap != NULL);
 	return (sizeof(int) + sizeof(scalar)) * (Ap[ndofs] + ndofs);
 }
 
 void UMFPackMatrix::insert_value(int *Ai, scalar *Ax, int Alen, int idx, scalar value) {
+	_F_
 	if (idx >= 0) {
 		register int lo = 0, hi = Alen - 1, mid;
 
@@ -145,15 +155,18 @@ void UMFPackMatrix::insert_value(int *Ai, scalar *Ax, int Alen, int idx, scalar 
 // UMFPackVector ///////
 
 UMFPackVector::UMFPackVector() {
+	_F_
 	v = NULL;
 	ndofs = 0;
 }
 
 UMFPackVector::~UMFPackVector() {
+	_F_
 	free();
 }
 
 void UMFPackVector::alloc(int n) {
+	_F_
 	free();
 	v = new scalar[n];
 	memset(v, 0, n * sizeof(scalar));
@@ -161,21 +174,25 @@ void UMFPackVector::alloc(int n) {
 }
 
 void UMFPackVector::free() {
+	_F_
 	delete [] v;
 	v = NULL;
 	ndofs = 0;
 }
 
 void UMFPackVector::update(int idx, scalar y) {
+	_F_
 	if (idx >= 0) v[idx] += y;
 }
 
 void UMFPackVector::update(int n, int *idx, scalar *y) {
+	_F_
 	for (int i = 0; i < n; i++)
 		if (idx[i] >= 0) v[idx[i]] += y[i];
 }
 
 bool UMFPackVector::dump(FILE *file, const char *var_name, EMatrixDumpFormat fmt) {
+	_F_
 	switch (fmt) {
 		case DF_MATLAB_SPARSE:
 			fprintf(file, "%% Size: %dx1\n%s = [\n", ndofs, var_name);
@@ -226,6 +243,7 @@ bool UMFPackVector::dump(FILE *file, const char *var_name, EMatrixDumpFormat fmt
 UMFPackLinearSolver::UMFPackLinearSolver(UMFPackMatrix &m, UMFPackVector &rhs)
 	: LinearSolver(), m(m), rhs(rhs)
 {
+	_F_
 #ifdef WITH_UMFPACK
 #else
 	EXIT(ERR_UMFPACK_NOT_COMPILED);
@@ -233,6 +251,7 @@ UMFPackLinearSolver::UMFPackLinearSolver(UMFPackMatrix &m, UMFPackVector &rhs)
 }
 
 UMFPackLinearSolver::~UMFPackLinearSolver() {
+	_F_
 #ifdef WITH_UMFPACK
 #endif
 }
@@ -240,6 +259,7 @@ UMFPackLinearSolver::~UMFPackLinearSolver() {
 #ifdef WITH_UMFPACK
 
 static void check_status(const char *fn_name, int status) {
+	_F_
 	switch (status) {
 		case UMFPACK_OK: break;
 		case UMFPACK_WARNING_singular_matrix:       ERROR("%s: singular matrix!", fn_name); break;
@@ -259,6 +279,7 @@ static void check_status(const char *fn_name, int status) {
 #endif
 
 bool UMFPackLinearSolver::solve() {
+	_F_
 #ifdef WITH_UMFPACK
 	assert(m.ndofs == rhs.ndofs);
 

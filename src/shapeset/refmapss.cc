@@ -22,6 +22,7 @@
 #include "common.h"
 #include "refmapss.h"
 #include <common/error.h>
+#include <common/callstack.h>
 #include "lobatto.h"
 
 //// RefMapShapesetTetra //////////////////////////////////////////////////////////////////////////
@@ -185,6 +186,7 @@ static shape_fn_t *refmap_hex_dz_table[] = { refmap_hex_dz };
 
 
 RefMapShapesetHex::RefMapShapesetHex() {
+	_F_
 #ifdef WITH_HEX
 	mode = MODE_HEXAHEDRON;
 	num_components = 1;
@@ -206,4 +208,5 @@ RefMapShapesetHex::RefMapShapesetHex() {
 }
 
 RefMapShapesetHex::~RefMapShapesetHex() {
+	_F_
 }

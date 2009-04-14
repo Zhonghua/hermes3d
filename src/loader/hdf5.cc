@@ -34,6 +34,7 @@ extern "C" {
 #include <string.h>
 #include <common/trace.h>
 #include <common/error.h>
+#include <common/callstack.h>
 
 // exception error codes
 #define E_CANT_OPEN_FILE					-1
@@ -44,6 +45,7 @@ extern "C" {
 #define E_WRITE_ERROR						-6
 
 HDF5Reader::HDF5Reader() {
+	_F_
 #ifdef WITH_HDF5
 #else
 	EXIT(ERR_HDF5_NOT_COMPILED);
@@ -51,6 +53,7 @@ HDF5Reader::HDF5Reader() {
 }
 
 HDF5Reader::~HDF5Reader() {
+	_F_
 #ifdef WITH_HDF5
 #else
 	EXIT(ERR_HDF5_NOT_COMPILED);
@@ -64,6 +67,7 @@ HDF5Reader::~HDF5Reader() {
 
 // checks the version of hdf5 file
 static bool check_version(hid_t id) {
+	_F_
 	herr_t status;
 
 	hid_t version_attr = H5Aopen_name(id, "version");
@@ -87,6 +91,7 @@ static bool check_version(hid_t id) {
 /// @param[in] name name of the attribute
 /// @param[out] count the value of the attribute
 static bool read_attr(hid_t id, const char *name, unsigned int &count) {
+	_F_
 	herr_t status;
 
 	hid_t attr_id = H5Aopen_name(id, name);
@@ -100,6 +105,7 @@ static bool read_attr(hid_t id, const char *name, unsigned int &count) {
 }
 
 static bool read_vertices(hid_t id, Mesh *mesh) {
+	_F_
 	bool ret = true;
 
 	// open vertices group
@@ -136,6 +142,7 @@ static bool read_vertices(hid_t id, Mesh *mesh) {
 }
 
 static bool read_hexes(hid_t id, Mesh *mesh) {
+	_F_
 	bool ret = true;
 
 	// open group with hexes
@@ -172,6 +179,7 @@ static bool read_hexes(hid_t id, Mesh *mesh) {
 }
 
 static bool read_tetras(hid_t id, Mesh *mesh) {
+	_F_
 	bool ret = true;
 
 	hid_t group_id = H5Gopen(id, "tetra");
@@ -207,6 +215,7 @@ static bool read_tetras(hid_t id, Mesh *mesh) {
 }
 
 static bool read_prisms(hid_t id, Mesh *mesh) {
+	_F_
 	bool ret = true;
 
 	hid_t group_id = H5Gopen(id, "prism");
@@ -242,6 +251,7 @@ static bool read_prisms(hid_t id, Mesh *mesh) {
 }
 
 static bool read_elements(hid_t id, Mesh *mesh) {
+	_F_
 	hid_t group_id = H5Gopen(id, "elements");
 	if (group_id < 0) return false;
 
@@ -258,6 +268,7 @@ static bool read_elements(hid_t id, Mesh *mesh) {
 // BCs ////////////////////////////////////////////////////////////////////////
 
 static bool read_tris(hid_t id, Mesh *mesh) {
+	_F_
 	bool ret = true;
 
 	hid_t group_id = H5Gopen(id, "tri");
@@ -294,6 +305,7 @@ static bool read_tris(hid_t id, Mesh *mesh) {
 }
 
 static bool read_quads(hid_t id, Mesh *mesh) {
+	_F_
 	bool ret = true;
 
 	hid_t group_id = H5Gopen(id, "quad");
@@ -330,6 +342,7 @@ static bool read_quads(hid_t id, Mesh *mesh) {
 }
 
 static bool read_bcs(hid_t id, Mesh *mesh) {
+	_F_
 	hid_t group_id = H5Gopen(id, "bc");
 	if (group_id < 0) return false;
 
@@ -345,6 +358,7 @@ static bool read_bcs(hid_t id, Mesh *mesh) {
 #endif
 
 bool HDF5Reader::load(const char *file_name, Mesh *mesh) {
+	_F_
 #ifdef WITH_HDF5
 	bool ret = true;
 
@@ -393,6 +407,7 @@ bool HDF5Reader::load(const char *file_name, Mesh *mesh) {
 // TODO: improve error handling
 
 static bool write_attr(hid_t loc_id, const char *name, uint value) {
+	_F_
 	hid_t dataspace_id = H5Screate(H5S_SCALAR);
 	hid_t attr = H5Acreate(loc_id, name, H5T_NATIVE_UINT32, dataspace_id, H5P_DEFAULT);
 	H5Awrite(attr, H5T_NATIVE_UINT32, &value);
@@ -402,6 +417,7 @@ static bool write_attr(hid_t loc_id, const char *name, uint value) {
 }
 
 static bool save_vertices(hid_t parent_group_id, Mesh *mesh) {
+	_F_
 	herr_t status;
 
 	// create main group
@@ -436,6 +452,7 @@ static bool save_vertices(hid_t parent_group_id, Mesh *mesh) {
 // Elements ////
 
 static bool save_hex(hid_t parent_group_id, Array<Element *> &elems) {
+	_F_
 	herr_t status;
 
 	// create main group
@@ -472,6 +489,7 @@ static bool save_hex(hid_t parent_group_id, Array<Element *> &elems) {
 }
 
 static bool save_tetra(hid_t parent_group_id, Array<Element *> &elems) {
+	_F_
 	herr_t status;
 
 	// create main group
@@ -507,6 +525,7 @@ static bool save_tetra(hid_t parent_group_id, Array<Element *> &elems) {
 }
 
 static bool save_prism(hid_t parent_group_id, Array<Element *> &elems) {
+	_F_
 	herr_t status;
 
 	// create main group
@@ -543,6 +562,7 @@ static bool save_prism(hid_t parent_group_id, Array<Element *> &elems) {
 }
 
 static bool save_elements(hid_t parent_group_id, Mesh *mesh) {
+	_F_
 	herr_t status;
 
 	// create main group
@@ -576,6 +596,7 @@ static bool save_elements(hid_t parent_group_id, Mesh *mesh) {
 // BC ////
 
 static bool save_tri_bc(hid_t parent_group_id, Mesh *mesh, Array<Word_t> &bcs) {
+	_F_
 	herr_t status;
 
 	// create main group
@@ -619,6 +640,7 @@ static bool save_tri_bc(hid_t parent_group_id, Mesh *mesh, Array<Word_t> &bcs) {
 }
 
 static bool save_quad_bc(hid_t parent_group_id, Mesh *mesh, Array<Word_t> &bcs) {
+	_F_
 	herr_t status;
 
 	// create main group
@@ -663,6 +685,7 @@ static bool save_quad_bc(hid_t parent_group_id, Mesh *mesh, Array<Word_t> &bcs) 
 }
 
 static bool save_bc(hid_t parent_group_id, Mesh *mesh) {
+	_F_
 	herr_t status;
 
 	// create main group
@@ -696,6 +719,7 @@ static bool save_bc(hid_t parent_group_id, Mesh *mesh) {
 #endif
 
 bool HDF5Reader::save(const char *file_name, Mesh *mesh) {
+	_F_
 #ifdef WITH_HDF5
 	herr_t status;
 

@@ -22,11 +22,14 @@
 #include "solution.h"
 #include "function.cc" // non-inline template members
 #include <common/error.h>
+#include <common/callstack.h>
 
 //// MeshFunction //////////////////////////////////////////////////////////////////////////////////
 
 MeshFunction::MeshFunction(Mesh *mesh) :
-	ScalarFunction() {
+	ScalarFunction()
+{
+	_F_
 	this->mesh = mesh;
 	this->refmap = new RefMap(mesh);
 	MEM_CHECK(this->refmap);
@@ -36,15 +39,18 @@ MeshFunction::MeshFunction(Mesh *mesh) :
 }
 
 MeshFunction::~MeshFunction() {
+	_F_
 	delete refmap;
 }
 
 void MeshFunction::set_quad(Quad3D *quad) {
+	_F_
 	ScalarFunction::set_quad(quad);
 	refmap->set_quad(quad);
 }
 
 void MeshFunction::set_active_element(Element *e) {
+	_F_
 	element = e;
 	mode = e->get_mode();
 	refmap->set_active_element(e);
@@ -54,6 +60,7 @@ void MeshFunction::set_active_element(Element *e) {
 //// Solution //////////////////////////////////////////////////////////////////////////////////////
 
 Solution::Solution(Mesh *mesh) : MeshFunction(mesh) {
+	_F_
 	memset(tables, 0, sizeof(tables));
 	memset(elems, 0, sizeof(elems));
 	memset(oldest, 0, sizeof(oldest));
@@ -66,11 +73,13 @@ Solution::Solution(Mesh *mesh) : MeshFunction(mesh) {
 }
 
 Solution::~Solution() {
+	_F_
 	free();
 	if (slave_pss != NULL) delete slave_pss;
 }
 
 void Solution::free() {
+	_F_
 	free_tables();
 
 	if (owner && vec) {
@@ -81,12 +90,14 @@ void Solution::free() {
 }
 
 void Solution::free_tables() {
+	_F_
 	for (int i = 0; i < QUAD_COUNT; i++)
 		for (int j = 0; j < NUM_ELEMENTS; j++)
 			free_sub_tables(&(tables[i][j]));
 }
 
 void Solution::set_space_and_pss(Space *space, PrecalcShapeset *pss) {
+	_F_
 	if (space->get_shapeset() != pss->get_shapeset()) ERROR("'space' and 'pss' must have the same shapesets.");
 
 	this->space = space;
@@ -99,12 +110,14 @@ void Solution::set_space_and_pss(Space *space, PrecalcShapeset *pss) {
 }
 
 void Solution::set_solution_vector(scalar *vec, bool owner) {
+	_F_
 	free();
 	this->vec = vec;
 	this->owner = owner;
 }
 
 void Solution::set_zero_vector() {
+	_F_
 	free();
 	int ndofs = space->get_max_dof() + 1;
 	vec = new scalar[ndofs + 1];
@@ -114,11 +127,13 @@ void Solution::set_zero_vector() {
 }
 
 void Solution::set_quad(Quad3D *quad) {
+	_F_
 	MeshFunction::set_quad(quad);
 	slave_pss->set_quad(quad);
 }
 
 void Solution::set_active_element(Element *e) {
+	_F_
 	MeshFunction::set_active_element(e);
 
 	// try finding an existing table for e
@@ -149,6 +164,7 @@ void Solution::set_active_element(Element *e) {
 }
 
 void Solution::precalculate(qorder_t qord, int mask) {
+	_F_
 	int i, j, k, l;
 
 	// if we are required to transform vectors, we must precalculate their components
@@ -330,6 +346,7 @@ void Solution::precalculate(qorder_t qord, int mask) {
 }
 
 scalar Solution::get_sln_value(double x, double y, double z, EValueType which, int component) {
+	_F_
 	Shapeset *shapeset = slave_pss->get_shapeset();
 	AsmList *pal = al + cur_elem;
 	scalar result = 0.0;
@@ -341,6 +358,7 @@ scalar Solution::get_sln_value(double x, double y, double z, EValueType which, i
 }
 
 void Solution::save_solution_vector(char *filename, int ndofs) {
+	_F_
 	FILE *f = fopen(filename, "wb");
 	if (f == NULL) ERROR("Cannot open %s for writing.", filename);
 	fwrite(vec, sizeof(scalar), ndofs + 1, f);
@@ -349,6 +367,7 @@ void Solution::save_solution_vector(char *filename, int ndofs) {
 
 
 void Solution::load_solution_vector(char *filename, int ndofs) {
+	_F_
 	// TODO: check that set_space_and_pss has been called
 	FILE *f = fopen(filename, "rb");
 	if (f == NULL) ERROR("Cannot open %s.", filename);
@@ -361,6 +380,7 @@ void Solution::load_solution_vector(char *filename, int ndofs) {
 }
 
 void Solution::enable_transform(bool enable) {
+	_F_
 	if (transform != enable) free_tables();
 	transform = enable;
 }
@@ -370,6 +390,7 @@ void Solution::enable_transform(bool enable) {
 ExactSolution::ExactSolution(Mesh *mesh, exact_fn_t fn)
 	: MeshFunction(mesh)
 {
+	_F_
 	this->fn = fn;
 	this->num_components = 1;
 	memset(tables, 0, sizeof(tables));
@@ -378,21 +399,25 @@ ExactSolution::ExactSolution(Mesh *mesh, exact_fn_t fn)
 ExactSolution::ExactSolution(Mesh *mesh, exact_vec_fn_t fn)
 	: MeshFunction(mesh)
 {
+	_F_
 	this->fn_vec = fn;
 	this->num_components = 3;
 	memset(tables, 0, sizeof(tables));
 }
 
 ExactSolution::~ExactSolution() {
+	_F_
 	free();
 }
 
 void ExactSolution::free() {
+	_F_
 	for (int i = 0; i < QUAD_COUNT; i++)
 		free_sub_tables(&(tables[i]));
 }
 
 void ExactSolution::set_active_element(Element *e) {
+	_F_
 	MeshFunction::set_active_element(e);
 
 	if (tables[cur_quad] != NULL) free_sub_tables(&(tables[cur_quad]));
@@ -408,6 +433,7 @@ void ExactSolution::set_active_element(Element *e) {
 
 
 void ExactSolution::precalculate(qorder_t qord, int mask) {
+	_F_
 	Quad3D *quad = quads[cur_quad];
 	assert(quad != NULL);
 	QuadPt3D *pt = NULL;
@@ -504,6 +530,7 @@ void ExactSolution::precalculate(qorder_t qord, int mask) {
 //// ConstantSolution //////////////////////////////////////////////////////////////////////////////
 
 void ConstantSolution::precalculate(qorder_t order, int mask) {
+	_F_
 	EXIT(ERR_NOT_IMPLEMENTED);
 }
 

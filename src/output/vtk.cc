@@ -31,6 +31,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <common/utils.h>
+#include <common/callstack.h>
 
 // size of the buffer that is used for copying files
 #define BUFLEN							8192
@@ -51,11 +52,13 @@ namespace Vtk {
 class OutputQuad : public Quad3D {
 public:
 	virtual QuadPt3D *get_points(order3_t order) {
+		_F_
 		if (!tables.exists(order.get_idx())) calculate_view_points(order);
 		return tables[order.get_idx()];
 	}
 
 	virtual int get_num_points(order3_t order) {
+		_F_
 		if (!np.exists(order.get_idx())) calculate_view_points(order);
 		return np[order.get_idx()];
 	}
@@ -100,6 +103,7 @@ protected:
 };
 
 OutputQuadHex::OutputQuadHex() {
+	_F_
 #ifdef WITH_HEX
 	mode = MODE_HEXAHEDRON;
 #else
@@ -108,6 +112,7 @@ OutputQuadHex::OutputQuadHex() {
 }
 
 OutputQuadHex::~OutputQuadHex() {
+	_F_
 #ifdef WITH_HEX
 	for (Word_t i = tables.first(); i != INVALID_IDX; i = tables.next(i))
 		delete[] tables[i];
@@ -115,6 +120,7 @@ OutputQuadHex::~OutputQuadHex() {
 }
 
 void OutputQuadHex::calculate_view_points(order3_t order) {
+	_F_
 #ifdef WITH_HEX
 	int o = order.get_idx();
 	np[o] = (order.x + 1) * (order.y + 1) * (order.z + 1);
@@ -163,14 +169,17 @@ static Vtk::OutputQuadHex output_quad_hex;
 static Vtk::OutputQuad *output_quad[] = { OUTPUT_QUAD_TETRA, OUTPUT_QUAD_HEX, NULL };
 
 VtkOutputEngine::VtkOutputEngine(FILE *file) {
+	_F_
 	this->out_file = file;
 	this->has_points = false;
 }
 
 VtkOutputEngine::~VtkOutputEngine() {
+	_F_
 }
 
 order3_t VtkOutputEngine::get_order(int mode) {
+	_F_
 	// FIXME: get order from the space and set sufficient division
 	order3_t order(3, 3, 3);
 	switch (mode) {
@@ -187,6 +196,7 @@ order3_t VtkOutputEngine::get_order(int mode) {
 }
 
 void VtkOutputEngine::dump_points(MeshFunction *fn) {
+	_F_
 	Array<Point3D *> vertices;
 	Array<int *> cells[3]; // 3 types of elements
 
@@ -304,6 +314,7 @@ void VtkOutputEngine::dump_points(MeshFunction *fn) {
 
 
 void VtkOutputEngine::out(MeshFunction *fn, const char *name, int item/* = FN_VAL_0*/) {
+	_F_
 	if (!has_points) {
 		// calculate points where we will evaluate the function 'fn'
 		dump_points(fn);
@@ -406,11 +417,13 @@ void VtkOutputEngine::out(MeshFunction *fn, const char *name, int item/* = FN_VA
 }
 
 void VtkOutputEngine::out(Mesh *mesh) {
+	_F_
 	// Not implemented
 	ERROR(ERR_NOT_IMPLEMENTED);
 }
 
 void VtkOutputEngine::out_orders(Space *space, const char *name) {
+	_F_
 	Mesh *mesh = space->get_mesh();
 
 	fprintf(this->out_file, "# vtk DataFile Version 2.0\n");

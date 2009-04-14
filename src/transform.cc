@@ -31,6 +31,7 @@
 #include "h3dconfig.h"
 #include "common.h"
 #include "transform.h"
+#include <common/callstack.h>
 
 // TODO: Transformations for tetras
 static Trf tetra_trf[] = {
@@ -83,12 +84,14 @@ static const int SUB_ELEMENT_BITS = 5;
 static const int SUB_ELEMENT_MASK = 0x1F;
 
 Transformable::Transformable() {
+	_F_
     memset(stack, 0, sizeof(stack));
 	reset_transform();
 	element = NULL;
 }
 
 void Transformable::push_transform(int son) {
+	_F_
     assert(element != NULL);
     if (top >= STACK_SIZE) EXIT(ERR_FAILURE, "Too deep transform.");
 
@@ -116,12 +119,14 @@ void Transformable::push_transform(int son) {
 }
 
 void Transformable::pop_transform() {
+	_F_
 	assert(top > 0);
 	ctm = stack + (--top);
 	sub_idx = (sub_idx - 1) >> SUB_ELEMENT_BITS;
 }
 
 void Transformable::reset_transform() {
+	_F_
     stack[0].m[0] = stack[0].m[1] = stack[0].m[2] = 1.0;
     stack[0].t[0] = stack[0].t[1] = stack[0].t[2] = 0.0;
     ctm = stack;
@@ -129,6 +134,7 @@ void Transformable::reset_transform() {
 }
 
 void Transformable::set_transform(uint64 idx) {
+	_F_
 	int son[25];
 	int i = 0;
 

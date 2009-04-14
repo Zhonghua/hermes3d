@@ -23,6 +23,7 @@
 #include <common/bitarray.h>
 #include <common/trace.h>
 #include <common/error.h>
+#include <common/callstack.h>
 
 //#define ADD_ASMLIST_THRESHOLD					1e-13
 #define ADD_ASMLIST_THRESHOLD					0
@@ -30,12 +31,15 @@
 HcurlSpace::HcurlSpace(Mesh *mesh, Shapeset *ss) :
 		Space(mesh, ss)
 {
+	_F_
 }
 
 HcurlSpace::~HcurlSpace() {
+	_F_
 }
 
 Space *HcurlSpace::dup(Mesh *mesh) const {
+	_F_
 	HcurlSpace *space = new HcurlSpace(mesh, shapeset);
 	space->copy_callbacks(this);
 	return space;
@@ -70,6 +74,7 @@ int HcurlSpace::get_element_ndofs(order3_t order) {
 //
 
 void HcurlSpace::assign_dofs_internal() {
+	_F_
 	BitArray init_edges;
 	BitArray init_faces;
 
@@ -109,6 +114,7 @@ void HcurlSpace::assign_dofs_internal() {
 // assembly lists ////
 
 void HcurlSpace::get_element_assembly_list(Element *e, AsmList *al) {
+	_F_
 	al->clear();
 	for (int i = 0; i < e->get_num_of_edges(); i++) get_edge_assembly_list(e, i, al);
 	for (int i = 0; i < e->get_num_of_faces(); i++) get_face_assembly_list(e, i, al);
@@ -116,6 +122,7 @@ void HcurlSpace::get_element_assembly_list(Element *e, AsmList *al) {
 }
 
 void HcurlSpace::get_boundary_assembly_list(Element *e, int face, AsmList *al) {
+	_F_
 	al->clear();
 	const int *face_edges = e->get_face_edges(face);
 	for (int i = 0; i < e->get_face_num_of_edges(face); i++) get_edge_assembly_list(e, face_edges[i], al);
@@ -126,6 +133,7 @@ void HcurlSpace::get_boundary_assembly_list(Element *e, int face, AsmList *al) {
 // we allowe only zero bc (see hcurl.h), so we only check, whether this is true
 // and fill projection with zeros
 void HcurlSpace::calc_vertex_boundary_projection(Element *elem, int ivertex) {
+	_F_
 	Word_t vtx = elem->get_vertex(ivertex);
 	VertexData *vnode = vn_data[vtx];
 	Vertex *v = mesh->vertices[vtx];
@@ -139,6 +147,7 @@ void HcurlSpace::calc_vertex_boundary_projection(Element *elem, int ivertex) {
 // we allowe only zero bc (see hcurl.h), so we only check, whether this is true
 // and fill projection with zeros
 void HcurlSpace::calc_edge_boundary_projection(Element *elem, int iedge) {
+	_F_
 	Word_t edge = mesh->get_edge_id(elem, iedge);
 	EdgeData *enode = en_data[edge];
 	if (enode->bc_type != BC_ESSENTIAL) return;			// process only Dirichlet BC
@@ -172,6 +181,7 @@ void HcurlSpace::calc_edge_boundary_projection(Element *elem, int iedge) {
 // we allowe only zero bc (see hcurl.h), so we only check, whether this is true
 // and fill projection with zeros
 void HcurlSpace::calc_face_boundary_projection(Element *elem, int iface) {
+	_F_
 	Word_t facet_idx = mesh->get_facet_id(elem, iface);
 	FaceData *fnode = fn_data[facet_idx];
 

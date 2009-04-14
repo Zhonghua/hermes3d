@@ -21,12 +21,14 @@
 #include "common.h"
 #include "filter.h"
 #include "traverse.h"
+#include <common/callstack.h>
 
 //// Filter ////////////////////////////////////////////////////////////////////////////////////////
 
 Filter::Filter(MeshFunction *sln1) :
 	MeshFunction(NULL)
 {
+	_F_
 	num = 1;
 	sln[0] = sln1;
 	init();
@@ -35,6 +37,7 @@ Filter::Filter(MeshFunction *sln1) :
 Filter::Filter(MeshFunction *sln1, MeshFunction *sln2) :
 	MeshFunction(NULL)
 {
+	_F_
 	num = 2;
 	sln[0] = sln1;
 	sln[1] = sln2;
@@ -44,6 +47,7 @@ Filter::Filter(MeshFunction *sln1, MeshFunction *sln2) :
 Filter::Filter(MeshFunction *sln1, MeshFunction *sln2, MeshFunction *sln3) :
 	MeshFunction(NULL)
 {
+	_F_
 	num = 3;
 	sln[0] = sln1;
 	sln[1] = sln2;
@@ -54,6 +58,7 @@ Filter::Filter(MeshFunction *sln1, MeshFunction *sln2, MeshFunction *sln3) :
 Filter::Filter(MeshFunction *sln1, MeshFunction *sln2, MeshFunction *sln3, MeshFunction *sln4) :
 	MeshFunction(NULL)
 {
+	_F_
 	num = 4;
 	sln[0] = sln1;
 	sln[1] = sln2;
@@ -63,6 +68,7 @@ Filter::Filter(MeshFunction *sln1, MeshFunction *sln2, MeshFunction *sln3, MeshF
 }
 
 Filter::~Filter() {
+	_F_
 	free();
 	if (unimesh) {
 		delete mesh;
@@ -73,6 +79,7 @@ Filter::~Filter() {
 }
 
 void Filter::init() {
+	_F_
 	// construct the union mesh, if necessary
 	Mesh *meshes[4] = {
 		sln[0]->get_mesh(),
@@ -107,12 +114,14 @@ void Filter::init() {
 }
 
 void Filter::set_quad(Quad3D *quad) {
+	_F_
 	MeshFunction::set_quad(quad);
 	for (int i = 0; i < num; i++)
 		sln[i]->set_quad(quad);
 }
 
 void Filter::set_active_element(Element *e) {
+	_F_
 	MeshFunction::set_active_element(e);
 	if (!unimesh) {
 		for (int i = 0; i < num; i++)
@@ -135,12 +144,14 @@ void Filter::set_active_element(Element *e) {
 }
 
 void Filter::free() {
+	_F_
 	for (int i = 0; i < 4; i++)
 		if (tables[i] != NULL)
 			free_sub_tables(&(tables[i]));
 }
 
 void Filter::push_transform(int son) {
+	_F_
 	MeshFunction::push_transform(son);
 	for (int i = 0; i < num; i++) {
 		// sln_sub[i] contains the value sln[i]->sub_idx, which the Filter thinks
@@ -159,6 +170,7 @@ void Filter::push_transform(int son) {
 }
 
 void Filter::pop_transform() {
+	_F_
 	MeshFunction::pop_transform();
 	for (int i = 0; i < num; i++) {
 		if (sln[i]->get_transform() == sln_sub[i])
@@ -173,6 +185,7 @@ void Filter::pop_transform() {
 SimpleFilter::SimpleFilter(void (*filter_fn)(int n, scalar *val1, scalar *result), MeshFunction *sln1, int item1) :
 	Filter(sln1)
 {
+	_F_
 	item[0] = item1;
 	filter_fn_1 = filter_fn;
 	init_components();
@@ -181,6 +194,7 @@ SimpleFilter::SimpleFilter(void (*filter_fn)(int n, scalar *val1, scalar *result
 SimpleFilter::SimpleFilter(void (*filter_fn)(int n, scalar *val1, scalar *val2, scalar *result), MeshFunction *sln1, MeshFunction *sln2, int item1, int item2) :
 	Filter(sln1, sln2)
 {
+	_F_
 	item[0] = item1;
 	item[1] = item2;
 	filter_fn_2 = filter_fn;
@@ -190,6 +204,7 @@ SimpleFilter::SimpleFilter(void (*filter_fn)(int n, scalar *val1, scalar *val2, 
 SimpleFilter::SimpleFilter(void (*filter_fn)(int n, scalar *val1, scalar *val2, scalar *val3, scalar *result), MeshFunction *sln1, MeshFunction* sln2, MeshFunction* sln3, int item1, int item2, int item3) :
 	Filter(sln1, sln2, sln3)
 {
+	_F_
 	item[0] = item1;
 	item[1] = item2;
 	item[2] = item3;
@@ -198,6 +213,7 @@ SimpleFilter::SimpleFilter(void (*filter_fn)(int n, scalar *val1, scalar *val2, 
 }
 
 void SimpleFilter::init_components() {
+	_F_
 	bool vec1 = false, vec2 = false;
 	for (int i = 0; i < num; i++) {
 		if (sln[i]->get_num_components() > 1) vec1 = true;
@@ -208,6 +224,7 @@ void SimpleFilter::init_components() {
 }
 
 void SimpleFilter::precalculate(qorder_t qord, int mask) {
+	_F_
 	if (mask & (FN_DX | FN_DY | FN_DZ | FN_DXX | FN_DYY | FN_DZZ | FN_DXY | FN_DXZ | FN_DYZ)) {
 		ERROR("Filter not defined for derivatives.");
 		return;
@@ -260,11 +277,13 @@ static void magnitude_fn_3(int n, scalar *v1, scalar *v2, scalar *v3, scalar *re
 MagFilter::MagFilter(MeshFunction *sln1, MeshFunction *sln2, MeshFunction *sln3, int item1, int item2, int item3) :
 	SimpleFilter(magnitude_fn_3, sln1, sln2, sln3, item1, item2, item3)
 {
+	_F_
 }
 
 MagFilter::MagFilter(MeshFunction *sln1, int item1) :
 	SimpleFilter(magnitude_fn_3, sln1, sln1, sln1, item1 & FN_COMPONENT_0, item1 & FN_COMPONENT_1, item1 & FN_COMPONENT_2)
 {
+	_F_
 	if (sln1->get_num_components() < 3)
 		ERROR("The single-argument constructor is intended for vector-valued solutions.");
 
@@ -278,6 +297,7 @@ static void difference_fn_2(int n, scalar *v1, scalar *v2, scalar *result) {
 DiffFilter::DiffFilter(MeshFunction *sln1, MeshFunction *sln2, int item1, int item2) :
 	SimpleFilter(difference_fn_2, sln1, sln2, item1, item2)
 {
+	_F_
 }
 
 static void sum_fn_2(int n, scalar *v1, scalar *v2, scalar *result) {
@@ -288,6 +308,7 @@ static void sum_fn_2(int n, scalar *v1, scalar *v2, scalar *result) {
 SumFilter::SumFilter(MeshFunction *sln1, MeshFunction *sln2, int item1, int item2) :
 	SimpleFilter(sum_fn_2, sln1, sln2, item1, item2)
 {
+	_F_
 }
 
 static void square_fn_1(int n, scalar *v1, scalar *result) {
@@ -298,6 +319,7 @@ static void square_fn_1(int n, scalar *v1, scalar *result) {
 SquareFilter::SquareFilter(MeshFunction *sln1, int item1) :
 	SimpleFilter(square_fn_1, sln1, item1)
 {
+	_F_
 }
 
 //// Filters for visualisation of complex solutions
@@ -310,6 +332,7 @@ static void real_part_1(int n, scalar *v1, scalar *result) {
 RealPartFilter::RealPartFilter(MeshFunction *sln1, int item1) :
 		SimpleFilter(real_part_1, sln1, item1)
 {
+	_F_
 }
 
 static void imag_part_1(int n, scalar *v1, scalar *result) {
@@ -320,6 +343,7 @@ static void imag_part_1(int n, scalar *v1, scalar *result) {
 ImagPartFilter::ImagPartFilter(MeshFunction *sln1, int item1) :
 		SimpleFilter(imag_part_1, sln1, item1)
 {
+	_F_
 }
 
 
@@ -335,6 +359,7 @@ ImagPartFilter::ImagPartFilter(MeshFunction *sln1, int item1) :
 VonMisesFilter::VonMisesFilter(MeshFunction *sln1, MeshFunction *sln2, double lambda, double mu, int cyl, int item1, int item2) :
 	Filter(sln1, sln2)
 {
+	_F_
 	this->mu = mu;
 	this->lambda = lambda;
 	this->cyl = cyl;
@@ -343,6 +368,7 @@ VonMisesFilter::VonMisesFilter(MeshFunction *sln1, MeshFunction *sln2, double la
 }
 
 void VonMisesFilter::precalculate(qorder_t order, int mask) {
+	_F_
 	// TODO: port to 3D
 	ERROR(ERR_NOT_IMPLEMENTED);
 }

@@ -24,6 +24,7 @@
 #include "order.h"
 #include <common/trace.h>
 #include <common/error.h>
+#include <common/callstack.h>
 
 /// @defgroup h1intergrals H1 intergals
 
@@ -112,6 +113,7 @@ inline scalar int_u(RealFunction *fu, RefMap *ru) {
 ///
 /// @ingroup h1intergrals
 inline scalar int_u_v(RealFunction *fu, RealFunction *fv, RefMap *ru, RefMap *rv) {
+	_F_
 	Quad3D *quad = fu->get_quad();
 
 	order3_t o = fu->get_fn_order() + fv->get_fn_order() + ru->get_inv_ref_order();
@@ -132,6 +134,7 @@ inline scalar int_u_v(RealFunction *fu, RealFunction *fv, RefMap *ru, RefMap *rv
 ///
 /// @ingroup h1intergrals
 inline scalar int_F_u(double (*F)(double x, double y, double z), RealFunction *fu, RefMap *ru) {
+	_F_
 	Quad3D *quad = fu->get_quad();
 
 	order3_t o = fu->get_fn_order();
@@ -155,6 +158,7 @@ inline scalar int_F_u(double (*F)(double x, double y, double z), RealFunction *f
 ///
 /// @ingroup h1intergrals
 inline scalar int_grad_u_grad_v(RealFunction *fu, RealFunction *fv, RefMap *ru, RefMap *rv) {
+	_F_
 	Quad3D *quad = fu->get_quad();
 
 	order3_t o = fu->get_fn_order() + fv->get_fn_order() + ru->get_inv_ref_order();
@@ -178,6 +182,7 @@ inline scalar int_grad_u_grad_v(RealFunction *fu, RealFunction *fv, RefMap *ru, 
 ///
 /// @ingroup h1intergrals
 inline scalar surf_int_v(RealFunction *fv, RefMap *rv, FacePos *fp) {
+	_F_
 	Quad3D *quad = fv->get_quad();
 
 	order3_t order = fv->get_fn_order() + rv->get_inv_ref_order();
@@ -196,6 +201,7 @@ inline scalar surf_int_v(RealFunction *fv, RefMap *rv, FacePos *fp) {
 ///
 /// @ingroup h1intergrals
 inline scalar surf_int_G_v(RealFunction *fv, RefMap *rv, FacePos *fp) {
+	_F_
 	Quad3D *quad = fv->get_quad();
 
 	order3_t o = fv->get_fn_order();
@@ -217,6 +223,7 @@ inline scalar surf_int_G_v(RealFunction *fv, RefMap *rv, FacePos *fp) {
 ///
 /// @ingroup h1intergrals
 inline scalar surf_int_u_v(RealFunction *fu, RealFunction *fv, RefMap *ru, RefMap *rv, FacePos *fp) {
+	_F_
 	Quad3D *quad = fu->get_quad();
 
 	order3_t order = fu->get_fn_order() + fv->get_fn_order() + ru->get_inv_ref_order();
@@ -240,6 +247,7 @@ inline scalar surf_int_u_v(RealFunction *fu, RealFunction *fv, RefMap *ru, RefMa
 
 template<typename T>
 inline double int_h1_error(Function<T> *fu, Function<T> *fv, RefMap *ru, RefMap *rv) {
+	_F_
 	Quad3D *quad = fu->get_quad();
 	Quad3D *quadv = fv->get_quad();
 	assert(quad == fv->get_quad());
@@ -263,6 +271,7 @@ inline double int_h1_error(Function<T> *fu, Function<T> *fv, RefMap *ru, RefMap 
 
 template<typename T>
 inline double int_h1_semi_error(Function<T> *fu, Function<T> *fv, RefMap *ru, RefMap *rv) {
+	_F_
 	Quad3D *quad = fu->get_quad();
 	Quad3D *quadv = fv->get_quad();
 	assert(quad == fv->get_quad());
@@ -286,6 +295,7 @@ inline double int_h1_semi_error(Function<T> *fu, Function<T> *fv, RefMap *ru, Re
 
 template<typename T>
 inline double int_h1_norm(Function<T> *fu, RefMap *ru) {
+	_F_
 	Quad3D *quad = fu->get_quad();
 
 	order3_t o = fu->get_fn_order() + ru->get_inv_ref_order();
@@ -303,6 +313,7 @@ inline double int_h1_norm(Function<T> *fu, RefMap *ru) {
 
 template<typename T>
 inline double int_h1_seminorm(Function<T> *fu, RefMap *ru) {
+	_F_
 	Quad3D *quad = fu->get_quad();
 
 	order3_t o = fu->get_fn_order() + ru->get_inv_ref_order();

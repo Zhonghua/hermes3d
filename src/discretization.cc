@@ -23,15 +23,18 @@
 #include "traverse.h"
 #include <common/trace.h>
 #include <common/error.h>
+#include <common/callstack.h>
 #include "common.h"
 
 void update_limit_table(EMode3D mode) {
+	_F_
 	// do nothing
 }
 
 // Discretization /////////////////////////////////////////////////////////////
 
 Discretization::Discretization() {
+	_F_
 	ndofs = 0;
 	neq = 0;
 	space = NULL;
@@ -41,10 +44,12 @@ Discretization::Discretization() {
 }
 
 Discretization::~Discretization() {
+	_F_
 	free();
 }
 
 void Discretization::free() {
+	_F_
 	delete [] space; space = NULL;
 	delete [] pss; pss = NULL;
 
@@ -55,6 +60,7 @@ void Discretization::free() {
 }
 
 void Discretization::set_num_equations(int neq) {
+	_F_
 	if (neq <= 0) ERROR("Invalid number of equations.");
 	if (neq > 10) WARNING("Large number of equations (%d). Is this the intent?", neq);
 	free();
@@ -94,6 +100,7 @@ PrecalcShapeset *Discretization::get_pss(int idx) {
 }
 
 void Discretization::set_spaces(int num, ...) {
+	_F_
 	assert(0 <= num && num <= neq);
 	va_list ap;
 	va_start(ap, num);
@@ -103,12 +110,14 @@ void Discretization::set_spaces(int num, ...) {
 }
 
 void Discretization::set_spaces(int num, Space **s) {
+	_F_
 	assert(0 <= num && num <= neq);
 	for (int i = 0; i < num; i++)
 		space[i] = s[i];
 }
 
 void Discretization::set_pss(int num, ...) {
+	_F_
 	assert(0 <= num && num <= neq);
 	va_list ap;
 	va_start(ap, num);
@@ -118,6 +127,7 @@ void Discretization::set_pss(int num, ...) {
 }
 
 void Discretization::set_pss(int num, PrecalcShapeset **pss) {
+	_F_
 	assert(0 <= num && num <= neq);
 	for (int i = 0; i < num; i++)
 		this->pss[i] = pss[i];
@@ -128,6 +138,7 @@ void Discretization::set_bilinear_form(int i, int j,
 	scalar (*bilinear_form_sym)(RealFunction *, RealFunction *, RefMap *, RefMap *),
 	scalar (*bilinear_form_surf)(RealFunction *, RealFunction *, RefMap *, RefMap *, FacePos *))
 {
+	_F_
 	if (i < 0 || i >= neq || j < 0 || j >= neq)
 		ERROR("Bad equation number.");
 
@@ -141,6 +152,7 @@ void Discretization::set_linear_form(int i,
 	scalar (*linear_form)(RealFunction *, RefMap *),
 	scalar (*linear_form_surf)(RealFunction *, RefMap *, FacePos *))
 {
+	_F_
 	if (i < 0 || i >= neq)
 		ERROR("Bad equation number.");
 
@@ -149,6 +161,7 @@ void Discretization::set_linear_form(int i,
 }
 
 void Discretization::create(Matrix *matrix, Vector *rhs) {
+	_F_
 	// calculate the total number of DOFs
 	ndofs = 0;
 	for (int i = 0; i < neq; i++)
@@ -216,6 +229,7 @@ void Discretization::create(Matrix *matrix, Vector *rhs) {
 }
 
 void Discretization::assemble(Matrix *matrix, Vector *rhs) {
+	_F_
 	if (ndofs == 0) return;
 
 	bool bnd[10];

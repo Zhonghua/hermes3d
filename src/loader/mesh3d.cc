@@ -23,6 +23,7 @@
 #include <string.h>
 #include <common/trace.h>
 #include <common/error.h>
+#include <common/callstack.h>
 #include "mesh3d.h"
 #include "../mesh.h"
 #include "../refdomain.h"
@@ -38,12 +39,15 @@
 #define MARKERS								1
 
 Mesh3DReader::Mesh3DReader() {
+	_F_
 }
 
 Mesh3DReader::~Mesh3DReader() {
+	_F_
 }
 
 static bool read_num(char *row, int &vertex_count) {
+	_F_
 	int n;
 	if (sscanf(row, "%d", &n) == 1) {
 		vertex_count = n;
@@ -53,6 +57,7 @@ static bool read_num(char *row, int &vertex_count) {
 }
 
 static bool read_n_nums(char *row, int n, double values[]) {
+	_F_
 	int i = 0;
 	char delims[] = " \t\n\r";
 	char *token = strtok(row, delims);
@@ -68,6 +73,7 @@ static bool read_n_nums(char *row, int n, double values[]) {
 }
 
 static bool read_n_nums(char *row, int n, Word_t values[]) {
+	_F_
 	int i = 0;
 	char delims[] = " \t\n\r";
 	char *token = strtok(row, delims);
@@ -83,6 +89,7 @@ static bool read_n_nums(char *row, int n, Word_t values[]) {
 }
 
 static bool range_check(Word_t max_index, Word_t *vs, int num_vs) {
+	_F_
 	for (int i = 0; i < num_vs; i++) {
 		if (vs[i] <= 0 || vs[i] > max_index) return false;
 	}
@@ -90,6 +97,7 @@ static bool range_check(Word_t max_index, Word_t *vs, int num_vs) {
 }
 
 bool Mesh3DReader::load(const char *file_name, Mesh *mesh) {
+	_F_
 	assert(mesh != NULL);
 
 	FILE *file = fopen(file_name, "r");
@@ -291,6 +299,7 @@ bool Mesh3DReader::load(const char *file_name, Mesh *mesh) {
 }
 
 bool Mesh3DReader::save(const char *file_name, Mesh *mesh) {
+	_F_
 	assert(mesh != NULL);
 
 	FILE *file = fopen(file_name, "w");

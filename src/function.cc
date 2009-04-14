@@ -20,6 +20,7 @@
 #include "h3dconfig.h"
 #include "common.h"
 #include "function.h"
+#include <common/callstack.h>
 
 
 // the order of items must match values of EValueType
@@ -40,6 +41,7 @@ int Function<TYPE>::idx2mask[][COMPONENTS] = {
 
 template<typename TYPE>
 Function<TYPE>::Function() {
+	_F_
 	order = 0;
 	max_mem = total_mem = 0;
 
@@ -56,10 +58,12 @@ Function<TYPE>::Function() {
 
 template<typename TYPE>
 Function<TYPE>::~Function() {
+	_F_
 }
 
 template<typename TYPE>
 void Function<TYPE>::set_quad(Quad3D *quad) {
+	_F_
 	int i;
 
 	// check to see if we already have the quadrature
@@ -82,6 +86,7 @@ void Function<TYPE>::set_quad(Quad3D *quad) {
 
 template<typename TYPE>
 void Function<TYPE>::push_transform(int son) {
+	_F_
 	Transformable::push_transform(son);
 	if (sub_tables) update_nodes_ptr(); // fixme
 }
@@ -89,12 +94,14 @@ void Function<TYPE>::push_transform(int son) {
 
 template<typename TYPE>
 void Function<TYPE>::pop_transform() {
+	_F_
 	Transformable::pop_transform();
 	if (sub_tables) update_nodes_ptr(); // fixme
 }
 
 template<typename TYPE>
 typename Function<TYPE>::Node *Function<TYPE>::new_node(int mask, int num_points) {
+	_F_
 	// get the number of tables
 	int nt = 0, m = mask;
 	if (num_components < 3) m &= FN_VAL_0 | FN_DX_0 | FN_DY_0 | FN_DZ_0 | FN_DXX_0 | FN_DYY_0 | FN_DZZ_0 | FN_DXY_0 | FN_DXZ_0 | FN_DYZ_0;
@@ -126,6 +133,7 @@ typename Function<TYPE>::Node *Function<TYPE>::new_node(int mask, int num_points
 
 template<typename TYPE>
 void Function<TYPE>::free_nodes(void **nodes) {
+	_F_
 	// free all nodes stored in the tertiary Judy array
 	unsigned long order = 0;
 	void **pp = (void **) JudyLFirst(*nodes, &order, NULL);
@@ -140,6 +148,7 @@ void Function<TYPE>::free_nodes(void **nodes) {
 
 template<typename TYPE>
 void Function<TYPE>::free_sub_tables(void **sub) {
+	_F_
 	// iterate through the specified secondary (sub_idx) Judy array
 	unsigned long idx = 0;
 	void **nodes = (void **) JudyLFirst(*sub, &idx, NULL);

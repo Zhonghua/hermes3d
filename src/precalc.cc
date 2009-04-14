@@ -21,11 +21,13 @@
 #include "precalc.h"
 #include "function.cc" // non-inline template members
 #include <common/error.h>
+#include <common/callstack.h>
 
 
 PrecalcShapeset::PrecalcShapeset(Shapeset *shapeset)
                : Function<double>()
 {
+	_F_
 	this->shapeset = shapeset;
 	master_pss = NULL;
 	num_components = shapeset->get_num_components();
@@ -37,6 +39,7 @@ PrecalcShapeset::PrecalcShapeset(Shapeset *shapeset)
 PrecalcShapeset::PrecalcShapeset(PrecalcShapeset *pss)
                : Function<double>()
 {
+	_F_
 	while (pss->is_slave())
 		pss = pss->master_pss;
 	master_pss = pss;
@@ -46,17 +49,20 @@ PrecalcShapeset::PrecalcShapeset(PrecalcShapeset *pss)
 }
 
 PrecalcShapeset::~PrecalcShapeset() {
+	_F_
 	free();
 	JudyLFreeArray(&tables, NULL);
 }
 
 void PrecalcShapeset::set_quad(Quad3D *quad) {
+	_F_
 	RealFunction::set_quad(quad);
 
 	set_active_shape(0);
 }
 
 void PrecalcShapeset::set_active_shape(int index) {
+	_F_
 	// Each precalculated table is accessed and uniquely identified by the
 	// following seven items:
 	//
@@ -87,6 +93,7 @@ void PrecalcShapeset::set_active_shape(int index) {
 
 
 void PrecalcShapeset::set_active_element(Element *e) {
+	_F_
 	if (e->get_mode() != shapeset->get_mode())
 		EXIT(ERR_FAILURE, "Using element with incorrect shapeset.");
 
@@ -94,6 +101,7 @@ void PrecalcShapeset::set_active_element(Element *e) {
 }
 
 void PrecalcShapeset::precalculate(qorder_t qord, int mask) {
+	_F_
 	// initialization
 	Quad3D *quad = get_quad();
 	assert(quad != NULL);
@@ -149,6 +157,7 @@ void PrecalcShapeset::precalculate(qorder_t qord, int mask) {
 }
 
 void PrecalcShapeset::free() {
+	_F_
 	if (master_pss != NULL) return;
 
 	// iterate through the primary Judy array
@@ -163,6 +172,7 @@ void PrecalcShapeset::free() {
 }
 
 void PrecalcShapeset::set_master_transform() {
+	_F_
 	assert(master_pss != NULL);
 	sub_idx = master_pss->sub_idx;
 	top = master_pss->top;
@@ -172,6 +182,7 @@ void PrecalcShapeset::set_master_transform() {
 
 
 void PrecalcShapeset::dump_info(int quad, FILE *f) {
+	_F_
 	unsigned long key = 0, n1 = 0, m1 = 0, n2 = 0, n3 = 0, size = 0;
 	void **sub = (void **) JudyLFirst(tables, &key, NULL);
 	while (sub != NULL) {

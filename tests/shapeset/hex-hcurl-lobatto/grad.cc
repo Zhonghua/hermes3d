@@ -22,10 +22,10 @@
 //
 
 #include "config.h"
-#include "common.h"
 #include <hermes3d.h>
 #include <common/trace.h>
 #include <common/error.h>
+#include "common.h"
 
 void hcurl_int_vol(RealFunction *fu, double3 result) {
 	// TODO: PUT YOUR CODE HERE

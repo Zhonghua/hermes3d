@@ -45,6 +45,9 @@ public:
 	virtual bool dump(FILE *file, const char *var_name, EMatrixDumpFormat fmt = DF_MATLAB_SPARSE);
 	virtual int get_matrix_size() const;
 
+	// finish assembling of the matrix
+	virtual void finish();
+
 protected:
 #ifdef WITH_PETSC
 	Mat matrix;
@@ -52,6 +55,7 @@ protected:
 	bool inited;
 
 	friend class PetscLinearSolver;
+	friend class SlepcEigenSolver;
 };
 
 /// Wrapper of PETSc vector, to store vectors used with PETSc in its native format
@@ -67,6 +71,12 @@ public:
 	virtual void update(int n, int *idx, scalar *y);
 	virtual bool dump(FILE *file, const char *var_name, EMatrixDumpFormat fmt = DF_MATLAB_SPARSE);
 
+	// finish assembling of the vector
+	virtual void finish();
+
+	virtual double *get_vector();
+	virtual void restore(double *v);
+
 protected:
 #ifdef WITH_PETSC
 	Vec vec;
@@ -74,6 +84,7 @@ protected:
 	bool inited;
 
 	friend class PetscLinearSolver;
+	friend class SlepcEigenSolver;
 };
 
 /// Encapsulation of PETSc linear solver

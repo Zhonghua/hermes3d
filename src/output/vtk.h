@@ -40,6 +40,8 @@ public:
 	virtual void out(MeshFunction *fn, const char *name, int item = FN_VAL_0);
 	virtual void out(Mesh *mesh);
 
+	virtual void out_orders(Space *space, const char *name = "orders");
+
 protected:
 	void dump_points(MeshFunction *fn);
 	order3_t get_order(int mode);

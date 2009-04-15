@@ -36,7 +36,7 @@
 #include <common/error.h>
 
 // error should be smaller than this epsilon
-#define EPS								10e-10F
+#define EPSILON								10e-10F
 
 std::complex<double> imag(0, 1);
 
@@ -273,7 +273,7 @@ int main(int argc, char **args) {
 		printf(" - L2 solution norm:    % le\n", l2_sln_norm);
 		printf(" - L2 error norm:       % le\n", l2_err_norm);
 
-		if (hcurl_err_norm > EPS || l2_err_norm > EPS) {
+		if (hcurl_err_norm > EPSILON || l2_err_norm > EPSILON) {
 			// calculated solution is not enough precise
 			res = ERR_FAILURE;
 		}

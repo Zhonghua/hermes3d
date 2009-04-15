@@ -142,6 +142,11 @@ macro(LIBRARY_SETTINGS BIN)
    	    target_link_libraries(${BIN} ${LAPACK_LIBRARIES})
    	endif(WITH_PETSC OR WITH_SLEPC)
 
+	if(WITH_SLEPC)
+		include_directories(${SLEPC_INCLUDE_DIR})
+		target_link_libraries(${BIN} ${SLEPC_LIBRARY})
+   	endif(WITH_SLEPC)
+   	
 	if(WITH_UMFPACK)
 		include_directories(${UMFPACK_INCLUDE_DIR} ${AMD_INCLUDE_DIR})
 		target_link_libraries(${BIN} ${UMFPACK_LIBRARY} ${AMD_LIBRARY})

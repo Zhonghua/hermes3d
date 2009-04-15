@@ -39,6 +39,7 @@
 #define VTK_TETRA						10
 #define VTK_HEXAHEDRON					12
 #define VTK_WEDGE						13
+#define VTK_PYRAMID                    14
 
 namespace Vtk {
 
@@ -124,9 +125,9 @@ void OutputQuadHex::calculate_view_points(order3_t order) {
 	step_z = 2.0 / order.z;
 
 	int n = 0;
-	for (unsigned int k = 0; k < order.x + 1; k++) {
-		for (unsigned int l = 0; l < order.y + 1; l++) {
-			for (unsigned int m = 0; m < order.z + 1; m++, n++) {
+	for (int k = 0; k < (int) order.x + 1; k++) {
+		for (int l = 0; l < (int) order.y + 1; l++) {
+			for (int m = 0; m < (int) order.z + 1; m++, n++) {
 				assert(n < np[o]);
 				tables[o][n].x = (step_x * k) - 1;
 				tables[o][n].y = (step_y * l) - 1;
@@ -405,4 +406,107 @@ void VtkOutputEngine::out(MeshFunction *fn, const char *name, int item/* = FN_VA
 void VtkOutputEngine::out(Mesh *mesh) {
 	// Not implemented
 	ERROR(ERR_NOT_IMPLEMENTED);
+}
+
+void VtkOutputEngine::out_orders(Space *space, const char *name) {
+	Mesh *mesh = space->get_mesh();
+
+	// FIXME: this function is hex-specific
+
+	// local indices of subelements that build up the element
+	int pyrel[][4] = {
+		{  0, 10,  1, 12 },
+		{  1,  9,  2, 12 },
+		{  2, 11,  3, 12 },
+		{  3, 12,  0,  8 },
+
+		{  0, 10,  4,  8 },
+		{  1,  9,  5, 10 },
+		{  2, 11,  6,  9 },
+		{  3, 11,  7,  8 },
+
+		{  4, 10,  5, 13 },
+		{  5,  9,  6, 13 },
+		{  6, 11,  7, 13 },
+		{  7, 13,  4,  8 }
+	};
+
+	// start the output
+	fprintf(this->out_file, "# vtk DataFile Version 2.0\n");
+	fprintf(this->out_file, "\n");
+	fprintf(this->out_file, "ASCII\n");
+
+	// dataset
+	fprintf(this->out_file, "\n");
+	fprintf(this->out_file, "DATASET UNSTRUCTURED_GRID\n");
+	fprintf(this->out_file, "POINTS %ld %s\n", mesh->get_num_active_elements() * 14, "float");
+	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
+		Element *element = mesh->elements[idx];
+		int nv = Hex::NUM_VERTICES;
+		Word_t vtcs[nv];
+		element->get_vertices(vtcs);
+
+		for (int i = 0; i < nv; i++) {
+			Vertex *v = mesh->vertices[vtcs[i]];
+			fprintf(this->out_file, "%e %e %e\n", v->x, v->y, v->z);
+		}
+		for (int iface = 0; iface < Hex::NUM_FACES; iface++) {
+			Word_t fvtcs[Quad::NUM_VERTICES];
+			element->get_face_vertices(iface, fvtcs);
+			Vertex *fv[4] = { mesh->vertices[fvtcs[0]], mesh->vertices[fvtcs[1]], mesh->vertices[fvtcs[2]], mesh->vertices[fvtcs[3]] };
+			Vertex fctr((fv[0]->x + fv[2]->x) / 2.0, (fv[0]->y + fv[2]->y) / 2.0, (fv[0]->z + fv[2]->z) / 2.0);
+			fprintf(this->out_file, "%e %e %e\n", fctr.x, fctr.y, fctr.z);
+		}
+	}
+	fprintf(this->out_file, "\n");
+
+	fprintf(this->out_file, "CELLS %ld %ld\n",
+	        mesh->get_num_active_elements() * Hex::NUM_EDGES,
+	        mesh->get_num_active_elements() * Hex::NUM_EDGES * 5
+	);
+	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
+		Element *element = mesh->elements[idx];
+		Word_t vtcs[element->get_num_of_vertices()];
+		element->get_vertices(vtcs);
+
+		// orders
+		for (int i = 0; i < Hex::NUM_EDGES; i++) {
+			Word_t base = (idx - 1) * 14;
+			Word_t v[4] = { base + pyrel[i][0], base + pyrel[i][1], base + pyrel[i][2], base + pyrel[i][3] };
+			fprintf(this->out_file, "%d %ld %ld %ld %ld\n", 4, v[0], v[1], v[2], v[3]);
+		}
+	}
+
+	fprintf(this->out_file, "\n");
+
+	fprintf(this->out_file, "CELL_TYPES %ld\n", mesh->get_num_active_elements() * Hex::NUM_EDGES);
+	for (unsigned int i = 0; i < mesh->get_num_active_elements() * Hex::NUM_EDGES; i++) {
+		fprintf(this->out_file, "%d\n", VTK_TETRA);
+	}
+
+	fprintf(this->out_file, "\n");
+	fprintf(this->out_file, "CELL_DATA %ld\n", mesh->get_num_active_elements() * Hex::NUM_EDGES);
+
+	// header
+	fprintf(this->out_file, "\n");
+	fprintf(this->out_file, "SCALARS %s %s %d\n", name, "float", 1);
+	fprintf(this->out_file, "LOOKUP_TABLE %s\n", "default");
+
+	// values
+	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
+		Element *element = mesh->elements[idx];
+		int mode = element->get_mode();
+		assert(mode == MODE_HEXAHEDRON);			// HEX-specific
+		// get order from the space
+		order3_t order = space->get_element_order(idx);
+
+		for (int iedge = 0; iedge < Hex::NUM_EDGES; iedge++) {
+			int dord;
+			if (iedge == 0 || iedge == 2 || iedge == 8 || iedge == 10) dord = order.x;
+			else if (iedge == 1 || iedge == 3 || iedge == 9 || iedge == 11) dord = order.y;
+			else if (iedge == 4 || iedge == 5 || iedge == 6 || iedge == 7) dord = order.z;
+			else assert(false);
+			fprintf(this->out_file, "%d\n", dord);
+		}
+	}
 }

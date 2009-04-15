@@ -24,10 +24,10 @@
  */
 
 #include "config.h"
-#include "common.h"
 #include <hermes3d.h>
 #include <common/trace.h>
 #include <common/error.h>
+#include "common.h"
 
 void h1_int_vol(RealFunction *fu, double3 result) {
 	Quad3D *quad = fu->get_quad();

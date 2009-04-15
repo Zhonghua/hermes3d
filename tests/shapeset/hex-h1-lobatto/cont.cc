@@ -21,10 +21,10 @@
 //
 
 #include "config.h"
-#include "common.h"
 #include <hermes3d.h>
 #include <common/trace.h>
 #include <common/error.h>
+#include "common.h"
 
 // Everything is tested on the following geometry
 //

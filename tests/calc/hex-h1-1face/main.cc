@@ -348,7 +348,7 @@ int parse_reft(char *str) {
 
 ///
 
-const double EPS = 10e-14;
+const double EPSILON = 10e-14;
 
 
 // main ///////////////////////////////////////////////////////////////////////////////////////////
@@ -523,7 +523,7 @@ int main(int argc, char **args) {
 //				outm.out(&mesh);
 //				fclose(mfnf);
 
-				if (h1_err_norm > EPS || l2_err_norm > EPS) {
+				if (h1_err_norm > EPSILON || l2_err_norm > EPSILON) {
 					// calculated solution is not enough precise
 					printf("Solution is not precise enough.\n");
 					throw ERR_FAILURE;

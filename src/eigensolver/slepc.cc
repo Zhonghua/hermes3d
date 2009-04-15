@@ -16,7 +16,18 @@
 // along with Hermes3D; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+#include "../h3dconfig.h"
 #include "slepc.h"
+
+SlepcEigenSolver::SlepcEigenSolver(PetscMatrix &a)
+	: a(a), b(a)
+{
+#ifdef WITH_SLEPC
+	EPSCreate(PETSC_COMM_WORLD, &eps);
+	EPSSetOperators(eps, a.matrix, PETSC_NULL);
+	EPSSetProblemType(eps, EPS_NHEP);
+#endif
+}
 
 SlepcEigenSolver::SlepcEigenSolver(PetscMatrix &a, PetscMatrix &b)
 	: a(a), b(b)

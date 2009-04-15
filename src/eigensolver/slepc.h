@@ -30,6 +30,7 @@
 
 class SlepcEigenSolver : public EigenSolver {
 public:
+	SlepcEigenSolver(PetscMatrix &a);
 	SlepcEigenSolver(PetscMatrix &a, PetscMatrix &b);
 	virtual ~SlepcEigenSolver();
 

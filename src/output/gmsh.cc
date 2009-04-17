@@ -570,6 +570,94 @@ void GmshOutputEngine::out(Mesh *mesh) {
 	fprintf(this->out_file, "$EndElements\n");
 }
 
+void GmshOutputEngine::out_bc(Mesh *mesh, const char *name) {
+	_F_
+	// see Gmsh documentation on details (http://www.geuz.org/gmsh/doc/texinfo/gmsh-full.html)
+
+	int fc = 0; 		// number of outer facets
+	FOR_ALL_FACETS(idx, mesh) {
+		Facet *facet = mesh->facets[idx];
+		if (facet->type == Facet::OUTER) fc++;
+	}
+
+	// header
+	fprintf(this->out_file, "$MeshFormat\n");
+	fprintf(this->out_file, "%.1lf %d %ld\n", 2.0, 0, sizeof(double));
+	fprintf(this->out_file, "$EndMeshFormat\n");
+
+	// vertices
+	// TODO: dump only vertices on the boundaries
+	fprintf(this->out_file, "$Nodes\n");
+	fprintf(this->out_file, "%ld\n", mesh->vertices.count());
+	FOR_ALL_VERTICES(idx, mesh) {
+		Vertex *v = mesh->vertices[idx];
+		fprintf(this->out_file, "%ld %lf %lf %lf\n", idx, v->x, v->y, v->z);
+	}
+	fprintf(this->out_file, "$EndNodes\n");
+
+	// elements
+	fprintf(this->out_file, "$Elements\n");
+	fprintf(this->out_file, "%ld\n", fc);
+	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
+		Element *element = mesh->elements[idx];
+
+		Word_t vtcs[Quad::NUM_VERTICES]; // FIXME: HEX-specific
+		for (int iface = 0; iface < Hex::NUM_FACES; iface++) {
+			element->get_face_vertices(iface, vtcs);
+			Word_t fid = mesh->get_facet_id(element, iface);
+			Facet *facet = mesh->facets[fid];
+			if (facet->type == Facet::INNER) continue;
+
+			switch (facet->mode) {
+				case MODE_TRIANGLE:
+					fprintf(this->out_file, "%ld 2 0 %ld %ld %ld\n", mesh->get_facet_id(element, iface), vtcs[0], vtcs[1], vtcs[2], vtcs[3]);
+					break;
+
+				case MODE_QUAD:
+					fprintf(this->out_file, "%ld 3 0 %ld %ld %ld %ld\n", mesh->get_facet_id(element, iface), vtcs[0], vtcs[1], vtcs[2], vtcs[3]);
+					break;
+
+				default:
+					EXIT(ERR_NOT_IMPLEMENTED);
+					break;
+			}
+		}
+	}
+	fprintf(this->out_file, "$EndElements\n");
+
+	// faces
+	// TODO: do not include faces twice
+	fprintf(this->out_file, "$ElementNodeData \n");
+	fprintf(this->out_file, "1\n\"%s\"\n0\n3\n0\n1\n", name);
+	fprintf(this->out_file, "%ld\n", fc);
+	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
+		Element *element = mesh->elements[idx];
+		Word_t vtcs[Quad::NUM_VERTICES]; // FIXME: HEX-specific
+		for (int iface = 0; iface < Hex::NUM_FACES; iface++) {
+			Word_t fid = mesh->get_facet_id(element, iface);
+			Facet *facet = mesh->facets[fid];
+			if (facet->type == Facet::INNER) continue;
+
+			Boundary *bnd = mesh->boundaries[facet->right];
+			int marker = bnd->marker;
+			switch (facet->mode) {
+				case MODE_TRIANGLE:
+					fprintf(this->out_file, "%ld 3 %ld %ld %ld\n", mesh->get_facet_id(element, iface), marker, marker, marker);
+					break;
+
+				case MODE_QUAD:
+					fprintf(this->out_file, "%ld 4 %ld %ld %ld %ld\n", mesh->get_facet_id(element, iface), marker, marker, marker, marker);
+					break;
+
+				default:
+					EXIT(ERR_NOT_IMPLEMENTED);
+					break;
+			}
+		}
+	}
+	fprintf(this->out_file, "$EndElementNodeData\n");
+}
+
 void GmshOutputEngine::out_orders(Space *space, const char *name) {
 	_F_
 	Mesh *mesh = space->get_mesh();

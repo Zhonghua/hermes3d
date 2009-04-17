@@ -100,6 +100,7 @@ set(INC_SHAPESET
 	shapeset/common.h
 	shapeset/h1lobattotetra.h
 	shapeset/h1lobattohex.h
+	shapeset/hcurllobattohex.h
 	shapeset/hex.h
 	shapeset/tetra.h
 	shapeset/refmapss.h

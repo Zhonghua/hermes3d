@@ -617,7 +617,7 @@ void VtkOutputEngine::out_orders(Space *space, const char *name) {
 
 			Word_t evtcs[2];
 			element->get_edge_vertices(iedge, evtcs);
-			Word_t v[4] = { vtx_pt[evtcs[0]] + 1, fidx[0] + 1, vtx_pt[evtcs[1]] + 1, fidx[1] + 1 };
+			Word_t v[4] = { vtx_pt[evtcs[0]], fidx[0], vtx_pt[evtcs[1]], fidx[1] };
 			fprintf(this->out_file, "%d %ld %ld %ld %ld\n", 4, v[0], v[1], v[2], v[3]);
 		}
 	}

@@ -39,6 +39,7 @@ public:
 	/// @param[in] fn A function that will be visualized
 	virtual void out(MeshFunction *fn, const char *name, int item = FN_VAL_0);
 	virtual void out(Mesh *mesh);
+	virtual void out_bc(Mesh *mesh, const char *name = "BCs");
 
 	virtual void out_orders(Space *space, const char *name = "orders");
 

@@ -37,10 +37,13 @@
 #define BUFLEN							8192
 #define FORMAT							"%.17g"
 
+#define VTK_TRIANGLE					5
+#define VTK_QUAD						9
+
 #define VTK_TETRA						10
 #define VTK_HEXAHEDRON					12
 #define VTK_WEDGE						13
-#define VTK_PYRAMID                    14
+#define VTK_PYRAMID						14
 
 namespace Vtk {
 
@@ -420,6 +423,105 @@ void VtkOutputEngine::out(Mesh *mesh) {
 	_F_
 	// Not implemented
 	ERROR(ERR_NOT_IMPLEMENTED);
+}
+
+
+void VtkOutputEngine::out_bc(Mesh *mesh, const char *name) {
+	_F_
+
+	// count outer facets
+	int fc = 0;
+	int fc_sz = 0;
+	FOR_ALL_FACETS(idx, mesh) {
+		Facet *facet = mesh->facets[idx];
+		if (facet->type == Facet::OUTER) {
+			fc++;
+			switch (facet->mode) {
+				case MODE_TRIANGLE: fc_sz += Tri::NUM_VERTICES + 1; break;
+				case MODE_QUAD: fc_sz += Quad::NUM_VERTICES + 1; break;
+				default: EXIT(ERR_NOT_IMPLEMENTED); break;
+			}
+		}
+	}
+
+	fprintf(this->out_file, "# vtk DataFile Version 2.0\n");
+	fprintf(this->out_file, "\n");
+	fprintf(this->out_file, "ASCII\n");
+
+	// dataset
+	fprintf(this->out_file, "\n");
+	fprintf(this->out_file, "DATASET UNSTRUCTURED_GRID\n");
+
+	// points
+	fprintf(this->out_file, "POINTS %ld %s\n", mesh->vertices.count(), "float");
+	for (Word_t i = mesh->vertices.first(); i != INVALID_IDX; i = mesh->vertices.next(i)) {
+		Vertex *v = mesh->vertices[i];
+		fprintf(this->out_file, "%e %e %e\n", v->x, v->y, v->z);
+	}
+	fprintf(this->out_file, "\n");
+
+	// cells
+	fprintf(this->out_file, "CELLS %ld %ld\n", fc, fc_sz);
+	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
+		Element *element = mesh->elements[idx];
+
+		Word_t vtcs[Quad::NUM_VERTICES]; // FIXME: HEX-specific
+		for (int iface = 0; iface < Hex::NUM_FACES; iface++) {
+			element->get_face_vertices(iface, vtcs);
+			Word_t fid = mesh->get_facet_id(element, iface);
+			Facet *facet = mesh->facets[fid];
+			if (facet->type == Facet::INNER) continue;
+
+			switch (facet->mode) {
+				case MODE_TRIANGLE: fprintf(this->out_file, "3 %ld %ld %ld\n", vtcs[0] - 1, vtcs[1] - 1, vtcs[2] - 1); break;
+				case MODE_QUAD: fprintf(this->out_file, "4 %ld %ld %ld %ld\n", vtcs[0] - 1, vtcs[1] - 1, vtcs[2] - 1, vtcs[3] - 1); break;
+				default: EXIT(ERR_NOT_IMPLEMENTED); break;
+			}
+		}
+	}
+	fprintf(this->out_file, "\n");
+
+	// cell types
+	fprintf(this->out_file, "CELL_TYPES %ld\n", fc);
+	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
+		Element *element = mesh->elements[idx];
+
+		Word_t vtcs[Quad::NUM_VERTICES]; // FIXME: HEX-specific
+		for (int iface = 0; iface < Hex::NUM_FACES; iface++) {
+			element->get_face_vertices(iface, vtcs);
+			Word_t fid = mesh->get_facet_id(element, iface);
+			Facet *facet = mesh->facets[fid];
+			if (facet->type == Facet::INNER) continue;
+
+			switch (facet->mode) {
+				case MODE_TRIANGLE: fprintf(this->out_file, "%d\n", VTK_TRIANGLE); break;
+				case MODE_QUAD: fprintf(this->out_file, "%d\n", VTK_QUAD); break;
+				default: EXIT(ERR_NOT_IMPLEMENTED); break;
+			}
+		}
+	}
+	fprintf(this->out_file, "\n");
+
+	// cell data
+	fprintf(this->out_file, "CELL_DATA %ld\n", fc);
+	fprintf(this->out_file, "SCALARS %s %s %d\n", name, "float", 1);
+	fprintf(this->out_file, "LOOKUP_TABLE %s\n", "default");
+
+	// values
+	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
+		Element *element = mesh->elements[idx];
+
+		Word_t vtcs[Quad::NUM_VERTICES]; // FIXME: HEX-specific
+		for (int iface = 0; iface < Hex::NUM_FACES; iface++) {
+			element->get_face_vertices(iface, vtcs);
+			Word_t fid = mesh->get_facet_id(element, iface);
+			Facet *facet = mesh->facets[fid];
+			if (facet->type == Facet::INNER) continue;
+
+			Boundary *bnd = mesh->boundaries[facet->right];
+			fprintf(this->out_file, "%d\n", bnd->marker);
+		}
+	}
 }
 
 void VtkOutputEngine::out_orders(Space *space, const char *name) {

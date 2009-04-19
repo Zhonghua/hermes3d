@@ -413,15 +413,17 @@ void Space::get_face_assembly_list(Element *elem, int iface, AsmList *al) {
 	else {
 		int ori = elem->get_face_orientation(iface);
 
-		int *indices = shapeset->get_face_indices(iface, ori, fnode->order);
-		if (fnode->dof >= 0) {
-			for (int j = 0, dof = fnode->dof; j < fnode->n; j++, dof += stride)
-				al->add(indices[j], dof, 1.0);
-		}
-		else if (fnode->bc_proj != NULL) {
-			for (int j = 0; j < fnode->n; j++) {
-				scalar coef = fnode->bc_proj[j];
-				al->add(indices[j], DIRICHLET_DOF, coef);
+		if (fnode->n > 0) {
+			int *indices = shapeset->get_face_indices(iface, ori, fnode->order);
+			if (fnode->dof >= 0) {
+				for (int j = 0, dof = fnode->dof; j < fnode->n; j++, dof += stride)
+					al->add(indices[j], dof, 1.0);
+			}
+			else if (fnode->bc_proj != NULL) {
+				for (int j = 0; j < fnode->n; j++) {
+					scalar coef = fnode->bc_proj[j];
+					al->add(indices[j], DIRICHLET_DOF, coef);
+				}
 			}
 		}
 	}

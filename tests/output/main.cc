@@ -109,6 +109,9 @@ int main(int argc, char **args) {
 
 		output.out_orders(&space, "orders");
 	}
+	else if (strcmp(type, "bc") == 0) {
+		output.out_bc(&mesh);
+	}
 
 	TRACE_END;
 

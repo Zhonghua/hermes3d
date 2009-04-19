@@ -66,6 +66,10 @@ add_test(${PROJECT_NAME}-gmsh-ord-4 sh -c "${BIN} ord ${MESHES_DIR}/mesh3d/hex8.
 add_test(${PROJECT_NAME}-gmsh-ord-5 sh -c "${BIN} ord ${MESHES_DIR}/mesh3d/hex27.mesh3d | diff - ${CMAKE_CURRENT_SOURCE_DIR}/out/gmsh-ord-27")
 add_test(${PROJECT_NAME}-gmsh-ord-6 sh -c "${BIN} ord ${MESHES_DIR}/mesh3d/fichera-corner.mesh3d | diff - ${CMAKE_CURRENT_SOURCE_DIR}/out/gmsh-ord-fichera-corner")
 
+# BC
+add_test(${PROJECT_NAME}-gmsh-bc-5 sh -c "${BIN} bc ${MESHES_DIR}/mesh3d/hex27.mesh3d | diff - ${CMAKE_CURRENT_SOURCE_DIR}/out/gmsh-bc-27")
+add_test(${PROJECT_NAME}-gmsh-bc-6 sh -c "${BIN} bc ${MESHES_DIR}/mesh3d/fichera-corner.mesh3d | diff - ${CMAKE_CURRENT_SOURCE_DIR}/out/gmsh-bc-fichera-corner")
+
 # VTK ####
 set(BIN ${PROJECT_BINARY_DIR}/${BIN_VTK})
 
@@ -84,3 +88,7 @@ add_test(${PROJECT_NAME}-vtk-ord-3 sh -c "${BIN} ord ${MESHES_DIR}/mesh3d/hex4.m
 add_test(${PROJECT_NAME}-vtk-ord-4 sh -c "${BIN} ord ${MESHES_DIR}/mesh3d/hex8.mesh3d | diff - ${CMAKE_CURRENT_SOURCE_DIR}/out/vtk-ord-8")
 add_test(${PROJECT_NAME}-vtk-ord-5 sh -c "${BIN} ord ${MESHES_DIR}/mesh3d/hex27.mesh3d | diff - ${CMAKE_CURRENT_SOURCE_DIR}/out/vtk-ord-27")
 add_test(${PROJECT_NAME}-vtk-ord-6 sh -c "${BIN} ord ${MESHES_DIR}/mesh3d/fichera-corner.mesh3d | diff - ${CMAKE_CURRENT_SOURCE_DIR}/out/vtk-ord-fichera-corner")
+
+# BC
+add_test(${PROJECT_NAME}-vtk-bc-5 sh -c "${BIN} bc ${MESHES_DIR}/mesh3d/hex27.mesh3d | diff - ${CMAKE_CURRENT_SOURCE_DIR}/out/vtk-bc-27")
+add_test(${PROJECT_NAME}-vtk-bc-6 sh -c "${BIN} bc ${MESHES_DIR}/mesh3d/fichera-corner.mesh3d | diff - ${CMAKE_CURRENT_SOURCE_DIR}/out/vtk-bc-fichera-corner")

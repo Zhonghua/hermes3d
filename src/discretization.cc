@@ -116,21 +116,22 @@ void Discretization::set_spaces(int num, Space **s) {
 		space[i] = s[i];
 }
 
-void Discretization::set_pss(int num, ...) {
+void Discretization::set_pss(int n, ...) {
 	_F_
-	assert(0 <= num && num <= neq);
-	va_list ap;
-	va_start(ap, num);
-	for (int i = 0; i < num; i++)
-		this->pss[i] = va_arg(ap, PrecalcShapeset *);
-	va_end(ap);
-}
+	if (n <= 0 || n > neq) ERROR("Wrong number of pss's.");
 
-void Discretization::set_pss(int num, PrecalcShapeset **pss) {
-	_F_
-	assert(0 <= num && num <= neq);
-	for (int i = 0; i < num; i++)
-		this->pss[i] = pss[i];
+	va_list ap;
+	va_start(ap, n);
+	for (int i = 0; i < n; i++)
+	pss[i] = va_arg(ap, PrecalcShapeset*);
+	va_end(ap);
+
+	for (int i = n; i < neq; i++) {
+		if (space[i]->get_shapeset() != space[n-1]->get_shapeset())
+			ERROR("Spaces with different shapesets must have different pss's.");
+		pss[i] = new PrecalcShapeset(pss[n-1]);
+	}
+
 }
 
 void Discretization::set_bilinear_form(int i, int j,

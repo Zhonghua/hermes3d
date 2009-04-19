@@ -54,7 +54,6 @@ public:
 	void set_spaces(int num, Space **spaces);
 
 	void set_pss(int num, ...);
-	void set_pss(int num, PrecalcShapeset **pss);
 
 	void set_bilinear_form(int i, int j,
 		scalar (*bilinear_form_unsym)(RealFunction*, RealFunction*, RefMap*, RefMap*),

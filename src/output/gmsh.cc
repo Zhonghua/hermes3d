@@ -540,15 +540,23 @@ void GmshOutputEngine::out(Mesh *mesh) {
 	}
 	fprintf(this->out_file, "$EndElements\n");
 
+	// count the number of edges/faces
+	int nedges = 0;
+	int nfaces = 0;
+	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
+		Element *element = mesh->elements[idx];
+		nedges += element->get_num_of_edges();
+		nfaces += element->get_num_of_faces();
+	}
+
 	// edges
 	// TODO: do not include edges twice or more
-	// FIXME: Hex-specific
 	fprintf(this->out_file, "$Elements\n");
-	fprintf(this->out_file, "%ld\n", mesh->get_num_active_elements() * Hex::NUM_EDGES);
+	fprintf(this->out_file, "%d\n", nedges);
 	FOR_ALL_ELEMENTS(idx, mesh) {
 		Element *element = mesh->elements[idx];
 		Word_t vtcs[Edge::NUM_VERTICES];
-		for (int iedge = 0; iedge < Hex::NUM_EDGES; iedge++) {
+		for (int iedge = 0; iedge < element->get_num_of_edges(); iedge++) {
 			element->get_edge_vertices(iedge, vtcs);
 			fprintf(this->out_file, "%ld 1 0 %ld %ld\n", mesh->get_edge_id(vtcs[0], vtcs[1]), vtcs[0], vtcs[1]);
 		}
@@ -558,13 +566,25 @@ void GmshOutputEngine::out(Mesh *mesh) {
 	// faces
 	// TODO: do not include faces twice
 	fprintf(this->out_file, "$Elements\n");
-	fprintf(this->out_file, "%ld\n", mesh->get_num_active_elements() * Hex::NUM_FACES);
+	fprintf(this->out_file, "%d\n", nfaces);
 	FOR_ALL_ELEMENTS(idx, mesh) {
 		Element *element = mesh->elements[idx];
-		Word_t vtcs[Quad::NUM_VERTICES]; // FIXME: HEX-specific
-		for (int iface = 0; iface < Hex::NUM_FACES; iface++) {
+		for (int iface = 0; iface < element->get_num_of_faces(); iface++) {
+			Word_t vtcs[element->get_face_num_of_vertices(iface)];
 			element->get_face_vertices(iface, vtcs);
-			fprintf(this->out_file, "%ld 3 0 %ld %ld %ld %ld\n", mesh->get_facet_id(element, iface), vtcs[0], vtcs[1], vtcs[2], vtcs[3]);
+			switch (element->get_face_mode(iface)) {
+				case MODE_QUAD:
+					fprintf(this->out_file, "%ld 3 0 %ld %ld %ld %ld\n",
+							mesh->get_facet_id(element, iface),
+							vtcs[0], vtcs[1], vtcs[2], vtcs[3]);
+					break;
+
+				case MODE_TRIANGLE:
+					fprintf(this->out_file, "%ld 2 0 %ld %ld %ld\n",
+							mesh->get_facet_id(element, iface),
+							vtcs[0], vtcs[1], vtcs[2]);
+					break;
+			}
 		}
 	}
 	fprintf(this->out_file, "$EndElements\n");
@@ -601,8 +621,8 @@ void GmshOutputEngine::out_bc(Mesh *mesh, const char *name) {
 	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
 		Element *element = mesh->elements[idx];
 
-		Word_t vtcs[Quad::NUM_VERTICES]; // FIXME: HEX-specific
-		for (int iface = 0; iface < Hex::NUM_FACES; iface++) {
+		for (int iface = 0; iface < element->get_num_of_faces(); iface++) {
+			Word_t vtcs[element->get_face_num_of_vertices(iface)];
 			element->get_face_vertices(iface, vtcs);
 			Word_t fid = mesh->get_facet_id(element, iface);
 			Facet *facet = mesh->facets[fid];
@@ -632,8 +652,8 @@ void GmshOutputEngine::out_bc(Mesh *mesh, const char *name) {
 	fprintf(this->out_file, "%ld\n", fc);
 	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
 		Element *element = mesh->elements[idx];
-		Word_t vtcs[Quad::NUM_VERTICES]; // FIXME: HEX-specific
-		for (int iface = 0; iface < Hex::NUM_FACES; iface++) {
+
+		for (int iface = 0; iface < element->get_num_of_faces(); iface++) {
 			Word_t fid = mesh->get_facet_id(element, iface);
 			Facet *facet = mesh->facets[fid];
 			if (facet->type == Facet::INNER) continue;

@@ -301,7 +301,9 @@ void Space::get_vertex_assembly_list(Element *e, int ivertex, AsmList *al) {
 
 	if (vnode->ced) {
 		for (int i = 0; i < vnode->ncomponents; i++) {
-			al->add(index, vnode->baselist[i].dof, vnode->baselist[i].coef);
+			int dof = vnode->baselist[i].dof;
+			assert(dof == DIRICHLET_DOF || (dof >= first_dof && dof < next_dof));
+			al->add(index, dof, vnode->baselist[i].coef);
 		}
 	}
 	else {
@@ -330,6 +332,7 @@ void Space::get_edge_assembly_list(Element *elem, int iedge, AsmList *al) {
 					for (int j = 0, dof = cng_enode->dof; j < cng_enode->n; j++, dof += stride) {
 						order1_t order = shapeset->get_order(indices[j]).get_edge_order(iedge);
 						int idx = shapeset->get_constrained_edge_index(iedge, ecomp->ori, order, ecomp->part);
+						assert(dof >= first_dof && dof < next_dof);
 						al->add(idx, dof, ecomp->coef);
 					}
 				}
@@ -354,6 +357,7 @@ void Space::get_edge_assembly_list(Element *elem, int iedge, AsmList *al) {
 					for (int j = 0, dof = cng_fnode->dof; j < cng_fnode->n; j++, dof += stride) {
 						order2_t order = shapeset->get_order(indices[j]).get_face_order(fcomp->iface);
 						int idx = shapeset->get_constrained_edge_face_index(iedge, fcomp->ori, order, fcomp->part, fcomp->dir);
+						assert(dof >= first_dof && dof < next_dof);
 						al->add(idx, dof, fcomp->coef);
 					}
 				}
@@ -372,6 +376,7 @@ void Space::get_edge_assembly_list(Element *elem, int iedge, AsmList *al) {
 			int *indices = shapeset->get_edge_indices(iedge, ori, enode->order);
 			if (enode->dof >= 0) {
 				for (int j = 0, dof = enode->dof; j < enode->n; j++, dof += stride) {
+					assert(dof >= first_dof && dof < next_dof);
 					al->add(indices[j], dof, 1.0);
 				}
 			}
@@ -400,7 +405,7 @@ void Space::get_face_assembly_list(Element *elem, int iface, AsmList *al) {
 					for (int j = 0, dof = cng_fnode->dof; j < cng_fnode->n; j++, dof += stride) {
 						order2_t order = shapeset->get_order(indices[j]).get_face_order(iface);
 						int idx = shapeset->get_constrained_face_index(iface, fnode->ori, order, fnode->part);
-						assert(dof >= DIRICHLET_DOF && dof < get_dof_count());
+						assert(dof == DIRICHLET_DOF || (dof >= first_dof && dof < next_dof));
 						al->add(idx, dof, 1.0);
 					}
 				}
@@ -416,8 +421,10 @@ void Space::get_face_assembly_list(Element *elem, int iface, AsmList *al) {
 		if (fnode->n > 0) {
 			int *indices = shapeset->get_face_indices(iface, ori, fnode->order);
 			if (fnode->dof >= 0) {
-				for (int j = 0, dof = fnode->dof; j < fnode->n; j++, dof += stride)
+				for (int j = 0, dof = fnode->dof; j < fnode->n; j++, dof += stride) {
+					assert(dof >= first_dof && dof < next_dof);
 					al->add(indices[j], dof, 1.0);
+				}
 			}
 			else if (fnode->bc_proj != NULL) {
 				for (int j = 0; j < fnode->n; j++) {
@@ -435,8 +442,10 @@ void Space::get_bubble_assembly_list(Element *e, AsmList *al) {
 
 	if (enode->n > 0) {
 		int *indices = shapeset->get_bubble_indices(enode->order);
-		for (int j = 0, dof = enode->dof; j < enode->n; j++, dof += stride)
+		for (int j = 0, dof = enode->dof; j < enode->n; j++, dof += stride) {
+			assert(dof >= first_dof && dof < next_dof);
 			al->add(indices[j], dof, 1.0);
+		}
 	}
 }
 

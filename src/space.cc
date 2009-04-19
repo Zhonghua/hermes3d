@@ -306,7 +306,7 @@ void Space::get_vertex_assembly_list(Element *e, int ivertex, AsmList *al) {
 	}
 	else {
 		scalar coef = vnode->dof >= 0 ? 1.0 : vnode->bc_proj;
-		assert(vnode->dof >= DIRICHLET_DOF && vnode->dof < get_dof_count());
+		assert(vnode->dof == DIRICHLET_DOF || (vnode->dof >= first_dof && vnode->dof < next_dof));
 		al->add(index, vnode->dof, coef);
 	}
 }

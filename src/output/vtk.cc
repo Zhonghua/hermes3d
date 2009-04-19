@@ -421,8 +421,87 @@ void VtkOutputEngine::out(MeshFunction *fn, const char *name, int item/* = FN_VA
 
 void VtkOutputEngine::out(Mesh *mesh) {
 	_F_
-	// Not implemented
-	ERROR(ERR_NOT_IMPLEMENTED);
+
+	// count the number of elements
+	int ne = 0;
+	int ne_sz = 0;
+	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
+		Element *element = mesh->elements[idx];
+		switch (element->get_mode()) {
+			case MODE_HEXAHEDRON: ne_sz += Hex::NUM_VERTICES + 1; break;
+			case MODE_TETRAHEDRON: ne_sz += Tetra::NUM_VERTICES + 1; break;
+			default: ERROR(ERR_NOT_IMPLEMENTED); break;
+		}
+		ne++;
+	}
+
+	fprintf(this->out_file, "# vtk DataFile Version 2.0\n");
+	fprintf(this->out_file, "\n");
+	fprintf(this->out_file, "ASCII\n");
+
+	// dataset
+	fprintf(this->out_file, "\n");
+	fprintf(this->out_file, "DATASET UNSTRUCTURED_GRID\n");
+
+	// points
+	fprintf(this->out_file, "POINTS %ld %s\n", mesh->vertices.count(), "float");
+	for (Word_t i = mesh->vertices.first(); i != INVALID_IDX; i = mesh->vertices.next(i)) {
+		Vertex *v = mesh->vertices[i];
+		fprintf(this->out_file, "%e %e %e\n", v->x, v->y, v->z);
+	}
+	fprintf(this->out_file, "\n");
+
+	// cells
+	fprintf(this->out_file, "CELLS %d %d\n", ne, ne_sz);
+	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
+		Element *element = mesh->elements[idx];
+
+		Word_t vtcs[Hex::NUM_VERTICES]; // FIXME: HEX-specific
+		element->get_vertices(vtcs);
+
+		switch (element->get_mode()) {
+			case MODE_HEXAHEDRON:
+				fprintf(this->out_file, "%d %ld %ld %ld %ld %ld %ld %ld %ld\n",
+						Hex::NUM_VERTICES,
+						vtcs[0] - 1, vtcs[1] - 1, vtcs[2] - 1, vtcs[3] - 1,
+						vtcs[4] - 1, vtcs[5] - 1, vtcs[6] - 1, vtcs[7] - 1);
+				break;
+
+			case MODE_TETRAHEDRON:
+				fprintf(this->out_file, "%d %ld %ld %ld %ld\n",
+						Tetra::NUM_VERTICES,
+						vtcs[0] - 1, vtcs[1] - 1, vtcs[2] - 1, vtcs[3] - 1);
+				break;
+
+			default:
+				ERROR(ERR_NOT_IMPLEMENTED);
+				break;
+		}
+	}
+	fprintf(this->out_file, "\n");
+
+	// cell types
+	fprintf(this->out_file, "CELL_TYPES %d\n", ne);
+	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
+		Element *element = mesh->elements[idx];
+
+		switch (element->get_mode()) {
+			case MODE_HEXAHEDRON: fprintf(this->out_file, "%d\n", VTK_HEXAHEDRON); break;
+			case MODE_TETRAHEDRON: fprintf(this->out_file, "%d\n", VTK_TETRA); break;
+			default: ERROR(ERR_NOT_IMPLEMENTED); break;
+		}
+	}
+	fprintf(this->out_file, "\n");
+
+	// cell data
+	fprintf(this->out_file, "CELL_DATA %d\n", ne);
+	fprintf(this->out_file, "SCALARS %s %s %d\n", "mesh", "float", 1);
+	fprintf(this->out_file, "LOOKUP_TABLE %s\n", "default");
+
+	// values
+	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
+		fprintf(this->out_file, "%lf\n", 0.0);
+	}
 }
 
 

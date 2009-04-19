@@ -544,8 +544,8 @@ void VtkOutputEngine::out_bc(Mesh *mesh, const char *name) {
 	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
 		Element *element = mesh->elements[idx];
 
-		Word_t vtcs[Quad::NUM_VERTICES]; // FIXME: HEX-specific
-		for (int iface = 0; iface < Hex::NUM_FACES; iface++) {
+		for (int iface = 0; iface < element->get_num_of_faces(); iface++) {
+			Word_t vtcs[element->get_face_num_of_vertices(iface)];
 			element->get_face_vertices(iface, vtcs);
 			Word_t fid = mesh->get_facet_id(element, iface);
 			Facet *facet = mesh->facets[fid];
@@ -565,8 +565,8 @@ void VtkOutputEngine::out_bc(Mesh *mesh, const char *name) {
 	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
 		Element *element = mesh->elements[idx];
 
-		Word_t vtcs[Quad::NUM_VERTICES]; // FIXME: HEX-specific
-		for (int iface = 0; iface < Hex::NUM_FACES; iface++) {
+		for (int iface = 0; iface < element->get_num_of_faces(); iface++) {
+			Word_t vtcs[element->get_face_num_of_vertices(iface)];
 			element->get_face_vertices(iface, vtcs);
 			Word_t fid = mesh->get_facet_id(element, iface);
 			Facet *facet = mesh->facets[fid];
@@ -590,8 +590,8 @@ void VtkOutputEngine::out_bc(Mesh *mesh, const char *name) {
 	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
 		Element *element = mesh->elements[idx];
 
-		Word_t vtcs[Quad::NUM_VERTICES]; // FIXME: HEX-specific
-		for (int iface = 0; iface < Hex::NUM_FACES; iface++) {
+		for (int iface = 0; iface < element->get_num_of_faces(); iface++) {
+			Word_t vtcs[element->get_face_num_of_vertices(iface)];
 			element->get_face_vertices(iface, vtcs);
 			Word_t fid = mesh->get_facet_id(element, iface);
 			Facet *facet = mesh->facets[fid];

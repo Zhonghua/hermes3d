@@ -498,7 +498,7 @@ void GmshOutputEngine::out(Mesh *mesh) {
 
 	// header
 	fprintf(this->out_file, "$MeshFormat\n");
-	fprintf(this->out_file, "%.1lf %d %ld\n", 2.0, 0, sizeof(double));
+	fprintf(this->out_file, "%.1lf %d %d\n", 2.0, 0, sizeof(double));
 	fprintf(this->out_file, "$EndMeshFormat\n");
 
 	// vertices
@@ -602,7 +602,7 @@ void GmshOutputEngine::out_bc(Mesh *mesh, const char *name) {
 
 	// header
 	fprintf(this->out_file, "$MeshFormat\n");
-	fprintf(this->out_file, "%.1lf %d %ld\n", 2.0, 0, sizeof(double));
+	fprintf(this->out_file, "%.1lf %d %d\n", 2.0, 0, sizeof(double));
 	fprintf(this->out_file, "$EndMeshFormat\n");
 
 	// vertices
@@ -617,7 +617,7 @@ void GmshOutputEngine::out_bc(Mesh *mesh, const char *name) {
 
 	// elements
 	fprintf(this->out_file, "$Elements\n");
-	fprintf(this->out_file, "%ld\n", fc);
+	fprintf(this->out_file, "%d\n", fc);
 	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
 		Element *element = mesh->elements[idx];
 
@@ -630,7 +630,7 @@ void GmshOutputEngine::out_bc(Mesh *mesh, const char *name) {
 
 			switch (facet->mode) {
 				case MODE_TRIANGLE:
-					fprintf(this->out_file, "%ld 2 0 %ld %ld %ld\n", mesh->get_facet_id(element, iface), vtcs[0], vtcs[1], vtcs[2], vtcs[3]);
+					fprintf(this->out_file, "%ld 2 0 %ld %ld %ld\n", mesh->get_facet_id(element, iface), vtcs[0], vtcs[1], vtcs[2]);
 					break;
 
 				case MODE_QUAD:
@@ -649,7 +649,7 @@ void GmshOutputEngine::out_bc(Mesh *mesh, const char *name) {
 	// TODO: do not include faces twice
 	fprintf(this->out_file, "$ElementNodeData \n");
 	fprintf(this->out_file, "1\n\"%s\"\n0\n3\n0\n1\n", name);
-	fprintf(this->out_file, "%ld\n", fc);
+	fprintf(this->out_file, "%d\n", fc);
 	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
 		Element *element = mesh->elements[idx];
 
@@ -662,11 +662,11 @@ void GmshOutputEngine::out_bc(Mesh *mesh, const char *name) {
 			int marker = bnd->marker;
 			switch (facet->mode) {
 				case MODE_TRIANGLE:
-					fprintf(this->out_file, "%ld 3 %ld %ld %ld\n", mesh->get_facet_id(element, iface), marker, marker, marker);
+					fprintf(this->out_file, "%ld 3 %d %d %d\n", mesh->get_facet_id(element, iface), marker, marker, marker);
 					break;
 
 				case MODE_QUAD:
-					fprintf(this->out_file, "%ld 4 %ld %ld %ld %ld\n", mesh->get_facet_id(element, iface), marker, marker, marker, marker);
+					fprintf(this->out_file, "%ld 4 %d %d %d %d\n", mesh->get_facet_id(element, iface), marker, marker, marker, marker);
 					break;
 
 				default:
@@ -684,7 +684,7 @@ void GmshOutputEngine::out_orders(Space *space, const char *name) {
 
 	// prepare
 	fprintf(this->out_file, "$MeshFormat\n");
-	fprintf(this->out_file, "%.1lf %d %ld\n", 2.0, 0, sizeof(double));
+	fprintf(this->out_file, "%.1lf %d %d\n", 2.0, 0, sizeof(double));
 	fprintf(this->out_file, "$EndMeshFormat\n");
 
 	// HEX specific

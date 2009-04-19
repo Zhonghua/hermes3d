@@ -540,7 +540,7 @@ void VtkOutputEngine::out_bc(Mesh *mesh, const char *name) {
 	fprintf(this->out_file, "\n");
 
 	// cells
-	fprintf(this->out_file, "CELLS %ld %ld\n", fc, fc_sz);
+	fprintf(this->out_file, "CELLS %d %d\n", fc, fc_sz);
 	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
 		Element *element = mesh->elements[idx];
 
@@ -561,7 +561,7 @@ void VtkOutputEngine::out_bc(Mesh *mesh, const char *name) {
 	fprintf(this->out_file, "\n");
 
 	// cell types
-	fprintf(this->out_file, "CELL_TYPES %ld\n", fc);
+	fprintf(this->out_file, "CELL_TYPES %d\n", fc);
 	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
 		Element *element = mesh->elements[idx];
 
@@ -582,7 +582,7 @@ void VtkOutputEngine::out_bc(Mesh *mesh, const char *name) {
 	fprintf(this->out_file, "\n");
 
 	// cell data
-	fprintf(this->out_file, "CELL_DATA %ld\n", fc);
+	fprintf(this->out_file, "CELL_DATA %d\n", fc);
 	fprintf(this->out_file, "SCALARS %s %s %d\n", name, "float", 1);
 	fprintf(this->out_file, "LOOKUP_TABLE %s\n", "default");
 

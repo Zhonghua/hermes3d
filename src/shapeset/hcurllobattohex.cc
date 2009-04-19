@@ -279,56 +279,56 @@ void HcurlShapesetLobattoHex::compute_face_indices(int face, int ori, order2_t o
 	int idx = 0;
 	switch (face) {
 		case 0:
-			for (unsigned int i = 0; i <= order.x; i++)
-				for (unsigned int j = 2; j <= order.y + 1; j++)
+			for (int i = 0; i <= order.x; i++)
+				for (int j = 2; j <= order.y + 1; j++)
 					indices[idx++] = hc_hex_index_t(SHFN_FACE, face, 0, i, j, 1, ori);
-			for (unsigned int i = 2; i <= order.x + 1; i++)
-				for (unsigned int j = 0; j <= order.y; j++)
+			for (int i = 2; i <= order.x + 1; i++)
+				for (int j = 0; j <= order.y; j++)
 					indices[idx++] = hc_hex_index_t(SHFN_FACE, face, 0, i, j, 2, ori);
 			break;
 
 		case 1:
-			for (unsigned int i = 0; i <= order.x; i++)
-				for (unsigned int j = 2; j <= order.y + 1; j++)
+			for (int i = 0; i <= order.x; i++)
+				for (int j = 2; j <= order.y + 1; j++)
 					indices[idx++] = hc_hex_index_t(SHFN_FACE, face, 1, i, j, 1, ori);
-			for (unsigned int i = 2; i <= order.x + 1; i++)
-				for (unsigned int j = 0; j <= order.y; j++)
+			for (int i = 2; i <= order.x + 1; i++)
+				for (int j = 0; j <= order.y; j++)
 					indices[idx++] = hc_hex_index_t(SHFN_FACE, face, 1, i, j, 2, ori);
 			break;
 
 		case 2:
-			for (unsigned int i = 0; i <= order.x; i++)
-				for (unsigned int j = 2; j <= order.y + 1; j++)
+			for (int i = 0; i <= order.x; i++)
+				for (int j = 2; j <= order.y + 1; j++)
 					indices[idx++] = hc_hex_index_t(SHFN_FACE, face, i, 0, j, 0, ori);
-			for (unsigned int i = 2; i <= order.x + 1; i++)
-				for (unsigned int j = 0; j <= order.y; j++)
+			for (int i = 2; i <= order.x + 1; i++)
+				for (int j = 0; j <= order.y; j++)
 					indices[idx++] = hc_hex_index_t(SHFN_FACE, face, i, 0, j, 2, ori);
 			break;
 
 		case 3:
-			for (unsigned int i = 0; i <= order.x; i++)
-				for (unsigned int j = 2; j <= order.y + 1; j++)
+			for (int i = 0; i <= order.x; i++)
+				for (int j = 2; j <= order.y + 1; j++)
 					indices[idx++] = hc_hex_index_t(SHFN_FACE, face, i, 1, j, 0, ori);
-			for (unsigned int i = 2; i <= order.x + 1; i++)
-				for (unsigned int j = 0; j <= order.y; j++)
+			for (int i = 2; i <= order.x + 1; i++)
+				for (int j = 0; j <= order.y; j++)
 					indices[idx++] = hc_hex_index_t(SHFN_FACE, face, i, 1, j, 2, ori);
 			break;
 
 		case 4:
-			for (unsigned int i = 0; i <= order.x; i++)
-				for (unsigned int j = 2; j <= order.y + 1; j++)
+			for (int i = 0; i <= order.x; i++)
+				for (int j = 2; j <= order.y + 1; j++)
 					indices[idx++] = hc_hex_index_t(SHFN_FACE, face, i, j, 0, 0, ori);
-			for (unsigned int i = 2; i <= order.x + 1; i++)
-				for (unsigned int j = 0; j <= order.y; j++)
+			for (int i = 2; i <= order.x + 1; i++)
+				for (int j = 0; j <= order.y; j++)
 					indices[idx++] = hc_hex_index_t(SHFN_FACE, face, i, j, 0, 1, ori);
 			break;
 
 		case 5:
-			for (unsigned int i = 0; i <= order.x; i++)
-				for (unsigned int j = 2; j <= order.y + 1; j++)
+			for (int i = 0; i <= order.x; i++)
+				for (int j = 2; j <= order.y + 1; j++)
 					indices[idx++] = hc_hex_index_t(SHFN_FACE, face, i, j, 1, 0, ori);
-			for (unsigned int i = 2; i <= order.x + 1; i++)
-				for (unsigned int j = 0; j <= order.y; j++)
+			for (int i = 2; i <= order.x + 1; i++)
+				for (int j = 0; j <= order.y; j++)
 					indices[idx++] = hc_hex_index_t(SHFN_FACE, face, i, j, 1, 1, ori);
 			break;
 
@@ -348,17 +348,17 @@ void HcurlShapesetLobattoHex::compute_bubble_indices(order3_t order) {
 	MEM_CHECK(indices);
 
 	int idx = 0;
-	for (unsigned int i = 0; i <= order.x; i++)
-		for (unsigned int j = 2; j <= order.y + 1; j++)
-			for (unsigned int k = 2; k <= order.z + 1; k++)
+	for (int i = 0; i <= order.x; i++)
+		for (int j = 2; j <= order.y + 1; j++)
+			for (int k = 2; k <= order.z + 1; k++)
 				indices[idx++] = hc_hex_index_t(SHFN_BUBBLE, 0, i, j, k, 0);
-	for (unsigned int i = 2; i <= order.x + 1; i++)
-		for (unsigned int j = 0; j <= order.y; j++)
-			for (unsigned int k = 2; k <= order.z + 1; k++)
+	for (int i = 2; i <= order.x + 1; i++)
+		for (int j = 0; j <= order.y; j++)
+			for (int k = 2; k <= order.z + 1; k++)
 				indices[idx++] = hc_hex_index_t(SHFN_BUBBLE, 0, i, j, k, 1);
-	for (unsigned int i = 2; i <= order.x + 1; i++)
-		for (unsigned int j = 2; j <= order.y + 1; j++)
-			for (unsigned int k = 0; k <= order.z; k++)
+	for (int i = 2; i <= order.x + 1; i++)
+		for (int j = 2; j <= order.y + 1; j++)
+			for (int k = 0; k <= order.z; k++)
 				indices[idx++] = hc_hex_index_t(SHFN_BUBBLE, 0, i, j, k, 2);
 
 	bubble_indices[order.get_idx()] = indices;

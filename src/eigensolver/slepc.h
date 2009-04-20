@@ -51,7 +51,10 @@ public:
 	/// @param[out] ki - imaginary part of the eigenvalue
 	/// @param[out] xr - real part of the eigenvector
 	/// @param[out] xi - imaginary part of the eigenvector
-	void get_eigen_pair(int j, scalar *kr, scalar *ki, PetscVector *xr, PetscVector *xi);
+	///
+	/// User is responsible for allocating xr and xi. If you are solving NxN system, then xr and xi have to be n+1
+	/// items long (0th index is reserved for dirichlet DOF, so that you can plug it directly into the Solution class)
+	void get_eigen_pair(int j, scalar *kr, scalar *ki, scalar *xr, scalar *xi);
 
 	/// Get relative error of the computed eigenvalue/eigenvector pair
 	///

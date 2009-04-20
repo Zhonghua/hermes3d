@@ -34,7 +34,6 @@
 
 EBCType bc_types(int marker) {
 	return BC_ESSENTIAL;
-//	return BC_NATURAL;
 }
 
 double bc_values(int marker, double x, double y, double z) {
@@ -73,7 +72,6 @@ int main(int argc, char **args) {
 	H1ShapesetLobattoHex shapeset;
 	PrecalcShapeset pss(&shapeset);
 
-//	printf("* Loading mesh '%s'\n", args[1]);
 	Mesh mesh;
 	Mesh3DReader mesh_loader;
 	if (!mesh_loader.load(args[1], &mesh)) {
@@ -85,19 +83,14 @@ int main(int argc, char **args) {
 //	mesh.refine_all_elements(REFT_HEX_XYZ);
 //	mesh.refine_all_elements(REFT_HEX_XYZ);
 
-//	printf("* Setting the space up\n");
 	H1Space space(&mesh, &shapeset);
 	space.set_bc_types(bc_types);
 	space.set_bc_values(bc_values);
 
 	order3_t order(om, om, om);
-//	printf("  - Setting uniform order to (%d, %d, %d)\n", order.x, order.y, order.z);
 	space.set_uniform_order(order);
 
 	int ndofs = space.assign_dofs();
-//	printf("  - Number of DOFs: %d\n", ndofs);
-
-//	printf("* Calculating a solution\n");
 
 	BEGIN_BLOCK
 #if defined WITH_SLEPC
@@ -114,11 +107,7 @@ int main(int argc, char **args) {
 	da.set_bilinear_form(0, 0, stiff_bilinear_form);
 
 	da.create(&mat_a, NULL);
-
-	Timer assemble_timer_a("Assembling stiffness matrix");
-	assemble_timer_a.start();
 	da.assemble(&mat_a, NULL);
-	assemble_timer_a.stop();
 	mat_a.finish();
 
 	// B (mass matrix)
@@ -130,11 +119,7 @@ int main(int argc, char **args) {
 	db.set_bilinear_form(0, 0, mass_bilinear_form);
 
 	db.create(&mat_b, NULL);
-
-	Timer assemble_timer_b("Assembling mass matrix");
-	assemble_timer_b.start();
 	db.assemble(&mat_b, NULL);
-	assemble_timer_b.stop();
 	mat_b.finish();
 
 	// solve the problem
@@ -147,68 +132,50 @@ int main(int argc, char **args) {
 	bool solved = solver.solve();
 	solve_timer.stop();
 
-	// output the measured values
-//	printf("%s: %s (%lf secs)\n", assemble_timer_a.get_name(), assemble_timer_a.get_human_time(),
-//	    assemble_timer_a.get_seconds());
-//	printf("%s: %s (%lf secs)\n", assemble_timer_b.get_name(), assemble_timer_b.get_human_time(),
-//	    assemble_timer_b.get_seconds());
-//	printf("%s: %s (%lf secs)\n", solve_timer.get_name(), solve_timer.get_human_time(),
-//	    solve_timer.get_seconds());
-
-	int nc = solver.get_converged();
-	for (int i = 0; i < nc; i++) {
-		PetscVector xr, xi;			// real and imaginary part of the eigenvector
-		double kr, ki;				// real and imaginary part of the eigenvalue
-
-		printf("%d-th pair\n", i);
-
-		solver.get_eigen_pair(i, &kr, &ki, &xr, &xi);
-
-		printf("  Eigenvalue  : % lf + % lfi\n", kr, ki);
-		printf("  Eigenvector : ");
-		double *v = xr.get_vector();
-		for (int j = 0; j < xr.get_length(); j++) {
-			if (j > 0) printf(", ");
-			printf("% lf", v[j]);
-		}
-		xr.restore(v);
-		printf("\n");
-
-		double err = solver.compute_relative_error(i);
-		printf("  Rel. error  : % e\n", err);
-	}
-
-
 	if (solved) {
-/*		Solution sln(&mesh);
-		sln.set_space_and_pss(&space, &pss);
+		int nc = solver.get_converged();
+		for (int i = 0; i < nc; i++) {
+			printf("%d-th pair\n", i);
 
-		int i = 0;
-		PetscVector xr, xi;			// real and imaginary part of the eigenvector
-		double kr, ki;				// real and imaginary part of the eigenvalue
+			double kr, ki;							// real and imaginary part of the eigenvalue
+			double *xr = new double [ndofs + 1];	// real and imaginary part of the eigenvector
+			double *xi = new double [ndofs + 1];
+			solver.get_eigen_pair(i, &kr, &ki, xr, xi);
 
-		solver.get_eigen_pair(i, &kr, &ki, &xr, &xi);
+			printf("  Eigenvalue  : % lf + % lfi\n", kr, ki);
+			printf("  Eigenvector : ");
+			for (int j = 1; j <= ndofs; j++) {
+				if (j > 1) printf(", ");
+				printf("% lf", xr[j]);
+			}
+			printf("\n");
 
-		double *v = xr.get_vector();
-		sln.set_solution_vector(v, false);
+			double err = solver.compute_relative_error(i);
+			printf("  Rel. error  : % e\n", err);
+
+			Solution sln(&mesh);
+			sln.set_space_and_pss(&space, &pss);
+			sln.set_solution_vector(xr, false);
 
 #ifdef OUTPUT_DIR
-		// output
-		const char *of_name = OUTPUT_DIR "/solution.pos";
-		FILE *ofile = fopen(of_name, "w");
-		if (ofile != NULL) {
-			GmshOutputEngine output(ofile);
-			output.out(&sln, "Uh", FN_VAL_0);
+			// output
+			char of_name[1024];
+			sprintf(of_name, "%s/eigen-fn-%d.pos", OUTPUT_DIR, i);
+			FILE *ofile = fopen(of_name, "w");
+			if (ofile != NULL) {
+				GmshOutputEngine output(ofile);
+				output.out(&sln, "Uh", FN_VAL_0);
 
-			fclose(ofile);
-		}
-		else {
-			ERROR("Can't open '%s' for writing.", of_name);
-		}
+				fclose(ofile);
+			}
+			else {
+				ERROR("Can't open '%s' for writing.", of_name);
+			}
 #endif
 
-		xr.restore(v);
-*/
+			delete [] xr;
+			delete [] xi;
+		}
 	}
 	else
 		res = ERR_FAILURE;

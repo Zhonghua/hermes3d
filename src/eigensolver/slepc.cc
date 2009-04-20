@@ -65,16 +65,28 @@ int SlepcEigenSolver::get_converged() {
 #endif
 }
 
-void SlepcEigenSolver::get_eigen_pair(int j, scalar *kr, scalar *ki, PetscVector *xr, PetscVector *xi) {
+void SlepcEigenSolver::get_eigen_pair(int j, scalar *kr, scalar *ki, scalar *xr, scalar *xi) {
 #ifdef WITH_SLEPC
-	MatGetVecs(a.matrix, PETSC_NULL, &xr->vec);
-	MatGetVecs(a.matrix, PETSC_NULL, &xi->vec);
+	Vec vr, vi;
+	MatGetVecs(a.matrix, PETSC_NULL, &vr);
+	MatGetVecs(a.matrix, PETSC_NULL, &vi);
 
-	EPSGetEigenpair(eps, (PetscInt) j, (PetscScalar *) kr, (PetscScalar *) ki, xr->vec, xi->vec);
+	EPSGetEigenpair(eps, (PetscInt) j, (PetscScalar *) kr, (PetscScalar *) ki, vr, vi);
 
-	// set size of the xr, xi vector
-	VecGetSize(xr->vec, &xr->ndofs);
-	VecGetSize(xi->vec, &xi->ndofs);
+	// get the size of the eigenvector
+	int n;
+	VecGetSize(vr, &n);
+	scalar *a;
+
+	xr[0] = 1.0;				// dirichlet DOF
+	VecGetArray(vr, &a);
+	memcpy(xr + 1, a, n * sizeof(scalar));
+	VecRestoreArray(vr, &a);
+
+	xi[0] = 1.0;				// dirichlet DOF
+	VecGetArray(vi, &a);
+	memcpy(xi + 1, a, n * sizeof(scalar));
+	VecRestoreArray(vi, &a);
 #endif
 }
 

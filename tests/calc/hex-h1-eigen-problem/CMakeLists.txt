@@ -27,6 +27,4 @@ configure_file(
 
 set(BIN ${PROJECT_BINARY_DIR}/${PROJECT_NAME})
 
-#add_test(${PROJECT_NAME}-1         ${BIN} ${MESHES_DIR}/mesh3d/hex1.mesh3d 2 2 2)
-
 endif(HAVE_EIGEN_SOLVER)

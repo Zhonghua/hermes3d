@@ -103,42 +103,31 @@ void build_matrix(SparseMatrix *s, SparseMatrix *m) {
 			m->update(i, j, M[i][j]);
 }
 
-void results(SlepcEigenSolver *solver) {
+void results(SlepcEigenSolver *solver, int n) {
 	int nc = solver->get_converged();
-/*
-	PetscVector xr, xi;			// real and imaginary part of the eigenvector
-	double kr, ki;				// real and imaginary part of the eigenvalue
-
-	printf("%d-th pair\n", 0);
-
-	solver->get_eigen_pair(0, &kr, &ki, &xr, &xi);
-	printf("  Eigenvalue  : % lf + % lfi\n", kr, ki);
-	double err = solver->compute_relative_error(0);
-	printf("  Rel. error  : % e\n", err);
-*/
-#if 1
 	for (int i = 0; i < nc; i++) {
-		PetscVector xr, xi;			// real and imaginary part of the eigenvector
-		double kr, ki;				// real and imaginary part of the eigenvalue
+		double kr, ki;							// real and imaginary part of the eigenvalue
+		double *xr = new double [n + 1];	// real and imaginary part of the eigenvector
+		double *xi = new double [n + 1];
 
 		printf("%d-th pair\n", i);
 
-		solver->get_eigen_pair(i, &kr, &ki, &xr, &xi);
+		solver->get_eigen_pair(i, &kr, &ki, xr, xi);
 
 		printf("  Eigenvalue  : % lf + % lfi\n", kr, ki);
 		printf("  Eigenvector : ");
-		double *v = xr.get_vector();
-		for (int j = 0; j < xr.get_length(); j++) {
-			if (j > 0) printf(", ");
-			printf("% lf", v[j]);
+		for (int j = 1; j < n; j++) {
+			if (j > 1) printf(", ");
+			printf("% lf", xr[j]);
 		}
-		xr.restore(v);
 		printf("\n");
 
 		double err = solver->compute_relative_error(i);
 		printf("  Rel. error  : % e\n", err);
+
+		delete [] xr;
+		delete [] xi;
 	}
-#endif
 }
 
 int main(int argc, char *argv[]) {
@@ -156,7 +145,7 @@ int main(int argc, char *argv[]) {
 
 		SlepcEigenSolver solver(a);
 		solver.solve();
-		results(&solver);
+		results(&solver, 3);
 #endif
 	}
 	else if (strcasecmp(argv[1], "slepc-gen") == 0) {
@@ -168,7 +157,7 @@ int main(int argc, char *argv[]) {
 
 		SlepcEigenSolver solver(a, b);
 		solver.solve();
-		results(&solver);
+		results(&solver, 3);
 #endif
 	}
 	else

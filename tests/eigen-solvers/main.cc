@@ -16,13 +16,6 @@
 // along with Hermes3D; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-/*
- * main.cc
- *
- * Test of linear solver
- * Read matrix and RHS from file and print out the result
- *
- */
 
 #include "config.h"
 #ifdef WITH_PETSC
@@ -37,6 +30,12 @@ double A[3][3] = {
 	{ -1,   6, -12 },
 	{  0, -13,  30 },
 	{  0,  -9,  20 }
+};
+
+double B[3][3] = {
+	{  4,   2,   1 },
+	{  2,   1,   3 },
+	{  3,   3,   1 }
 };
 
 
@@ -89,7 +88,7 @@ void build_matrix(SparseMatrix *s, SparseMatrix *m) {
 
 	for (int i = 0; i < 3; i++)
 		for (int j = 0; j < 3; j++)
-			s->update(i, j, S[i][j]);
+			s->update(i, j, A[i][j]);
 
 	// mass matrix
 	m->prealloc(3);
@@ -100,7 +99,7 @@ void build_matrix(SparseMatrix *s, SparseMatrix *m) {
 
 	for (int i = 0; i < 3; i++)
 		for (int j = 0; j < 3; j++)
-			m->update(i, j, M[i][j]);
+			m->update(i, j, B[i][j]);
 }
 
 void results(SlepcEigenSolver *solver, int n) {
@@ -116,7 +115,7 @@ void results(SlepcEigenSolver *solver, int n) {
 
 		printf("  Eigenvalue  : % lf + % lfi\n", kr, ki);
 		printf("  Eigenvector : ");
-		for (int j = 1; j < n; j++) {
+		for (int j = 1; j <= n; j++) {
 			if (j > 1) printf(", ");
 			printf("% lf", xr[j]);
 		}

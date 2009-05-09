@@ -8,6 +8,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})		# for config.h
 set(SRC
 	discretization.cc
 	filter.cc
+	forms.cc
 	function.cc
 	mesh.cc
 	loader/mesh3d.cc

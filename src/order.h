@@ -363,6 +363,7 @@ struct order3_t {
 				break;
 
 			default:
+				assert(false);
 				EXIT(ERR_UNKNOWN_MODE);
 				break;
 		}
@@ -387,6 +388,15 @@ struct order3_t {
 		}
 	}
 };
+
+inline order3_t operator*(const int c, const order3_t &a) {
+	switch (a.type) {
+		case MODE_TETRAHEDRON:	return order3_t(c * a.order);
+		case MODE_HEXAHEDRON: return order3_t(c * a.x, c * a.y, c * a.z);
+		default: EXIT(ERR_UNKNOWN_MODE); break;
+	}
+	return order3_t(-1);
+}
 
 inline order3_t max(order3_t a, order3_t b) {
 	assert(a.type == b.type);

@@ -21,6 +21,7 @@
 #include "h3dconfig.h"
 #include "discretization.h"
 #include "traverse.h"
+#include "forms.h"
 #include <common/trace.h>
 #include <common/error.h>
 #include <common/callstack.h>
@@ -33,14 +34,35 @@ void update_limit_table(EMode3D mode) {
 
 // Discretization /////////////////////////////////////////////////////////////
 
-Discretization::Discretization() {
+Discretization::Discretization(int neq) {
 	_F_
-	ndofs = 0;
-	neq = 0;
-	space = NULL;
-	pss = NULL;
-	biform = NULL;
-	liform = NULL;
+
+	if (neq <= 0) ERROR("Invalid number of equations.");
+	if (neq > 10) WARNING("Large number of equations (%d). Is this the intent?", neq);
+
+	// initialize the bilinear form
+	biform = new BiForm *[neq];
+	MEM_CHECK(biform);
+	for (int i = 0; i < neq; i++) {
+		biform[i] = new BiForm[neq];
+		MEM_CHECK(biform[i]);
+	}
+
+	// init the rest of the arrays
+	liform = new LiForm[neq];
+	MEM_CHECK(liform);
+
+	space = new Space *[neq];
+	MEM_CHECK(space);
+	pss = new PrecalcShapeset *[neq];
+	MEM_CHECK(pss);
+
+	for (int j = 0; j < neq; j++) {
+		space[j] = NULL;
+		pss[j] = NULL;
+	}
+
+	this->neq = neq;
 }
 
 Discretization::~Discretization() {
@@ -134,30 +156,47 @@ void Discretization::set_pss(int num, PrecalcShapeset **pss) {
 }
 
 void Discretization::set_bilinear_form(int i, int j,
-	scalar (*bilinear_form_unsym)(RealFunction *, RealFunction *, RefMap *, RefMap *),
-	scalar (*bilinear_form_sym)(RealFunction *, RealFunction *, RefMap *, RefMap *),
-	scalar (*bilinear_form_surf)(RealFunction *, RealFunction *, RefMap *, RefMap *, FacePos *))
+	scalar (*form)(int, double *, fn_t *, fn_t *, geom_t<double> *),
+	forder_t (*order)(int, double *, fn_order_t *, fn_order_t *, geom_t<forder_t> *))
 {
 	_F_
-	if (i < 0 || i >= neq || j < 0 || j >= neq)
-		ERROR("Bad equation number.");
+	if (i < 0 || i >= neq || j < 0 || j >= neq) ERROR("Bad equation number.");
 
-	biform[i][j].unsym = bilinear_form_unsym;
-	biform[i][j].sym   = bilinear_form_sym;
-	biform[i][j].surf  = bilinear_form_surf;
+	biform[i][j].vol.form = form;
+	biform[i][j].vol.order = order;
 }
 
-
-void Discretization::set_linear_form(int i,
-	scalar (*linear_form)(RealFunction *, RefMap *),
-	scalar (*linear_form_surf)(RealFunction *, RefMap *, FacePos *))
+void Discretization::set_bilinear_form_surf(int i, int j,
+	scalar (*form)(int, double *, fn_t *, fn_t *, FacePos *, geom_t<double> *),
+	forder_t (*order)(int, double *, fn_order_t *, fn_order_t *, FacePos *, geom_t<forder_t> *))
 {
 	_F_
-	if (i < 0 || i >= neq)
-		ERROR("Bad equation number.");
+	if (i < 0 || i >= neq || j < 0 || j >= neq) ERROR("Bad equation number.");
 
-	liform[i].lf   = linear_form;
-	liform[i].surf = linear_form_surf;
+	biform[i][j].surf.form = form;
+	biform[i][j].surf.order = order;
+}
+
+void Discretization::set_linear_form(int i,
+	scalar (*form)(int, double *, fn_t *, geom_t<double> *),
+	forder_t (*order)(int, double *, fn_order_t *, geom_t<forder_t> *))
+{
+	_F_
+	if (i < 0 || i >= neq) ERROR("Bad equation number.");
+
+	liform[i].vol.form = form;
+	liform[i].vol.order = order;
+}
+
+void Discretization::set_linear_form_surf(int i,
+	scalar (*form)(int, double *, fn_t *, FacePos *, geom_t<double> *),
+    forder_t (*order)(int, double *, fn_order_t *, FacePos *, geom_t<forder_t> *))
+{
+	_F_
+	if (i < 0 || i >= neq) ERROR("Bad equation number.");
+
+	liform[i].surf.form = form;
+	liform[i].surf.order = order;
 }
 
 void Discretization::create(Matrix *matrix, Vector *rhs) {
@@ -199,7 +238,7 @@ void Discretization::create(Matrix *matrix, Vector *rhs) {
 			for (int m = 0; m < neq; m++) {
 				for (int n = 0; n < neq; n++) {
 					BiForm *bf = biform[m] + n;
-					if (bf->sym == NULL && bf->unsym == NULL && bf->surf == NULL) continue;
+					if (bf->vol.form == NULL && bf->surf.form == NULL) continue;
 
 					// pretend assembling of the element stiffness matrix
 					for (int j = 0; j < al[n].cnt; j++) {
@@ -265,8 +304,6 @@ void Discretization::assemble(Matrix *matrix, Vector *rhs) {
 		meshes[i] = space[i]->get_mesh();
 	memcpy(fn, pss, neq * sizeof(Transformable *));
 
-	printf("  * assembling");
-
 	// loop through all elements
 	Element **e;
 	Traverse trav;
@@ -301,7 +338,7 @@ void Discretization::assemble(Matrix *matrix, Vector *rhs) {
 					PrecalcShapeset *fu = pss[n];
 
 					BiForm *bf = biform[m] + n;
-					if (bf->sym == NULL && bf->unsym == NULL) continue;
+					if (bf->vol.form == NULL) continue;
 
 					// assemble the (m,n)-block of the stiffness matrix, one column at a time
 					scalar **lsm = new_matrix<scalar>(am->cnt, an->cnt);			// local stiffness matrix
@@ -313,7 +350,7 @@ void Discretization::assemble(Matrix *matrix, Vector *rhs) {
 						for (int i = 0; i < am->cnt; i++) {
 							if (am->dof[i] < 0) continue;
 							fv->set_active_shape(am->idx[i]);
-							scalar bi = bf->unsym(fu, fv, refmap + n, refmap + m) * an->coef[j] * am->coef[i];
+							scalar bi = eval_bi_form(bf, fu, fv, refmap + n, refmap + m) * an->coef[j] * am->coef[i];
 							if (l >= 0) lsm[i][j] += bi;
 							else lrhs[i] -= bi;
 						}
@@ -327,11 +364,11 @@ void Discretization::assemble(Matrix *matrix, Vector *rhs) {
 
 			// assemble rhs (linear form)
 			if (rhs != NULL) {
-				if (liform[m].lf != NULL) {
+				if (liform[m].vol.form != NULL) {
 					for (int i = 0; i < am->cnt; i++) {
 						if (am->dof[i] >= 0) {
 							fv->set_active_shape(am->idx[i]);
-							lrhs[i] += liform[m].lf(fv, refmap + m) * am->coef[i];
+							lrhs[i] += eval_li_form(liform + m, fv, refmap + m) * am->coef[i];
 						}
 					}
 
@@ -371,7 +408,7 @@ void Discretization::assemble(Matrix *matrix, Vector *rhs) {
 				for (int n = 0; n < neq; n++, an++) {
 					if (!nat[n]) continue;
 					BiForm *bf = biform[m] + n;
-					if (bf->surf == NULL) continue;
+					if (bf->surf.form == NULL) continue;
 					PrecalcShapeset *fu = pss[n];
 					fp[iface].space_u = space[n];
 
@@ -385,7 +422,7 @@ void Discretization::assemble(Matrix *matrix, Vector *rhs) {
 							int k = am->dof[i];
 							if (k < 0) continue;
 							fv->set_active_shape(am->idx[i]);
-							scalar bi = bf->surf(fu, fv, refmap + n, refmap + m, fp + iface) * an->coef[j] * am->coef[i];
+							scalar bi = eval_bi_form_surf(bf, fu, fv, refmap + n, refmap + m, fp + iface) * an->coef[j] * am->coef[i];
 							if (l >= 0) lsm[i][j] += bi;
 							else lrhs[i] -= bi;
 						}
@@ -398,12 +435,12 @@ void Discretization::assemble(Matrix *matrix, Vector *rhs) {
 				}
 
 				// assemble the surface part of the linear form
-				if (liform[m].surf == NULL) continue;
+				if (liform[m].surf.form == NULL) continue;
 				if (rhs != NULL) {
 					for (int i = 0; i < am->cnt; i++) {
 						if (am->dof[i] < 0) continue;
 						fv->set_active_shape(am->idx[i]);
-						lrhs[i] += liform[m].surf(fv, refmap + m, fp + iface) * am->coef[i];
+						lrhs[i] += eval_li_form_surf(liform + m, fv, refmap + m, fp + iface) * am->coef[i];
 					}
 					rhs->update(am->cnt, am->dof, lrhs);
 				}
@@ -420,6 +457,124 @@ void Discretization::assemble(Matrix *matrix, Vector *rhs) {
 	delete [] refmap;
 	delete [] al;
 	delete [] nat;
+}
 
-	printf("done\n");
+//
+
+scalar Discretization::eval_bi_form(BiForm *bi, PrecalcShapeset *fu, PrecalcShapeset *fv, RefMap *ru, RefMap *rv) {
+	_F_
+
+	double fake_wt = 1.0;
+	geom_t<forder_t> fake_e;
+	init_geom(fake_e);
+
+	fn_order_t ou(fu->get_fn_order());
+	fn_order_t ov(fv->get_fn_order());
+	forder_t o = bi->vol.order(1, &fake_wt, &ou, &ov, &fake_e);
+
+	order3_t order = o.get_order() + ru->get_inv_ref_order();
+	order.limit();
+
+	int np;
+	double *jwt = NULL;
+	geom_t<double> e;
+	fn_t u, v;
+
+	init_jwt(fu, ru, order, np, jwt);
+	init_geom(e, ru, order);
+	init_fn(fu, ru, order, u);
+	init_fn(fv, rv, order, v);
+	scalar result = bi->vol.form(np, jwt, &u, &v, &e);
+
+	delete [] jwt;
+
+	return result;
+}
+
+scalar Discretization::eval_bi_form_surf(BiForm *bi, PrecalcShapeset *fu, PrecalcShapeset *fv, RefMap *ru, RefMap *rv, FacePos *fp) {
+	_F_
+
+	double fake_wt = 1.0;
+	geom_t<forder_t> fake_e;
+	init_geom(fake_e);
+//	FcPos<forder_t> ffp(fp);
+
+
+	fn_order_t ou(fu->get_fn_order());
+	fn_order_t ov(fv->get_fn_order());
+	forder_t o = bi->surf.order(1, &fake_wt, &ou, &ov, fp, &fake_e);
+
+	order3_t vol_order = o.get_order() + ru->get_inv_ref_order();
+	vol_order.limit();
+	order2_t order = vol_order.get_face_order(fp->face);
+
+	int np;
+	double *jwt = NULL;
+	geom_t<double> e;
+	fn_t u, v;
+
+	init_jwt(fu, ru, fp->face, order, np, jwt);
+	init_geom(e, ru, fp->face, order);
+	init_fn(fu, ru, fp->face, order, u);
+	init_fn(fv, rv, fp->face, order, v);
+	scalar result = bi->surf.form(np, jwt, &u, &v, fp, &e);
+
+	delete [] jwt;
+
+	return result;
+}
+
+scalar Discretization::eval_li_form(LiForm *li, PrecalcShapeset *fv, RefMap *rv) {
+	_F_
+
+	double fake_wt = 1.0;
+	geom_t<forder_t> fake_e;
+	init_geom(fake_e);
+
+	fn_order_t ov(fv->get_fn_order());
+	forder_t o = li->vol.order(1, &fake_wt, &ov, &fake_e);
+	order3_t order = o.get_order() + rv->get_inv_ref_order();
+	order.limit();
+
+	int np = 0;
+	double *jwt = NULL;
+	geom_t<double> e;
+	fn_t v;
+
+	init_jwt(fv, rv, order, np, jwt);
+	init_geom(e, rv, order);
+	init_fn(fv, rv, order, v);
+	scalar result = li->vol.form(np, jwt, &v, &e);
+
+	delete [] jwt;
+
+	return result;
+}
+
+scalar Discretization::eval_li_form_surf(LiForm *li, PrecalcShapeset *fv, RefMap *rv, FacePos *fp) {
+	_F_
+
+	double fake_wt = 1.0;
+	geom_t<forder_t> fake_e;
+	init_geom(fake_e);
+
+	fn_order_t ov(fv->get_fn_order());
+	forder_t o = li->surf.order(1, &fake_wt, &ov, fp, &fake_e);
+	order3_t vol_order = o.get_order() + rv->get_inv_ref_order();
+	vol_order.limit();
+	order2_t order = vol_order.get_face_order(fp->face);
+
+	int np = 0;
+	double *jwt = NULL;
+	geom_t<double> e;
+	fn_t v;
+
+	init_jwt(fv, rv, fp->face, order, np, jwt);
+	init_geom(e, rv, fp->face, order);
+	init_fn(fv, rv, fp->face, order, v);
+	scalar result = li->surf.form(np, jwt, &v, fp, &e);
+
+	delete [] jwt;
+
+	return result;
 }

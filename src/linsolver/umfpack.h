@@ -57,7 +57,7 @@ public:
 	virtual void update(int n, int *idx, scalar *y);
 	virtual bool dump(FILE *file, const char *var_name, EMatrixDumpFormat fmt = DF_MATLAB_SPARSE);
 
-protected:
+//protected:
 	scalar *v;
 
 	friend class UMFPackLinearSolver;

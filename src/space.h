@@ -453,7 +453,12 @@ public: // remove me
 
 public:
 	EBCType (*bc_type_callback)(int);
-	scalar (*bc_value_callback_by_coord)(int marker, double x, double y, double z);
+
+	struct {
+		scalar (*fn)(int marker, double x, double y, double z);
+		scalar (*order)(int marker, double x, double y, double z);
+	} bc_value_by_coord;
+
 	scalar3 &(*bc_vec_value_callback_by_coord)(int marker, double x, double y, double z);
 };
 

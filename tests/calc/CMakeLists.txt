@@ -2,6 +2,7 @@
 # CMake for test the calculations
 #
 
+if(0)
 # TETRA
 if(WITH_TETRA)
 	if(REAL)
@@ -33,3 +34,8 @@ if(WITH_HEX)
 		add_subdirectory(hex-hcurl-imped)
 	endif(COMPLEX)
 endif(WITH_HEX)
+endif(0)
+
+add_subdirectory(hex-h1)
+add_subdirectory(hex-h1-dirichlet)
+add_subdirectory(hex-h1-neumann)

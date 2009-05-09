@@ -47,6 +47,7 @@ double fnc(double x, double y, double z) {
 	return pow(x, m) * pow(y, n) * pow(z, o) + pow(x, 2) * pow(y, 3) - pow(x, 3) * z + pow(z, 4);
 }
 
+template<typename T>
 double dfnc(double x, double y, double z) {
 	double ddxx = m*(m-1) * pow(x, m-2) * pow(y, n) * pow(z, o) + 2 * pow(y, 3) - 6 * x * z;
 	double ddyy = n*(n-1) * pow(x, m) * pow(y, n-2) * pow(z, o) + 6 * pow(x, 2) * y;
@@ -70,7 +71,8 @@ EBCType bc_types(int marker) {
 	return BC_NATURAL;
 }
 
-double bc_values(int marker, double x, double y, double z) {
+template<typename T>
+T bc_values(int marker, T x, T y, T z) {
 	switch (marker) {
 		case 1: return -(m * pow(x, m-1) * pow(y, n) * pow(z, o) + 2 * x * pow(y, 3) - 3 * pow(x, 2) * z);
 		case 2: return   m * pow(x, m-1) * pow(y, n) * pow(z, o) + 2 * x * pow(y, 3) - 3 * pow(x, 2) * z;
@@ -82,16 +84,21 @@ double bc_values(int marker, double x, double y, double z) {
 	}
 }
 
-scalar bilinear_form(RealFunction *fu, RealFunction *fv, RefMap *ru, RefMap *rv) {
-	return int_grad_u_grad_v(fu, fv, ru, rv) + int_u_v(fu, fv, ru, rv);
+template<typename f_t, typename res_t>
+res_t bilinear_form(int n, double *wt, f_t *u, f_t *v, geom_t<res_t> *e) {
+	return
+		int_grad_u_grad_v<f_t, res_t>(n, wt, u, v, e) +
+		int_u_v<f_t, res_t>(n, wt, u, v, e);
 }
 
-scalar linear_form(RealFunction *fv, RefMap *rv) {
-	return int_F_v(dfnc, fv, rv);
+template<typename f_t, typename res_t>
+res_t linear_form(int n, double *wt, f_t *u, geom_t<res_t> *e) {
+	return int_F_v<f_t, res_t>(n, wt, dfnc, u, e);
 }
 
-scalar linear_form_surf(RealFunction *fv, RefMap *rv, FacePos *fp) {
-	return surf_int_G_v(fv, rv, fp);
+template<typename f_t, typename res_t>
+res_t linear_form_surf(int n, double *wt, f_t *u, FacePos *fp, geom_t<res_t> *e) {
+	return surf_int_G_v<f_t, res_t>(n, wt, u, fp, e);
 }
 
 // main ///////////////////////////////////////////////////////////////////////////////////////////
@@ -130,7 +137,7 @@ int main(int argc, char **args) {
 	printf("* Setting the space up\n");
 	H1Space space(&mesh, &shapeset);
 	space.set_bc_types(bc_types);
-	space.set_bc_values(bc_values);
+	space.set_bc_values(bc_values<scalar>, bc_values<forder_t>);
 
 	int mx = maxn(4, m, n, o, 4);
 	order3_t order(mx, mx, mx);

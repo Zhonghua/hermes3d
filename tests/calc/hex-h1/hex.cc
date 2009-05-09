@@ -29,6 +29,7 @@
 #define l0(x) ((1.0 - (x)) * 0.5)
 #define l1(x) ((1.0 + (x)) * 0.5)
 
+
 // error should be smaller than this epsilon
 #define EPS								10e-10F
 
@@ -47,19 +48,23 @@ EBCType bc_types(int marker) {
 	return BC_ESSENTIAL;
 }
 
-scalar bilinear_form(RealFunction *fu, RealFunction *fv, RefMap *ru, RefMap *rv) {
-	return int_grad_u_grad_v(fu, fv, ru, rv);
+template<typename f_t, typename res_t>
+res_t bilinear_form(int n, double *wt, f_t *u, f_t *v, geom_t<res_t> *e) {
+	return int_grad_u_grad_v<f_t, res_t>(n, wt, u, v, e);
 }
 
-double f(double x, double y, double z) {
+template<typename T>
+T f(T x, T y, T z) {
 	return
 		0.5 * l0(y) * l1(y) * l0(z) * l1(z) +
 		0.5 * l0(x) * l1(x) * l0(z) * l1(z) +
 		0.5 * l0(x) * l1(x) * l0(y) * l1(y);
 }
 
-scalar linear_form(RealFunction *fv, RefMap *rv) {
-	return int_F_v(f, fv, rv);
+
+template<typename f_t, typename res_t>
+res_t linear_form(int n, double *wt, f_t *u, geom_t<res_t> *e) {
+	return int_F_v<f_t, res_t>(n, wt, f, u, e);
 }
 
 // main ///////////////////////////////////////////////////////////////////////////////////////////
@@ -128,21 +133,28 @@ int main(int argc, char **args) {
 	PetscLinearSolver solver(mat, rhs);
 #endif
 
-	Discretization d;
-	d.set_num_equations(1);
+	Discretization d(1);
 	d.set_spaces(1, &space);
 	d.set_pss(1, &pss);
 
-	d.set_bilinear_form(0, 0, bilinear_form);
-	d.set_linear_form(0, linear_form);
+	d.set_bilinear_form(0, 0, FORM_CB(bilinear_form));
+	d.set_linear_form(0, FORM_CB(linear_form));
+
+//	d.biform[0][0].vol.form = bilinear_form<fn_t, scalar>;
+//	d.biform[0][0].vol.order = bilinear_form<fn_order_t, forder_t>;
+
+//	d.liform[0].vol.form = linear_form<fn_t, scalar>;
+//	d.liform[0].vol.order = linear_form<fn_order_t, forder_t>;
 
 	// assemble stiffness matrix
-	d.create(&mat, &rhs);
-
 	Timer assemble_timer("Assembling stiffness matrix");
 	assemble_timer.start();
+	d.create(&mat, &rhs);
 	d.assemble(&mat, &rhs);
 	assemble_timer.stop();
+
+//	mat.dump(stdout, "a");
+//	rhs.dump(stdout, "b");
 
 	// solve the stiffness matrix
 	Timer solve_timer("Solving stiffness matrix");

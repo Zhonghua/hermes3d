@@ -26,7 +26,100 @@
 #include <common/error.h>
 #include <common/callstack.h>
 
-/// @defgroup h1intergrals H1 intergals
+/// Integral \u
+///
+/// @ingroup h1integrals
+template<typename f_t, typename res_t>
+res_t int_u(int n, double *wt, f_t *u, geom_t<res_t> *e) {
+	_F_
+	res_t result = 0;
+	for (int i = 0; i < n; i++)
+		result += wt[i] * (u->fn[i]);
+	return result;
+}
+
+#define int_v(fv, rv) int_u(fv, rv)
+
+/// Integral \u \v
+///
+/// @ingroup h1integrals
+template<typename f_t, typename res_t>
+res_t int_u_v(int n, double *wt, f_t *u, f_t *v, geom_t<res_t> *e) {
+	_F_
+	res_t result = 0;
+	for (int i = 0; i < n; i++)
+		result += wt[i] * (u->fn[i] * v->fn[i]);
+	return result;
+}
+
+/// Integral \F \u
+///
+/// @ingroup h1integrals
+template<typename f_t, typename res_t>
+res_t int_F_v(int n, double *wt, res_t (*F)(res_t x, res_t y, res_t z), f_t *v, geom_t<res_t> *e) {
+	_F_
+	res_t result = 0;
+	for (int i = 0; i < n; i++)
+		result += wt[i] * (v->fn[i] * (*F)(e->x[i], e->y[i], e->z[i]));
+	return result;
+}
+
+//#define int_F_v(F, fv, rv) int_F_u(F, fv, rv)
+
+/// Integral \grad u \grad v
+///
+/// @ingroup h1integrals
+template<typename f_t, typename res_t>
+res_t int_grad_u_grad_v(int n, double *wt, f_t *u, f_t *v, geom_t<res_t> *e) {
+	_F_
+	res_t result = 0;
+	for (int i = 0; i < n; i++)
+		result += wt[i] * (u->dx[i] * v->dx[i] + u->dy[i] * v->dy[i] + u->dz[i] * v->dz[i]);
+	return result;
+}
+
+
+// surface integrals //////////////////////////////////////////////////////////////////////////////
+
+/// Integral \v (surface)
+///
+/// @ingroup h1integrals
+template<typename f_t, typename res_t>
+res_t surf_int_v(int n, double *wt, f_t *v, FacePos *fp, geom_t<res_t> *e) {
+	_F_
+	res_t result = 0;
+	for (int i = 0; i < n; i++)
+		result += wt[i] * (v->fn[i]);
+	return result;
+}
+
+/// Integral \G \v (surface)
+///
+/// @ingroup h1integrals
+template<typename f_t, typename res_t>
+//res_t surf_int_G_v(int n, double *wt, res_t (*G)(res_t x, res_t y, res_t z), f_t *v, FacePos *fp, geom_t<res_t> *e) {
+res_t surf_int_G_v(int n, double *wt, f_t *v, FacePos<res_t> *fp, geom_t<res_t> *e) {
+	_F_
+	res_t result = 0;
+	for (int i = 0; i < n; i++)
+		result += wt[i] * (v->fn[i] * fp->space->bc_value_callback_by_coord(fp->marker, e->x[i], e->y[i], e->z[i]));
+	return result;
+}
+
+/// Integral \u \v (surface)
+///
+/// @ingroup h1integrals
+template<typename f_t, typename res_t>
+res_t surf_int_u_v(int n, double *wt, f_t *u, f_t *v, FacePos *fp, geom_t<res_t> *e) {
+	_F_
+	res_t result = 0;
+	for (int i = 0; i < n; i++)
+		result += wt[i] * (u->fn[i] * v->fn[i]);
+	return result;
+}
+
+
+/// @defgroup h1integrals H1 intergals
 
 #define H1_INTEGRATE_EXPRESSION(exp) \
 	double result = 0.0; \
@@ -89,9 +182,11 @@
 #define T_DVDY (dvdx[i] * (*mv)[1][0] + dvdy[i] * (*mv)[1][1] + dvdz[i] * (*mv)[1][2])
 #define T_DVDZ (dvdx[i] * (*mv)[2][0] + dvdy[i] * (*mv)[2][1] + dvdz[i] * (*mv)[2][2])
 
+#if 0
+
 /// Integral \u
 ///
-/// @ingroup h1intergrals
+/// @ingroup h1integrals
 inline scalar int_u(RealFunction *fu, RefMap *ru) {
 	Quad3D *quad = fu->get_quad();
 
@@ -111,7 +206,7 @@ inline scalar int_u(RealFunction *fu, RefMap *ru) {
 
 /// Integral \u \v
 ///
-/// @ingroup h1intergrals
+/// @ingroup h1integrals
 inline scalar int_u_v(RealFunction *fu, RealFunction *fv, RefMap *ru, RefMap *rv) {
 	_F_
 	Quad3D *quad = fu->get_quad();
@@ -132,7 +227,7 @@ inline scalar int_u_v(RealFunction *fu, RealFunction *fv, RefMap *ru, RefMap *rv
 
 /// Integral \F \u
 ///
-/// @ingroup h1intergrals
+/// @ingroup h1integrals
 inline scalar int_F_u(double (*F)(double x, double y, double z), RealFunction *fu, RefMap *ru) {
 	_F_
 	Quad3D *quad = fu->get_quad();
@@ -156,7 +251,7 @@ inline scalar int_F_u(double (*F)(double x, double y, double z), RealFunction *f
 
 /// Integral \grad u \grad v
 ///
-/// @ingroup h1intergrals
+/// @ingroup h1integrals
 inline scalar int_grad_u_grad_v(RealFunction *fu, RealFunction *fv, RefMap *ru, RefMap *rv) {
 	_F_
 	Quad3D *quad = fu->get_quad();
@@ -180,7 +275,7 @@ inline scalar int_grad_u_grad_v(RealFunction *fu, RealFunction *fv, RefMap *ru, 
 
 /// Integral \v (surface)
 ///
-/// @ingroup h1intergrals
+/// @ingroup h1integrals
 inline scalar surf_int_v(RealFunction *fv, RefMap *rv, FacePos *fp) {
 	_F_
 	Quad3D *quad = fv->get_quad();
@@ -199,7 +294,7 @@ inline scalar surf_int_v(RealFunction *fv, RefMap *rv, FacePos *fp) {
 
 /// Integral \G \v (surface)
 ///
-/// @ingroup h1intergrals
+/// @ingroup h1integrals
 inline scalar surf_int_G_v(RealFunction *fv, RefMap *rv, FacePos *fp) {
 	_F_
 	Quad3D *quad = fv->get_quad();
@@ -221,7 +316,7 @@ inline scalar surf_int_G_v(RealFunction *fv, RefMap *rv, FacePos *fp) {
 
 /// Integral \u \v (surface)
 ///
-/// @ingroup h1intergrals
+/// @ingroup h1integrals
 inline scalar surf_int_u_v(RealFunction *fu, RealFunction *fv, RefMap *ru, RefMap *rv, FacePos *fp) {
 	_F_
 	Quad3D *quad = fu->get_quad();
@@ -241,6 +336,8 @@ inline scalar surf_int_u_v(RealFunction *fu, RealFunction *fv, RefMap *ru, RefMa
 	return result;
 }
 
+#endif
+
 //// error & norm integrals ////////////////////////////////////////////////////////////////////////
 
 // TODO: merge this and things in norm.cc
@@ -248,7 +345,7 @@ inline scalar surf_int_u_v(RealFunction *fu, RealFunction *fv, RefMap *ru, RefMa
 template<typename T>
 inline double int_h1_error(Function<T> *fu, Function<T> *fv, RefMap *ru, RefMap *rv) {
 	_F_
-	Quad3D *quad = fu->get_quad();
+/*	Quad3D *quad = fu->get_quad();
 	Quad3D *quadv = fv->get_quad();
 	assert(quad == fv->get_quad());
 
@@ -267,12 +364,14 @@ inline double int_h1_error(Function<T> *fu, Function<T> *fv, RefMap *ru, RefMap 
 
 	H1_INTEGRATE_EXPRESSION(sqr(fnu[i] - fnv[i]) + sqr(dudx[i] - dvdx[i]) + sqr(dudy[i] - dvdy[i]) + sqr(dudz[i] - dvdz[i]));
 	return result;
+*/
+	return 0.0;
 }
 
 template<typename T>
 inline double int_h1_semi_error(Function<T> *fu, Function<T> *fv, RefMap *ru, RefMap *rv) {
 	_F_
-	Quad3D *quad = fu->get_quad();
+/*	Quad3D *quad = fu->get_quad();
 	Quad3D *quadv = fv->get_quad();
 	assert(quad == fv->get_quad());
 
@@ -291,12 +390,14 @@ inline double int_h1_semi_error(Function<T> *fu, Function<T> *fv, RefMap *ru, Re
 
 	H1_INTEGRATE_EXPRESSION(sqr(dudx[i] - dvdx[i]) + sqr(dudy[i] - dvdy[i]) + sqr(dudz[i] - dvdz[i]));
 	return result;
+*/
+	return 0.0;
 }
 
 template<typename T>
 inline double int_h1_norm(Function<T> *fu, RefMap *ru) {
 	_F_
-	Quad3D *quad = fu->get_quad();
+/*	Quad3D *quad = fu->get_quad();
 
 	order3_t o = fu->get_fn_order() + ru->get_inv_ref_order();
 	o.limit();
@@ -309,12 +410,14 @@ inline double int_h1_norm(Function<T> *fu, RefMap *ru) {
 
 	H1_INTEGRATE_EXPRESSION(sqr(fnu[i]) + sqr(dudx[i]) + sqr(dudy[i]) + sqr(dudz[i]));
 	return result;
+*/
+	return 0.0;
 }
 
 template<typename T>
 inline double int_h1_seminorm(Function<T> *fu, RefMap *ru) {
 	_F_
-	Quad3D *quad = fu->get_quad();
+/*	Quad3D *quad = fu->get_quad();
 
 	order3_t o = fu->get_fn_order() + ru->get_inv_ref_order();
 	o.limit();
@@ -327,6 +430,8 @@ inline double int_h1_seminorm(Function<T> *fu, RefMap *ru) {
 
 	H1_INTEGRATE_EXPRESSION(sqr(dudx[i]) + sqr(dudy[i]) + sqr(dudz[i]));
 	return result;
+*/
+	return 0.0;
 }
 
 #endif

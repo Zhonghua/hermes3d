@@ -99,6 +99,8 @@ double error_fn_h1(MeshFunction *sln1, MeshFunction *sln2, RefMap *ru, RefMap *r
 
 	H1_INTEGRATE_EXPRESSION(sqr(uval[i] - vval[i]) + sqr(dudx[i] - dvdx[i]) + sqr(dudy[i] - dvdy[i]) + sqr(dudz[i] - dvdz[i]));
 	return result;
+
+//	return 0.0;
 }
 
 // function used to calculate H1 norm of the solution
@@ -117,6 +119,8 @@ double norm_fn_h1(MeshFunction *sln, RefMap *ru) {
 
 	H1_INTEGRATE_EXPRESSION(sqr(uval[i]) + sqr(dudx[i]) + sqr(dudy[i]) + sqr(dudz[i]));
 	return result;
+
+//	return 0.0;
 }
 
 
@@ -186,7 +190,7 @@ double l2_norm(MeshFunction *sln) {
 // function used to calculate error in HCurl norm
 double error_fn_hcurl(MeshFunction *sln1, MeshFunction *sln2, RefMap *ru, RefMap *rv) {
 	_F_
-	Quad3D *quad = sln1->get_quad();
+/*	Quad3D *quad = sln1->get_quad();
 
 	order3_t o = max(sln1->get_fn_order(), sln2->get_fn_order()) + ru->get_inv_ref_order();
 	o.limit();
@@ -215,12 +219,14 @@ double error_fn_hcurl(MeshFunction *sln1, MeshFunction *sln2, RefMap *ru, RefMap
 		sqr(U_CURL_0 - V_CURL_0) + sqr(U_CURL_1 - V_CURL_1) + sqr(U_CURL_2 - V_CURL_2)
 	);
 	return REAL(result);
+*/
+	return 0.0;
 }
 
 // function used to calculate HCurl norm of the solution
 double norm_fn_hcurl(MeshFunction *sln, RefMap *ru) {
 	_F_
-	Quad3D *quad = sln->get_quad();
+/*	Quad3D *quad = sln->get_quad();
 
 	order3_t o = sln->get_fn_order() + ru->get_inv_ref_order();
 	o.limit();
@@ -239,6 +245,8 @@ double norm_fn_hcurl(MeshFunction *sln, RefMap *ru) {
 
 	HCURL_INTEGRATE_EXPRESSION(sqr(T_U_0) + sqr(T_U_1) + sqr(T_U_2) + sqr(U_CURL_0) + sqr(U_CURL_1) + sqr(U_CURL_2));
 	return REAL(result);
+*/
+	return 0.0;
 }
 
 
@@ -257,7 +265,7 @@ double hcurl_norm(MeshFunction *sln) {
 // function used to calculate error in L2 norm
 double error_fn_l2_hcurl(MeshFunction *sln1, MeshFunction *sln2, RefMap *ru, RefMap *rv) {
 	_F_
-	Quad3D *quad = sln1->get_quad();
+/*	Quad3D *quad = sln1->get_quad();
 
 	order3_t o = max(sln1->get_fn_order(), sln2->get_fn_order()) + ru->get_inv_ref_order();
 	o.limit();
@@ -277,13 +285,15 @@ double error_fn_l2_hcurl(MeshFunction *sln1, MeshFunction *sln2, RefMap *ru, Ref
 
 	HCURL_INTEGRATE_EXPRESSION(sqr(T_U_0 - T_V_0) + sqr(T_U_1 - T_V_1) + sqr(T_U_2 - T_V_2));
 	return REAL(result);
+*/
+	return 0.0;
 }
 
 
 // function used to calculate L2 norm of the solution
 double norm_fn_l2_hcurl(MeshFunction *sln, RefMap *ru) {
 	_F_
-	Quad3D *quad = sln->get_quad();
+/*	Quad3D *quad = sln->get_quad();
 
 	order3_t o = sln->get_fn_order() + ru->get_inv_ref_order();
 	o.limit();
@@ -299,6 +309,8 @@ double norm_fn_l2_hcurl(MeshFunction *sln, RefMap *ru) {
 
 	HCURL_INTEGRATE_EXPRESSION(sqr(T_U_0) + sqr(T_U_1) + sqr(T_U_2));
 	return REAL(result);
+*/
+	return 0.0;
 }
 
 

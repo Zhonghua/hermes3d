@@ -47,10 +47,11 @@ double fnc(double x, double y, double z) {
 	return pow(x, m) * pow(y, n) * pow(z, o) + pow(x, 2) * pow(y, 3) - pow(x, 3) * z + pow(z, 4);
 }
 
-double dfnc(double x, double y, double z) {
-	double ddxx = m * (m - 1) * pow(x, m - 2) * pow(y, n) * pow(z, o) + 2 * pow(y, 3) - 6 * x * z;
-	double ddyy = n * (n - 1) * pow(x, m) * pow(y, n - 2) * pow(z, o) + 6 * pow(x, 2) * y;
-	double ddzz = o * (o - 1) * pow(x, m) * pow(y, n) * pow(z, o - 2) + 12 * pow(z, 2);
+template<typename T>
+T dfnc(T x, T y, T z) {
+	T ddxx = m * (m - 1) * pow(x, m - 2) * pow(y, n) * pow(z, o) + 2 * pow(y, 3) - 6 * x * z;
+	T ddyy = n * (n - 1) * pow(x, m) * pow(y, n - 2) * pow(z, o) + 6 * pow(x, 2) * y;
+	T ddzz = o * (o - 1) * pow(x, m) * pow(y, n) * pow(z, o - 2) + 12 * pow(z, 2);
 
 	return -(ddxx + ddyy + ddzz);
 }
@@ -75,12 +76,14 @@ double bc_values(int marker, double x, double y, double z) {
 	return fnc(x, y, z);
 }
 
-scalar bilinear_form(RealFunction *fu, RealFunction *fv, RefMap *ru, RefMap *rv) {
-	return int_grad_u_grad_v(fu, fv, ru, rv);
+template<typename f_t, typename res_t>
+res_t bilinear_form(int n, double *wt, f_t *u, f_t *v, geom_t<res_t> *e) {
+	return int_grad_u_grad_v<f_t, res_t>(n, wt, u, v, e);
 }
 
-scalar linear_form(RealFunction *fv, RefMap *rv) {
-	return int_F_v(dfnc, fv, rv);
+template<typename f_t, typename res_t>
+res_t linear_form(int n, double *wt, f_t *u, geom_t<res_t> *e) {
+	return int_F_v<f_t, res_t>(n, wt, dfnc, u, e);
 }
 
 // main ///////////////////////////////////////////////////////////////////////////////////////////
@@ -123,7 +126,7 @@ int main(int argc, char **args) {
 
 	int mx = maxn(4, m, n, o, 4);
 	order3_t order(mx, mx, mx);
-	printf("  - Setting uniform order to (%d, %d, %d)\n", mx, mx, mx);
+	printf("  - Setting uniform order to (%d, %d, %d)\n", order.x, order.y, order.z);
 	space.set_uniform_order(order);
 
 	int ndofs = space.assign_dofs();
@@ -143,19 +146,27 @@ int main(int argc, char **args) {
 	PetscLinearSolver solver(mat, rhs);
 #endif
 
-	Discretization d;
-	d.set_num_equations(1);
-	d.set_spaces(1, &space);
-	d.set_pss(1, &pss);
+	Discretization d(1);
+//	d.set_num_equations(1);
+//	d.set_spaces(1, &space);
+//	d.set_pss(1, &pss);
+	d.space[0] = &space;
+	d.pss[0] = &pss;
 
-	d.set_bilinear_form(0, 0, bilinear_form);
-	d.set_linear_form(0, linear_form);
+
+//	d.set_bilinear_form(0, 0, bilinear_form);
+//	d.set_linear_form(0, linear_form);
+	d.biform[0][0].vol.form = bilinear_form<fn_t, scalar>;
+	d.biform[0][0].vol.order = bilinear_form<fn_order_t, forder_t>;
+
+	d.liform[0].vol.form = linear_form<fn_t, scalar>;
+	d.liform[0].vol.order = linear_form<fn_order_t, forder_t>;
+
 
 	// assemble stiffness matrix
-	d.create(&mat, &rhs);
-
 	Timer assemble_timer("Assembling stiffness matrix");
 	assemble_timer.start();
+	d.create(&mat, &rhs);
 	d.assemble(&mat, &rhs);
 	assemble_timer.stop();
 
@@ -248,4 +259,3 @@ int main(int argc, char **args) {
 
 	return res;
 }
-

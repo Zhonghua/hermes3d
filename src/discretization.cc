@@ -266,8 +266,6 @@ void Discretization::assemble(Matrix *matrix, Vector *rhs) {
 		meshes[i] = space[i]->get_mesh();
 	memcpy(fn, pss, neq * sizeof(Transformable *));
 
-	printf("  * assembling");
-
 	// loop through all elements
 	Element **e;
 	Traverse trav;
@@ -421,6 +419,4 @@ void Discretization::assemble(Matrix *matrix, Vector *rhs) {
 	delete [] refmap;
 	delete [] al;
 	delete [] nat;
-
-	printf("done\n");
 }

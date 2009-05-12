@@ -23,6 +23,8 @@ if(WITH_HEX)
 		add_subdirectory(hex-h1-dirichlet)
 		add_subdirectory(hex-h1-neumann)
 		add_subdirectory(hex-h1-newton)
+		# systems of equations
+		add_subdirectory(hex-h1-sys)
 	endif(REAL)
 	# Hcurl
 	if(REAL)

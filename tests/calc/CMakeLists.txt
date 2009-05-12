@@ -25,6 +25,7 @@ if(WITH_HEX)
 		add_subdirectory(hex-h1-newton)
 		# systems of equations
 		add_subdirectory(hex-h1-sys)
+		add_subdirectory(hex-h1-sys-dirichlet)
 	endif(REAL)
 	# Hcurl
 	if(REAL)

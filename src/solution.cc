@@ -64,6 +64,7 @@ Solution::Solution(Mesh *mesh) : MeshFunction(mesh) {
 	memset(tables, 0, sizeof(tables));
 	memset(elems, 0, sizeof(elems));
 	memset(oldest, 0, sizeof(oldest));
+	dir_coef = 1.0;
 	vec = NULL;
 	owner = false;
 	transform = true;
@@ -109,9 +110,10 @@ void Solution::set_space_and_pss(Space *space, PrecalcShapeset *pss) {
 	num_components = pss->num_components;
 }
 
-void Solution::set_solution_vector(scalar *vec, bool owner) {
+void Solution::set_solution_vector(scalar *vec, bool owner, scalar dir_coef) {
 	_F_
 	free();
+	this->dir_coef = dir_coef;
 	this->vec = vec;
 	this->owner = owner;
 }
@@ -120,9 +122,9 @@ void Solution::set_zero_vector() {
 	_F_
 	free();
 	int ndofs = space->get_max_dof() + 1;
-	vec = new scalar[ndofs + 1];
+	vec = new scalar[ndofs];
 	MEM_CHECK(vec);
-	memset(vec, 0, sizeof(scalar) * (ndofs + 1));
+	memset(vec, 0, sizeof(scalar) * ndofs);
 	owner = true;
 }
 
@@ -239,7 +241,7 @@ void Solution::precalculate(qorder_t qord, int mask) {
 	for (k = 0; k < pal->cnt; k++) {
 		slave_pss->set_active_shape(pal->idx[k]);
 		slave_pss->set_quad_order(qord, mask);
-		scalar coef = pal->coef[k] * vec[pal->dof[k] + 1];
+		scalar coef = pal->coef[k] * (pal->dof[k] >= 0 ? vec[pal->dof[k]] : dir_coef);
 
 		for (j = 0; j < num_components; j++)
 			for (l = 0; l < VALUE_TYPES; l++)
@@ -351,7 +353,7 @@ scalar Solution::get_sln_value(double x, double y, double z, EValueType which, i
 	AsmList *pal = al + cur_elem;
 	scalar result = 0.0;
 	for (int k = 0; k < pal->cnt; k++) {
-		scalar coef = pal->coef[k] * vec[pal->dof[k] + 1];
+		scalar coef = pal->coef[k] * (pal->dof[k] >= 0 ? vec[pal->dof[k]] : dir_coef);
 		result += coef * shapeset->get_value(which, pal->idx[k], x, y, z, component);
 	}
 	return result;
@@ -361,7 +363,7 @@ void Solution::save_solution_vector(char *filename, int ndofs) {
 	_F_
 	FILE *f = fopen(filename, "wb");
 	if (f == NULL) ERROR("Cannot open %s for writing.", filename);
-	fwrite(vec, sizeof(scalar), ndofs + 1, f);
+	fwrite(vec, sizeof(scalar), ndofs, f);
 	fclose(f);
 }
 
@@ -372,10 +374,10 @@ void Solution::load_solution_vector(char *filename, int ndofs) {
 	FILE *f = fopen(filename, "rb");
 	if (f == NULL) ERROR("Cannot open %s.", filename);
 	free();
-	vec = new scalar[ndofs + 1];
+	vec = new scalar[ndofs];
 	MEM_CHECK(vec);
 	owner = true;
-	fread(vec, sizeof(scalar), ndofs + 1, f);
+	fread(vec, sizeof(scalar), ndofs, f);
 	fclose(f);
 }
 

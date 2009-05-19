@@ -179,7 +179,7 @@ void build_matrix_block(int n, Array<MatrixEntry> &ar_mat, Array<double> &ar_rhs
 void solve(LinearSolver &solver, int n) {
 	if (solver.solve()) {
 		double *sln = solver.get_solution();
-		for (int i = 1; i < n + 1; i++) {
+		for (int i = 0; i < n; i++) {
 			printf("%lf\n", sln[i]);
 		}
 	}

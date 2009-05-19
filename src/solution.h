@@ -87,7 +87,7 @@ public:
 	virtual void free();
 
 	void set_space_and_pss(Space *space, PrecalcShapeset *pss);
-	void set_solution_vector(scalar *vec, bool owner);
+	void set_solution_vector(scalar *vec, bool owner, scalar dir_coef = 1.0);
 	void set_zero_vector();
 
 	virtual void set_quad(Quad3D *quad);
@@ -121,6 +121,7 @@ protected:
 	PrecalcShapeset *pss;
 	PrecalcShapeset *slave_pss;
 
+	scalar dir_coef;					/// coefficient for dirichlet DOF
 	scalar *vec;
 	bool owner;
 	bool transform;

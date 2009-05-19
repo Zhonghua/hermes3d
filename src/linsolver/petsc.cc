@@ -209,16 +209,17 @@ bool PetscLinearSolver::solve() {
 
 	// allocate memory for solution vector
 	delete [] sln;
-	sln = new scalar[m.ndofs + 1];
+	sln = new scalar [m.ndofs];
 	MEM_CHECK(sln);
-	sln[0] = 1.0;					// Dirichlet DOF has always coefficient 1.0
+	memset(sln, 0, m.ndofs * sizeof(scalar));
 
-	// copy solution to the output solution vector
 	// index map vector (basic serial code uses the map sln[i] = x[i] for all dofs.
-	int *idx = new int[m.ndofs];
+	int *idx = new int [m.ndofs];
 	MEM_CHECK(idx);
 	for (int i = 0; i < m.ndofs; i++) idx[i] = i;
-	VecGetValues(x, m.ndofs, idx, (PetscScalar *) (sln + 1));
+
+	// copy solution to the output solution vector
+	VecGetValues(x, m.ndofs, idx, (PetscScalar *) sln);
 	delete [] idx;
 
 	KSPDestroy(ksp);

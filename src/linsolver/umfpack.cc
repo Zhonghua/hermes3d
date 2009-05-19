@@ -301,10 +301,11 @@ bool UMFPackLinearSolver::solve() {
 	if (numeric == NULL) EXIT(ERR_FAILURE, "umfpack_di_numeric error: numeric == NULL");
 
 	delete [] sln;
-	sln = new scalar[m.ndofs + 1];
+	sln = new scalar[m.ndofs];
 	MEM_CHECK(sln);
-	sln[0] = 1.0;
-	status = umfpack_solve(UMFPACK_A, m.Ap, m.Ai, m.Ax, sln + 1, rhs.v, numeric, NULL, NULL);
+	memset(sln, 0, m.ndofs * sizeof(scalar));
+
+	status = umfpack_solve(UMFPACK_A, m.Ap, m.Ai, m.Ax, sln, rhs.v, numeric, NULL, NULL);
 	if (status != UMFPACK_OK) {
 		check_status("umfpack_di_solve", status);
 		return false;

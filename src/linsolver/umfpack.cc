@@ -48,26 +48,26 @@ void UMFPackMatrix::alloc() {
 	assert(pages != NULL);
 
 	// initialize the arrays Ap and Ai
-	Ap = new int[ndofs + 1];
-	if (Ap == NULL) EXIT(ERR_OUT_OF_MEMORY, "Out of memory. Error allocating stiffness matrix (Ap).");
+	Ap = new int [size + 1];
+	MEM_CHECK(Ap);
 	int aisize = get_num_indices();
-	Ai = new int[aisize];
-	if (Ai == NULL) EXIT(ERR_OUT_OF_MEMORY, "Out of memory. Error allocating stiffness matrix (Ai).");
+	Ai = new int [aisize];
+	MEM_CHECK(Ai);
 
 	// sort the indices and remove duplicities, insert into Ai
 	int i, pos = 0;
-	for (i = 0; i < ndofs; i++) {
+	for (i = 0; i < size; i++) {
 		Ap[i] = pos;
 		pos += sort_and_store_indices(pages[i], Ai + pos, Ai + aisize);
 	}
 	Ap[i] = pos;
 
-	delete[] pages;
+	delete [] pages;
 	pages = NULL;
 
-	Ax = new scalar[Ap[ndofs]];
-	if (Ax == NULL) EXIT(ERR_OUT_OF_MEMORY, "Out of memory. Error allocating stiffness matrix (Ax).");
-	memset(Ax, 0, sizeof(scalar) * Ap[ndofs]);
+	Ax = new scalar [Ap[size]];
+	MEM_CHECK(Ax);
+	memset(Ax, 0, sizeof(scalar) * Ap[size]);
 }
 
 void UMFPackMatrix::free() {
@@ -79,15 +79,15 @@ void UMFPackMatrix::free() {
 
 void UMFPackMatrix::update(int m, int n, scalar v) {
 	_F_
-	insert_value(Ai + Ap[n], Ax + Ap[n], Ap[n + 1] - Ap[n], m, v);
+	if (v != 0.0 && m != DIRICHLET_DOF && n != DIRICHLET_DOF)		// ignore dirichlet DOFs
+		insert_value(Ai + Ap[n], Ax + Ap[n], Ap[n + 1] - Ap[n], m, v);
 }
 
 void UMFPackMatrix::update(int m, int n, scalar **mat, int *rows, int *cols) {
 	_F_
 	for (int i = 0; i < m; i++)				// rows
 		for (int j = 0; j < n; j++)			// cols
-			if (mat[i][j] != 0.0 && rows[i] != DIRICHLET_DOF && cols[j] != DIRICHLET_DOF)		// ignore dirichlet DOFs
-				update(rows[i], cols[j], mat[i][j]);
+			update(rows[i], cols[j], mat[i][j]);
 }
 
 /// dumping matrix and right-hand side
@@ -96,8 +96,8 @@ bool UMFPackMatrix::dump(FILE *file, const char *var_name, EMatrixDumpFormat fmt
 	_F_
 	switch (fmt) {
 		case DF_MATLAB_SPARSE:
-			fprintf(file, "%% Size: %dx%d\n%% Nonzeros: %d\ntemp = zeros(%d, 3);\ntemp = [\n", ndofs, ndofs, Ap[ndofs], Ap[ndofs]);
-			for (int j = 0; j < ndofs; j++)
+			fprintf(file, "%% Size: %dx%d\n%% Nonzeros: %d\ntemp = zeros(%d, 3);\ntemp = [\n", size, size, Ap[size], Ap[size]);
+			for (int j = 0; j < size; j++)
 				for (int i = Ap[j]; i < Ap[j + 1]; i++)
 					fprintf(file, "%d %d " SCALAR_FMT "\n", Ai[i] + 1, j + 1, SCALAR(Ax[i]));
 			fprintf(file, "];\n%s = spconvert(temp);\n", var_name);
@@ -107,11 +107,11 @@ bool UMFPackMatrix::dump(FILE *file, const char *var_name, EMatrixDumpFormat fmt
 		case DF_HERMES_BIN: {
 			hermes_fwrite("H2DX\001\000\000\000", 1, 8, file);
 			int ssize = sizeof(scalar);
-			int nnz = Ap[ndofs];
+			int nnz = Ap[size];
 			hermes_fwrite(&ssize, sizeof(int), 1, file);
-			hermes_fwrite(&ndofs, sizeof(int), 1, file);
+			hermes_fwrite(&size, sizeof(int), 1, file);
 			hermes_fwrite(&nnz, sizeof(int), 1, file);
-			hermes_fwrite(Ap, sizeof(int), ndofs + 1, file);
+			hermes_fwrite(Ap, sizeof(int), size + 1, file);
 			hermes_fwrite(Ai, sizeof(int), nnz, file);
 			hermes_fwrite(Ax, sizeof(scalar), nnz, file);
 			return true;
@@ -129,7 +129,7 @@ bool UMFPackMatrix::dump(FILE *file, const char *var_name, EMatrixDumpFormat fmt
 int UMFPackMatrix::get_matrix_size() const {
 	_F_
 	assert(Ap != NULL);
-	return (sizeof(int) + sizeof(scalar)) * (Ap[ndofs] + ndofs);
+	return (sizeof(int) + sizeof(scalar)) * (Ap[size] + size);
 }
 
 void UMFPackMatrix::insert_value(int *Ai, scalar *Ax, int Alen, int idx, scalar value) {
@@ -157,7 +157,7 @@ void UMFPackMatrix::insert_value(int *Ai, scalar *Ax, int Alen, int idx, scalar 
 UMFPackVector::UMFPackVector() {
 	_F_
 	v = NULL;
-	ndofs = 0;
+	size = 0;
 }
 
 UMFPackVector::~UMFPackVector() {
@@ -168,16 +168,16 @@ UMFPackVector::~UMFPackVector() {
 void UMFPackVector::alloc(int n) {
 	_F_
 	free();
-	v = new scalar[n];
+	v = new scalar [n];
 	memset(v, 0, n * sizeof(scalar));
-	ndofs = n;
+	size = n;
 }
 
 void UMFPackVector::free() {
 	_F_
 	delete [] v;
 	v = NULL;
-	ndofs = 0;
+	size = 0;
 }
 
 void UMFPackVector::update(int idx, scalar y) {
@@ -195,8 +195,8 @@ bool UMFPackVector::dump(FILE *file, const char *var_name, EMatrixDumpFormat fmt
 	_F_
 	switch (fmt) {
 		case DF_MATLAB_SPARSE:
-			fprintf(file, "%% Size: %dx1\n%s = [\n", ndofs, var_name);
-			for (int i = 0; i < this->ndofs; i++)
+			fprintf(file, "%% Size: %dx1\n%s = [\n", size, var_name);
+			for (int i = 0; i < size; i++)
 				fprintf(file, SCALAR_FMT "\n", SCALAR(v[i]));
 			fprintf(file, " ];\n");
 			return true;
@@ -205,8 +205,8 @@ bool UMFPackVector::dump(FILE *file, const char *var_name, EMatrixDumpFormat fmt
 			hermes_fwrite("H2DR\001\000\000\000", 1, 8, file);
 			int ssize = sizeof(scalar);
 			hermes_fwrite(&ssize, sizeof(int), 1, file);
-			hermes_fwrite(&ndofs, sizeof(int), 1, file);
-			hermes_fwrite(v, sizeof(scalar), ndofs, file);
+			hermes_fwrite(&size, sizeof(int), 1, file);
+			hermes_fwrite(v, sizeof(scalar), size, file);
 			return true;
 		}
 
@@ -281,12 +281,12 @@ static void check_status(const char *fn_name, int status) {
 bool UMFPackLinearSolver::solve() {
 	_F_
 #ifdef WITH_UMFPACK
-	assert(m.ndofs == rhs.ndofs);
+	assert(m.size == rhs.size);
 
 	void *symbolic, *numeric;
 	int status;
 
-	status = umfpack_symbolic(m.ndofs, m.ndofs, m.Ap, m.Ai, m.Ax, &symbolic, NULL, NULL);
+	status = umfpack_symbolic(m.size, m.size, m.Ap, m.Ai, m.Ax, &symbolic, NULL, NULL);
 	if (status != UMFPACK_OK) {
 		check_status("umfpack_di_symbolic", status);
 		return false;
@@ -301,9 +301,9 @@ bool UMFPackLinearSolver::solve() {
 	if (numeric == NULL) EXIT(ERR_FAILURE, "umfpack_di_numeric error: numeric == NULL");
 
 	delete [] sln;
-	sln = new scalar[m.ndofs];
+	sln = new scalar[m.size];
 	MEM_CHECK(sln);
-	memset(sln, 0, m.ndofs * sizeof(scalar));
+	memset(sln, 0, m.size * sizeof(scalar));
 
 	status = umfpack_solve(UMFPACK_A, m.Ap, m.Ai, m.Ax, sln, rhs.v, numeric, NULL, NULL);
 	if (status != UMFPACK_OK) {

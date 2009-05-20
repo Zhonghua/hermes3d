@@ -39,7 +39,7 @@ void PetscMatrix::alloc() {
 	assert(pages != NULL);
 
 	// calc nnz
-	int *nnz = new int[this->ndofs];
+	int *nnz = new int[size];
 	MEM_CHECK(nnz);
 
 	// fill in nnz
@@ -49,7 +49,7 @@ void PetscMatrix::alloc() {
 
 	// sort the indices and remove duplicities, insert into ai
 	int pos = 0;
-	for (int i = 0; i < ndofs; i++) {
+	for (int i = 0; i < size; i++) {
 		nnz[i] = sort_and_store_indices(pages[i], ai + pos, ai + aisize);
 		pos += nnz[i];
 	}
@@ -57,7 +57,7 @@ void PetscMatrix::alloc() {
 	delete [] ai;
 
 	//
-	MatCreateSeqAIJ(PETSC_COMM_SELF, this->ndofs, this->ndofs, 0, nnz, &matrix);
+	MatCreateSeqAIJ(PETSC_COMM_SELF, size, size, 0, nnz, &matrix);
 //	MatSetOption(matrix, MAT_ROW_ORIENTED);
 //	MatSetOption(matrix, MAT_ROWS_SORTED);
 
@@ -78,7 +78,8 @@ void PetscMatrix::free() {
 void PetscMatrix::update(int m, int n, scalar v) {
 	_F_
 #ifdef WITH_PETSC
-	MatSetValues(matrix, 1, &m, 1, &n, (PetscScalar *) &v, ADD_VALUES);
+	if (v != 0.0 && m != DIRICHLET_DOF && n != DIRICHLET_DOF)		// ignore "dirichlet DOF"
+		MatSetValue(matrix, m, n, (PetscScalar) v, ADD_VALUES);
 #endif
 }
 
@@ -88,11 +89,8 @@ void PetscMatrix::update(int m, int n, scalar **mat, int *rows, int *cols) {
 	// TODO: pass in just the block of the matrix without DIRICHLET_DOFs (so that can use MatSetValues directly without checking
 	// row and cols for -1)
 	for (int i = 0; i < m; i++)				// rows
-		for (int j = 0; j < n; j++)	 {		// cols
-			if (mat[i][j] != 0.0 && rows[i] != DIRICHLET_DOF && cols[j] != DIRICHLET_DOF) {		// ignore "dirichlet DOF"
-				MatSetValues(matrix, 1, rows + i, 1, cols + j, (PetscScalar *) &(mat[i][j]), ADD_VALUES);
-			}
-		}
+		for (int j = 0; j < n; j++)			// cols
+			update(rows[i], cols[j], mat[i][j]);
 #endif
 }
 
@@ -127,8 +125,8 @@ void PetscVector::alloc(int n) {
 	_F_
 #ifdef WITH_PETSC
 	free();
-	ndofs = n;
-	VecCreateSeq(PETSC_COMM_SELF, ndofs, &vec);
+	size = n;
+	VecCreateSeq(PETSC_COMM_SELF, size, &vec);
 	inited = true;
 #endif
 }
@@ -144,7 +142,7 @@ void PetscVector::free() {
 void PetscVector::update(int idx, scalar y) {
 	_F_
 #ifdef WITH_PETSC
-	if (idx >= 0) VecSetValues(vec, 1, &idx, (PetscScalar *) &y, ADD_VALUES);
+	if (idx >= 0) VecSetValue(vec, idx, (PetscScalar) y, ADD_VALUES);
 #endif
 }
 
@@ -152,7 +150,7 @@ void PetscVector::update(int n, int *idx, scalar *y) {
 	_F_
 #ifdef WITH_PETSC
 	for (int i = 0; i < n; i++)
-		if (idx[i] >= 0) VecSetValues(vec, 1, idx + i, (PetscScalar *) (y + i), ADD_VALUES);
+		if (idx[i] >= 0) VecSetValue(vec, idx[i], (PetscScalar) y[i], ADD_VALUES);
 #endif
 }
 
@@ -187,7 +185,7 @@ PetscLinearSolver::~PetscLinearSolver() {
 bool PetscLinearSolver::solve() {
 	_F_
 #ifdef WITH_PETSC
-	assert(m.ndofs == rhs.ndofs);
+	assert(m.size == rhs.size);
 
 	MatAssemblyBegin(m.matrix, MAT_FINAL_ASSEMBLY);
 	MatAssemblyEnd(m.matrix, MAT_FINAL_ASSEMBLY);
@@ -209,17 +207,17 @@ bool PetscLinearSolver::solve() {
 
 	// allocate memory for solution vector
 	delete [] sln;
-	sln = new scalar [m.ndofs];
+	sln = new scalar [m.size];
 	MEM_CHECK(sln);
-	memset(sln, 0, m.ndofs * sizeof(scalar));
+	memset(sln, 0, m.size * sizeof(scalar));
 
 	// index map vector (basic serial code uses the map sln[i] = x[i] for all dofs.
-	int *idx = new int [m.ndofs];
+	int *idx = new int [m.size];
 	MEM_CHECK(idx);
-	for (int i = 0; i < m.ndofs; i++) idx[i] = i;
+	for (int i = 0; i < m.size; i++) idx[i] = i;
 
 	// copy solution to the output solution vector
-	VecGetValues(x, m.ndofs, idx, (PetscScalar *) sln);
+	VecGetValues(x, m.size, idx, (PetscScalar *) sln);
 	delete [] idx;
 
 	KSPDestroy(ksp);

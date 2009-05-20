@@ -135,7 +135,7 @@ void qsort_int(int* pbase, size_t total_elems); // defined in qsort.cpp
 
 SparseMatrix::SparseMatrix() {
 	_F_
-	ndofs = 0;
+	size = 0;
 	pages = NULL;
 }
 
@@ -144,20 +144,20 @@ SparseMatrix::~SparseMatrix() {
 	delete [] pages;
 }
 
-void SparseMatrix::prealloc(int ndofs) {
+void SparseMatrix::prealloc(int n) {
 	_F_
-	this->ndofs = ndofs;
+	this->size = n;
 
-	pages = new Page *[ndofs];
-	if (pages == NULL) EXIT(ERR_OUT_OF_MEMORY, "Out of memory. Error pre-allocating pages.");
-	memset(pages, 0, ndofs * sizeof(Page *));
+	pages = new Page *[n];
+	MEM_CHECK(pages);
+	memset(pages, 0, n * sizeof(Page *));
 }
 
 void SparseMatrix::pre_add_ij(int row, int col) {
 	_F_
 	if (pages[col] == NULL || pages[col]->count >= PAGE_SIZE) {
 		Page *new_page = new Page;
-		if (new_page == NULL) EXIT(ERR_OUT_OF_MEMORY, "Out of memory. Error allocating a page.");
+		MEM_CHECK(new_page);
 		new_page->count = 0;
 		new_page->next = pages[col];
 		pages[col] = new_page;
@@ -191,7 +191,7 @@ int SparseMatrix::sort_and_store_indices(Page *page, int *buffer, int *max) {
 int SparseMatrix::get_num_indices() {
 	_F_
 	int total = 0;
-	for (int i = 0; i < ndofs; i++)
+	for (int i = 0; i < size; i++)
 		for (Page *page = pages[i]; page != NULL; page = page->next)
 			total += page->count;
 

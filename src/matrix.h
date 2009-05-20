@@ -141,7 +141,7 @@ public:
 	/// prepare memory
 	///
 	/// @param[in] ndofs - number of unknowns
-	virtual void prealloc(int ndofs);
+	virtual void prealloc(int n);
 
 	/// add indices of nonzero matrix element
 	///
@@ -159,7 +159,7 @@ protected:
 		Page *next;
 	};
 
-	int ndofs; // number of unknowns
+	int size;							// number of unknowns
 	Page **pages;
 
 	int sort_and_store_indices(Page *page, int *buffer, int *max);
@@ -196,7 +196,7 @@ public:
 	virtual bool dump(FILE *file, const char *var_name, EMatrixDumpFormat = DF_MATLAB_SPARSE) = 0;
 
 protected:
-	int ndofs;
+	int size;
 };
 
 #endif

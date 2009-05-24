@@ -721,6 +721,7 @@ void RefMap::free_node(Node *node) {
 			for (Word_t idx = node->edge_phys_z[edge].first(); idx != INVALID_IDX; idx = node->edge_phys_z[edge].next(idx))
 				delete [] node->edge_phys_z[edge][idx];
 	}
+	delete [] node->edge_inv_ref_map;
 	delete [] node->edge_phys_x;
 	delete [] node->edge_phys_y;
 	delete [] node->edge_phys_z;

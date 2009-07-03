@@ -41,8 +41,11 @@ public:
 	virtual bool solve() = 0;
 	scalar *get_solution() { return sln; }
 
+	int get_error() { return error; }
+
 protected:
 	scalar *sln;
+	int error;
 };
 
 #endif

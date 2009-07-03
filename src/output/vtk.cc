@@ -214,23 +214,23 @@ void VtkOutputEngine::dump_points(MeshFunction *fn) {
 
 		Vtk::OutputQuad *quad = output_quad[mode];
 		fn->set_active_element(element);
-		fn->set_quad(quad);
 
 		order3_t order = get_order(mode);
+		int np = quad->get_num_points(order);
+		QuadPt3D *pt = quad->get_points(order);
 
 		// get coordinates of all points
 		RefMap *refmap = fn->get_refmap();
-		double *phys_x = refmap->get_phys_x(order);
-		double *phys_y = refmap->get_phys_y(order);
-		double *phys_z = refmap->get_phys_z(order);
+		double *x = refmap->get_phys_x(np, pt);
+		double *y = refmap->get_phys_y(np, pt);
+		double *z = refmap->get_phys_z(np, pt);
 
 		// insert points in the vertex array
-		int np = quad->get_num_points(order);
 		for (int i = 0; i < np; i++) {
 			Point3D *pt = new Point3D;
-			pt->x = phys_x[i];
-			pt->y = phys_y[i];
-			pt->z = phys_z[i];
+			pt->x = x[i];
+			pt->y = y[i];
+			pt->z = z[i];
 			vertices.add(pt);
 		}
 
@@ -241,6 +241,7 @@ void VtkOutputEngine::dump_points(MeshFunction *fn) {
 					for (unsigned int j = 0; j < order.y; j++) {
 						for (unsigned int o = 0; o < order.z; o++) {
 							int *cell = new int [Hex::NUM_VERTICES];
+							MEM_CHECK(cell);
 							cell[0] = base + (order.z + 1) * (i * (order.y + 1) + j) + o;
 							cell[1] = cell[0] + ((order.y + 1) * (order.z + 1));
 							cell[2] = cell[1] + (order.z + 1);
@@ -263,6 +264,10 @@ void VtkOutputEngine::dump_points(MeshFunction *fn) {
 
 			default: EXIT(ERR_UNKNOWN_MODE); break;
 		} // switch
+
+		delete [] x;
+		delete [] y;
+		delete [] z;
 	}
 
 	// DUMP ////////////////////////////////////////////////////////////////////////////////////////
@@ -312,7 +317,7 @@ void VtkOutputEngine::dump_points(MeshFunction *fn) {
 
 	for (int i = 0; i < 3; i++) // 3 types of elements
 		for (Word_t j = cells[i].first(); j != INVALID_IDX; j = cells[i].next(j))
-			delete cells[i][j];
+			delete [] cells[i][j];
 }
 
 
@@ -383,22 +388,24 @@ void VtkOutputEngine::out(MeshFunction *fn, const char *name, int item/* = FN_VA
 		Element *element = mesh->elements[idx];
 		int mode = element->get_mode();
 
-		order3_t order = get_order(mode);
 		Vtk::OutputQuad *quad = output_quad[mode];
+		order3_t order = get_order(mode);
+
+		int np = quad->get_num_points(order);
+		QuadPt3D *pt = quad->get_points(order);
+
 		fn->set_active_element(element);
-		fn->set_quad(quad);
-		fn->set_quad_order(ELEM_QORDER(order), item);
+		fn->precalculate(np, pt, item);
 		int a = 0, b = 0;
 		mask_to_comp_val(item, a, b);
 		scalar *val[COMPONENTS];
 		for (int ic = 0; ic < nc; ic++)
-			val[ic] = fn->get_values(ic, b);
+			val[ic] = fn->get_values(ic, FN);
 
-		int np = quad->get_num_points(order);
 		for (int i = 0; i < np; i++) {
 			if (nc == 1) {				// scalar
 #ifndef COMPLEX
-				fprintf(this->out_file, "%e\n", val[0][i]);
+				fprintf(this->out_file, "%lf\n", val[0][i]);
 #else
 				assert(fabs(IMAG(val[0][i])) < 1e-12);
 				fprintf(this->out_file, "%e\n", REAL(val[0][i]));
@@ -406,7 +413,7 @@ void VtkOutputEngine::out(MeshFunction *fn, const char *name, int item/* = FN_VA
 			}
 			else if (nc == 3) {			// vector
 #ifndef COMPLEX
-				fprintf(this->out_file, "%e %e %e\n", val[0][i], val[1][i], val[2][i]);
+				fprintf(this->out_file, "%lf %lf %lf\n", val[0][i], val[1][i], val[2][i]);
 #else
 				assert(fabs(IMAG(val[0][i])) < 1e-12);
 				assert(fabs(IMAG(val[1][i])) < 1e-12);

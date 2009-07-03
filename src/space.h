@@ -102,6 +102,9 @@ public:
    	virtual void get_element_assembly_list(Element *e, AsmList *al) = 0;
 	virtual void get_boundary_assembly_list(Element *e, int face, AsmList *al) = 0;
 
+	/// Returns true if the space is ready for computation, false otherwise.
+	bool is_up_to_date() const { return was_assigned && mesh_seq == mesh->get_seq(); }
+
 protected:
 public: //remove me
 	Mesh *mesh;
@@ -110,6 +113,9 @@ public: //remove me
 
 	int first_dof, next_dof, first_bubble;
 	int stride;
+
+	int seq, mesh_seq;
+	bool was_assigned;
 
 	// CED
 	struct BaseVertexComponent {
@@ -458,6 +464,12 @@ public:
 	EBCType (*bc_type_callback)(int);
 	scalar (*bc_value_callback_by_coord)(int marker, double x, double y, double z);
 	scalar3 &(*bc_vec_value_callback_by_coord)(int marker, double x, double y, double z);
+
+protected:
+	/// Internal. Used by LinProblem to detect changes in the space.
+	int get_seq() const { return seq; }
+
+	friend class LinProblem;
 };
 
 

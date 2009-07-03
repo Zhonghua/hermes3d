@@ -46,6 +46,10 @@ Space::Space(Mesh *mesh, Shapeset *shapeset) :
 	set_bc_types(NULL);
 	set_bc_values((scalar(*)(int, double, double, double)) NULL);
 	set_bc_values((scalar3 &(*)(int, double, double, double)) NULL);
+	mesh_seq = -1;
+	seq = 0;
+	was_assigned = false;
+
 	init_data_tables();
 }
 
@@ -108,6 +112,7 @@ void Space::set_element_order(Word_t eid, order3_t order) {
 	}
 
 	elm_data[eid]->order = order;
+	seq++;
 }
 
 order3_t Space::get_element_order(Word_t eid) const {
@@ -125,6 +130,7 @@ void Space::set_uniform_order(order3_t order) {
 		assert(elm_data[eid] != NULL);
 		elm_data[eid]->order = order;
 	}
+	seq++;
 }
 
 void Space::set_order_recurrent(Word_t eid, order3_t order) {
@@ -167,6 +173,7 @@ void Space::copy_orders(const Space &space, int inc) {
 
 		set_order_recurrent(eid, order);
 	}
+	seq++;
 }
 
 void Space::enforce_minimum_rule() {
@@ -2024,6 +2031,10 @@ int Space::assign_dofs(int first_dof, int stride) {
 	assign_dofs_internal();
 	update_constraints();
 
+	mesh_seq = mesh->get_seq();
+	was_assigned = true;
+	seq++;
+
 	return get_dof_count();
 }
 
@@ -2084,18 +2095,21 @@ void Space::set_bc_types(EBCType(*bc_type_callback)(int)) {
 	_F_
 	if (bc_type_callback == NULL) bc_type_callback = default_bc_type;
 	this->bc_type_callback = bc_type_callback;
+	seq++;
 }
 
 void Space::set_bc_values(scalar(*bc_value_callback_by_coord)(int, double, double, double)) {
 	_F_
 	if (bc_value_callback_by_coord == NULL) bc_value_callback_by_coord = default_bc_value_by_coord;
 	this->bc_value_callback_by_coord = bc_value_callback_by_coord;
+	seq++;
 }
 
 void Space::set_bc_values(scalar3 &(*bc_vec_value_callback_by_coord)(int marker, double x, double y, double z)) {
 	_F_
 	if (bc_vec_value_callback_by_coord == NULL) bc_vec_value_callback_by_coord = default_bc_vec_value_by_coord;
 	this->bc_vec_value_callback_by_coord = bc_vec_value_callback_by_coord;
+	seq++;
 }
 
 void Space::copy_callbacks(const Space *space) {

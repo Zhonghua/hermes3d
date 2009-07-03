@@ -691,10 +691,13 @@ Boundary *BoundaryQuad::copy() {
 
 // Mesh ///////////////////////////////////////////////////////////////////////
 
+unsigned g_mesh_seq = 0;
+
 Mesh::Mesh() {
 	_F_
 	nactive = 0;
 	nbase = 0;
+	seq = g_mesh_seq++;
 }
 
 Mesh::~Mesh() {
@@ -1273,6 +1276,8 @@ bool Mesh::refine_element(Word_t id, int refinement) {
 			case MODE_PRISM: EXIT(ERR_NOT_IMPLEMENTED); break;
 			default: EXIT(ERR_UNKNOWN_MODE); break;
 		}
+
+		seq = g_mesh_seq++;
 	}
 	else
 		EXIT(ERR_FAILURE, "Applying incompatible refinement (elem = %d, reft = %d).", id, refinement);

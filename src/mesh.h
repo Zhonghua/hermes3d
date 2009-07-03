@@ -709,6 +709,16 @@ protected:
 	/// referencing edges
 	void ref_edges(Element *e);
 	void unref_edges(Element *e);
+
+	// Seq (internal use only)
+	unsigned seq;
+	/// For internal use.
+	unsigned get_seq() const { return seq; }
+	/// For internal use.
+	void set_seq(unsigned seq) { this->seq = seq; }
+
+	friend class Space;
+	friend class WeakForm;
 };
 
 

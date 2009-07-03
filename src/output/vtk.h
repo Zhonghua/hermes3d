@@ -30,7 +30,7 @@
 /// @ingroup visualization
 class VtkOutputEngine : public OutputEngine {
 public:
-	VtkOutputEngine(FILE *file);
+	VtkOutputEngine(FILE *file, int outprec = 1);
 	virtual ~VtkOutputEngine();
 
 	/// Run the output with specified output engine
@@ -51,6 +51,7 @@ protected:
 	/// file into which the output is done
 	FILE *out_file;
 	bool has_points;
+	int out_prec;
 };
 
 #endif

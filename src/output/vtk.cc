@@ -171,10 +171,11 @@ static Vtk::OutputQuadHex output_quad_hex;
 
 static Vtk::OutputQuad *output_quad[] = { OUTPUT_QUAD_TETRA, OUTPUT_QUAD_HEX, NULL };
 
-VtkOutputEngine::VtkOutputEngine(FILE *file) {
+VtkOutputEngine::VtkOutputEngine(FILE *file, int outprec) {
 	_F_
 	this->out_file = file;
 	this->has_points = false;
+	this->out_prec = outprec;
 }
 
 VtkOutputEngine::~VtkOutputEngine() {
@@ -184,11 +185,11 @@ VtkOutputEngine::~VtkOutputEngine() {
 order3_t VtkOutputEngine::get_order(int mode) {
 	_F_
 	// FIXME: get order from the space and set sufficient division
-	order3_t order(3, 3, 3);
+	order3_t order;
 	switch (mode) {
-		case MODE_HEXAHEDRON:
-			break;
-		case MODE_TETRAHEDRON:
+		case MODE_TETRAHEDRON: order = order3_t(out_prec); break;
+		case MODE_HEXAHEDRON: order = order3_t(out_prec, out_prec, out_prec); break;
+
 		case MODE_PRISM:
 			EXIT(ERR_NOT_IMPLEMENTED); break;
 		default:

@@ -151,7 +151,7 @@ struct order2_t {
 		return s;
 	}
 
-	int get_idx() {
+	int get_idx() const {
 		switch (type) {
 			case MODE_TRIANGLE: return (this->type << 10) | this->order;
 			case MODE_QUAD: return (((this->type << 5) | this->y) << 5) | this->x;
@@ -187,7 +187,7 @@ inline order2_t max(order2_t a, order2_t b) {
 // all 1s mean invalid (not set) - see default ctor
 //
 struct order3_t {
-	order3_t() { type = 7; }
+	order3_t() { invalid(); }
 	order3_t(int order) { type = MODE_TETRAHEDRON; this->order = order; }
 	order3_t(int x, int y, int z) { type = MODE_HEXAHEDRON; this->x = x; this->y = y; this->z = z; }
 
@@ -206,7 +206,17 @@ struct order3_t {
 		};
 	};
 
-	bool invalid() { return (type == 7); }
+	bool is_invalid() const { return (type == 7); }
+	void invalid() { type = 7; }
+
+	int get_ord() const {
+		switch (type) {
+			case MODE_TETRAHEDRON:	return order;
+			case MODE_HEXAHEDRON: return std::max(std::max(this->x, this->y), this->z);
+			default: EXIT(ERR_UNKNOWN_MODE); break;
+		}
+		return -1;
+	}
 
 	// Operators
 
@@ -289,7 +299,7 @@ struct order3_t {
 		return false;
 	}
 
-	const char *str() {
+	const char *str() const {
 		static char s[64];
 		switch (type) {
 			case MODE_TETRAHEDRON: sprintf(s, "(%d)", this->order); break;
@@ -299,8 +309,8 @@ struct order3_t {
 		return s;
 	}
 
-	int get_idx() {
-		assert(!invalid());
+	int get_idx() const {
+		assert(!is_invalid());
 		switch (type) {
 			case MODE_TETRAHEDRON: return ((this->type) << 15) | this->order;
 			case MODE_HEXAHEDRON: return (((((this->type << 5) | this->z) << 5) | this->y) << 5) | this->x;
@@ -388,7 +398,19 @@ struct order3_t {
 	}
 };
 
+inline order3_t operator*(const int c, const order3_t &a) {
+	switch (a.type) {
+		case MODE_TETRAHEDRON:	return order3_t(c * a.order);
+		case MODE_HEXAHEDRON: return order3_t(c * a.x, c * a.y, c * a.z);
+		default: EXIT(ERR_UNKNOWN_MODE); break;
+	}
+	return order3_t(-1);
+}
+
 inline order3_t max(order3_t a, order3_t b) {
+	if (a.type == 7) return b;
+	if (b.type == 7) return a;
+
 	assert(a.type == b.type);
 	switch (a.type) {
 		case MODE_TETRAHEDRON: return order3_t(std::max(a.order, b.order));

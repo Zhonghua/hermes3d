@@ -4364,7 +4364,7 @@ QuadStdHex::~QuadStdHex() {
 #endif
 }
 
-void QuadStdHex::calc_table(order3_t order) {
+void QuadStdHex::calc_table(const order3_t &order) {
 	_F_
 #ifdef WITH_HEX
 	assert(order.type == mode);
@@ -4376,7 +4376,7 @@ void QuadStdHex::calc_table(order3_t order) {
 	for (int k = 0, n = 0; k < std_np_1d[i]; k++) {
 		for (int l = 0; l < std_np_1d[j]; l++) {
 			for (int p = 0; p < std_np_1d[o]; p++, n++) {
-				assert(n < np[order.get_idx()]);
+				assert(n < np[idx]);
 				tables[idx][n].x = std_tables_1d[i][k].x;
 				tables[idx][n].y = std_tables_1d[j][l].x;
 				tables[idx][n].z = std_tables_1d[o][p].x;
@@ -4387,7 +4387,7 @@ void QuadStdHex::calc_table(order3_t order) {
 #endif
 }
 
-void QuadStdHex::calc_face_table(int face, order2_t order) {
+void QuadStdHex::calc_face_table(int face, const order2_t &order) {
 	_F_
 #ifdef WITH_HEX
 	int idx = order.get_idx();
@@ -4442,14 +4442,15 @@ void QuadStdHex::calc_face_table(int face, order2_t order) {
 #endif
 }
 
-order3_t QuadStdHex::lower_order_same_accuracy(order3_t ord) {
+order3_t QuadStdHex::lower_order_same_accuracy(const order3_t &order) {
 	_F_
 #ifdef WITH_HEX
-	assert(ord.type == MODE_HEXAHEDRON);
+	assert(order.type == MODE_HEXAHEDRON);
+	order3_t ord = order;
 	int x = (ord.x % 2) ? ord.x-- : ord.x;
 	int y = (ord.y % 2) ? ord.y-- : ord.y;
 	int z = (ord.x % 2) ? ord.z-- : ord.z;
-	return order3_t(x, y, z);
+	return ord;
 #else
 	return order3_t(0, 0, 0);
 #endif

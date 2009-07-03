@@ -158,14 +158,14 @@ class Quad3D {
 public:
 	virtual ~Quad3D() { }
 
-	virtual QuadPt3D *get_points(order3_t order) { CHECK_MODE; return tables[order.get_idx()]; }
-	virtual int get_num_points(order3_t order) { CHECK_MODE; return np[order.get_idx()]; }
+	virtual QuadPt3D *get_points(const order3_t &order) { CHECK_MODE; return tables[order.get_idx()]; }
+	virtual int get_num_points(const order3_t &order) { CHECK_MODE; return np[order.get_idx()]; }
 
-	virtual QuadPt3D *get_edge_points(int edge, order1_t order) { return edge_tables[edge][order]; }
-	int get_edge_num_points(order1_t order) const { return np_edge[order]; }
+	virtual QuadPt3D *get_edge_points(int edge, const order1_t &order) { return edge_tables[edge][order]; }
+	int get_edge_num_points(int edge, const order1_t &order) const { return np_edge[order]; }
 
-	virtual QuadPt3D *get_face_points(int face, order2_t order) { return face_tables[face][order.get_idx()]; }
-	int get_face_num_points(int face, order2_t order) const { return np_face[order.get_idx()]; }
+	virtual QuadPt3D *get_face_points(int face, const order2_t &order) { return face_tables[face][order.get_idx()]; }
+	int get_face_num_points(int face, const order2_t &order) const { return np_face[order.get_idx()]; }
 
 	virtual QuadPt3D *get_vertex_points() { return vertex_table; }
 	int get_vertex_num_points() const { return np_vertex; }

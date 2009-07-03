@@ -46,9 +46,6 @@ protected:
 	virtual void calc_vertex_boundary_projection(Element *elem, int ivertex);
 	virtual void calc_edge_boundary_projection(Element *elem, int iedge);
 	virtual void calc_face_boundary_projection(Element *elem, int iface);
-
-	virtual void update_constraints();
-	void update_constrained_nodes(Word_t fid);
 };
 
 #endif

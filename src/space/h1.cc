@@ -26,8 +26,6 @@
 #include <common/error.h>
 #include <common/callstack.h>
 
-//#define ADD_ASMLIST_THRESHOLD					1e-13
-#define ADD_ASMLIST_THRESHOLD					0
 
 H1Space::H1Space(Mesh *mesh, Shapeset *ss) :
 	Space(mesh, ss)
@@ -272,7 +270,7 @@ void H1Space::calc_edge_boundary_projection(Element *elem, int iedge) {
 void H1Space::calc_face_boundary_projection(Element *elem, int iface) {
 	_F_
 #ifdef COMPLEX
-	assert(0); //not implemented
+	EXIT(ERR_NOT_IMPLEMENTED);
 #else
 	Word_t facet_idx = mesh->get_facet_id(elem, iface);
 	FaceData *fnode = fn_data[facet_idx];
@@ -417,36 +415,4 @@ void H1Space::calc_face_boundary_projection(Element *elem, int iface) {
 	delete [] coef;
 	delete [] proj_mat;
 #endif
-}
-
-// CED stuff ////
-
-void H1Space::update_constrained_nodes(Word_t fid) {
-	_F_
-	Facet *facet = mesh->facets.get(fid);
-	assert(facet != NULL);
-
-	if (facet->type == Facet::OUTER)
-		return;
-
-	if (facet->ractive || facet->lactive) {
-		facet->dump();			// WTF?
-	}
-	else {
-		for (int i = 0; i < 4; i++) {
-			if (facet->sons[i] != INVALID_IDX)
-				update_constrained_nodes(facet->sons[i]);
-		}
-	}
-}
-
-void H1Space::update_constraints() {
-	_F_
-	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
-		Element *e = mesh->elements[idx];
-		for (int face = 0; face < e->get_num_of_faces(); face++) {
-			Word_t fid = mesh->get_facet_id(e, face);
-			update_constrained_nodes(fid);
-		}
-	}
 }

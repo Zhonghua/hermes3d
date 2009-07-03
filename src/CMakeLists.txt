@@ -148,6 +148,12 @@ macro(LIBRARY_SETTINGS BIN)
    	    target_link_libraries(${BIN} ${LAPACK_LIBRARIES})
 	endif(WITH_UMFPACK)
 
+	if(WITH_PARDISO)
+		target_link_libraries(${BIN} ${PARDISO_LIBRARY})
+		target_link_libraries(${BIN} ${BLAS_LIBRARIES})
+		target_link_libraries(${BIN} ${LAPACK_LIBRARIES})
+	endif(WITH_PARDISO)
+
 	if(WITH_HDF5)
 	endif(WITH_HDF5)
 endmacro(LIBRARY_SETTINGS)

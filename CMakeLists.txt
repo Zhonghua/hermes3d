@@ -95,11 +95,12 @@ else(DEBUG)
 endif(DEBUG)
 
 # If using PETSc or UMFPack, we need to enable Fortran support and look for BLAS and LAPACK
-if(WITH_PETSC OR WITH_UMFPACK)
-    enable_language(Fortran)
-    find_package(BLAS REQUIRED)
-    find_package(LAPACK REQUIRED)
-endif(WITH_PETSC OR WITH_UMFPACK)
+if(WITH_PETSC OR WITH_UMFPACK OR WITH_PARDISO)
+	enable_language(Fortran)
+	find_package(BLAS REQUIRED)
+	find_package(LAPACK REQUIRED)
+endif(WITH_PETSC OR WITH_UMFPACK OR WITH_PARDISO)
+
 
 # find necessary packages
 find_package(JUDY REQUIRED)
@@ -115,8 +116,22 @@ if(WITH_UMFPACK)
 endif(WITH_UMFPACK)
 
 if(WITH_PARDISO)
-    find_package(PARDISO REQUIRED)
+	find_package(PARDISO REQUIRED)
 endif(WITH_PARDISO)
+
+# SMP
+if(WITH_OPENMP)
+	find_package(OpenMP REQUIRED)
+	set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS})
+	set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS})
+endif(WITH_OPENMP)
+
+
+# domain decomposition
+
+if(WITH_METIS)
+	find_package(METIS REQUIRED)
+endif(WITH_METIS)
 
 
 if(WITH_HDF5)

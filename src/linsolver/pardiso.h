@@ -18,21 +18,68 @@
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-#ifndef PARDISOSOLVER_H_
-#define PARDISOSOLVER_H_
+#ifndef _PARDISO_SOLVER_H_
+#define _PARDISO_SOLVER_H_
 
 #include "../linsolver.h"
+#include "../matrix.h"
 
-/// Encapsulation of pardiso linear solver
+class PardisoMatrix : public SparseMatrix {
+public:
+	PardisoMatrix();
+	virtual ~PardisoMatrix();
+
+	virtual void pre_add_ij(int row, int col);
+	virtual void alloc();
+	virtual void free();
+	virtual void set_zero();
+	virtual void update(int m, int n, scalar v);
+	virtual void update(int m, int n, scalar **mat, int *rows, int *cols);
+	virtual bool dump(FILE *file, const char *var_name, EMatrixDumpFormat fmt = DF_MATLAB_SPARSE);
+	virtual int get_matrix_size() const;
+
+protected:
+	// PARDISO specific data structures for storing matrix, rhs
+	int *Ap;
+	int *Ai;
+	scalar *Ax;
+
+	static void insert_value(int *Ai, scalar *Ax, int Alen, int idx, scalar value);
+
+	friend class PardisoLinearSolver;
+};
+
+class PardisoVector : public Vector {
+public:
+	PardisoVector();
+	virtual ~PardisoVector();
+
+	virtual void alloc(int ndofs);
+	virtual void free();
+	virtual void set_zero();
+	virtual void update(int idx, scalar y);
+	virtual void update(int n, int *idx, scalar *y);
+	virtual bool dump(FILE *file, const char *var_name, EMatrixDumpFormat fmt = DF_MATLAB_SPARSE);
+
+protected:
+	scalar *v;
+
+	friend class PardisoLinearSolver;
+};
+
+/// Encapsulation of PARDISO linear solver
 ///
 /// @ingroup linearsolvers
 class PardisoLinearSolver : public LinearSolver {
 public:
-	PardisoLinearSolver();
+	PardisoLinearSolver(PardisoMatrix &m, PardisoVector &rhs);
 	virtual ~PardisoLinearSolver();
 
 	virtual bool solve();
+
 protected:
+	PardisoMatrix &m;
+	PardisoVector &rhs;
 };
 
-#endif /*PARDISOSOLVER_H_*/
+#endif /* _PARDISO_SOLVER_H_*/

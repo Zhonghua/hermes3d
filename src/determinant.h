@@ -1,6 +1,7 @@
 // This file is part of Hermes3D
 //
 // Copyright (c) 2007 - 2009 Pavel Kus <pavel.kus@gmail.com>
+// Copyright (c) 2009 David Andrs <dandrs@unr.edu>
 //
 // Hermes3D is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published
@@ -46,6 +47,12 @@ inline double det4(
 	      -a12*det3(a21, a23, a24, a31, a33, a34, a41, a43, a44)
 	      +a13*det3(a21, a22, a24, a31, a32, a34, a41, a42, a44)
 	      -a14*det3(a21, a22, a23, a31, a32, a33, a41, a42, a43);
+}
+
+inline double det(const double3x3 &m) {
+	return
+		m[0][0] * m[1][1] * m[2][2] + m[0][1] * m[1][2] * m[2][0] + m[0][2] * m[1][0] * m[2][1] -
+		m[2][0] * m[1][1] * m[0][2] - m[2][1] * m[1][2] * m[0][0] - m[2][2] * m[1][0] * m[0][1];
 }
 
 #endif // _DETERMINANT_H_

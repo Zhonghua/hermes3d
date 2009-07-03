@@ -1023,6 +1023,8 @@ Space::BaseFaceComponent *Space::merge_baselist(BaseFaceComponent *l1, int n1, B
 ///
 void Space::calc_vertex_vertex_ced(Word_t vtx1, Word_t vtx2) {
 	_F_
+	if (type == Hcurl || type == Hdiv || type == L2) return;
+
 	assert(vtx1 != INVALID_IDX);
 	assert(vtx2 != INVALID_IDX);
 	VertexData *vd[] = { vn_data[vtx1], vn_data[vtx2] };
@@ -1066,6 +1068,8 @@ void Space::calc_vertex_vertex_ced(Word_t vtx1, Word_t vtx2) {
 ///
 void Space::calc_mid_vertex_vertex_ced(Word_t mid, Word_t vtx1, Word_t vtx2, Word_t vtx3, Word_t vtx4) {
 	_F_
+	if (type == Hcurl || type == Hdiv || type == L2) return;
+
 	assert(vtx1 != INVALID_IDX);
 	assert(vtx2 != INVALID_IDX);
 	assert(vtx3 != INVALID_IDX);
@@ -1113,6 +1117,8 @@ void Space::calc_mid_vertex_vertex_ced(Word_t mid, Word_t vtx1, Word_t vtx2, Wor
 
 void Space::calc_vertex_edge_ced(Word_t vtx, Word_t eid, int ori, int part) {
 	_F_
+	if (type == Hcurl || type == Hdiv || type == L2) return;
+
 	PRINTF("calc vertex/edge #%ld\n", vtx);
 
 	PRINTF(" - eid = %ld, part = %d, ori = %d\n", eid, part, ori);
@@ -1213,6 +1219,8 @@ void Space::calc_vertex_edge_ced(Word_t vtx, Word_t eid, int ori, int part) {
 
 void Space::calc_mid_vertex_edge_ced(Word_t vtx, Word_t fmp, Word_t eid, int ori, int part) {
 	_F_
+	if (type == Hcurl || type == Hdiv || type == L2) return;
+
 	PRINTF("calc mid vertex/edge #%ld, [%ld | %ld]\n", vtx, eid, fmp);
 
 	assert(eid != INVALID_IDX);
@@ -1375,6 +1383,8 @@ void Space::calc_mid_vertex_edge_ced(Word_t vtx, Word_t fmp, Word_t eid, int ori
 /// @param ori - the orientation of the constraining facet
 void Space::calc_vertex_face_ced(Word_t vtx, Word_t fid, int ori, int iface, int hpart, int vpart) {
 	_F_
+	if (type == Hcurl || type == Hdiv || type == L2) return;
+
 	PRINTF("calc vertex/face #%ld\n", vtx);
 
 	FaceData *fd = fn_data[fid];
@@ -1434,6 +1444,8 @@ void Space::calc_vertex_face_ced(Word_t vtx, Word_t fid, int ori, int iface, int
 /// @param[in] part - part of the edge
 void Space::calc_edge_edge_ced(Word_t seid, Word_t eid, int ori, int epart, int part) {
 	_F_
+	if (type == Hdiv || type == L2) return;
+
 	PRINTF("calc edge/edge #%ld, #%ld\n", seid, eid);
 
 	assert(eid != INVALID_IDX);
@@ -1511,6 +1523,8 @@ void Space::calc_edge_edge_ced(Word_t seid, Word_t eid, int ori, int epart, int 
 
 void Space::calc_mid_edge_edge_ced(Word_t meid, Word_t eid[], int ori[], int epart, int part) {
 	_F_
+	if (type == Hdiv || type == L2) return;
+
 	PRINTF("calc mid edge/edge #%ld\n", meid);
 
 	assert(eid[0] != INVALID_IDX);
@@ -1576,6 +1590,8 @@ void Space::calc_mid_edge_edge_ced(Word_t meid, Word_t eid[], int ori[], int epa
 /// @param[in] epart - edge part
 void Space::calc_edge_face_ced(Word_t mid_eid, Word_t eid[], Word_t fid, int ori, int iface, int part_ori, int fpart, int epart) {
 	_F_
+	if (type == Hdiv || type == L2) return;
+
 	PRINTF("calc edge/face #%ld\n", mid_eid);
 
 	assert(fid != INVALID_IDX);
@@ -1638,6 +1654,8 @@ void Space::calc_edge_face_ced(Word_t mid_eid, Word_t eid[], Word_t fid, int ori
 /// @param[in] vpart - vertical part
 void Space::calc_face_face_ced(Word_t sfid, Word_t fid, int ori, int hpart, int vpart) {
 	_F_
+	if (type == L2) return;
+
 	PRINTF("calc face/face #%ld\n", sfid);
 
 	FaceData *fd = fn_data[sfid];

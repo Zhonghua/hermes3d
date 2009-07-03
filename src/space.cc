@@ -180,6 +180,7 @@ void Space::set_element_order(Word_t eid, order3_t order) {
 		MEM_CHECK(elm_data[eid]);
 	}
 
+	assert(mesh->elements[eid]->get_mode() == order.type);
 	elm_data[eid]->order = order;
 	seq++;
 }
@@ -197,6 +198,7 @@ void Space::set_uniform_order(order3_t order) {
 	FOR_ALL_ACTIVE_ELEMENTS(eid, mesh) {
 		assert(elm_data.exists(eid));
 		assert(elm_data[eid] != NULL);
+		assert(mesh->elements[eid]->get_mode() == order.type);
 		elm_data[eid]->order = order;
 	}
 	seq++;
@@ -208,6 +210,7 @@ void Space::set_order_recurrent(Word_t eid, order3_t order) {
 	if (e->active) {
 		assert(elm_data.exists(e->id));
 		assert(elm_data[e->id] != NULL);
+		assert(mesh->elements[eid]->get_mode() == order.type);
 		elm_data[e->id]->order = order;
 	}
 	else {

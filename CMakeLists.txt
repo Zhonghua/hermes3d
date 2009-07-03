@@ -27,6 +27,8 @@ set(WITH_TOOLS  NO)
 
 set(WITH_PYTHON NO)
 
+set(DEV_TESTS NO)
+
 # Doxygen related
 set(DOXYGEN_BINARY doxygen)
 set(DOXYGEN_CONFIG_FILE ${PROJECT_SOURCE_DIR}/doc/Doxyfile)

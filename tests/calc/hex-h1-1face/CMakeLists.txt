@@ -1,5 +1,7 @@
 project(hex-h1-1face)
 
+if(DEV_TESTS)
+
 if(EXISTS ${PROJECT_SOURCE_DIR}/CMake.vars)
 	include(CMake.vars)
 endif(EXISTS ${PROJECT_SOURCE_DIR}/CMake.vars)
@@ -27,3 +29,4 @@ configure_file(
 enable_testing()
 add_test(${PROJECT_NAME}-1 ${PROJECT_NAME})
 
+endif(DEV_TESTS)

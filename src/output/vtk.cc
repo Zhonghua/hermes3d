@@ -571,14 +571,18 @@ void VtkOutputEngine::out_bc(Mesh *mesh, const char *name) {
 	// count outer facets
 	int fc = 0;
 	int fc_sz = 0;
-	FOR_ALL_FACETS(idx, mesh) {
-		Facet *facet = mesh->facets[idx];
-		if (facet->type == Facet::OUTER) {
-			fc++;
-			switch (facet->mode) {
-				case MODE_TRIANGLE: fc_sz += Tri::NUM_VERTICES + 1; break;
-				case MODE_QUAD: fc_sz += Quad::NUM_VERTICES + 1; break;
-				default: EXIT(ERR_NOT_IMPLEMENTED); break;
+	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
+		Element *element = mesh->elements[idx];
+		for (int iface = 0; iface < element->get_num_of_faces(); iface++) {
+			Word_t fid = mesh->get_facet_id(element, iface);
+			Facet *facet = mesh->facets[fid];
+			if (facet->type == Facet::OUTER) {
+				fc++;
+				switch (facet->mode) {
+					case MODE_TRIANGLE: fc_sz += Tri::NUM_VERTICES + 1; break;
+					case MODE_QUAD: fc_sz += Quad::NUM_VERTICES + 1; break;
+					default: EXIT(ERR_NOT_IMPLEMENTED); break;
+				}
 			}
 		}
 	}

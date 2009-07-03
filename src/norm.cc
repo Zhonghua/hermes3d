@@ -260,7 +260,7 @@ double hcurl_error(MeshFunction *sln1, MeshFunction *sln2) {
 
 double hcurl_norm(MeshFunction *sln) {
 	_F_
-	return sqrt(calc_norm(norm_fn_hcurl, sln));
+	return calc_norm(norm_fn_hcurl, sln);
 }
 
 // function used to calculate error in L2 norm
@@ -316,5 +316,5 @@ double l2_error_hcurl(MeshFunction *sln1, MeshFunction *sln2) {
 
 double l2_norm_hcurl(MeshFunction *sln) {
 	_F_
-	return sqrt(calc_norm(norm_fn_l2_hcurl, sln));
+	return calc_norm(norm_fn_l2_hcurl, sln);
 }

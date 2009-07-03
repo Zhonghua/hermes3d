@@ -1,6 +1,6 @@
 // This file is part of Hermes3D
 //
-// Copyright (c) 2007 - 2009 David Andrs <dandrs@unr.edu>
+// Copyright (c) 2009 David Andrs <dandrs@unr.edu>
 //
 // Hermes3D is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published
@@ -16,35 +16,29 @@
 // along with Hermes3D; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-#ifndef _PRECALC_H_
-#define _PRECALC_H_
+#ifndef _SHAPEFN_H_
+#define _SHAPEFN_H_
 
 #include "function.h"
 #include "shapeset.h"
 
+// Represents a shape function on a ref. domain
 //
 //
-//
-class PrecalcShapeset : public RealFunction {
+class ShapeFunction : public RealFunction {
 public:
 	/// Constructs a standard precalculated shapeset class.
 	/// @param shapeset [in] Pointer to the shapeset to be precalculated.
-	PrecalcShapeset(Shapeset *shapeset);
+	ShapeFunction(Shapeset *shapeset);
 
-	/// Constructs a slave precalculated shapeset class. The slave instance
-	/// does not hold any precalculated tables. Instead it refers to those
-	/// contained in the master instance. This is used for test functions
-	/// when calling bilinear forms.
-	/// @param master_pss [in] Master precalculated shapeset pointer.
-	PrecalcShapeset(PrecalcShapeset *master_pss);
+	ShapeFunction();
 
 	/// Destructor.
-	virtual ~PrecalcShapeset();
+	virtual ~ShapeFunction();
 
-	virtual void set_quad(Quad3D *quad_3d);
+	void free();
 
-	/// Frees all precalculated tables.
-	virtual void free();
+	ESpaceType get_type() { assert(shapeset != NULL); return shapeset->get_type(); }
 
 	/// Ensures subsequent calls to get_active_element() will be returning 'e'.
 	/// Switches the class to the appropriate mode (triangle, quad).
@@ -62,23 +56,16 @@ public:
 	/// @return Pointer to the shapeset which is being precalculated.
 	Shapeset *get_shapeset() const { return shapeset; }
 
-	///
-	void set_master_transform();
+	void set_shapeset(Shapeset *ss);
 
-	void dump_info(int quad, FILE *file);
+	///
+	void set_transform(ShapeFunction *shfn);
+
+	virtual void precalculate(const int np, const QuadPt3D *pt, int mask);
 
 protected:
 	Shapeset *shapeset;
-
-	void *tables;		/// primary Judy array of shapes
-
-	int index;			/// index of active shape
-
-	PrecalcShapeset *master_pss;
-
-	bool is_slave() const { return master_pss != NULL; }
-
-	virtual void precalculate(qorder_t order, int mask);
+	int index;					/// index of active shape function
 
 	/// Forces a transform without using push_transform() etc.
 	/// Used by the Solution class. <b>For internal use only</b>.

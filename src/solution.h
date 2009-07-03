@@ -21,7 +21,7 @@
 #define _SOLUTION_H_
 
 #include "function.h"
-#include "precalc.h"
+#include "shapefn.h"
 #include "space.h"
 #include "asmlist.h"
 #include "refmap.h"
@@ -111,29 +111,17 @@ public:
 	void enable_transform(bool enable);
 
 	Space *get_space() const { return space; }
-	PrecalcShapeset *get_pss() const { return pss; }
 	scalar *get_solution_vector() const { return vec; }
 
 protected:
 	static const int NUM_ELEMENTS = 4;
 
 	Space *space;
-	PrecalcShapeset *pss;
-	PrecalcShapeset *slave_pss;
 
 	scalar dir_coef;					/// coefficient for dirichlet DOF
 	scalar *vec;
 	bool owner;
 	bool transform;
-
-	AsmList al[NUM_ELEMENTS];        	///< assembly lists for last used elements
-	void *tables[8][NUM_ELEMENTS];   	///< precalculated tables for last used elements
-	Element *elems[8][NUM_ELEMENTS];
-	int cur_elem, oldest[8];
-
-	virtual void precalculate(qorder_t qord, int mask);
-
-	void free_tables();
 };
 
 

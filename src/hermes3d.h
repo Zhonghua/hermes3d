@@ -55,7 +55,7 @@
 
 #include "refdomain.h"
 
-#include "precalc.h"
+#include "shapefn.h"
 
 // shapesets
 #include "shapeset.h"

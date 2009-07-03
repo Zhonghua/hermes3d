@@ -61,27 +61,20 @@ void MeshFunction::set_active_element(Element *e) {
 
 Solution::Solution(Mesh *mesh) : MeshFunction(mesh) {
 	_F_
-	memset(tables, 0, sizeof(tables));
-	memset(elems, 0, sizeof(elems));
-	memset(oldest, 0, sizeof(oldest));
 	dir_coef = 1.0;
 	vec = NULL;
 	owner = false;
 	transform = true;
 	space = NULL;
-	pss = NULL;
-	slave_pss = NULL;
 }
 
 Solution::~Solution() {
 	_F_
 	free();
-	if (slave_pss != NULL) delete slave_pss;
 }
 
 void Solution::free() {
 	_F_
-	free_tables();
 
 	if (owner && vec) {
 		delete[] vec;
@@ -90,23 +83,12 @@ void Solution::free() {
 	}
 }
 
-void Solution::free_tables() {
-	_F_
-	for (int i = 0; i < QUAD_COUNT; i++)
-		for (int j = 0; j < NUM_ELEMENTS; j++)
-			free_sub_tables(&(tables[i][j]));
-}
-
 void Solution::set_space_and_pss(Space *space, PrecalcShapeset *pss) {
 	_F_
 	if (space->get_shapeset() != pss->get_shapeset()) ERROR("'space' and 'pss' must have the same shapesets.");
 
 	this->space = space;
-	this->pss = pss;
 	this->mesh = space->get_mesh();
-	if (slave_pss != NULL) delete slave_pss;
-	slave_pss = new PrecalcShapeset(pss);
-	MEM_CHECK(slave_pss);
 	num_components = pss->num_components;
 }
 
@@ -156,11 +138,6 @@ void Solution::set_active_element(Element *e) {
 
 	assert(space != NULL);
 	space->get_element_assembly_list(e, &(al[cur_elem]));
-	assert(slave_pss != NULL);
-	slave_pss->set_active_element(e);
-
-	sub_tables = &(tables[cur_quad][cur_elem]);
-	update_nodes_ptr();
 
 	order = space->get_element_order(e->id);
 }

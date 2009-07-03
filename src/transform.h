@@ -29,7 +29,7 @@ struct Trf {
 
 
 /// Transformable is a base class for all classes that perform some kind of precalculation of
-/// function values on elements. These classes (PrecalcShapeset, Solution, RefMap) inherit
+/// function values on elements. These classes (ShapeFunction, Solution, RefMap) inherit
 /// from Transformable the ability to transform integration points to the sub-elements
 /// of an element.
 ///
@@ -43,16 +43,16 @@ public:
 	/// Called by the assembling procedure and by other functions. In PrecalcShapeset it
 	/// sets an internal variable that can be later retrieved by get_active_element().
 	/// In Solution it selects the element to retrieve solution values for, etc.
-	/// \param e [in] Element associated with the function being represented by the class.
+	/// @param[in] e - Element associated with the function being represented by the class.
 	virtual void set_active_element(Element *e) { element = e; }
 
-	/// \return The element associated with the function being represented by the class.
+	/// @return The element associated with the function being represented by the class.
 	Element *get_active_element() const { return element; }
 
 	/// Multiplies the current transformation matrix on the right by a transformation to the
 	/// specified son element and pushes it on top of the matrix stack. All integration
 	/// points will then be transformed to this sub-element. This process can be repeated.
-	/// @param[in] son Son element number in the range [0-25] for hexes.
+	/// @param[in] son - Son element number in the range [0-25] for hexes.
 	virtual void push_transform(int son);
 
 	/// Removes the current transformation matrix from the top of the stack. The new top becomes

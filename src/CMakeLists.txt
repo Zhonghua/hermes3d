@@ -17,11 +17,11 @@ set(SRC
 	output/gmsh.cc
 	output/vtk.cc
 	output/graph.cc
-	precalc.cc
 	qsort.cc
 	quadstd.cc
 	refdomain.cc
 	refmap.cc
+	shapefn.cc
 	shapeset.cc
 	shapeset/lobatto.cc
 	shapeset/h1lobattotetra.cc

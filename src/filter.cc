@@ -136,18 +136,11 @@ void Filter::set_active_element(Element *e) {
 		}
 	}
 
-	if (tables[cur_quad] != NULL) free_sub_tables(&(tables[cur_quad]));
-	sub_tables = &(tables[cur_quad]);
-	update_nodes_ptr();
-
 	order.set_maximal();
 }
 
 void Filter::free() {
 	_F_
-	for (int i = 0; i < 4; i++)
-		if (tables[i] != NULL)
-			free_sub_tables(&(tables[i]));
 }
 
 void Filter::push_transform(int son) {

@@ -270,12 +270,6 @@ public:
 	/// @return The current quadrature points.
 	virtual Quad3D *get_quad() const { return quads[cur_quad]; }
 
-	/// See Transformable::push_transform()
-	virtual void push_transform(int son);
-
-	/// See Transformable::pop_transform()
-	virtual void pop_transform();
-
 	/// Frees all precalculated tables.
 	virtual void free() = 0;
 
@@ -295,9 +289,6 @@ protected:
 		TYPE data[0];                           /// value tables
 	};
 
-	void **sub_tables;  /// pointer to the current secondary Judy array
-	void **nodes;       /// pointer to the current tertiary Judy array FIXME
-	void **pp_cur_node;
 	Node *cur_node;
 
 	Quad3D *quads[QUAD_COUNT];	/// list of available quadratures
@@ -308,16 +299,17 @@ protected:
 	int find_quad(Quad3D *quad); /// searches 'quads' for the given quadrature
 	int register_quad(Quad3D *quad); ///
 	virtual Node *new_node(int mask, int num_points); /// allocates a new Node structure
-	void free_nodes(void **nodes);
-	virtual void free_sub_tables(void **sub);
 
-	void update_nodes_ptr() {
-		nodes = (void**) JudyLIns(sub_tables, sub_idx, NULL);
+	void free_cur_node() {
+	    if (cur_node != NULL) {
+	    	total_mem -= cur_node->size;
+	    	::free(cur_node);
+	    	cur_node = NULL;
+	    }
 	}
 
 	void replace_cur_node(Node *node) {
-	    if (cur_node != NULL) { total_mem -= cur_node->size; ::free(cur_node); }
-		*pp_cur_node = node;
+		free_cur_node();
 		cur_node = node;
 	}
 
@@ -325,7 +317,7 @@ protected:
 	void force_transform(uint64 sub_idx, Trf *ctm) {
 		this->sub_idx = sub_idx;
 		this->ctm = ctm;
-		update_nodes_ptr();
+		free_cur_node();
 	}
 
 	static int idx2mask[][COMPONENTS];  /// index to mask table (3 dimensions)

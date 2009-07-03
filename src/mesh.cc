@@ -149,6 +149,7 @@ void Facet::dump() {
 Element::Element() {
 	_F_
 	id = INVALID_IDX;
+	marker = -1;
 	iro_cache = -1;
 
 	active = true;
@@ -159,6 +160,7 @@ Element::Element() {
 Element::Element(const Element &o) {
 	_F_
 	id = o.id;
+	marker = o.marker;
 
 	iro_cache = o.iro_cache;
 	active = o.active;

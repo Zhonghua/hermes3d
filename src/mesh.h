@@ -287,6 +287,7 @@ public:
 
 public:
 	Word_t id;							// id of an element
+	int marker;
 
 	unsigned active:1;					// 0 = not active (refined, has sons); 1 = active (no sons)
 	unsigned used:1;					// 1 is used, otherwise unused

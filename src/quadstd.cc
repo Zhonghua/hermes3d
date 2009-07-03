@@ -4122,7 +4122,7 @@ static int std_np_3d_tet[] = {
 	sizeof(std_pts_18_19_3d_tet) / sizeof(QuadPt3D),
 	sizeof(std_pts_18_19_3d_tet) / sizeof(QuadPt3D),
 	sizeof(std_pts_20_21_3d_tet) / sizeof(QuadPt3D),
-//	sizeof(std_pts_20_21_3d_tet) / sizeof(QuadPt3D),
+	sizeof(std_pts_20_21_3d_tet) / sizeof(QuadPt3D),
 };
 
 

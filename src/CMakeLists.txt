@@ -18,6 +18,7 @@ set(SRC
 	output/vtk.cc
 	output/graph.cc
 	qsort.cc
+	quadcheb.cc
 	quadstd.cc
 	refdomain.cc
 	refmap.cc

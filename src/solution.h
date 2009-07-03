@@ -85,22 +85,22 @@ public:
 	virtual ~Solution();
 	virtual void free();
 
-	void set_space_and_pss(Space *space, PrecalcShapeset *pss);
-	void set_solution_vector(scalar *vec, bool owner, scalar dir_coef = 1.0);
-	void set_zero_vector();
+	void assign(Solution *sln);
+	Solution &operator=(Solution &sln) { assign(&sln); return *this; }
+	void copy(const Solution *sln);
+
+	void set_exact(exact_fn_t exactfn);
+	void set_exact(exact_vec_fn_t exactfn);
+
+	void set_const(scalar c);
+	void set_const(scalar c0, scalar c1, scalar c2);		// three-component const
+
+	void set_zero();
+	void set_zero_3(); // three-component zero
+
+	virtual void set_fe_solution(Space *space, scalar *vec, double dir = 1.0);
 
 	virtual void set_active_element(Element *e);
-
-	void save_solution_vector(char *filename, int ndofs);
-	void load_solution_vector(char *filename, int ndofs);
-
-	/// \return The solution value a the given reference domain point (x, y, z)
-	/// This is a special-purpose function, use the cached versions get_fn_values,
-	/// get_dx_values, etc., instead for normal pusposes.
-	/// \param [in] x,y,z - x, y, z coordinate of the point
-	/// \param [in] which (0..value, 1..dx, 2..dy, 3..dxx, 4..dyy, 5..dxy) -- 0 by default
-	/// \param [in] component - [0..1] solution component, 0 by default
-	scalar get_sln_value(double x, double y, double z, EValueType which = FN, int component = 0);
 
 	/// Enables or disables transformation of the solution derivatives (H1 case)
 	/// or values (vector (Hcurl) case). This means FN_DX_0 and FN_DY_0 or
@@ -108,18 +108,43 @@ public:
 	/// mapping matrix. The default is enabled (true).
 	void enable_transform(bool enable);
 
-	Space *get_space() const { return space; }
-	scalar *get_solution_vector() const { return vec; }
+	virtual scalar get_pt_value(double x, double y, double z, int comp = 0) {
+		QuadPt3D pt(x, y, z, 1.0);
+		precalculate(1, &pt, FN_VAL);
+		return get_fn_values(comp)[0];
+	}
+
+	virtual void precalculate(const int np, const QuadPt3D *pt, int mask);
 
 protected:
 	static const int NUM_ELEMENTS = 4;
 
-	Space *space;
+	enum { UNDEF = -1, SLN, EXACT, CONST } type;
 
-	scalar dir_coef;					/// coefficient for dirichlet DOF
-	scalar *vec;
-	bool owner;
 	bool transform;
+	bool own_mesh;
+
+	scalar *mono_coefs;						/// monomial coefficient array
+	int *elem_coefs[3];						/// array of pointers into mono_coefs
+	order3_t *elem_orders;						/// stored element orders (copied from space)
+	int num_coefs, num_elems;
+	int num_dofs;
+
+	scalar   cnst[3];						/// constant solution
+
+	union {
+		exact_fn_t exact_fn;				/// exact function
+		exact_vec_fn_t exact_vec_fn;		/// exact vector function
+	};
+
+	scalar *dxdydz_coefs[3][4];				/// 3 components, 4 types of values (FN, DX, DY, DZ)
+	scalar *dxdydz_buffer;
+
+	void init_dxdydz_buffer();
+
+	void precalculate_fe(const int np, const QuadPt3D *pt, int mask);
+	void precalculate_exact(const int np, const QuadPt3D *pt, int mask);
+	void precalculate_const(const int np, const QuadPt3D *pt, int mask);
 };
 
 
@@ -130,54 +155,10 @@ protected:
 /// compare an approximate solution with an exact solution (see DiffFilter).
 ///
 /// @ingroup solutions
-class ExactSolution : public MeshFunction {
+class ExactSolution : public Solution {
 public:
-	ExactSolution(Mesh *mesh, exact_fn_t fn);
-	ExactSolution(Mesh *mesh, exact_vec_fn_t fn);
-	virtual ~ExactSolution();
-	virtual void free();
-
-	virtual void set_active_element(Element *e);
-
-protected:
-	union {
-		exact_fn_t fn;
-		exact_vec_fn_t fn_vec;
-	};
-	void *tables[8];
-
-	virtual void precalculate(qorder_t qord, int mask);
+	ExactSolution(Mesh *mesh, exact_fn_t fn) : Solution(mesh) { set_exact(fn); }
+	ExactSolution(Mesh *mesh, exact_vec_fn_t fn) : Solution(mesh) { set_exact(fn); }
 };
-
-
-/// Represents a constant function.
-///
-/// ConstantSolution represents a constant function on a domain (mesh).
-///
-/// @ingroup solutions
-class ConstantSolution : public ExactSolution {
-public:
-	ConstantSolution(Mesh *mesh, scalar c0)
-		: ExactSolution(mesh, (exact_fn_t) NULL) { c[0] = c0; c[1] = 0.0; c[2] = 0.0; }
-	ConstantSolution(Mesh *mesh, scalar c0, scalar c1, scalar c2)
-		: ExactSolution(mesh, (exact_fn_t) NULL) { c[0] = c0; c[1] = c1; c[2] = c2; }
-
-protected:
-	scalar c[COMPONENTS];
-
-	virtual void precalculate(qorder_t qord, int mask);
-};
-
-
-/// Represents the zero function.
-///
-/// ZeroSolution represents the zero function on a domain (mesh).
-///
-/// @ingroup solutions
-class ZeroSolution : public ConstantSolution {
-public:
-	ZeroSolution(Mesh *mesh) : ConstantSolution(mesh, 0.0) { }
-};
-
 
 #endif

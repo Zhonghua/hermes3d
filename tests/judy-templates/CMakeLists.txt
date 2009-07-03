@@ -1,6 +1,8 @@
 project(judy-templates)
 
-include(CMake.vars)
+if(EXISTS ${PROJECT_SOURCE_DIR}/CMake.vars)
+	include(CMake.vars)
+endif(EXISTS ${PROJECT_SOURCE_DIR}/CMake.vars)
 
 add_executable(${PROJECT_NAME}
 	main.cc

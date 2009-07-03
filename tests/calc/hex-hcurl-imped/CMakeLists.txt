@@ -1,8 +1,8 @@
 project(calc-hex-hcurl-imped)
 
-if(EXISTS CMake.vars)
-    include(CMake.vars)
-endif(EXISTS CMake.vars)
+if(EXISTS ${PROJECT_SOURCE_DIR}/CMake.vars)
+	include(CMake.vars)
+endif(EXISTS ${PROJECT_SOURCE_DIR}/CMake.vars)
 
 add_executable(${PROJECT_NAME}
 	hex-hcurl-imped.cc

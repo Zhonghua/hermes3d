@@ -1,6 +1,8 @@
 project(timer)
 
-include(CMake.vars)
+if(EXISTS ${PROJECT_SOURCE_DIR}/CMake.vars)
+	include(CMake.vars)
+endif(EXISTS ${PROJECT_SOURCE_DIR}/CMake.vars)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${hermes3d_SOURCE_DIR})

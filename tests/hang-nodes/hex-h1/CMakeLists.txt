@@ -1,6 +1,8 @@
 project(hnnd-hex-h1)
 
-include(CMake.vars)
+if(EXISTS ${PROJECT_SOURCE_DIR}/CMake.vars)
+	include(CMake.vars)
+endif(EXISTS ${PROJECT_SOURCE_DIR}/CMake.vars)
 
 set(BIN_DIRICHLET ${PROJECT_NAME}-dirichlet)
 set(BIN_NEWTON ${PROJECT_NAME}-newton)

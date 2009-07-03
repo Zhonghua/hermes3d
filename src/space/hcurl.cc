@@ -26,9 +26,6 @@
 #include <common/error.h>
 #include <common/callstack.h>
 
-//#define ADD_ASMLIST_THRESHOLD					1e-13
-#define ADD_ASMLIST_THRESHOLD					0
-
 HcurlSpace::HcurlSpace(Mesh *mesh, Shapeset *ss) :
 		Space(mesh, ss)
 {
@@ -80,9 +77,9 @@ void HcurlSpace::assign_dofs_internal() {
 	BitArray init_edges;
 	BitArray init_faces;
 
+	// edge dofs
 	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
 		Element *e = mesh->elements[idx];
-		// edge dofs
 		for (int iedge = 0; iedge < e->get_num_of_edges(); iedge++) {
 			Word_t eid = mesh->get_edge_id(e, iedge);
 			EdgeData *ed = en_data[eid];
@@ -92,10 +89,7 @@ void HcurlSpace::assign_dofs_internal() {
 				init_edges.set(eid);
 			}
 		}
-	}
 
-	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
-		Element *e = mesh->elements[idx];
 		// face dofs
 		for (int iface = 0; iface < e->get_num_of_faces(); iface++) {
 			Word_t fid = mesh->get_facet_id(e, iface);
@@ -106,9 +100,8 @@ void HcurlSpace::assign_dofs_internal() {
 				init_faces.set(fid);
 			}
 		}
-	}
 
-	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
+		// bubble dofs
 		assign_bubble_dofs(idx);
 	}
 }
@@ -131,9 +124,10 @@ void HcurlSpace::get_boundary_assembly_list(Element *e, int face, AsmList *al) {
 	get_face_assembly_list(e, face, al);
 }
 
-// boundary projections ////
-// we allowe only zero bc (see hcurl.h), so we only check, whether this is true
+// boundary projections
+// We allow only zero BC (see hcurl.h), so we only check whether this is true
 // and fill projection with zeros
+
 void HcurlSpace::calc_vertex_boundary_projection(Element *elem, int ivertex) {
 	_F_
 	Word_t vtx = elem->get_vertex(ivertex);
@@ -146,8 +140,6 @@ void HcurlSpace::calc_vertex_boundary_projection(Element *elem, int ivertex) {
 	}
 }
 
-// we allowe only zero bc (see hcurl.h), so we only check, whether this is true
-// and fill projection with zeros
 void HcurlSpace::calc_edge_boundary_projection(Element *elem, int iedge) {
 	_F_
 	Word_t edge = mesh->get_edge_id(elem, iedge);
@@ -184,7 +176,7 @@ void HcurlSpace::calc_edge_boundary_projection(Element *elem, int iedge) {
 	for (int k = 0; k < np; k++) {
 		// FIXME: use bc_vec_value_callback_by_coord
 		if (bc_value_callback_by_coord(enode->marker, edge_phys_x[k], edge_phys_y[k], edge_phys_z[k]) != 0.)
-			EXIT(ERR_NOT_IMPLEMENTED);  //projection of nonzero bc not implemented, see comment in .h
+			EXIT(ERR_NOT_IMPLEMENTED);  // projection of nonzero BC not implemented, see comment in .h
 	}
 
 	delete [] edge_phys_x;
@@ -195,8 +187,6 @@ void HcurlSpace::calc_edge_boundary_projection(Element *elem, int iedge) {
 	enode->bc_proj = proj_rhs;
 }
 
-// we allowe only zero bc (see hcurl.h), so we only check, whether this is true
-// and fill projection with zeros
 void HcurlSpace::calc_face_boundary_projection(Element *elem, int iface) {
 	_F_
 	Word_t facet_idx = mesh->get_facet_id(elem, iface);
@@ -225,7 +215,7 @@ void HcurlSpace::calc_face_boundary_projection(Element *elem, int iface) {
 	for (int k = 0; k < quad->get_face_num_points(iface, order_rhs); k++) {
 		// FIXME: use bc_vec_value_callback_by_coord
 		if (bc_value_callback_by_coord(fnode->marker, face_phys_x[k], face_phys_y[k], face_phys_z[k]) != 0.)
-			EXIT(ERR_NOT_IMPLEMENTED);  //projection of nonzero bc not implemented, see comment in .h
+			EXIT(ERR_NOT_IMPLEMENTED);  // projection of nonzero BC not implemented, see comment in .h
 	}
 
 	delete [] face_phys_x;

@@ -42,12 +42,12 @@ protected:
 
 	virtual void assign_dofs_internal();
 
-	// for now we do not implement boundary projections of nonzero functions
+	// For now we do not implement boundary projections of nonzero functions
 	// it does not have much physical sense (even though some artifical situations
-	// using nonzero dirichlet bc could be considered) and its implementation is
+	// using nonzero dirichlet BC could be considered) and its implementation is
 	// not as straightforward as in 2D. It is given by the fact, that there are
 	// two tangential components and simple condition E * t = g does not suffice.
-	// So the only essential bc, that we consider so far is "perfect conductor"
+	// So the only essential BC, that we consider so far is "perfect conductor"
 	// condition E * t = 0.
 	virtual void calc_vertex_boundary_projection(Element *elem, int ivertex);
 	virtual void calc_edge_boundary_projection(Element *elem, int iedge);

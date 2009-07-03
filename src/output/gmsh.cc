@@ -678,9 +678,13 @@ void GmshOutputEngine::out_bc(Mesh *mesh, const char *name) {
 	// see Gmsh documentation on details (http://www.geuz.org/gmsh/doc/texinfo/gmsh-full.html)
 
 	int fc = 0; 		// number of outer facets
-	FOR_ALL_FACETS(idx, mesh) {
-		Facet *facet = mesh->facets[idx];
-		if (facet->type == Facet::OUTER) fc++;
+	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
+		Element *element = mesh->elements[idx];
+		for (int iface = 0; iface < element->get_num_of_faces(); iface++) {
+			Word_t fid = mesh->get_facet_id(element, iface);
+			Facet *facet = mesh->facets[fid];
+			if (facet->type == Facet::OUTER) fc++;
+		}
 	}
 
 	// header
@@ -705,7 +709,8 @@ void GmshOutputEngine::out_bc(Mesh *mesh, const char *name) {
 		Element *element = mesh->elements[idx];
 
 		for (int iface = 0; iface < element->get_num_of_faces(); iface++) {
-			Word_t vtcs[element->get_face_num_of_vertices(iface)];
+			int nv = element->get_face_num_of_vertices(iface);
+			Word_t vtcs[nv];
 			element->get_face_vertices(iface, vtcs);
 			Word_t fid = mesh->get_facet_id(element, iface);
 			Facet *facet = mesh->facets[fid];
@@ -735,8 +740,9 @@ void GmshOutputEngine::out_bc(Mesh *mesh, const char *name) {
 	fprintf(this->out_file, "%d\n", fc);
 	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
 		Element *element = mesh->elements[idx];
-
 		for (int iface = 0; iface < element->get_num_of_faces(); iface++) {
+			int nv = element->get_face_num_of_vertices(iface);
+			Word_t vtcs[nv];
 			Word_t fid = mesh->get_facet_id(element, iface);
 			Facet *facet = mesh->facets[fid];
 			if (facet->type == Facet::INNER) continue;

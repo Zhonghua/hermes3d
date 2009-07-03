@@ -48,7 +48,7 @@ public:
 	int add_row(const char *name = NULL, const char *color = "k", const char *line = "-", const char *marker = "");
 	void set_row_style(int row, const char *color = "k", const char *line = "-", const char *marker = "");
 
-	void add_values(int row, double x, double y);
+	void add_value(int row, double x, double y);
 	void add_values(int row, int n, double *x, double *y);
 	void add_values(int row, int n, double2 *xy);
 

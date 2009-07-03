@@ -61,7 +61,7 @@ void Graph::set_row_style(int row, const char *color, const char *line, const ch
 	rows[row].marker = marker;
 }
 
-void Graph::add_values(int row, double x, double y) {
+void Graph::add_value(int row, double x, double y) {
 	_F_
 	if (!rows.size()) add_row(NULL);
 	if (row < 0 || row >= (int) rows.size()) ERROR("Invalid row number.");
@@ -72,13 +72,13 @@ void Graph::add_values(int row, double x, double y) {
 void Graph::add_values(int row, int n, double *x, double *y) {
 	_F_
 	for (int i = 0; i < n; i++)
-		add_values(row, x[i], y[i]);
+		add_value(row, x[i], y[i]);
 }
 
 void Graph::add_values(int row, int n, double2 *xy) {
 	_F_
 	for (int i = 0; i < n; i++)
-		add_values(row, xy[i][0], xy[i][1]);
+		add_value(row, xy[i][0], xy[i][1]);
 }
 
 void Graph::save_numbered(const char *filename, int number) {

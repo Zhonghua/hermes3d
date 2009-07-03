@@ -102,6 +102,15 @@ class MeshLoader;
 #define REFT_QUAD_VERT							0x0002
 #define REFT_QUAD_BOTH							0x0003
 
+// splits
+#define SPLIT_NONE								0x0000
+#define SPLIT_HEX_X								0x0001
+#define SPLIT_HEX_Y								0x0002
+#define SPLIT_HEX_Z								0x0004
+#define SPLIT_HEX_XY							SPLIT_HEX_X | SPLIT_HEX_Y
+#define SPLIT_HEX_XZ							SPLIT_HEX_X | SPLIT_HEX_Z
+#define SPLIT_HEX_YZ							SPLIT_HEX_Y | SPLIT_HEX_Z
+#define SPLIT_HEX_XYZ							SPLIT_HEX_X | SPLIT_HEX_Y | SPLIT_HEX_Z
 
 /// Represents a vertex in 3D
 ///
@@ -697,16 +706,5 @@ protected:
 	void unref_edges(Element *e);
 };
 
-
-/// @brief
-///
-struct FacePos {
-	int marker;			///< face marker
-	int face;			///< element face number (local)
-
-	// for internal use
-	Element *base;
-	Space *space, *space_u, *space_v;
-};
 
 #endif

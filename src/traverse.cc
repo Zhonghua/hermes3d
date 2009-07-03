@@ -268,8 +268,6 @@ static void hex_move_to_son(Box *rnew, Box *rold, int son) {
 		case 24: rnew->z_hi = zmid; break;
 		case 25: rnew->z_lo = zmid; break;
 	}
-
-//	printf(" - rnew: (%llx, %llx) x (%llx, %llx) x (%llx, %llx)\n", rnew->x_lo, rnew->x_hi, rnew->y_lo, rnew->y_hi, rnew->z_lo, rnew->z_hi);
 }
 
 /// @param cr[in]
@@ -281,8 +279,6 @@ static int get_son_idx(Box *cr, Box *r) {
 	uint64 xmid = (r->x_lo + r->x_hi) >> 1;
 	uint64 ymid = (r->y_lo + r->y_hi) >> 1;
 	uint64 zmid = (r->z_lo + r->z_hi) >> 1;
-
-//	printf("get_son_idx\n");
 
 	// 8 sub-elements
 	if (cr->x_hi <= xmid && cr->y_hi <= ymid && cr->z_hi <= zmid) return 0;

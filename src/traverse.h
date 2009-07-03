@@ -19,6 +19,15 @@
 #ifndef _TRAVERSE_H_
 #define _TRAVERSE_H_
 
+struct FacePos {
+	int marker;			///< face marker
+	int face;			///< element face number (local)
+
+	// for internal use
+	Element *base;
+	Space *space, *space_u, *space_v;
+};
+
 struct Mesh;
 class  Transformable;
 struct State;
@@ -29,15 +38,6 @@ struct UniData {
 	Element *e;
 	uint64 idx;
 };
-
-#define SPLIT_NONE								0x0000
-#define SPLIT_HEX_X								0x0001
-#define SPLIT_HEX_Y								0x0002
-#define SPLIT_HEX_Z								0x0004
-#define SPLIT_HEX_XY							SPLIT_HEX_X | SPLIT_HEX_Y
-#define SPLIT_HEX_XZ							SPLIT_HEX_X | SPLIT_HEX_Z
-#define SPLIT_HEX_YZ							SPLIT_HEX_Y | SPLIT_HEX_Z
-#define SPLIT_HEX_XYZ							SPLIT_HEX_X | SPLIT_HEX_Y | SPLIT_HEX_Z
 
 
 /// Traverse is a multi-mesh traversal utility class. Given N meshes sharing the
@@ -79,7 +79,6 @@ private:
 
 	Mesh *unimesh;
 };
-
 
 
 #endif

@@ -38,6 +38,34 @@ T **new_matrix(int m, int n = 0) {
 	return vec;
 }
 
+/// Transposes an m by n matrix. If m != n, the array matrix in fact has to be
+/// a square matrix of the size max(m, n) in order for the transpose to fit inside it.
+template<typename T>
+void transpose(T **matrix, int m, int n) {
+	int min = std::min(m, n);
+	for (int i = 0; i < min; i++)
+		for (int j = i+1; j < min; j++)
+			std::swap(matrix[i][j], matrix[j][i]);
+
+	if (m < n)
+		for (int i = 0; i < m; i++)
+			for (int j = m; j < n; j++)
+				matrix[j][i] = matrix[i][j];
+	else if (n < m)
+		for (int i = n; i < m; i++)
+			for (int j = 0; j < n; j++)
+				matrix[j][i] = matrix[i][j];
+}
+
+
+/// Changes the sign of a matrix
+template<typename T>
+void chsgn(T **matrix, int m, int n) {
+	for (int i = 0; i < m; i++)
+		for (int j = 0; j < n; j++)
+			matrix[i][j] = -matrix[i][j];
+}
+
 /// Given a matrix a[n][n], this routine replaces it by the LU decomposition of a rowwise
 /// permutation of itself. a and n are input. a is output, arranged as in equation (2.3.14) above;
 /// indx[n] is an output vector that records the row permutation effected by the partial

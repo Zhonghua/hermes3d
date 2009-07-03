@@ -30,7 +30,7 @@
 
 // general polynomial function satisfying perfect conductor bc
 // exact solution has zero tangential component on the boundary on the domain (-1, 1)^3
-// DO NOT TEST on other domains than (-1, 1)^3
+// DO NOT TEST on other domains
 
 const double alpha = 1.0;
 
@@ -55,22 +55,39 @@ scalar3 &exact_solution(double x, double y, double z, scalar3 &dx, scalar3 &dy, 
 	return val;
 }
 
-scalar3 &f(double x, double y, double z) {
-	scalar3 curlpart = {
+template<typename S, typename T>
+void exact_sln(S x, S y, S z, T (&val)[3], T (&dx)[3], T (&dy)[3], T (&dz)[3]) {
+	val[0] = (1-y*y) * (1-z*z) * (x*z - 2*x*x*x + 1);
+	val[1] = (1-x*x) * (1-z*z) * (y*y*y + 2*x);
+	val[2] = (1-x*x) * (1-y*y) * (z*z - 3*x*y*z);
+
+	dx[0] = (1 - y*y)*(1 - z*z)*(z - 6*x*x);
+	dx[1] = 2*(1 - x*x)*(1 - z*z) - 2*x*(1 - z*z)*(y*y*y + 2*x);
+	dx[2] = -2*x*(1 - y*y)*(z*z - 3*x*y*z) - 3*y*z*(1 - x*x)*(1 - y*y);
+
+	dy[0] = -2*y*(1 - z*z)*(1 - 2*x*x*x + x*z);
+	dy[1] = 3*y*y*(1 - x*x)*(1 - z*z);
+	dy[2] = -2*y*(1 - x*x)*(z*z - 3*x*y*z) - 3*x*z*(1 - x*x)*(1 - y*y);
+
+	dz[0] = x*(1 - y*y)*(1 - z*z) - 2*z*(1 - y*y)*(1 - 2*x*x*x + x*z);
+	dz[1] = -2*z*(1 - x*x)*(y*y*y + 2*x);
+	dz[2] = (1 - x*x)*(1 - y*y)*(2*z - 3*x*y);
+}
+
+template<typename S, typename T>
+void f(S x, S y, S z, T (&val)[3]) {
+	T ev[3], dx[3], dy[3], dz[3];
+	exact_sln(x, y, z, ev, dx, dy, dz);
+
+	T curlpart[3] = {
 		2*(1 - y*y)*(1 - 2*x*x*x + x*z) + 2*(1 - z*z)*(1 - 2*x*x*x + x*z) - 6*x*y*y*(1 - z*z) - 3*y*(1 - x*x)*(1 - y*y) - 2*x*(1 - y*y)*(2*z - 3*x*y) + 4*x*z*(1 - y*y),
 		2*(1 - x*x)*(y*y*y + 2*x) + 2*(1 - z*z)*(y*y*y + 2*x) + 8*x*(1 - z*z) - 3*x*(1 - x*x)*(1 - y*y) - 2*y*(1 - x*x)*(2*z - 3*x*y) - 2*y*(1 - z*z)*(z - 6*x*x),
 		(1 - y*y)*(1 - z*z) + 2*(1 - x*x)*(z*z - 3*x*y*z) + 2*(1 - y*y)*(z*z - 3*x*y*z) - 6*z*y*y*(1 - x*x) - 2*z*(1 - y*y)*(z - 6*x*x) - 12*x*y*z*(1 - x*x) - 12*x*y*z*(1 - y*y)
 	};
 
-	scalar3 dx, dy, dz;
-	scalar3 &ev = exact_solution(x, y, z, dx, dy, dz);
-
-	static scalar3 val;
 	val[0] = curlpart[0] - alpha * ev[0];
 	val[1] = curlpart[1] - alpha * ev[1];
 	val[2] = curlpart[2] - alpha * ev[2];
-
-	return val;
 }
 
 EBCType bc_types(int marker) {
@@ -79,12 +96,16 @@ EBCType bc_types(int marker) {
 
 // definition of the forms
 
-scalar bilinear_form(RealFunction *fu, RealFunction *fv, RefMap *ru, RefMap *rv) {
-	return hcurl_int_curl_u_curl_v(fu, fv, ru, rv) - alpha * hcurl_int_u_v(fu, fv, ru, rv);
+template<typename f_t, typename res_t>
+res_t bilinear_form(int n, double *wt, fn_t<f_t> *u, fn_t<f_t> *v, geom_t<f_t> *e, user_data_t<res_t> *data) {
+	return
+		hcurl_int_curl_u_curl_v<f_t, res_t>(n, wt, u, v, e) -
+		alpha * hcurl_int_u_v<f_t, res_t>(n, wt, u, v, e);
 }
 
-scalar linear_form(RealFunction *fv, RefMap *rv) {
-	return hcurl_int_F_v(f, fv, rv);
+template<typename f_t, typename res_t>
+res_t linear_form(int n, double *wt, fn_t<f_t> *u, geom_t<f_t> *e, user_data_t<res_t> *data) {
+	return hcurl_int_F_v<f_t, res_t>(n, wt, f<f_t, res_t>, u, e);
 }
 
 // main ///////////////////////////////////////////////////////////////////////////////////////////
@@ -96,17 +117,12 @@ int main(int argc, char **args) {
 	PetscInitialize(&argc, &args, (char *) PETSC_NULL, PETSC_NULL);
 #endif
 
-	TRACE_START("trace.txt");
-	DEBUG_OUTPUT_ON;
-	SET_VERBOSE_LEVEL(0);
-
 	if (argc < 3) {
 		ERROR("Not enough parameters");
 		return ERR_NOT_ENOUGH_PARAMS;
 	}
 
 	HcurlShapesetLobattoHex shapeset;
-	PrecalcShapeset pss(&shapeset);
 
 	printf("* Loading mesh '%s'\n", args[1]);
 	Mesh mesh;
@@ -136,27 +152,26 @@ int main(int argc, char **args) {
 	UMFPackVector rhs;
 	UMFPackLinearSolver solver(mat, rhs);
 #elif defined WITH_PARDISO
-	PardisoLinearSolver solver;
+	PardisoMatrix mat;
+	PardisoVector rhs;
+	PardisoLinearSolver solver(mat, rhs);
 #elif defined WITH_PETSC
 	PetscMatrix mat;
 	PetscVector rhs;
 	PetscLinearSolver solver(mat, rhs);
 #endif
 
-	Discretization d;
-	d.set_num_equations(1);
-	d.set_spaces(1, &space);
-	d.set_pss(1, &pss);
+	WeakForm wf(1);
+	wf.add_biform(0, 0, FORM_CB(bilinear_form), SYM);
+	wf.add_liform(0, FORM_CB(linear_form));
 
-	d.set_bilinear_form(0, 0, bilinear_form);
-	d.set_linear_form(0, linear_form);
+	LinProblem lp(&wf);
+	lp.set_spaces(1, &space);
 
 	// assemble stiffness matrix
-	d.create(&mat, &rhs);
-
 	Timer assemble_timer("Assembling stiffness matrix");
 	assemble_timer.start();
-	d.assemble(&mat, &rhs);
+	lp.assemble(&mat, &rhs);
 	assemble_timer.stop();
 
 	// solve the stiffness matrix
@@ -165,16 +180,18 @@ int main(int argc, char **args) {
 	bool solved = solver.solve();
 	solve_timer.stop();
 
+//	mat.dump(stdout, "a");
+//	rhs.dump(stdout, "b");
+
 	if (solved) {
 		Solution sln(&mesh);
-		sln.set_space_and_pss(&space, &pss);
-		sln.set_solution_vector(solver.get_solution(), false);
+		sln.set_fe_solution(&space, solver.get_solution());
 
 		printf("* Solution:\n");
-		scalar *s = sln.get_solution_vector();
-		for (int i = 1; i <= ndofs; i++) {
-			printf(" x[% 3d] = " SCALAR_FMT "\n", i, SCALAR(s[i]));
-		}
+//		scalar *s = sln.get_solution_vector();
+//		for (int i = 1; i <= ndofs; i++) {
+//			printf(" x[% 3d] = " SCALAR_FMT "\n", i, SCALAR(s[i]));
+//		}
 
 		// output the measured values
 		printf("%s: %s (%lf secs)\n", assemble_timer.get_name(), assemble_timer.get_human_time(), assemble_timer.get_seconds());
@@ -189,8 +206,8 @@ int main(int argc, char **args) {
 
 		double l2_sln_norm = l2_norm_hcurl(&sln);
 		double l2_err_norm = l2_error_hcurl(&sln, &ex_sln);
-		printf(" - L2 solution norm:   % le\n", l2_sln_norm);
-		printf(" - L2 error norm:      % le\n", l2_err_norm);
+		printf(" - L2 solution norm:      % le\n", l2_sln_norm);
+		printf(" - L2 error norm:         % le\n", l2_err_norm);
 
 		if (hcurl_err_norm > EPS || l2_err_norm > EPS) {
 			// calculated solution is not enough precise
@@ -198,7 +215,7 @@ int main(int argc, char **args) {
 		}
 
 
-#ifdef OUTPUT_DIR
+#if defined OUTPUT_DIR
 		// output
 		printf("starting output\n");
 		const char *of_name = OUTPUT_DIR "/solution.vtk";
@@ -260,8 +277,5 @@ int main(int argc, char **args) {
 	PetscFinalize();
 #endif
 
-	TRACE_END;
-
 	return res;
 }
-

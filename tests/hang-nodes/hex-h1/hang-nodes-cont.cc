@@ -33,41 +33,48 @@
 #include <common/error.h>
 
 #define BEGIN_BLOCK						{
-#define END_BLOCK							}
+#define END_BLOCK						}
 
 //#define DIRICHLET
 //#define NEWTON
 
-#define X2_Y2_Z2
+//#define X2_Y2_Z2
+//#define X3_Y3_Z3
 //#define XM_YN_ZO
-//#define XM_YN_ZO_2
+#define XM_YN_ZO_2
 
 int m = 2, n = 2, o = 2;
 
-double fnc(double x, double y, double z) {
+template<typename S, typename T>
+T fnc(S x, S y, S z) {
 #ifdef XM_YN_ZO
 	return pow(x, m) * pow(y, n) * pow(z, o) + pow(x, 2) * pow(y, 3) - pow(x, 3) * z + pow(z, 4);
 #elif defined XM_YN_ZO_2
 	return pow(x, m) * pow(y, n) * pow(z, o) + pow(x, 2) * pow(y, 3) - pow(x, 2) * z + pow(z, 4);
 #elif defined X2_Y2_Z2
 	return x*x + y*y + z*z;
+#elif defined X3_Y3_Z3
+	return x*x*x + y*y*y + z*z*z;
 #endif
 }
 
-double dfnc(double x, double y, double z) {
+template<typename S, typename T>
+T dfnc(S x, S y, S z) {
 #ifdef XM_YN_ZO
-	double ddxx = m * (m - 1) * pow(x, m - 2) * pow(y, n) * pow(z, o) + 2 * pow(y, 3) - 6 * x * z;
-	double ddyy = n * (n - 1) * pow(x, m) * pow(y, n - 2) * pow(z, o) + 6 * pow(x, 2) * y;
-	double ddzz = o * (o - 1) * pow(x, m) * pow(y, n) * pow(z, o - 2) + 12 * pow(z, 2);
+	T ddxx = m * (m - 1) * pow(x, m - 2) * pow(y, n) * pow(z, o) + 2 * pow(y, 3) - 6 * x * z;
+	T ddyy = n * (n - 1) * pow(x, m) * pow(y, n - 2) * pow(z, o) + 6 * pow(x, 2) * y;
+	T ddzz = o * (o - 1) * pow(x, m) * pow(y, n) * pow(z, o - 2) + 12 * pow(z, 2);
 	return -(ddxx + ddyy + ddzz);
 
 #elif defined XM_YN_ZO_2
-	double ddxx = m*(m-1) * pow(x, m-2) * pow(y, n) * pow(z, o) + 2 * pow(y, 3) - 2 * z;
-	double ddyy = n*(n-1) * pow(x, m) * pow(y, n-2) * pow(z, o) + 6 * pow(x, 2) * y;
-	double ddzz = o*(o-1) * pow(x, m) * pow(y, n) * pow(z, o-2) + 12 * pow(z, 2);
+	T ddxx = m*(m-1) * pow(x, m-2) * pow(y, n) * pow(z, o) + 2 * pow(y, 3) - 2 * z;
+	T ddyy = n*(n-1) * pow(x, m) * pow(y, n-2) * pow(z, o) + 6 * pow(x, 2) * y;
+	T ddzz = o*(o-1) * pow(x, m) * pow(y, n) * pow(z, o-2) + 12 * pow(z, 2);
 	return -(ddxx + ddyy + ddzz);
 #elif defined X2_Y2_Z2
 	return -6.0;
+#elif defined X3_Y3_Z3
+	return -6.0 * x - 6.0 * y - 6.0 * z;
 #endif
 }
 
@@ -85,9 +92,13 @@ double exact_solution(double x, double y, double z, double &dx, double &dy, doub
 	dx = 2 * x;
 	dy = 2 * y;
 	dz = 2 * z;
+#elif defined X3_Y3_Z3
+	dx = 3 * x*x;
+	dy = 3 * y*y;
+	dz = 3 * z*z;
 #endif
 
-	return fnc(x, y, z);
+	return fnc<double, double>(x, y, z);
 }
 
 //
@@ -102,52 +113,58 @@ EBCType bc_types(int marker) {
 
 double bc_values(int marker, double x, double y, double z) {
 #ifdef DIRICHLET
-	return fnc(x, y, z);
-#elif defined NEWTON
-	switch (marker) {
-#ifdef XM_YN_ZO
-		case 1: return -(m * pow(x, m - 1) * pow(y, n) * pow(z, o) + 2 * x * pow(y, 3) - 3 * pow(x, 2) * z) + fnc(x, y, z);
-		case 2: return   m * pow(x, m - 1) * pow(y, n) * pow(z, o) + 2 * x * pow(y, 3) - 3 * pow(x, 2) * z + fnc(x, y, z);
-		case 3: return -(n * pow(x, m) * pow(y, n - 1) * pow(z, o) + 3 * pow(x, 2) * pow(y, 2)) + fnc(x, y, z);
-		case 4: return   n * pow(x, m) * pow(y, n - 1) * pow(z, o) + 3 * pow(x, 2) * pow(y, 2) + fnc(x, y, z);
-		case 5: return -(o * pow(x, m) * pow(y, n) * pow(z, o - 1) - pow(x, 3) + 4 * pow(z, 3)) + fnc(x, y, z);
-		case 6: return   o * pow(x, m) * pow(y, n) * pow(z, o - 1) - pow(x, 3) + 4 * pow(z, 3) + fnc(x, y, z);
-		default: EXIT(ERR_FACE_INDEX_OUT_OF_RANGE); return 0.0;
-#elif defined XM_YN_ZO_2
-		case 1: return -(m * pow(x, m-1) * pow(y, n) * pow(z, o) + 2 * x * pow(y, 3) - 2 * x * z) + fnc(x, y, z);
-		case 2: return   m * pow(x, m-1) * pow(y, n) * pow(z, o) + 2 * x * pow(y, 3) - 2 * x * z + fnc(x, y, z);
-		case 3: return -(n * pow(x, m) * pow(y, n-1) * pow(z, o) + 3 * pow(x, 2) * pow(y, 2)) + fnc(x, y, z);
-		case 4: return   n * pow(x, m) * pow(y, n-1) * pow(z, o) + 3 * pow(x, 2) * pow(y, 2) + fnc(x, y, z);
-		case 5: return -(o * pow(x, m) * pow(y, n) * pow(z, o-1) - pow(x, 2) + 4 * pow(z, 3)) + fnc(x, y, z);
-		case 6: return   o * pow(x, m) * pow(y, n) * pow(z, o-1) - pow(x, 2) + 4 * pow(z, 3) + fnc(x, y, z);
-		default: EXIT(ERR_FACE_INDEX_OUT_OF_RANGE); return 0.0;
-#elif defined X2_Y2_Z2
-		case 1: return -(2*x) + fnc(x, y, z);
-		case 2: return  (2*x) + fnc(x, y, z);
-		case 3: return -(2*y) + fnc(x, y, z);
-		case 4: return  (2*y) + fnc(x, y, z);
-		case 5: return -(2*z) + fnc(x, y, z);
-		case 6: return  (2*z) + fnc(x, y, z);
-		default: EXIT(ERR_FACE_INDEX_OUT_OF_RANGE); return 0.0;
+	return fnc<double, scalar>(x, y, z);
 #endif
+}
+
+template<typename f_t, typename res_t>
+res_t bilinear_form(int np, double *jwt, fn_t<f_t> *fu, fn_t<f_t> *fv, geom_t<f_t> *e, user_data_t<res_t> *ud) {
+	return int_grad_u_grad_v<f_t, res_t>(np, jwt, fu, fv, e);
+}
+
+template<typename f_t, typename res_t>
+res_t bilinear_form_surf(int np, double *jwt, fn_t<f_t> *fu, fn_t<f_t> *fv, geom_t<f_t> *e, user_data_t<res_t> *ud) {
+	return int_u_v<f_t, res_t>(np, jwt, fu, fv, e);
+}
+
+template<typename f_t, typename res_t>
+res_t linear_form(int np, double *jwt, fn_t<f_t> *fv, geom_t<f_t> *e, user_data_t<res_t> *ud) {
+	return int_F_v<f_t, res_t>(np, jwt, dfnc, fv, e);
+}
+
+template<typename f_t, typename res_t>
+res_t linear_form_surf(int np, double *jwt, fn_t<f_t> *v, geom_t<f_t> *e, user_data_t<res_t> *ud) {
+	res_t result = 0;
+#ifdef XM_YN_ZO
+	for (int i = 0; i < np; i++) {
+		res_t dx = m * pow(e->x[i], m - 1) * pow(e->y[i], n) * pow(e->z[i], o) + 2 * e->x[i] * pow(e->y[i], 3) - 3 * pow(e->x[i], 2) * e->z[i];
+		res_t dy = n * pow(e->x[i], m) * pow(e->y[i], n - 1) * pow(e->z[i], o) + 3 * pow(e->x[i], 2) * pow(e->y[i], 2);
+		res_t dz = o * pow(e->x[i], m) * pow(e->y[i], n) * pow(e->z[i], o - 1) - pow(e->x[i], 3) + 4 * pow(e->z[i], 3);
+		result += jwt[i] * (v->fn[i] * (dx * e->nx[i] + dy * e->ny[i] + dz * e->nz[i] + fnc<f_t, res_t>(e->x[i], e->y[i], e->z[i])));
+	}
+#elif defined XM_YN_ZO_2
+	for (int i = 0; i < np; i++) {
+		res_t dx = m * pow(e->x[i], m-1) * pow(e->y[i], n) * pow(e->z[i], o) + 2 * e->x[i] * pow(e->y[i], 3) - 2 * e->x[i] * e->z[i];
+		res_t dy = n * pow(e->x[i], m) * pow(e->y[i], n-1) * pow(e->z[i], o) + 3 * pow(e->x[i], 2) * pow(e->y[i], 2);
+		res_t dz = o * pow(e->x[i], m) * pow(e->y[i], n) * pow(e->z[i], o-1) - pow(e->x[i], 2) + 4 * pow(e->z[i], 3);
+		result += jwt[i] * (v->fn[i] * (dx * e->nx[i] + dy * e->ny[i] + dz * e->nz[i] + fnc<f_t, res_t>(e->x[i], e->y[i], e->z[i])));
+	}
+#elif defined X2_Y2_Z2
+	for (int i = 0; i < np; i++) {
+		res_t dx = 2 * e->x[i];
+		res_t dy = 2 * e->y[i];
+		res_t dz = 2 * e->z[i];
+		result += jwt[i] * (v->fn[i] * (dx * e->nx[i] + dy * e->ny[i] + dz * e->nz[i] + fnc<f_t, res_t>(e->x[i], e->y[i], e->z[i])));
+	}
+#elif defined X3_Y3_Z3
+	for (int i = 0; i < np; i++) {
+		res_t dx = 3 * e->x[i] * e->x[i];
+		res_t dy = 3 * e->y[i] * e->y[i];
+		res_t dz = 3 * e->z[i] * e->z[i];
+		result += jwt[i] * (v->fn[i] * (dx * e->nx[i] + dy * e->ny[i] + dz * e->nz[i] + fnc<f_t, res_t>(e->x[i], e->y[i], e->z[i])));
 	}
 #endif
-}
-
-scalar bilinear_form(RealFunction *fu, RealFunction *fv, RefMap *ru, RefMap *rv) {
-	return int_grad_u_grad_v(fu, fv, ru, rv);
-}
-
-scalar bilinear_form_surf(RealFunction *fu, RealFunction *fv, RefMap *ru, RefMap *rv, FacePos *fp) {
-	return surf_int_u_v(fu, fv, ru, rv, fp);
-}
-
-scalar linear_form(RealFunction *fv, RefMap *rv) {
-	return int_F_v(dfnc, fv, rv);
-}
-
-scalar linear_form_surf(RealFunction *fv, RefMap *rv, FacePos *fp) {
-	return surf_int_G_v(fv, rv, fp);
+	return result;
 }
 
 // helpers ////////////////////////////////////////////////////////////////////////////////////////
@@ -316,6 +333,7 @@ bool equal(Point *pt1, Point *pt2) {
 // main ///////////////////////////////////////////////////////////////////////////////////////////
 
 int main(int argc, char **args) {
+	_F_
 	int res = ERR_SUCCESS;
 
 
@@ -366,7 +384,6 @@ int main(int argc, char **args) {
 #endif
 
 	H1ShapesetLobattoHex shapeset;
-	PrecalcShapeset pss(&shapeset);
 //	shapeset.preload_products();
 
 	printf("* Setting the space up\n");
@@ -375,14 +392,15 @@ int main(int argc, char **args) {
 	space.set_bc_values(bc_values);
 
 #ifdef XM_YN_ZO
-	int dir_x = 4, dir_y = 4, dir_z = 4;
+	order3_t o(3, 3, 4);
 #elif defined XM_YN_ZO_2
-	int dir_x = 2, dir_y = 3, dir_z = 4;
+	order3_t o(2, 3, 4);
 #elif defined X2_Y2_Z2
-	int dir_x = 2, dir_y = 2, dir_z = 2;
+	order3_t o(2, 2, 2);
+#elif defined X3_Y3_Z3
+	order3_t o(3, 3, 3);
 #endif
-	order3_t o(dir_x, dir_y, dir_z);
-	printf("  - Setting uniform order to (%d, %d, %d)\n", dir_x, dir_y, dir_z);
+	printf("  - Setting uniform order to (%d, %d, %d)\n", o.x, o.y, o.z);
 	space.set_uniform_order(o);
 
 	int ndofs = space.assign_dofs();
@@ -402,21 +420,22 @@ int main(int argc, char **args) {
 	PetscLinearSolver solver(mat, rhs);
 #endif
 
-	Discretization d;
-	d.set_num_equations(1);
-	d.set_spaces(1, &space);
-	d.set_pss(1, &pss);
+	WeakForm wf(1);
 #ifdef DIRICHLET
-	d.set_bilinear_form(0, 0, bilinear_form);
-	d.set_linear_form(0, linear_form);
+	wf.add_biform(0, 0, bilinear_form<double, scalar>, bilinear_form<ord_t, ord_t>, SYM);
+	wf.add_liform(0, linear_form<double, scalar>, linear_form<ord_t, ord_t>);
 #elif defined NEWTON
-	d.set_bilinear_form(0, 0, bilinear_form, NULL, bilinear_form_surf);
-	d.set_linear_form(0, linear_form, linear_form_surf);
+	wf.add_biform(0, 0, bilinear_form<double, scalar>, bilinear_form<ord_t, ord_t>, SYM);
+	wf.add_biform_surf(0, 0, bilinear_form_surf<double, scalar>, bilinear_form_surf<ord_t, ord_t>);
+	wf.add_liform(0, linear_form<double, scalar>, linear_form<ord_t, ord_t>);
+	wf.add_liform_surf(0, linear_form_surf<double, scalar>, linear_form_surf<ord_t, ord_t>);
 #endif
 
 	// assemble stiffness matrix
-	d.create(&mat, &rhs);
-	d.assemble(&mat, &rhs);
+	LinProblem lp(&wf);
+	lp.set_spaces(1, &space);
+
+	lp.assemble(&mat, &rhs);
 
 #ifdef OUTPUT_DIR
 	{
@@ -439,11 +458,10 @@ int main(int argc, char **args) {
 		if (!solved) throw ERR_FAILURE;
 
 		Solution sln(&mesh);
-		sln.set_space_and_pss(&space, &pss);
-		sln.set_solution_vector(solver.get_solution(), false);
+		sln.set_fe_solution(&space, solver.get_solution());
 
 		{
-			double *s = sln.get_solution_vector();
+			double *s = solver.get_solution();
 			for (int i = 0; i <= ndofs; i++)
 				printf("x[% 3d] = % lf\n", i, s[i]);
 		}
@@ -491,15 +509,18 @@ int main(int argc, char **args) {
 			FOR_ALL_ACTIVE_ELEMENTS(idx, &mesh) {
 				Element *e = mesh.elements[idx];
 				ref_map.set_active_element(e);
-				ref_map.set_quad(&my_quad);
+//				ref_map.set_quad(&my_quad);
 				for (int iface = 0; iface < Hex::NUM_FACES; iface++) {
 					Word_t fac_idx = mesh.get_facet_id(e, iface);
 
 					QuadPt3D *quad_pts = my_quad.get_face_points(iface, order);
 					int np = my_quad.get_face_num_points(iface, order);
-					double *phys_x = ref_map.get_face_phys_x(iface, order);
-					double *phys_y = ref_map.get_face_phys_y(iface, order);
-					double *phys_z = ref_map.get_face_phys_z(iface, order);
+//					double *phys_x = ref_map.get_face_phys_x(iface, order);
+//					double *phys_y = ref_map.get_face_phys_y(iface, order);
+//					double *phys_z = ref_map.get_face_phys_z(iface, order);
+					double *phys_x = ref_map.get_phys_x(np, quad_pts);
+					double *phys_y = ref_map.get_phys_y(np, quad_pts);
+					double *phys_z = ref_map.get_phys_z(np, quad_pts);
 
 					// for each face and each integration point store reference and physical coordinates
 					for (int pt = 0; pt < np; pt++) {
@@ -547,29 +568,31 @@ int main(int argc, char **args) {
 
 
 		// loop over all basis functions
-		for (int dof = 0; dof <= ndofs; dof++) {
-			printf("processing dof %d...\n", dof);
+		for (int dof = 0; dof < ndofs; dof++) {
+			printf("processing dof %d...", dof); fflush(stdout);
 
 			// prepare solution correspondig to basis function with dof dof
-			double sln_vector[ndofs + 1];
-			memset(sln_vector, 0, (ndofs + 1) * sizeof(double));
+			double sln_vector[ndofs];
+			memset(sln_vector, 0, ndofs * sizeof(double));
 			sln_vector[dof] = 1.0;
-			sln.set_solution_vector(sln_vector, false);
+			sln.set_fe_solution(&space, sln_vector);
 
 			double max_difference = 0.;
 			double max_pt_x, max_pt_y, max_pt_z, max_val_1, max_val_2;
 			Word_t max_elm_1, max_elm_2;
 
 			// loop over all pairs of points, that correspond to one point in the physical domain
-			for(int pair = 0; pair < num_pairs; pair++) {
+			for (int pair = 0; pair < num_pairs; pair++) {
 				int i = pairs[pair];
 				Element *e1 = mesh.elements[points[i]->elm_idx];
 				sln.set_active_element(e1);
-				double val1 = sln.get_sln_value(points[i]->ref_x, points[i]->ref_y, points[i]->ref_z, FN, 0);
+				// TODO: improve me!
+				double val1 = sln.get_pt_value(points[i]->ref_x, points[i]->ref_y, points[i]->ref_z);
 
 				Element *e2 = mesh.elements[points[i + 1]->elm_idx];
 				sln.set_active_element(e2);
-				double val2 = sln.get_sln_value(points[i + 1]->ref_x, points[i + 1]->ref_y, points[i + 1]->ref_z, FN, 0);
+				// TODO: improve me!
+				double val2 = sln.get_pt_value(points[i + 1]->ref_x, points[i + 1]->ref_y, points[i + 1]->ref_z);
 
 				//value in this point should be the same, no matter from which element we go
 				double difference = fabs(val1 - val2);
@@ -586,15 +609,19 @@ int main(int argc, char **args) {
 			}
 
 			if (max_difference > TOLERANCE) {
-				printf("base fn %d NOT continuous between elements %ld and %ld @ (% lf, % lf, % lf), max difference %g (%.15g <-> %.15g)\n",
+				printf("failed\nbase fn %d NOT continuous between elements %ld and %ld @ (% lf, % lf, % lf), max difference %g (%.15g <-> %.15g)\n",
 						 dof, max_elm_1, max_elm_2 , max_pt_x, max_pt_y, max_pt_z, max_difference, max_val_1, max_val_2);
 				res = ERR_FAILURE;
+			}
+			else {
+				printf("ok\n");
 			}
 
 		}
 
-		delete [] pairs;
+		for (int i = 0; i < num_points; i++) delete points[i];
 		delete [] points;
+		delete [] pairs;
 
 		printf("continuity tested in %d points and %d inner faces with at least one active adjacent element were not tested\n", num_pairs, nonchecked_faces);
 #endif

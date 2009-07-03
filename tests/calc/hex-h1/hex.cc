@@ -29,6 +29,7 @@
 #define l0(x) ((1.0 - (x)) * 0.5)
 #define l1(x) ((1.0 + (x)) * 0.5)
 
+
 // error should be smaller than this epsilon
 #define EPS								10e-10F
 
@@ -47,46 +48,45 @@ EBCType bc_types(int marker) {
 	return BC_ESSENTIAL;
 }
 
-scalar bilinear_form(RealFunction *fu, RealFunction *fv, RefMap *ru, RefMap *rv) {
-	return int_grad_u_grad_v(fu, fv, ru, rv);
+template<typename f_t, typename res_t>
+res_t bilinear_form(int n, double *wt, fn_t<f_t> *u, fn_t<f_t> *v, geom_t<f_t> *e, user_data_t<res_t> *data) {
+	return int_grad_u_grad_v<f_t, res_t>(n, wt, u, v, e);
 }
 
-double f(double x, double y, double z) {
+template<typename T>
+T f(T x, T y, T z) {
 	return
 		0.5 * l0(y) * l1(y) * l0(z) * l1(z) +
 		0.5 * l0(x) * l1(x) * l0(z) * l1(z) +
 		0.5 * l0(x) * l1(x) * l0(y) * l1(y);
 }
 
-scalar linear_form(RealFunction *fv, RefMap *rv) {
-	return int_F_v(f, fv, rv);
+
+template<typename f_t, typename res_t>
+res_t linear_form(int n, double *wt, fn_t<f_t> *u, geom_t<f_t> *e, user_data_t<res_t> *data) {
+	return int_F_v<f_t, res_t>(n, wt, f, u, e);
 }
 
 // main ///////////////////////////////////////////////////////////////////////////////////////////
 
 int main(int argc, char **args) {
+	_F_
+
 	int res = ERR_SUCCESS;
 
 #ifdef WITH_PETSC
 	PetscInitialize(&argc, &args, (char *) PETSC_NULL, PETSC_NULL);
 #endif
 
-	TRACE_START("trace.txt");
-	DEBUG_OUTPUT_ON;
-	SET_VERBOSE_LEVEL(0);
-
 	if (argc < 3) {
 		ERROR("Not enough parameters");
 		return ERR_NOT_ENOUGH_PARAMS;
 	}
 
-	H1ShapesetLobattoHex shapeset;
-	PrecalcShapeset pss(&shapeset);
-
 	printf("* Loading mesh '%s'\n", args[1]);
 	Mesh mesh;
-	Mesh3DReader mesh_loader;
-	if (!mesh_loader.load(args[1], &mesh)) {
+	Mesh3DReader mloader;
+	if (!mloader.load(args[1], &mesh)) {
 		fprintf(stderr, "ERROR: loading mesh file '%s'\n", args[1]);
 		return ERR_FAILURE;
 	}
@@ -101,13 +101,18 @@ int main(int argc, char **args) {
 		printf("\n");
 	}
 
+	H1ShapesetLobattoHex shapeset;
 	printf("* Setting the space up\n");
 	H1Space space(&mesh, &shapeset);
 	space.set_bc_types(bc_types);
 
-	int o;
+	int o, p, q;
 	sscanf(args[2], "%d", &o);
-	order3_t order(o, o, o);
+	if (argc > 3) sscanf(args[3], "%d", &p);
+	else p = o;
+	if (argc > 4) sscanf(args[4], "%d", &q);
+	else q = o;
+	order3_t order(o, p, q);
 	printf("  - Setting uniform order to %s\n", order.str());
 	space.set_uniform_order(order);
 
@@ -121,43 +126,47 @@ int main(int argc, char **args) {
 	UMFPackVector rhs;
 	UMFPackLinearSolver solver(mat, rhs);
 #elif defined WITH_PARDISO
-	PardisoLinearSolver solver;
+	PardisoMatrix mat;
+	PardisoVector rhs;
+	PardisoLinearSolver solver(mat, rhs);
 #elif defined WITH_PETSC
 	PetscMatrix mat;
 	PetscVector rhs;
 	PetscLinearSolver solver(mat, rhs);
 #endif
 
-	Discretization d;
-	d.set_num_equations(1);
-	d.set_spaces(1, &space);
-	d.set_pss(1, &pss);
+	WeakForm wf(1);
+	wf.add_biform(0, 0, FORM_CB(bilinear_form), SYM);
+	wf.add_liform(0, FORM_CB(linear_form));
 
-	d.set_bilinear_form(0, 0, bilinear_form);
-	d.set_linear_form(0, linear_form);
+	LinProblem lp(&wf);
+	lp.set_spaces(1, &space);
 
-	// assemble stiffness matrix
-	d.create(&mat, &rhs);
-
-	Timer assemble_timer("Assembling stiffness matrix");
+	printf("  - assembling... ");
+	Timer assemble_timer;
 	assemble_timer.start();
-	d.assemble(&mat, &rhs);
+	lp.assemble(&mat, &rhs);
 	assemble_timer.stop();
+	printf("%s (%lf secs)\n", assemble_timer.get_human_time(), assemble_timer.get_seconds());
+
+//	mat.dump(stdout, "a");
+//	rhs.dump(stdout, "b");
 
 	// solve the stiffness matrix
-	Timer solve_timer("Solving stiffness matrix");
+	printf("  - solving... ");
+	Timer solve_timer;
 	solve_timer.start();
 	bool solved = solver.solve();
 	solve_timer.stop();
 
 	// output the measured values
-	printf("%s: %s (%lf secs)\n", assemble_timer.get_name(), assemble_timer.get_human_time(), assemble_timer.get_seconds());
-	printf("%s: %s (%lf secs)\n", solve_timer.get_name(), solve_timer.get_human_time(), solve_timer.get_seconds());
+	printf("%s (%lf secs)\n", solve_timer.get_human_time(), solve_timer.get_seconds());
 
 	if (solved) {
 		Solution sln(&mesh);
-		sln.set_space_and_pss(&space, &pss);
-		sln.set_solution_vector(solver.get_solution(), false);
+		sln.set_fe_solution(&space, solver.get_solution());
+
+		printf("* Solution:\n");
 
 		ExactSolution ex_sln(&mesh, exact_solution);
 		// norm
@@ -215,8 +224,6 @@ int main(int argc, char **args) {
 	rhs.free();
 	PetscFinalize();
 #endif
-
-	TRACE_END;
 
 	return res;
 }

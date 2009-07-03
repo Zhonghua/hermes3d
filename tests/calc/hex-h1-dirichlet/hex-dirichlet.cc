@@ -47,10 +47,11 @@ double fnc(double x, double y, double z) {
 	return pow(x, m) * pow(y, n) * pow(z, o) + pow(x, 2) * pow(y, 3) - pow(x, 3) * z + pow(z, 4);
 }
 
-double dfnc(double x, double y, double z) {
-	double ddxx = m * (m - 1) * pow(x, m - 2) * pow(y, n) * pow(z, o) + 2 * pow(y, 3) - 6 * x * z;
-	double ddyy = n * (n - 1) * pow(x, m) * pow(y, n - 2) * pow(z, o) + 6 * pow(x, 2) * y;
-	double ddzz = o * (o - 1) * pow(x, m) * pow(y, n) * pow(z, o - 2) + 12 * pow(z, 2);
+template<typename T>
+T dfnc(T x, T y, T z) {
+	T ddxx = m * (m - 1) * pow(x, m - 2) * pow(y, n) * pow(z, o) + 2 * pow(y, 3) - 6 * x * z;
+	T ddyy = n * (n - 1) * pow(x, m) * pow(y, n - 2) * pow(z, o) + 6 * pow(x, 2) * y;
+	T ddzz = o * (o - 1) * pow(x, m) * pow(y, n) * pow(z, o - 2) + 12 * pow(z, 2);
 
 	return -(ddxx + ddyy + ddzz);
 }
@@ -75,12 +76,14 @@ double bc_values(int marker, double x, double y, double z) {
 	return fnc(x, y, z);
 }
 
-scalar bilinear_form(RealFunction *fu, RealFunction *fv, RefMap *ru, RefMap *rv) {
-	return int_grad_u_grad_v(fu, fv, ru, rv);
+template<typename f_t, typename res_t>
+res_t bilinear_form(int n, double *wt, fn_t<f_t> *u, fn_t<f_t> *v, geom_t<f_t> *e, user_data_t<res_t> *data) {
+	return int_grad_u_grad_v<f_t, res_t>(n, wt, u, v, e);
 }
 
-scalar linear_form(RealFunction *fv, RefMap *rv) {
-	return int_F_v(dfnc, fv, rv);
+template<typename f_t, typename res_t>
+res_t linear_form(int n, double *wt, fn_t<f_t> *u, geom_t<f_t> *e, user_data_t<res_t> *data) {
+	return int_F_v<f_t, res_t>(n, wt, dfnc, u, e);
 }
 
 // main ///////////////////////////////////////////////////////////////////////////////////////////
@@ -92,10 +95,6 @@ int main(int argc, char **args) {
 	PetscInitialize(&argc, &args, (char *) PETSC_NULL, PETSC_NULL);
 #endif
 
-	TRACE_START("trace.txt");
-	DEBUG_OUTPUT_ON;
-	SET_VERBOSE_LEVEL(0);
-
 	if (argc < 5) {
 		ERROR("Not enough parameters");
 		return ERR_NOT_ENOUGH_PARAMS;
@@ -105,9 +104,6 @@ int main(int argc, char **args) {
 	sscanf(args[3], "%d", &n);
 	sscanf(args[4], "%d", &o);
 
-	H1ShapesetLobattoHex shapeset;
-	PrecalcShapeset pss(&shapeset);
-
 	printf("* Loading mesh '%s'\n", args[1]);
 	Mesh mesh;
 	Mesh3DReader mesh_loader;
@@ -116,18 +112,27 @@ int main(int argc, char **args) {
 		return ERR_FAILURE;
 	}
 
-	printf("* Setting the space up\n");
+//	for (int it = 0; it < 8; it++) {
+//	mesh.refine_all_elements(REFT_HEX_XYZ);
+//	mesh.refine_all_elements(REFT_HEX_XYZ);
+//	mesh.refine_all_elements(REFT_HEX_XYZ);
+
+	H1ShapesetLobattoHex shapeset;
+//	printf("* Setting the space up\n");
 	H1Space space(&mesh, &shapeset);
 	space.set_bc_types(bc_types);
 	space.set_bc_values(bc_values);
 
 	int mx = maxn(4, m, n, o, 4);
 	order3_t order(mx, mx, mx);
-	printf("  - Setting uniform order to (%d, %d, %d)\n", mx, mx, mx);
+//	order3_t order(3, 3, 4);
+	printf("  - Setting uniform order to (%d, %d, %d)\n", order.x, order.y, order.z);
 	space.set_uniform_order(order);
 
 	int ndofs = space.assign_dofs();
 	printf("  - Number of DOFs: %d\n", ndofs);
+
+//	printf("elems: %d ", mesh.get_num_active_elements()); fflush(stdout);
 
 	printf("* Calculating a solution\n");
 
@@ -136,66 +141,61 @@ int main(int argc, char **args) {
 	UMFPackVector rhs;
 	UMFPackLinearSolver solver(mat, rhs);
 #elif defined WITH_PARDISO
-	PardisoLinearSolver solver;
+	PardisoMatrix mat;
+	PardisoVector rhs;
+	PardisoLinearSolver solver(mat, rhs);
 #elif defined WITH_PETSC
 	PetscMatrix mat;
 	PetscVector rhs;
 	PetscLinearSolver solver(mat, rhs);
 #endif
 
-	Discretization d;
-	d.set_num_equations(1);
-	d.set_spaces(1, &space);
-	d.set_pss(1, &pss);
+	WeakForm wf(1);
+	wf.add_biform(0, 0, bilinear_form<double, scalar>, bilinear_form<ord_t, ord_t>, SYM);
+	wf.add_liform(0, linear_form<double, scalar>, linear_form<ord_t, ord_t>);
 
-	d.set_bilinear_form(0, 0, bilinear_form);
-	d.set_linear_form(0, linear_form);
+	LinProblem lp(&wf);
+	lp.set_spaces(1, &space);
 
 	// assemble stiffness matrix
-	d.create(&mat, &rhs);
-
-	Timer assemble_timer("Assembling stiffness matrix");
+	printf("  - assembling... "); fflush(stdout);
+	Timer assemble_timer;
 	assemble_timer.start();
-	d.assemble(&mat, &rhs);
+	lp.assemble(&mat, &rhs);
 	assemble_timer.stop();
+	printf("%s (%lf secs)\n", assemble_timer.get_human_time(), assemble_timer.get_seconds());
 
 	// solve the stiffness matrix
-	Timer solve_timer("Solving stiffness matrix");
+	printf("  - solving... "); fflush(stdout);
+	Timer solve_timer;
 	solve_timer.start();
 	bool solved = solver.solve();
 	solve_timer.stop();
+	printf("%s (%lf secs)\n", solve_timer.get_human_time(), solve_timer.get_seconds());
 
-//	solver.dump_matrix("output/matrix");
-//	solver.dump_rhs("output/rhs");
-
-	// output the measured values
-	printf("%s: %s (%lf secs)\n", assemble_timer.get_name(), assemble_timer.get_human_time(),
-	    assemble_timer.get_seconds());
-	printf("%s: %s (%lf secs)\n", solve_timer.get_name(), solve_timer.get_human_time(),
-	    solve_timer.get_seconds());
+//	mat.dump(stdout, "a");
+//	rhs.dump(stdout, "b");
 
 	if (solved) {
+		Timer sln_pre_tmr;
 		Solution sln(&mesh);
-		sln.set_space_and_pss(&space, &pss);
-		sln.set_solution_vector(solver.get_solution(), false);
+		sln_pre_tmr.start();
+		sln.set_fe_solution(&space, solver.get_solution());
+		sln_pre_tmr.stop();
 
-//		printf("* Solution:\n");
-//		double *s = sln.get_solution_vector();
-//		for (int i = 1; i <= ndofs; i++) {
-//			printf(" x[% 3d] = % lf\n", i, s[i]);
-//		}
+		printf("* Solution:\n");
 
 		ExactSolution ex_sln(&mesh, exact_solution);
 		// norm
 		double h1_sln_norm = h1_norm(&sln);
 		double h1_err_norm = h1_error(&sln, &ex_sln);
-		printf(" - H1 solution norm:   % le\n", h1_sln_norm);
-		printf(" - H1 error norm:      % le\n", h1_err_norm);
+		printf("  - H1 solution norm:   % le\n", h1_sln_norm);
+		printf("  - H1 error norm:      % le\n", h1_err_norm);
 
 		double l2_sln_norm = l2_norm(&sln);
 		double l2_err_norm = l2_error(&sln, &ex_sln);
-		printf(" - L2 solution norm:   % le\n", l2_sln_norm);
-		printf(" - L2 error norm:      % le\n", l2_err_norm);
+		printf("  - L2 solution norm:   % le\n", l2_sln_norm);
+		printf("  - L2 error norm:      % le\n", l2_err_norm);
 
 		if (h1_err_norm > EPS || l2_err_norm > EPS) {
 			// calculated solution is not enough precise
@@ -203,23 +203,25 @@ int main(int argc, char **args) {
 		}
 
 #ifdef OUTPUT_DIR
-		printf("* Output\n");
+//		printf("* Output\n");
 		// output
-		char *of_name = OUTPUT_DIR "/solution.pos";
+		const char *of_name = OUTPUT_DIR "/solution.pos";
 		FILE *ofile = fopen(of_name, "w");
 		if (ofile != NULL) {
+			Timer sln_out_tmr;
+			sln_out_tmr.start();
 			ExactSolution ex_sln(&mesh, exact_solution);
-			DiffFilter eh(&mesh, &sln, &ex_sln);
-//			DiffFilter eh_dx(&mesh, &sln, &ex_sln, FN_DX, FN_DX);
-//			DiffFilter eh_dy(&mesh, &sln, &ex_sln, FN_DY, FN_DY);
-//			DiffFilter eh_dz(&mesh, &sln, &ex_sln, FN_DZ, FN_DZ);
+			DiffFilter eh(&sln, &ex_sln);
+//			DiffFilter eh_dx(&sln, &ex_sln, FN_DX, FN_DX);
+//			DiffFilter eh_dy(&sln, &ex_sln, FN_DY, FN_DY);
+//			DiffFilter eh_dz(&sln, &ex_sln, FN_DZ, FN_DZ);
 
 			GmshOutputEngine output(ofile);
 			output.out(&sln, "Uh", FN_VAL_0);
 //			output.out(&sln, "Uh dx", FN_DX_0);
 //			output.out(&sln, "Uh dy", FN_DY_0);
 //			output.out(&sln, "Uh dz", FN_DZ_0);
-			output.out(&eh, "Eh");
+//			output.out(&eh, "Eh");
 //			output.out(&eh_dx, "Eh dx");
 //			output.out(&eh_dy, "Eh dy");
 //			output.out(&eh_dz, "Eh dz");
@@ -227,6 +229,10 @@ int main(int argc, char **args) {
 //			output.out(&ex_sln, "U dx", FN_DX_0);
 //			output.out(&ex_sln, "U dy", FN_DY_0);
 //			output.out(&ex_sln, "U dz", FN_DZ_0);
+			sln_out_tmr.stop();
+
+//			printf(" | %s (%lf secs)", sln_pre_tmr.get_human_time(), sln_pre_tmr.get_seconds());
+//			printf(" | %s (%lf secs)\n", sln_out_tmr.get_human_time(), sln_out_tmr.get_seconds());
 
 			fclose(ofile);
 		}
@@ -241,11 +247,9 @@ int main(int argc, char **args) {
 #ifdef WITH_PETSC
 	mat.free();
 	rhs.free();
+
 	PetscFinalize();
 #endif
 
-	TRACE_END;
-
 	return res;
 }
-

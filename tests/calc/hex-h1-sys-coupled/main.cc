@@ -36,11 +36,13 @@
 // error should be smaller than this epsilon
 #define EPS								10e-10F
 
-double u1(double x, double y, double z) {
+template<typename T>
+T u1(T x, T y, T z) {
 	return (1 - x*x) * (1 - y*y) * (1 - z*z);
 }
 
-double u2(double x, double y, double z) {
+template<typename T>
+T u2(T x, T y, T z) {
 	return (1 - x*x) * x*x * (1 - y*y) * y*y * (1 - z*z) * z*z;
 }
 
@@ -67,45 +69,52 @@ EBCType bc_types(int marker) {
 	return BC_ESSENTIAL;
 }
 
-scalar bilinear_form_1_1(RealFunction *fu, RealFunction *fv, RefMap *ru, RefMap *rv) {
-	return int_grad_u_grad_v(fu, fv, ru, rv);
+template<typename f_t, typename res_t>
+res_t bilinear_form_1_1(int n, double *wt, fn_t<f_t> *u, fn_t<f_t> *v, geom_t<f_t> *e, user_data_t<res_t> *data) {
+	return int_grad_u_grad_v<f_t, res_t>(n, wt, u, v, e);
 }
 
-scalar bilinear_form_1_2(RealFunction *fu, RealFunction *fv, RefMap *ru, RefMap *rv) {
-	return int_u_v(fu, fv, ru, rv);
+template<typename f_t, typename res_t>
+res_t bilinear_form_1_2(int n, double *wt, fn_t<f_t> *u, fn_t<f_t> *v, geom_t<f_t> *e, user_data_t<res_t> *data) {
+	return int_u_v<f_t, res_t>(n, wt, u, v, e);
 }
 
-
-scalar bilinear_form_2_1(RealFunction *fu, RealFunction *fv, RefMap *ru, RefMap *rv) {
-	return int_u_v(fu, fv, ru, rv);
+template<typename f_t, typename res_t>
+res_t bilinear_form_2_1(int n, double *wt, fn_t<f_t> *u, fn_t<f_t> *v, geom_t<f_t> *e, user_data_t<res_t> *data) {
+	return int_u_v<f_t, res_t>(n, wt, u, v, e);
 }
 
-scalar bilinear_form_2_2(RealFunction *fu, RealFunction *fv, RefMap *ru, RefMap *rv) {
-	return int_grad_u_grad_v(fu, fv, ru, rv);
+template<typename f_t, typename res_t>
+res_t bilinear_form_2_2(int n, double *wt, fn_t<f_t> *u, fn_t<f_t> *v, geom_t<f_t> *e, user_data_t<res_t> *data) {
+	return int_grad_u_grad_v<f_t, res_t>(n, wt, u, v, e);
 }
 
-double f1(double x, double y, double z) {
-	double ddxx = -2 * (1 - y*y) * (1 - z*z);
-	double ddyy = -2 * (1 - x*x) * (1 - z*z);
-	double ddzz = -2 * (1 - x*x) * (1 - y*y);
+template<typename T>
+T f1(T x, T y, T z) {
+	T ddxx = -2 * (1 - y*y) * (1 - z*z);
+	T ddyy = -2 * (1 - x*x) * (1 - z*z);
+	T ddzz = -2 * (1 - x*x) * (1 - y*y);
 
 	return -(ddxx + ddyy + ddzz) + u2(x, y, z);
 }
 
-scalar linear_form_1(RealFunction *fv, RefMap *rv) {
-	return int_F_v(f1, fv, rv);
+template<typename f_t, typename res_t>
+res_t linear_form_1(int n, double *wt, fn_t<f_t> *u, geom_t<f_t> *e, user_data_t<res_t> *data) {
+	return int_F_v<f_t, res_t>(n, wt, f1, u, e);
 }
 
-double f2(double x, double y, double z) {
-	double ddxx = 2 * (1 - x*x) * y*y * (1 - y*y) * z*z * (1 - z*z) - 10 * x*x * y*y * (1 - y*y) * z*z * (1 - z*z);
-	double ddyy = 2 * x*x * (1 - x*x) * (1 - y*y) * z*z * (1 - z*z) - 10 * x*x * (1 - x*x) * y*y * z*z * (1 - z*z);
-	double ddzz = 2 * x*x * (1 - x*x) * y*y * (1 - y*y) * (1 - z*z) - 10 * x*x * (1 - x*x) * y*y * (1 - y*y) * z*z;
+template<typename T>
+T f2(T x, T y, T z) {
+	T ddxx = 2 * (1 - x*x) * y*y * (1 - y*y) * z*z * (1 - z*z) - 10 * x*x * y*y * (1 - y*y) * z*z * (1 - z*z);
+	T ddyy = 2 * x*x * (1 - x*x) * (1 - y*y) * z*z * (1 - z*z) - 10 * x*x * (1 - x*x) * y*y * z*z * (1 - z*z);
+	T ddzz = 2 * x*x * (1 - x*x) * y*y * (1 - y*y) * (1 - z*z) - 10 * x*x * (1 - x*x) * y*y * (1 - y*y) * z*z;
 
 	return -(ddxx + ddyy + ddzz) + u1(x, y, z);
 }
 
-scalar linear_form_2(RealFunction *fv, RefMap *rv) {
-	return int_F_v(f2, fv, rv);
+template<typename f_t, typename res_t>
+res_t linear_form_2(int n, double *wt, fn_t<f_t> *u, geom_t<f_t> *e, user_data_t<res_t> *data) {
+	return int_F_v<f_t, res_t>(n, wt, f2, u, e);
 }
 
 // main ///////////////////////////////////////////////////////////////////////////////////////////
@@ -117,17 +126,12 @@ int main(int argc, char **args) {
 	PetscInitialize(&argc, &args, (char *) PETSC_NULL, PETSC_NULL);
 #endif
 
-	TRACE_START("trace.txt");
-	DEBUG_OUTPUT_ON;
-	SET_VERBOSE_LEVEL(0);
-
 	if (argc < 2) {
 		ERROR("Not enough parameters");
 		return ERR_NOT_ENOUGH_PARAMS;
 	}
 
 	H1ShapesetLobattoHex shapeset;
-	PrecalcShapeset pss(&shapeset);
 
 	printf("* Loading mesh '%s'\n", args[1]);
 	Mesh mesh;
@@ -165,30 +169,31 @@ int main(int argc, char **args) {
 	UMFPackVector rhs;
 	UMFPackLinearSolver solver(mat, rhs);
 #elif defined WITH_PARDISO
-	PardisoLinearSolver solver;
+	PardisoMatrix mat;
+	PardisoVector rhs;
+	PardisoLinearSolver solver(mat, rhs);
 #elif defined WITH_PETSC
 	PetscMatrix mat;
 	PetscVector rhs;
 	PetscLinearSolver solver(mat, rhs);
 #endif
 
-	Discretization d;
-	d.set_num_equations(2);
-	d.set_spaces(2, &space1, &space2);
-	d.set_pss(1, &pss);
+	WeakForm wf(2);
+	wf.add_biform(0, 0, bilinear_form_1_1<double, scalar>, bilinear_form_1_1<ord_t, ord_t>, SYM);
+	wf.add_biform(0, 1, bilinear_form_1_2<double, scalar>, bilinear_form_1_2<ord_t, ord_t>, SYM);
+	wf.add_liform(0, linear_form_1<double, scalar>, linear_form_1<ord_t, ord_t>);
 
-	d.set_bilinear_form(0, 0, bilinear_form_1_1);
-	d.set_bilinear_form(0, 1, bilinear_form_1_2);
-	d.set_linear_form(0, linear_form_1);
-	d.set_bilinear_form(1, 0, bilinear_form_2_1);
-	d.set_bilinear_form(1, 1, bilinear_form_2_2);
-	d.set_linear_form(1, linear_form_2);
+//	wf.add_biform(1, 0, bilinear_form_2_1<sfn_t, scalar>, bilinear_form_2_1<fn_order_t, ord_t>, SYM);
+	wf.add_biform(1, 1, bilinear_form_2_2<double, scalar>, bilinear_form_2_2<ord_t, ord_t>, SYM);
+	wf.add_liform(1, linear_form_2<double, scalar>, linear_form_2<ord_t, ord_t>);
+
+	LinProblem lp(&wf);
+	lp.set_spaces(2, &space1, &space2);
 
 	// assemble stiffness matrix
 	Timer assemble_timer("Assembling stiffness matrix");
 	assemble_timer.start();
-	d.create(&mat, &rhs);
-	d.assemble(&mat, &rhs);
+	lp.assemble(&mat, &rhs);
 	assemble_timer.stop();
 
 	// solve the stiffness matrix
@@ -201,11 +206,13 @@ int main(int argc, char **args) {
 	printf("%s: %s (%lf secs)\n", assemble_timer.get_name(), assemble_timer.get_human_time(), assemble_timer.get_seconds());
 	printf("%s: %s (%lf secs)\n", solve_timer.get_name(), solve_timer.get_human_time(), solve_timer.get_seconds());
 
+	mat.dump(stdout, "a");
+	rhs.dump(stdout, "b");
+
 	if (solved) {
 		// solution 1
 		Solution sln1(&mesh);
-		sln1.set_space_and_pss(&space1, &pss);
-		sln1.set_solution_vector(solver.get_solution(), false);
+		sln1.set_fe_solution(&space1, solver.get_solution());
 
 		ExactSolution esln1(&mesh, exact_sln_fn_1);
 		// norm
@@ -227,8 +234,7 @@ int main(int argc, char **args) {
 
 		// solution 2
 		Solution sln2(&mesh);
-		sln2.set_space_and_pss(&space2, &pss);
-		sln2.set_solution_vector(solver.get_solution(), false);
+		sln2.set_fe_solution(&space2, solver.get_solution());
 
 		ExactSolution esln2(&mesh, exact_sln_fn_2);
 		// norm

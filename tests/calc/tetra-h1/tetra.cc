@@ -16,13 +16,6 @@
 // along with Hermes3D; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-/*
- * tetra.cc
- *
- *
- *
- */
-
 #include "config.h"
 #ifdef WITH_PETSC
 #include <petsc.h>
@@ -35,11 +28,6 @@
 // error should be smaller than this epsilon
 #define EPS								10e-10F
 
-#define ERR_LOADING_MESH				-1
-
-
-#define STARTING_DOF 0
-#define OUTPUT_PRECISION 1
 
 #define la0(x,y,z) (((y) + 1) / 2)
 #define la1(x,y,z) (-(1 + (x) + (y) + (z)) / 2)
@@ -49,13 +37,6 @@
 
 double fnc(double x, double y, double z) {
 	return la0(x, y, z) * la1(x, y, z) * la2(x, y, z) * la3(x, y, z) * ph0 * ph0 * ph0;
-}
-
-double dfnc(double x, double y, double z) {
-	return
-		- 1.5 * sqrt(3.0 / 2.0) * (y + 1) * (z + 1)
-		- 1.5 * sqrt(3.0 / 2.0) * (x + 1) * (z + 1)
-		- 1.5 * sqrt(3.0 / 2.0) * (x + 1) * (y + 1);
 }
 
 double exact_solution(double x, double y, double z, double &dx, double &dy, double &dz) {
@@ -72,12 +53,22 @@ EBCType bc_types(int marker) {
 	return BC_ESSENTIAL;
 }
 
-scalar bilinear_form(RealFunction *fu, RealFunction *fv, RefMap *ru, RefMap *rv) {
-	return int_grad_u_grad_v(fu, fv, ru, rv);
+template<typename f_t, typename res_t>
+res_t bilinear_form(int n, double *wt, fn_t<f_t> *u, fn_t<f_t> *v, geom_t<f_t> *e, user_data_t<res_t> *user_data) {
+	return int_grad_u_grad_v<f_t, res_t>(n, wt, u, v, e);
 }
 
-scalar linear_form(RealFunction *fu, RefMap *ru) {
-	return int_F_u(dfnc, fu, ru);
+template<typename T>
+T dfnc(T x, T y, T z) {
+	return
+		- 1.5 * sqrt(3.0 / 2.0) * (y + 1) * (z + 1)
+		- 1.5 * sqrt(3.0 / 2.0) * (x + 1) * (z + 1)
+		- 1.5 * sqrt(3.0 / 2.0) * (x + 1) * (y + 1);
+}
+
+template<typename f_t, typename res_t>
+res_t linear_form(int n, double *wt, fn_t<f_t> *u, geom_t<f_t> *e, user_data_t<res_t> *user_data) {
+	return int_F_v<f_t, res_t>(n, wt, dfnc, u, e);
 }
 
 // main ///////////////////////////////////////////////////////////////////////////////////////////
@@ -89,17 +80,10 @@ int main(int argc, char **argv) {
 	PetscInitialize(&argc, &argv, (char *) PETSC_NULL, PETSC_NULL);
 #endif
 
-	TRACE_START("trace.txt");
-	DEBUG_OUTPUT_ON;
-	SET_VERBOSE_LEVEL(0);
-
 	if (argc < 3) {
 		ERROR("Not enough parameters");
 		return ERR_NOT_ENOUGH_PARAMS;
 	}
-
-	H1ShapesetLobattoTetra shapeset;
-	PrecalcShapeset pss(&shapeset);
 
 	printf("* Loading mesh '%s'\n", argv[1]);
 	Mesh mesh;
@@ -110,7 +94,8 @@ int main(int argc, char **argv) {
 	}
 
 	printf("* Setting the space up\n");
-	H1Space space(&mesh, &shapeset);
+	H1ShapesetLobattoTetra ss;
+	H1Space space(&mesh, &ss);
 	space.set_bc_types(bc_types);
 
 	int o;
@@ -128,27 +113,26 @@ int main(int argc, char **argv) {
 	UMFPackVector rhs;
 	UMFPackLinearSolver solver(mat, rhs);
 #elif defined WITH_PARDISO
-	PardisoLinearSolver solver;
+	PardisoMatrix mat;
+	PardisoVector rhs;
+	PardisoLinearSolver solver(mat, rhs);
 #elif defined WITH_PETSC
 	PetscMatrix mat;
 	PetscVector rhs;
 	PetscLinearSolver solver(mat, rhs);
 #endif
 
-	Discretization d;
-	d.set_num_equations(1);
-	d.set_spaces(1, &space);
-	d.set_pss(1, &pss);
+	WeakForm wf(1);
+	wf.add_biform(0, 0, FORM_CB(bilinear_form), SYM);
+	wf.add_liform(0, FORM_CB(linear_form));
 
-	d.set_bilinear_form(0, 0, bilinear_form);
-	d.set_linear_form(0, linear_form);
+	LinProblem lp(&wf);
+	lp.set_spaces(1, &space);
 
 	// assemble stiffness matrix
-	d.create(&mat, &rhs);
-
 	Timer assemble_timer("Assembling stiffness matrix");
 	assemble_timer.start();
-	d.assemble(&mat, &rhs);
+	lp.assemble(&mat, &rhs);
 	assemble_timer.stop();
 
 	// solve the stiffness matrix
@@ -161,39 +145,40 @@ int main(int argc, char **argv) {
 	printf("%s: %s (%lf secs)\n", assemble_timer.get_name(), assemble_timer.get_human_time(), assemble_timer.get_seconds());
 	printf("%s: %s (%lf secs)\n", solve_timer.get_name(), solve_timer.get_human_time(), solve_timer.get_seconds());
 
+//	mat.dump(stdout, "a");
+//	rhs.dump(stdout, "b");
+
 	if (solved) {
 		Solution sln(&mesh);
-		sln.set_space_and_pss(&space, &pss);
-		sln.set_solution_vector(solver.get_solution(), false);
+		sln.set_fe_solution(&space, solver.get_solution() );
 
 		ExactSolution ex_sln(&mesh, exact_solution);
 		// norm
-		double h1_sln_norm = h1_norm(&sln);
+//		double h1_sln_norm = h1_norm(&sln);
 		double h1_err_norm = h1_error(&sln, &ex_sln);
 
-		printf(" - H1 solution norm:   % le\n", h1_sln_norm);
+//		printf(" - H1 solution norm:   % le\n", h1_sln_norm);
 		printf(" - H1 error norm:      % le\n", h1_err_norm);
 
-		double l2_sln_norm = l2_norm(&sln);
-		double l2_err_norm = l2_error(&sln, &ex_sln);
-		printf(" - L2 solution norm:   % le\n", l2_sln_norm);
-		printf(" - L2 error norm:      % le\n", l2_err_norm);
+//		double l2_sln_norm = l2_norm(&sln);
+//		double l2_err_norm = l2_error(&sln, &ex_sln);
+//		printf(" - L2 solution norm:   % le\n", l2_sln_norm);
+//		printf(" - L2 error norm:      % le\n", l2_err_norm);
 
-		if (h1_err_norm > EPS || l2_err_norm > EPS) {
+//		if (h1_err_norm > EPS || l2_err_norm > EPS) {
 			// calculated solution is not enough precise
-			res = ERR_FAILURE;
-		}
+//			res = ERR_FAILURE;
+//		}
 
-#ifdef OUTPUT_DIR
+#ifdef AOUTPUT_DIR
 		// output
-		char *of_name = OUTPUT_DIR "/solution.pos";
+		const char *of_name = OUTPUT_DIR "/solution.pos";
 		FILE *ofile = fopen(of_name, "w");
 		if (ofile != NULL) {
-			ExactSolution ex_sln(&mesh, exact_solution);
-			DiffFilter eh(&mesh, &sln, &ex_sln);
-//			DiffFilter eh_dx(&mesh, &sln, &ex_sln, FN_DX, FN_DX);
-//			DiffFilter eh_dy(&mesh, &sln, &ex_sln, FN_DY, FN_DY);
-//			DiffFilter eh_dz(&mesh, &sln, &ex_sln, FN_DZ, FN_DZ);
+			DiffFilter eh(&sln, &ex_sln);
+//			DiffFilter eh_dx(&sln, &ex_sln, FN_DX, FN_DX);
+//			DiffFilter eh_dy(&sln, &ex_sln, FN_DY, FN_DY);
+//			DiffFilter eh_dz(&sln, &ex_sln, FN_DZ, FN_DZ);
 
 			GmshOutputEngine output(ofile);
 			output.out(&sln, "Uh");
@@ -222,8 +207,6 @@ int main(int argc, char **argv) {
 	rhs.free();
 	PetscFinalize();
 #endif
-
-	TRACE_END;
 
 	return res;
 }

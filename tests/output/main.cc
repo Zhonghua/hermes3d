@@ -29,10 +29,11 @@ double fnc(double x, double y, double z) {
 	return pow(x, m) * pow(y, n) * pow(z, o) + pow(x, 2) * pow(y, 3) - pow(x, 3) * z + pow(z, 4);
 }
 
-double dfnc(double x, double y, double z) {
-	double ddxx = m * (m - 1) * pow(x, m - 2) * pow(y, n) * pow(z, o) + 2 * pow(y, 3) - 6 * x * z;
-	double ddyy = n * (n - 1) * pow(x, m) * pow(y, n - 2) * pow(z, o) + 6 * pow(x, 2) * y;
-	double ddzz = o * (o - 1) * pow(x, m) * pow(y, n) * pow(z, o - 2) + 12 * pow(z, 2);
+template<typename T>
+T dfnc(T x, T y, T z) {
+	T ddxx = m * (m - 1) * pow(x, m - 2) * pow(y, n) * pow(z, o) + 2 * pow(y, 3) - 6 * x * z;
+	T ddyy = n * (n - 1) * pow(x, m) * pow(y, n - 2) * pow(z, o) + 6 * pow(x, 2) * y;
+	T ddzz = o * (o - 1) * pow(x, m) * pow(y, n) * pow(z, o - 2) + 12 * pow(z, 2);
 
 	return -(ddxx + ddyy + ddzz);
 }
@@ -57,12 +58,14 @@ double bc_values(int marker, double x, double y, double z) {
 	return fnc(x, y, z);
 }
 
-scalar bilinear_form(RealFunction *fu, RealFunction *fv, RefMap *ru, RefMap *rv) {
-	return int_grad_u_grad_v(fu, fv, ru, rv);
+template<typename f_t, typename res_t>
+res_t bilinear_form(int np, double *wt, fn_t<f_t> *u, fn_t<f_t> *v, geom_t<f_t> *e, user_data_t<res_t> *data) {
+	return int_grad_u_grad_v<f_t, res_t>(np, wt, u, v);
 }
 
-scalar linear_form(RealFunction *fv, RefMap *rv) {
-	return int_F_v(dfnc, fv, rv);
+template<typename f_t, typename res_t>
+res_t linear_form(int n, double *wt, fn_t<f_t> *u, geom_t<f_t> *e, user_data_t<res_t> *data) {
+	return int_F_v<f_t, res_t>(n, wt, dfnc, u, e);
 }
 
 // main ///////////////////////////////////////////////////////////////////////////////////////////
@@ -85,7 +88,7 @@ int main(int argc, char **args) {
 #if defined GMSH
 	GmshOutputEngine output(stdout);
 #elif defined VTK
-	VtkOutputEngine output(stdout);
+	VtkOutputEngine output(stdout, 3);
 #endif
 
 	if (strcmp(type, "sln") == 0) {
@@ -96,7 +99,6 @@ int main(int argc, char **args) {
 	}
 	else if (strcmp(type, "ord") == 0) {
 		H1ShapesetLobattoHex shapeset;
-		PrecalcShapeset pss(&shapeset);
 
 		H1Space space(&mesh, &shapeset);
 		space.set_bc_types(bc_types);

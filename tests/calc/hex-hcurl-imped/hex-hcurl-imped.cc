@@ -44,6 +44,31 @@ std::complex<double> imag(0, 1);
 
 scalar3 &exact_solution(double x, double y, double z, scalar3 &dx, scalar3 &dy, scalar3 &dz) {
 	dx[0] = 3.*x*x*y*y - 3.*y*y*y*z;
+	dy[0] = 2.*x*x*x*y - 9.*x*y*y*z;
+	dz[0] = -3.*x*y*y*y;
+
+	dx[1] = 3.*x*x*y*y*y*z*z*z + 4.*x*y*z;
+	dy[1] = 3.*x*x*x*y*y*z*z*z + 2.*x*x*z;
+	dz[1] = 3.*x*x*x*y*y*y*z*z + 2.*x*x*y;
+
+	dx[2] = -12.*x*x;
+	dy[2] = z*z*z;
+	dz[2] = 3.*y*z*z;
+
+	static scalar3 val;
+	val[0] = x*x*x*y*y - 3.*x*y*y*y*z;
+	val[1] = x*x*x*y*y*y*z*z*z + 2.*x*x*y*z;
+	val[2] = y*z*z*z - 4.*x*x*x;
+	return val;
+}
+
+template<typename S, typename T>
+void exact_sln(S x, S y, S z, T (&fn)[3], T (&dx)[3], T (&dy)[3], T (&dz)[3]) {
+	fn[0] = x*x*x*y*y - 3.*x*y*y*y*z;
+	fn[1] = x*x*x*y*y*y*z*z*z + 2.*x*x*y*z;
+	fn[2] = y*z*z*z - 4.*x*x*x;
+
+	dx[0] = 3.*x*x*y*y - 3.*y*y*y*z;
 	dx[1] = 3.*x*x*y*y*y*z*z*z + 4.*x*y*z;
 	dx[2] = -12.*x*x;
 
@@ -54,30 +79,19 @@ scalar3 &exact_solution(double x, double y, double z, scalar3 &dx, scalar3 &dy, 
 	dz[0] = -3.*x*y*y*y;
 	dz[1] = 3.*x*x*x*y*y*y*z*z + 2.*x*x*y;
 	dz[2] = 3.*y*z*z;
-
-	static scalar3 val;
-	val[0] = x*x*x*y*y - 3.*x*y*y*y*z;
-	val[1] = x*x*x*y*y*y*z*z*z + 2.*x*x*y*z;
-	val[2] = y*z*z*z - 4.*x*x*x;
-	return val;
 }
 
-scalar3 &f(double x, double y, double z) {
-	scalar3 curlpart = {
-		4*x*z + 18*x*y*z - 2*x*x*x + 9*x*x*y*y*z*z*z,
-		-4*y*z + 3*z*z - 9*z*y*y + 6*y*x*x - 6*x*y*y*y*z*z*z - 6*z*x*x*x*y*y*y,
-		24*x + 2*x*x + 9*x*x*x*y*y*z*z - 3*y*y*y
-	};
+template<typename ct, typename res_t>
+void f(ct x, ct y, ct z, res_t (&val)[3]) {
+	res_t ev[3], dx[3], dy[3], dz[3];
+	exact_sln(x, y, z, ev, dx, dy, dz);
 
-	scalar3 dx, dy, dz;
-	scalar3 ev = exact_solution(x, y, z, dx, dy, dz);
-	static scalar3 val;
-	val[0] = curlpart[0] - ev[0];
-	val[1] = curlpart[1] - ev[1];
-	val[2] = curlpart[2] - ev[2];
-	return val;
+	val[0] = 4*x*z + 18*x*y*z - 2*x*x*x + 9*x*x*y*y*z*z*z - ev[0];
+	val[1] = -4*y*z + 3*z*z - 9*z*y*y + 6*y*x*x - 6*x*y*y*y*z*z*z - 6*z*x*x*x*y*y*y - ev[1];
+	val[2] = 24*x + 2*x*x + 9*x*x*x*y*y*z*z - 3*y*y*y - ev[2];
 }
 
+/*
 // TODO: this could be written in a much simplier way. Just use curl of exact solution
 // and cross product defined in Scalar3D...
 scalar3 &bc_values(int marker, double x, double y, double z) {
@@ -143,6 +157,7 @@ scalar3 &bc_values(int marker, double x, double y, double z) {
 
 	return bc;
 }
+*/
 
 EBCType bc_types(int marker) {
 	return BC_NATURAL;
@@ -150,20 +165,61 @@ EBCType bc_types(int marker) {
 
 /// definition of the forms
 
-scalar bilinear_form(RealFunction *fu, RealFunction *fv, RefMap *ru, RefMap *rv) {
-	return hcurl_int_curl_u_curl_v(fu, fv, ru, rv) - hcurl_int_u_v(fu, fv, ru, rv);
+template<typename ct, typename res_t>
+res_t bilinear_form(int n, double *wt, fn_t<ct> *u, fn_t<ct> *v, geom_t<ct> *e, user_data_t<res_t> *data) {
+	return
+		hcurl_int_curl_u_curl_v<ct, res_t>(n, wt, u, v, e) -
+		hcurl_int_u_v<ct, res_t>(n, wt, u, v, e);
 }
 
-scalar linear_form(RealFunction *fv, RefMap *rv) {
-	return hcurl_int_F_v(f, fv, rv);
+
+/*
+template<typename f_t, typename ct, typename res_t>
+res_t bilinear_form(int n, double *wt, f_t *u, f_t *v, geom_t<ct> *e, user_data_t<f_t> *data) {
+	return
+		hcurl_int_curl_u_curl_v(n, wt, u, v, e) -
+		hcurl_int_u_v(n, wt, u, v, e);
+}
+*/
+
+//template<typename f_t, typename ct, typename res_t>
+//res_t linear_form(int n, double *wt, f_t *v, geom_t<ct> *e) { //, user_data_t<f_t> *data) {
+template<typename ct, typename res_t>
+res_t linear_form(int n, double *wt, fn_t<ct> *v, geom_t<ct> *e, user_data_t<res_t> *data) {
+	return hcurl_int_F_v<ct, res_t>(n, wt, f, v, e);
 }
 
-scalar bilinear_form_surf(RealFunction *fu, RealFunction *fv, RefMap *ru, RefMap *rv, FacePos *fp) {
-	return -imag * hcurl_surf_int_u_v(fu, fv, ru, rv, fp);
+//template<typename f_t, typename ct, typename res_t>
+//res_t bilinear_form_surf(int n, double *wt, f_t *u, f_t *v, face_t *fp, geom_t<ct> *e) {//, user_data_t<f_t> *data) {
+template<typename ct, typename res_t>
+res_t bilinear_form_surf(int n, double *wt, fn_t<ct> *u, fn_t<ct> *v, face_t *fp, geom_t<ct> *e, user_data_t<res_t> *data) {
+	return -imag * hcurl_surf_int_u_v<ct, res_t>(n, wt, u, v, fp, e);
 }
 
-scalar linear_form_surf(RealFunction *fv, RefMap *rv, FacePos *fp) {
-	return hcurl_surf_int_G_v(fv, rv, fp);
+// TODO: make a function that does n x u x n (put that in integrals/hcurl.h - if not on a better place)
+
+//template<typename f_t, typename ct, typename res_t>
+//res_t linear_form_surf(int n, double *wt, f_t *v, face_t *fp, geom_t<ct> *e) { //, user_data_t<f_t> *data) {
+template<typename ct, typename res_t>
+res_t linear_form_surf(int n, double *wt, fn_t<ct> *v, face_t *fp, geom_t<ct> *e, user_data_t<res_t> *data) {
+	res_t result = 0.0;
+	for (int i = 0; i < n; i++) {
+		res_t ev[3], dx[3], dy[3], dz[3];
+		exact_sln(e->x[i], e->y[i], e->z[i], ev, dx, dy, dz);
+
+		res_t curl_e[3];
+		calc_curl(dx, dy, dz, curl_e);
+		res_t tpe[3];
+		calc_tan_proj(e->nx[i], e->ny[i], e->nz[i], ev, tpe);
+
+		res_t g[3] = {
+			(e->nz[i] * curl_e[1] - e->ny[i] * curl_e[2]) - imag * tpe[0],
+			(e->nx[i] * curl_e[2] - e->nz[i] * curl_e[0]) - imag * tpe[1],
+			(e->ny[i] * curl_e[0] - e->nx[i] * curl_e[1]) - imag * tpe[2],
+		};
+		result += wt[i] * (v->fn0[i] * g[0] + v->fn1[i] * g[1] + v->fn2[i] * g[2]);
+	}
+	return result;
 }
 
 // main ///////////////////////////////////////////////////////////////////////////////////////////
@@ -175,17 +231,12 @@ int main(int argc, char **args) {
 	PetscInitialize(&argc, &args, (char *) PETSC_NULL, PETSC_NULL);
 #endif
 
-	TRACE_START("trace.txt");
-	DEBUG_OUTPUT_ON;
-	SET_VERBOSE_LEVEL(0);
-
 	if (argc < 3) {
 		ERROR("Not enough parameters");
 		return ERR_NOT_ENOUGH_PARAMS;
 	}
 
 	HcurlShapesetLobattoHex shapeset;
-	PrecalcShapeset pss(&shapeset);
 
 	printf("* Loading mesh '%s'\n", args[1]);
 	Mesh mesh;
@@ -198,7 +249,7 @@ int main(int argc, char **args) {
 	printf("* Setting the space up\n");
 	HcurlSpace space(&mesh, &shapeset);
 	space.set_bc_types(bc_types);
-	space.set_bc_values(bc_values);
+//	space.set_bc_values(bc_values);
 
 	int order;
 	sscanf(args[2], "%d", &order);
@@ -217,27 +268,32 @@ int main(int argc, char **args) {
 	UMFPackVector rhs;
 	UMFPackLinearSolver solver(mat, rhs);
 #elif defined WITH_PARDISO
-	PardisoLinearSolver solver;
+	PardisoMatrix mat;
+	PardisoVector rhs;
+	PardisoLinearSolver solver(mat, rhs);
 #elif defined WITH_PETSC
 	PetscMatrix mat;
 	PetscVector rhs;
 	PetscLinearSolver solver(mat, rhs);
 #endif
 
-	Discretization d;
-	d.set_num_equations(1);
-	d.set_spaces(1, &space);
-	d.set_pss(1, &pss);
+	WeakForm wf(1);
+	wf.add_biform(0, 0, bilinear_form<double, scalar>, bilinear_form<ord_t, ord_t>, UNSYM);
+	wf.add_biform_surf(0, 0, bilinear_form_surf<double, scalar>, bilinear_form_surf<ord_t, ord_t>);
+	wf.add_liform(0, linear_form<double, scalar>, linear_form<ord_t, ord_t>);
+	wf.add_liform_surf(0, linear_form_surf<double, scalar>, linear_form_surf<ord_t, ord_t>);
+//	wf.add_biform(0, 0, bilinear_form, SYM);
+//	wf.add_biform_surf(0, 0, bilinear_form_surf);
+//	wf.add_liform(0, linear_form);
+//	wf.add_liform_surf(0, linear_form_surf);
 
-	d.set_bilinear_form(0, 0, bilinear_form, NULL, bilinear_form_surf);
-	d.set_linear_form(0, linear_form, linear_form_surf);
+	LinProblem lp(&wf);
+	lp.set_spaces(1, &space);
 
 	// assemble stiffness matrix
-	d.create(&mat, &rhs);
-
 	Timer assemble_timer("Assembling stiffness matrix");
 	assemble_timer.start();
-	d.assemble(&mat, &rhs);
+	lp.assemble(&mat, &rhs);
 	assemble_timer.stop();
 
 	// solve the stiffness matrix
@@ -246,15 +302,17 @@ int main(int argc, char **args) {
 	bool solved = solver.solve();
 	solve_timer.stop();
 
+//	mat.dump(stdout, "a");
+//	rhs.dump(stdout, "b");
+
 	if (solved) {
 		Solution sln(&mesh);
-		sln.set_space_and_pss(&space, &pss);
-		sln.set_solution_vector(solver.get_solution(), false);
+		sln.set_fe_solution(&space, solver.get_solution());
 
 		printf("* Solution:\n");
-		scalar *s = sln.get_solution_vector();
-		for (int i = 1; i <= ndofs; i++) {
-			printf(" x[% 3d] = " SCALAR_FMT "\n", i, SCALAR(s[i]));
+		scalar *s = solver.get_solution();
+		for (int i = 0; i < ndofs; i++) {
+//			printf(" x[% 3d] = " SCALAR_FMT "\n", i, SCALAR(s[i]));
 		}
 
 		// output the measured values
@@ -279,7 +337,7 @@ int main(int argc, char **args) {
 		}
 
 
-#ifdef OUTPUT_DIR
+#if 0 //def OUTPUT_DIR
 		// output
 		printf("starting output\n");
 		const char *of_name = OUTPUT_DIR "/solution.pos";
@@ -327,8 +385,6 @@ int main(int argc, char **args) {
 	rhs.free();
 	PetscFinalize();
 #endif
-
-	TRACE_END;
 
 	return res;
 }

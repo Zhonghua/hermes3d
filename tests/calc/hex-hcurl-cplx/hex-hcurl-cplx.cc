@@ -54,12 +54,12 @@ scalar3 &exact_solution(double x, double y, double z, scalar3 &dx, scalar3 &dy, 
 	return val;
 }
 
-scalar3 &f(double x, double y, double z) {
-	static scalar3 val;
+
+template<typename ct, typename res_t>
+void f(ct x, ct y, ct z, res_t (&val)[3]) {
 	val[0] = imag * (3./4. * x * (2. - y*y - z*z) - alpha * (3./8. * x * (1. - y*y) * (1. - z*z)));
 	val[1] = imag * (-3./4. * y * (1. - z*z));
 	val[2] = imag * (-3./4. * z * (1. - y*y));
-	return val;
 }
 
 EBCType bc_types(int marker) {
@@ -68,22 +68,27 @@ EBCType bc_types(int marker) {
 
 /// definition of the forms
 
-scalar bilinear_form(RealFunction *fu, RealFunction *fv, RefMap *ru, RefMap *rv) {
-	return hcurl_int_curl_u_curl_v(fu, fv, ru, rv) - alpha * hcurl_int_u_v(fu, fv, ru, rv);
+template<typename ct, typename res_t>
+res_t bilinear_form(int n, double *wt, fn_t<ct> *u, fn_t<ct> *v, geom_t<ct> *e, user_data_t<res_t> *data) {
+	return
+		hcurl_int_curl_u_curl_v<ct, res_t>(n, wt, u, v, e) -
+		alpha * hcurl_int_u_v<ct, res_t>(n, wt, u, v, e);
 }
 
-scalar linear_form(RealFunction *fv, RefMap *rv) {
-	return hcurl_int_F_v(f, fv, rv);
+template<typename ct, typename res_t>
+res_t linear_form(int n, double *wt, fn_t<ct> *v, geom_t<ct> *e, user_data_t<res_t> *data) {
+	return hcurl_int_F_v<ct, res_t>(n, wt, f, v, e);
 }
 
-scalar bilinear_form_surf(RealFunction *fu, RealFunction *fv, RefMap *ru, RefMap *rv, FacePos *fp) {
-	return -hcurl_surf_int_u_v(fu, fv, ru, rv, fp);
+template<typename ct, typename res_t>
+res_t bilinear_form_surf(int n, double *wt, fn_t<ct> *u, fn_t<ct> *v, face_t *fp, geom_t<ct> *e, user_data_t<res_t> *data) {
+	return -hcurl_surf_int_u_v<ct, res_t>(n, wt, u, v, fp, e);
 }
 
-scalar linear_form_surf(RealFunction *fv, RefMap *rv, FacePos *fp) {
-	return surf_int_G_v(fv, rv, fp);
+template<typename ct, typename res_t>
+res_t linear_form_surf(int n, double *wt, fn_t<ct> *v, face_t *fp, geom_t<ct> *e, user_data_t<res_t> *data) {
+	return 0.0;
 }
-
 
 // main ///////////////////////////////////////////////////////////////////////////////////////////
 
@@ -94,17 +99,12 @@ int main(int argc, char **argv) {
 	PetscInitialize(&argc, &argv, (char *) PETSC_NULL, PETSC_NULL);
 #endif
 
-	TRACE_START("trace.txt");
-	DEBUG_OUTPUT_ON;
-	SET_VERBOSE_LEVEL(0);
-
 	if (argc < 3) {
 		ERROR("Not enough parameters");
 		return ERR_NOT_ENOUGH_PARAMS;
 	}
 
 	HcurlShapesetLobattoHex shapeset;
-	PrecalcShapeset pss(&shapeset);
 
 	printf("* Loading mesh '%s'\n", argv[1]);
 	Mesh mesh;
@@ -122,7 +122,7 @@ int main(int argc, char **argv) {
 	sscanf(argv[2], "%d", &order);
 	int dir_x = order, dir_y = order, dir_z = order;
 	order3_t o(dir_x, dir_y, dir_z);
-	printf("  - Setting uniform order to (%d, %d, %d)\n", dir_x, dir_y, dir_z);
+	printf("  - Setting uniform order to (%d, %d, %d)\n", o.x, o.y ,o.z);
 	space.set_uniform_order(o);
 
 	int ndofs = space.assign_dofs();
@@ -135,27 +135,28 @@ int main(int argc, char **argv) {
 	UMFPackVector rhs;
 	UMFPackLinearSolver solver(mat, rhs);
 #elif defined WITH_PARDISO
-	PardisoLinearSolver solver;
+	PardisoMatrix mat;
+	PardisoVector rhs;
+	PardisoSolver solver(mat, rhs);
 #elif defined WITH_PETSC
 	PetscMatrix mat;
 	PetscVector rhs;
 	PetscLinearSolver solver(mat, rhs);
 #endif
 
-	Discretization d;
-	d.set_num_equations(1);
-	d.set_spaces(1, &space);
-	d.set_pss(1, &pss);
+	WeakForm wf(1);
+	wf.add_biform(0, 0, bilinear_form<double, scalar>, bilinear_form<ord_t, ord_t>, SYM);
+	wf.add_biform_surf(0, 0, bilinear_form_surf<double, scalar>, bilinear_form_surf<ord_t, ord_t>);
+	wf.add_liform(0, linear_form<double, scalar>, linear_form<ord_t, ord_t>);
+	wf.add_liform_surf(0, linear_form_surf<double, scalar>, linear_form_surf<ord_t, ord_t>);
 
-	d.set_bilinear_form(0, 0, bilinear_form, NULL, bilinear_form_surf);
-	d.set_linear_form(0, linear_form, linear_form_surf);
+	LinProblem lp(&wf);
+	lp.set_spaces(1, &space);
 
 	// assemble stiffness matrix
-	d.create(&mat, &rhs);
-
 	Timer assemble_timer("Assembling stiffness matrix");
 	assemble_timer.start();
-	d.assemble(&mat, &rhs);
+	lp.assemble(&mat, &rhs);
 	assemble_timer.stop();
 
 	// solve the stiffness matrix
@@ -164,17 +165,18 @@ int main(int argc, char **argv) {
 	bool solved = solver.solve();
 	solve_timer.stop();
 
-#ifdef OUTPUT_DIR
-	solver.dump_matrix(OUTPUT_DIR "/matrix");
-#endif
+//#ifdef OUTPUT_DIR
+	mat.dump(stdout, "a");
+	rhs.dump(stdout, "b");
+//#endif
 
 	if (solved) {
+		scalar *s = solver.get_solution();
+
 		Solution sln(&mesh);
-		sln.set_space_and_pss(&space, &pss);
-		sln.set_solution_vector(solver.get_solution(), false);
+		sln.set_fe_solution(&space, s);
 
 		printf("* Solution:\n");
-		scalar *s = sln.get_solution_vector();
 		for (int i = 1; i <= ndofs; i++) {
 			printf(" x[% 3d] = " SCALAR_FMT "\n", i, SCALAR(s[i]));
 		}
@@ -201,7 +203,7 @@ int main(int argc, char **argv) {
 		}
 
 
-#ifdef OUTPUT_DIR
+#if 0 //def OUTPUT_DIR
 		// output
 		printf("starting output\n");
 		const char *of_name = OUTPUT_DIR "/solution.vtk";
@@ -244,8 +246,6 @@ int main(int argc, char **argv) {
 	rhs.free();
 	PetscFinalize();
 #endif
-
-	TRACE_END;
 
 	return res;
 }

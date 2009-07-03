@@ -11,9 +11,9 @@ add_executable(${PROJECT_NAME}
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${TESTS_INCLUDE_DIRS})
-target_link_libraries(${PROJECT_NAME} ${TESTS_LIBRARIES}) 
-
 include_directories(${hermes3d_SOURCE_DIR})
+
+target_link_libraries(${PROJECT_NAME} ${TESTS_LIBRARIES}) 
 target_link_libraries(${PROJECT_NAME} ${HERMES_REAL_BIN})
 
 CONFIGURE_FILE(

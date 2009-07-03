@@ -44,14 +44,16 @@
 
 int m, n, o;
 
-double fnc(double x, double y, double z) {
+template<typename T>
+T fnc(T x, T y, T z) {
 	return pow(x, m) * pow(y, n) * pow(z, o) + pow(x, 2) * pow(y, 3) - pow(x, 3) * z + pow(z, 4);
 }
 
-double dfnc(double x, double y, double z) {
-	double ddxx = m*(m-1) * pow(x, m-2) * pow(y, n) * pow(z, o) + 2 * pow(y, 3) - 6 * x * z;
-	double ddyy = n*(n-1) * pow(x, m) * pow(y, n-2) * pow(z, o) + 6 * pow(x, 2) * y;
-	double ddzz = o*(o-1) * pow(x, m) * pow(y, n) * pow(z, o-2) + 12 * pow(z, 2);
+template<typename T>
+T dfnc(T x, T y, T z) {
+	T ddxx = m*(m-1) * pow(x, m-2) * pow(y, n) * pow(z, o) + 2 * pow(y, 3) - 6 * x * z;
+	T ddyy = n*(n-1) * pow(x, m) * pow(y, n-2) * pow(z, o) + 6 * pow(x, 2) * y;
+	T ddzz = o*(o-1) * pow(x, m) * pow(y, n) * pow(z, o-2) + 12 * pow(z, 2);
 
 	return -(ddxx + ddyy + ddzz);
 }
@@ -71,32 +73,32 @@ EBCType bc_types(int marker) {
 	return BC_NATURAL;
 }
 
-double bc_values(int marker, double x, double y, double z) {
-	switch (marker) {
-		case 1: return -(m * pow(x, m-1) * pow(y, n) * pow(z, o) + 2 * x * pow(y, 3) - 3 * pow(x, 2) * z) + fnc(x, y, z);
-		case 2: return   m * pow(x, m-1) * pow(y, n) * pow(z, o) + 2 * x * pow(y, 3) - 3 * pow(x, 2) * z + fnc(x, y, z);
-		case 3: return -(n * pow(x, m) * pow(y, n-1) * pow(z, o) + 3 * pow(x, 2) * pow(y, 2)) + fnc(x, y, z);
-		case 4: return   n * pow(x, m) * pow(y, n-1) * pow(z, o) + 3 * pow(x, 2) * pow(y, 2) + fnc(x, y, z);
-		case 5: return -(o * pow(x, m) * pow(y, n) * pow(z, o-1) - pow(x, 3) + 4 * pow(z, 3)) + fnc(x, y, z);
-		case 6: return   o * pow(x, m) * pow(y, n) * pow(z, o-1) - pow(x, 3) + 4 * pow(z, 3) + fnc(x, y, z);
-		default: EXIT(ERR_FAILURE, "Unknown marker"); return 0.0;
+template<typename f_t, typename res_t>
+res_t bilinear_form(int n, double *wt, fn_t<f_t> *u, fn_t<f_t> *v, geom_t<f_t> *e, user_data_t<res_t> *data) {
+	return int_grad_u_grad_v<f_t, res_t>(n, wt, u, v, e);
+}
+
+template<typename f_t, typename res_t>
+res_t bilinear_form_surf(int n, double *wt, fn_t<f_t> *u, fn_t<f_t> *v, geom_t<f_t> *e, user_data_t<res_t> *data) {
+	return int_u_v<f_t, res_t>(n, wt, u, v, e);
+}
+
+template<typename f_t, typename res_t>
+res_t linear_form(int n, double *wt, fn_t<f_t> *u, geom_t<f_t> *e, user_data_t<res_t> *data) {
+	return int_F_v<f_t, res_t>(n, wt, dfnc, u, e);
+}
+
+template<typename f_t, typename res_t>
+res_t linear_form_surf(int np, double *wt, fn_t<f_t> *u, geom_t<f_t> *e, user_data_t<res_t> *data) {
+	res_t result = 0;
+	for (int i = 0; i < np; i++) {
+		res_t dx = m * pow(e->x[i], m-1) * pow(e->y[i], n) * pow(e->z[i], o) + 2 * e->x[i] * pow(e->y[i], 3) - 3 * pow(e->x[i], 2) * e->z[i];
+		res_t dy = n * pow(e->x[i], m) * pow(e->y[i], n-1) * pow(e->z[i], o) + 3 * pow(e->x[i], 2) * pow(e->y[i], 2);
+		res_t dz = o * pow(e->x[i], m) * pow(e->y[i], n) * pow(e->z[i], o-1) - pow(e->x[i], 3) + 4 * pow(e->z[i], 3);
+
+		result += wt[i] * (u->fn[i] * (dx * e->nx[i] + dy * e->ny[i] + dz * e->nz[i] + fnc(e->x[i], e->y[i], e->z[i])));
 	}
-}
-
-scalar bilinear_form(RealFunction *fu, RealFunction *fv, RefMap *ru, RefMap *rv) {
-	return int_grad_u_grad_v(fu, fv, ru, rv);
-}
-
-scalar bilinear_form_surf(RealFunction *fu, RealFunction *fv, RefMap *ru, RefMap *rv, FacePos *fp) {
-	return surf_int_u_v(fu, fv, ru, rv, fp);
-}
-
-scalar linear_form(RealFunction *fv, RefMap *rv) {
-	return int_F_v(dfnc, fv, rv);
-}
-
-scalar linear_form_surf(RealFunction *fv, RefMap *rv, FacePos *fp) {
-	return surf_int_G_v(fv, rv, fp);
+	return result;
 }
 
 // main ///////////////////////////////////////////////////////////////////////////////////////////
@@ -108,10 +110,6 @@ int main(int argc, char **args) {
 	PetscInitialize(&argc, &args, (char *) PETSC_NULL, PETSC_NULL);
 #endif
 
-	TRACE_START("trace.txt");
-	DEBUG_OUTPUT_ON;
-	SET_VERBOSE_LEVEL(0);
-
 	if (argc < 5) {
 		ERROR("Not enough parameters");
 		return ERR_NOT_ENOUGH_PARAMS;
@@ -121,9 +119,6 @@ int main(int argc, char **args) {
 	sscanf(args[3], "%d", &n);
 	sscanf(args[4], "%d", &o);
 
-	H1ShapesetLobattoHex shapeset;
-	PrecalcShapeset pss(&shapeset);
-
 	printf("* Loading mesh '%s'\n", args[1]);
 	Mesh mesh;
 	Mesh3DReader mesh_loader;
@@ -132,13 +127,14 @@ int main(int argc, char **args) {
 		return ERR_FAILURE;
 	}
 
+	H1ShapesetLobattoHex shapeset;
 	printf("* Setting the space up\n");
 	H1Space space(&mesh, &shapeset);
 	space.set_bc_types(bc_types);
-	space.set_bc_values(bc_values);
 
 	int mx = maxn(4, m, n, o, 4);
 	order3_t order(mx, mx, mx);
+//	order3_t order(1, 1, 1);
 	printf("  - Setting uniform order to (%d, %d, %d)\n", mx, mx, mx);
 	space.set_uniform_order(order);
 
@@ -152,51 +148,52 @@ int main(int argc, char **args) {
 	UMFPackVector rhs;
 	UMFPackLinearSolver solver(mat, rhs);
 #elif defined WITH_PARDISO
-	PardisoLinearSolver solver;
+	PardisoMatrix mat;
+	PardisoVector rhs;
+	PardisoLinearSolver solver(mat, rhs);
 #elif defined WITH_PETSC
 	PetscMatrix mat;
 	PetscVector rhs;
 	PetscLinearSolver solver(mat, rhs);
 #endif
 
-	Discretization d;
-	d.set_num_equations(1);
-	d.set_spaces(1, &space);
-	d.set_pss(1, &pss);
+	WeakForm wf(1);
+	wf.add_biform(0, 0, bilinear_form<double, scalar>, bilinear_form<ord_t, ord_t>, SYM);
+	wf.add_biform_surf(0, 0, bilinear_form_surf<double, scalar>, bilinear_form_surf<ord_t, ord_t>);
+	wf.add_liform(0, linear_form<double, scalar>, linear_form<ord_t, ord_t>);
+	wf.add_liform_surf(0, linear_form_surf<double, scalar>, linear_form_surf<ord_t, ord_t>);
 
-	d.set_bilinear_form(0, 0, bilinear_form, NULL, bilinear_form_surf);
-	d.set_linear_form(0, linear_form, linear_form_surf);
+	LinProblem lp(&wf);
+	lp.set_spaces(1, &space);
 
 	// assemble stiffness matrix
-	d.create(&mat, &rhs);
-
-	Timer assemble_timer("Assembling stiffness matrix");
+	printf("  - assembling... "); fflush(stdout);
+	Timer assemble_timer;
 	assemble_timer.start();
-	d.assemble(&mat, &rhs);
+	lp.assemble(&mat, &rhs);
 	assemble_timer.stop();
+	printf("%s (%lf secs)\n", assemble_timer.get_human_time(), assemble_timer.get_seconds());
 
 	// solve the stiffness matrix
-	Timer solve_timer("Solving stiffness matrix");
+	printf("  - solving... "); fflush(stdout);
+	Timer solve_timer;
 	solve_timer.start();
 	bool solved = solver.solve();
 	solve_timer.stop();
+	printf("%s (%lf secs)\n", solve_timer.get_human_time(), solve_timer.get_seconds());
 
-	// output the measured values
-	printf("%s: %s (%lf secs)\n", assemble_timer.get_name(), assemble_timer.get_human_time(),
-	    assemble_timer.get_seconds());
-	printf("%s: %s (%lf secs)\n", solve_timer.get_name(), solve_timer.get_human_time(),
-	    solve_timer.get_seconds());
+//	mat.dump(stdout, "a");
+//	rhs.dump(stdout, "b");
 
 	if (solved) {
 		Solution sln(&mesh);
-		sln.set_space_and_pss(&space, &pss);
-		sln.set_solution_vector(solver.get_solution(), false);
+		sln.set_fe_solution(&space, solver.get_solution());
 
 		printf("* Solution:\n");
-		double *s = sln.get_solution_vector();
-		for (int i = 1; i <= ndofs; i++) {
-			printf(" x[% 3d] = % lf\n", i, s[i]);
-		}
+		double *s = solver.get_solution();
+//		for (int i = 1; i <= ndofs; i++) {
+//			printf(" x[% 3d] = % lf\n", i, s[i]);
+//		}
 
 		// norm
 		ExactSolution ex_sln(&mesh, exact_solution);
@@ -218,11 +215,11 @@ int main(int argc, char **args) {
 #ifdef OUTPUT_DIR
 		printf("* Output\n");
 		// output
-		char *of_name = OUTPUT_DIR "/solution.pos";
+		const char *of_name = OUTPUT_DIR "/solution.pos";
 		FILE *ofile = fopen(of_name, "w");
 		if (ofile != NULL) {
 			ExactSolution ex_sln(&mesh, exact_solution);
-			DiffFilter eh(&sln, &ex_sln);
+//			DiffFilter eh(&sln, &ex_sln);
 //			DiffFilter eh_dx(mesh, &sln, &ex_sln, FN_DX, FN_DX);
 //			DiffFilter eh_dy(mesh, &sln, &ex_sln, FN_DY, FN_DY);
 //			DiffFilter eh_dz(mesh, &sln, &ex_sln, FN_DZ, FN_DZ);
@@ -232,7 +229,7 @@ int main(int argc, char **args) {
 //			output.out(&sln, "Uh dx", FN_DX_0);
 //			output.out(&sln, "Uh dy", FN_DY_0);
 //			output.out(&sln, "Uh dz", FN_DZ_0);
-			output.out(&eh, "Eh");
+//			output.out(&eh, "Eh");
 //			output.out(&eh_dx, "Eh dx");
 //			output.out(&eh_dy, "Eh dy");
 //			output.out(&eh_dz, "Eh dz");
@@ -256,8 +253,6 @@ int main(int argc, char **args) {
 	rhs.free();
 	PetscFinalize();
 #endif
-
-	TRACE_END;
 
 	return res;
 }

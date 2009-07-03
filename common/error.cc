@@ -26,6 +26,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
+#include "callstack.h"
 
 static const char *h_str_error[] = {
 	"Out of memory.",
@@ -57,6 +58,8 @@ void h_exit(int err_code, int line, const char *func, const char *file, char con
 	va_end(ap);
 	fprintf(stderr, "\n");
 
+	get_callstack().dump();
+
 	if (err_code == -1)
 		exit(err_code);
 	else
@@ -71,6 +74,8 @@ void h_exit(int err_code, int line, const char *func, const char *file, ...) {
 		vfprintf(stderr, h_str_error[err_code], ap);
 	va_end(ap);
 	fprintf(stderr, "\n");
+
+	get_callstack().dump();
 
 	if (err_code == -1)
 		exit(err_code);

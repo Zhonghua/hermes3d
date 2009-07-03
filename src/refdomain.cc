@@ -89,7 +89,7 @@ const int *RefTetra::face_edges[] = { tet_face_edges_0, tet_face_edges_1, tet_fa
 const int RefTetra::face_nedges[] = { 3, 3, 3, 3 };
 const EMode2D RefTetra::face_mode[] = { MODE_TRIANGLE, MODE_TRIANGLE, MODE_TRIANGLE, MODE_TRIANGLE };
 const int RefTetra::face_orientations[] = { 6, 6, 6, 6 };
-
+const Point3D RefTetra::face_normal[] = { { 0, -1, 0 }, { 1.0 / sqrt(3.0), 1.0 / sqrt(3.0), 1.0 / sqrt(3.0) }, { -1, 0, 0 }, { 0, 0, -1 } };
 
 // Hex ////////////////////////////////////////////////////////////////////////
 

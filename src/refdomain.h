@@ -101,6 +101,8 @@ public:
 	static EMode2D get_face_mode(int face) { return face_mode[face]; }
 	static int get_face_orientations(int face) { return face_orientations[face]; }
 
+	static const Point3D get_face_normal(int iface) { return face_normal[iface]; }
+
 protected:
 	static const Point3D vertices[];
 	static const int2 edge_vtcs[];
@@ -110,6 +112,8 @@ protected:
 	static const int face_nedges[];
 	static const EMode2D face_mode[];
 	static const int face_orientations[];
+
+	static const Point3D face_normal[];
 };
 
 

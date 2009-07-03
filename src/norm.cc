@@ -126,7 +126,8 @@ double h1_error(MeshFunction *sln1, MeshFunction *sln2) {
 	_F_
 	double error = calc_error(error_fn_h1, sln1, sln2);
 	double norm = calc_norm(norm_fn_h1, sln2);
-	return error / norm;
+	if (norm > 10e-15) return error / norm;
+	else return error;
 }
 
 double h1_norm(MeshFunction *sln) {
@@ -171,7 +172,8 @@ double l2_error(MeshFunction *sln1, MeshFunction *sln2) {
 	_F_
 	double error = calc_error(error_fn_l2, sln1, sln2);
 	double norm = calc_norm(norm_fn_l2, sln2);
-	return error / norm;
+	if (norm > 10e-15) return error / norm;
+	else return error;
 }
 
 double l2_norm(MeshFunction *sln) {
@@ -250,7 +252,8 @@ double hcurl_error(MeshFunction *sln1, MeshFunction *sln2) {
 	_F_
 	double error = calc_error(error_fn_hcurl, sln1, sln2);
 	double norm = calc_norm(norm_fn_hcurl, sln2);
-	return sqrt(error / norm);
+	if (norm > 10e-15) return error / norm;
+	else return error;
 }
 
 double hcurl_norm(MeshFunction *sln) {
@@ -305,7 +308,8 @@ double l2_error_hcurl(MeshFunction *sln1, MeshFunction *sln2) {
 	_F_
 	double error = calc_error(error_fn_l2_hcurl, sln1, sln2);
 	double norm = calc_norm(norm_fn_l2_hcurl, sln2);
-	return sqrt(error / norm);
+	if (norm > 10e-15) return error / norm;
+	else return error;
 }
 
 double l2_norm_hcurl(MeshFunction *sln) {

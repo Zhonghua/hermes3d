@@ -105,6 +105,7 @@ protected:
 OutputQuadTetra::OutputQuadTetra() {
 	_F_
 #ifdef WITH_TETRA
+	mode = MODE_TETRAHEDRON;
 	max_order = MAX_QUAD_ORDER;
 
 	output_precision = 1;
@@ -211,6 +212,7 @@ protected:
 OutputQuadHex::OutputQuadHex() {
 	_F_
 #ifdef WITH_HEX
+	mode = MODE_HEXAHEDRON;
 	max_order = MAX_QUAD_ORDER;
 	output_precision = 0;
 #else
@@ -431,14 +433,15 @@ void GmshOutputEngine::out(MeshFunction *fn, const char *name, int item/* = FN_V
 		int subdiv_num = quad->get_subdiv_num(order);
 
 		fn->set_active_element(element);
-		fn->set_quad(quad);
+		int np2 = quad->get_num_points(order);
+		QuadPt3D *pt2 = quad->get_points(order);
 
 		RefMap *refmap = fn->get_refmap();
-		double *phys_x = refmap->get_phys_x(order);
-		double *phys_y = refmap->get_phys_y(order);
-		double *phys_z = refmap->get_phys_z(order);
+		double *phys_x = refmap->get_phys_x(np2, pt2);
+		double *phys_y = refmap->get_phys_y(np2, pt2);
+		double *phys_z = refmap->get_phys_z(np2, pt2);
 
-		fn->set_quad_order(ELEM_QORDER(order), item);
+		fn->precalculate(np2, pt2, item);
 
 		scalar *val[nc];
 		for (int ic = 0; ic < nc; ic++)
@@ -486,6 +489,10 @@ void GmshOutputEngine::out(MeshFunction *fn, const char *name, int item/* = FN_V
 				default: assert(false); break;
 			}
 		}
+
+		delete [] phys_x;
+		delete [] phys_y;
+		delete [] phys_z;
 	}
 
 	// finalize

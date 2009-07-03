@@ -77,6 +77,11 @@ void UMFPackMatrix::free() {
 	delete [] Ax; Ax = NULL;
 }
 
+void UMFPackMatrix::set_zero() {
+	_F_
+	memset(Ax, 0, sizeof(scalar) * Ap[size]);
+}
+
 void UMFPackMatrix::update(int m, int n, scalar v) {
 	_F_
 	if (v != 0.0 && m != DIRICHLET_DOF && n != DIRICHLET_DOF)		// ignore dirichlet DOFs
@@ -168,11 +173,16 @@ UMFPackVector::~UMFPackVector() {
 void UMFPackVector::alloc(int n) {
 	_F_
 	free();
-	v = new scalar [n];
-	memset(v, 0, n * sizeof(scalar));
 	size = n;
+	v = new scalar [n];
+	MEM_CHECK(v);
+	set_zero();
 }
 
+void UMFPackVector::set_zero() {
+	_F_
+	memset(v, 0, size * sizeof(scalar));
+}
 void UMFPackVector::free() {
 	_F_
 	delete [] v;

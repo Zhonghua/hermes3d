@@ -110,6 +110,9 @@ public:
 	/// free the memory associated with stiffness matrix and right-hand side
 	virtual void free() = 0;
 
+	/// Zero the matrix
+	virtual void set_zero() = 0;
+
 	/// update the stiffness matrix
 	///
 	/// @param[in] m    - the row where to update
@@ -179,6 +182,9 @@ public:
 	virtual void alloc(int ndofs) = 0;
 	/// free the memory
 	virtual void free() = 0;
+
+	/// Zero the vector
+	virtual void set_zero() = 0;
 
 	/// update element on the specified position
 	///

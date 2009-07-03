@@ -1,7 +1,6 @@
 // This file is part of Hermes3D
 //
-// Copyright (c) 2009 David Andrs <dandrs@unr.edu>
-// Copyright (c) 2009 Pavel Kus <pavel.kus@gmail.com>
+// Copyright (c) 2008 - 2009 David Andrs <dandrs@unr.edu>
 //
 // Hermes3D is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published
@@ -17,9 +16,12 @@
 // along with Hermes3D; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-//
-// testing linear indepenedence of a shape functions
-//
+/*
+ * lindep.cc
+ *
+ * testing linear indepenedence of a shape functions
+ *
+ */
 
 #include "config.h"
 #include "common.h"
@@ -27,53 +29,43 @@
 #include <common/trace.h>
 #include <common/error.h>
 
-// TODO: Mostly the same as for H1 => review the code
-
 // l2 product
-double l2_product(RealFunction *fu, RealFunction *fv) {
-	Quad3D *quad = fu->get_quad();
+double l2_product(ShapeFunction *fu, ShapeFunction *fv) {
+	_F_
+	Quad3D *quad = get_quadrature(MODE_HEXAHEDRON);
 
-	// integrate with maximum order
-	order3_t o = fu->get_fn_order();
-	o.set_maximal();
+	order3_t o = fu->get_fn_order() + fv->get_fn_order() + order3_t(1, 1, 1);
 
-	qorder_t qord = ELEM_QORDER(o);
-	fu->set_quad_order(qord);
-	fv->set_quad_order(qord);
+	QuadPt3D *pt = quad->get_points(o);
+	int np = quad->get_num_points(o);
 
-	scalar *u0, *u1, *u2;
-	u0 = fu->get_fn_values(0);
-	u1 = fu->get_fn_values(1);
-	u2 = fu->get_fn_values(2);
+	fu->precalculate(np, pt, FN_VAL);
+	fv->precalculate(np, pt, FN_VAL);
 
-	scalar *v0, *v1, *v2;
-	v0 = fv->get_fn_values(0);
-	v1 = fv->get_fn_values(1);
-	v2 = fv->get_fn_values(2);
+	double *uval = fu->get_fn_values();
+	double *vval = fv->get_fn_values();
 
 	// integrating over reference brick -> jacobian is 1.0 (we do not have to bother with refmap)
 	double result = 0.0;
-	QuadPt3D *pt = quad->get_points(o);
-	int np = quad->get_num_points(o);
 	for (int i = 0; i < np; i++)
-		result += pt[i].w * (REAL(sqr(u0[i] - v0[i]) + sqr(u1[i] - v1[i]) + sqr(u2[i] - v2[i])));
+		result += pt[i].w * (uval[i] * vval[i]);
 
 	return result;
 }
 
 
 bool test_lin_indep(Shapeset *shapeset) {
+	_F_
 	printf("I. linear independency\n");
 
 	UMFPackMatrix mat;
 	UMFPackVector rhs;
 	UMFPackLinearSolver solver(mat, rhs);
 
-	PrecalcShapeset pss_u(shapeset), pss_v(shapeset);
-	pss_u.set_quad(get_quadrature(MODE));
-	pss_v.set_quad(get_quadrature(MODE));
+	ShapeFunction fu(shapeset), fv(shapeset);
 
 	int n =
+		Hex::NUM_VERTICES * 1 +			// 1 vertex fn
 		Hex::NUM_EDGES * shapeset->get_num_edge_fns(MAX_ELEMENT_ORDER) +
 		Hex::NUM_FACES * shapeset->get_num_face_fns(order2_t(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER)) +
 		shapeset->get_num_bubble_fns(order3_t(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER));
@@ -82,6 +74,9 @@ bool test_lin_indep(Shapeset *shapeset) {
 
 	int *fn_idx = new int [n];
 	int m = 0;
+	// vertex fns
+	for (int i = 0; i < Hex::NUM_VERTICES; i++, m++)
+		fn_idx[m] = shapeset->get_vertex_index(i);
 	// edge fns
 	for (int i = 0; i < Hex::NUM_EDGES; i++) {
 		int order = MAX_ELEMENT_ORDER;
@@ -114,15 +109,15 @@ bool test_lin_indep(Shapeset *shapeset) {
 	printf("assembling matrix ");
 
 	for (int i = 0; i < n; i++) {
-		pss_u.set_active_shape(fn_idx[i]);
+		fu.set_active_shape(fn_idx[i]);
 
 		printf(".");
 		fflush(stdout);			// prevent caching of output (to see that it did not freeze)
 
 		for (int j = 0; j < n; j++) {
-			pss_v.set_active_shape(fn_idx[j]);
+			fv.set_active_shape(fn_idx[j]);
 
-			double value = l2_product(&pss_u, &pss_v);
+			double value = l2_product(&fu, &fv);
 
 			mat.update(i, j, value);
 		}

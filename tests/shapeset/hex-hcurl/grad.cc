@@ -28,20 +28,68 @@
 #include <common/error.h>
 
 void hcurl_int_vol(RealFunction *fu, double3 result) {
-	// TODO: PUT YOUR CODE HERE
+	_F_
+/*	Quad3D *quad = get_quadrature(MODE_HEXAHEDRON);
+
+	order3_t o = quad->get_max_order();
+
+	QuadPt3D *pt = quad->get_points(o);
+	int np = quad->get_num_points(o);
+
+	fu->precalculate(np, pt, FN_DX | FN_DY | FN_DZ);
+
+	double *dx = fu->get_dx_values();
+	double *dy = fu->get_dy_values();
+	double *dz = fu->get_dz_values();
+
+	// integrating over reference brick -> jacobian is 1.0 (we do not have to bother with refmap)
+	result[0] = result[1] = result[2] = 0.0;
+	for (int i = 0; i < np; i++) {
+		result[0] += pt[i].w * dx[i];
+		result[1] += pt[i].w * dy[i];
+		result[2] += pt[i].w * dz[i];
+	}
+*/
 }
 
 void hcurl_int_surf(RealFunction *fu, double3 result) {
-	// TODO: PUT YOUR CODE HERE
+	_F_
+/*	Quad3D *quad = get_quadrature(MODE_HEXAHEDRON);
+
+	Point3D norm[] = {
+		{ -1.0,  0.0,  0.0 },
+		{  1.0,  0.0,  0.0 },
+		{  0.0, -1.0,  0.0 },
+		{  0.0,  1.0,  0.0 },
+		{  0.0,  0.0, -1.0 },
+		{  0.0,  0.0,  1.0 },
+	};
+
+	// integrating over reference brick -> jacobian is 1.0 (we do not have to bother with refmap)
+	result[0] = result[1] = result[2] = 0.0;
+	for (int face = 0; face < Hex::NUM_FACES; face++) {
+		order2_t face_order = quad->get_face_max_order(face);
+
+		QuadPt3D *pt = quad->get_face_points(face, face_order);
+		int np = quad->get_face_num_points(face, face_order);
+
+		fu->precalculate(np, pt, FN_VAL);
+		double *val = fu->get_fn_values();
+
+		for (int i = 0; i < np; i++) {
+			result[0] += pt[i].w * norm[face].x * val[i];
+			result[1] += pt[i].w * norm[face].y * val[i];
+			result[2] += pt[i].w * norm[face].z * val[i];
+		}
+	}
+*/
 }
 
 bool test_grad(int fn_idx, Shapeset *shapeset) {
-	PrecalcShapeset pss_u(shapeset);
-	pss_u.set_quad(get_quadrature(MODE));
+	_F_
+	ShapeFunction pss_u(shapeset);
 
 	pss_u.set_active_shape(fn_idx);
-
-//	printf("  fn #%d\n", fn_idx);
 
 	printf(".");
 	fflush(stdout);			// prevent caching of output (to see that it did not freeze)
@@ -62,6 +110,7 @@ bool test_grad(int fn_idx, Shapeset *shapeset) {
 }
 
 bool test_gradients(Shapeset *shapeset) {
+	_F_
 	printf("IV. gradients\n");
 
 	// edge fns
@@ -94,6 +143,8 @@ bool test_gradients(Shapeset *shapeset) {
 		if (!test_grad(bubble_idx[j], shapeset))
 			return false;
 	}
+
+	printf("\n");
 
 	return true;
 }

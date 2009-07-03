@@ -29,13 +29,16 @@
 #include <common/trace.h>
 #include <common/error.h>
 
-void h1_int_vol(RealFunction *fu, double3 result) {
-	Quad3D *quad = fu->get_quad();
+void h1_int_vol(ShapeFunction *fu, double3 result) {
+	_F_
+	Quad3D *quad = get_quadrature(MODE_HEXAHEDRON);
 
-	// integrate with maximum order
 	order3_t o = quad->get_max_order();
 
-	fu->set_quad_order(ELEM_QORDER(o), FN_DX | FN_DY | FN_DZ);
+	QuadPt3D *pt = quad->get_points(o);
+	int np = quad->get_num_points(o);
+
+	fu->precalculate(np, pt, FN_DX | FN_DY | FN_DZ);
 
 	double *dx = fu->get_dx_values();
 	double *dy = fu->get_dy_values();
@@ -43,8 +46,6 @@ void h1_int_vol(RealFunction *fu, double3 result) {
 
 	// integrating over reference brick -> jacobian is 1.0 (we do not have to bother with refmap)
 	result[0] = result[1] = result[2] = 0.0;
-	QuadPt3D *pt = quad->get_points(o);
-	int np = quad->get_num_points(o);
 	for (int i = 0; i < np; i++) {
 		result[0] += pt[i].w * dx[i];
 		result[1] += pt[i].w * dy[i];
@@ -52,8 +53,9 @@ void h1_int_vol(RealFunction *fu, double3 result) {
 	}
 }
 
-void h1_int_surf(RealFunction *fu, double3 result) {
-	Quad3D *quad = fu->get_quad();
+void h1_int_surf(ShapeFunction *fu, double3 result) {
+	_F_
+	Quad3D *quad = get_quadrature(MODE_HEXAHEDRON);
 
 	Point3D norm[] = {
 		{ -1.0,  0.0,  0.0 },
@@ -68,14 +70,13 @@ void h1_int_surf(RealFunction *fu, double3 result) {
 	result[0] = result[1] = result[2] = 0.0;
 	for (int face = 0; face < Hex::NUM_FACES; face++) {
 		order2_t face_order = quad->get_face_max_order(face);
-		// integrate with maximum order
-		qorder_t surf_order = FACE_QORDER(face, face_order);
-
-		fu->set_quad_order(surf_order, FN_VAL);
-		double *val = fu->get_fn_values();
 
 		QuadPt3D *pt = quad->get_face_points(face, face_order);
 		int np = quad->get_face_num_points(face, face_order);
+
+		fu->precalculate(np, pt, FN_VAL);
+		double *val = fu->get_fn_values();
+
 		for (int i = 0; i < np; i++) {
 			result[0] += pt[i].w * norm[face].x * val[i];
 			result[1] += pt[i].w * norm[face].y * val[i];
@@ -85,12 +86,10 @@ void h1_int_surf(RealFunction *fu, double3 result) {
 }
 
 bool test_grad(int fn_idx, Shapeset *shapeset) {
-	PrecalcShapeset pss_u(shapeset);
-	pss_u.set_quad(get_quadrature(MODE));
+	_F_
+	ShapeFunction fu(shapeset);
 
-	pss_u.set_active_shape(fn_idx);
-
-//	printf("  fn #%d\n", fn_idx);
+	fu.set_active_shape(fn_idx);
 
 	printf(".");
 	fflush(stdout);			// prevent caching of output (to see that it did not freeze)
@@ -98,8 +97,8 @@ bool test_grad(int fn_idx, Shapeset *shapeset) {
 	double3 vol_val = { 0.0, 0.0, 0.0 };
 	double3 surf_val = { 0.0, 0.0, 0.0 };
 
-	h1_int_vol(&pss_u, vol_val);
-	h1_int_surf(&pss_u, surf_val);
+	h1_int_vol(&fu, vol_val);
+	h1_int_surf(&fu, surf_val);
 
 //	printf("    % lf == % lf | % g, % d\n", vol_val[0], surf_val[0], fabs(vol_val[0] - surf_val[0]), fabs(vol_val[0] - surf_val[0]) < EPS);
 //	printf("    % lf == % lf | % g, % d\n", vol_val[1], surf_val[1], fabs(vol_val[1] - surf_val[1]), fabs(vol_val[1] - surf_val[1]) < EPS);
@@ -115,6 +114,7 @@ bool test_grad(int fn_idx, Shapeset *shapeset) {
 }
 
 bool test_gradients(Shapeset *shapeset) {
+	_F_
 	printf("IV. gradients\n");
 
 	// vertex fns

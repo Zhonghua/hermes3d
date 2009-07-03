@@ -1,6 +1,7 @@
 // This file is part of Hermes3D
 //
-// Copyright (c) 2008 - 2009 David Andrs <dandrs@unr.edu>
+// Copyright (c) 2009 David Andrs <dandrs@unr.edu>
+// Copyright (c) 2009 Pavel Kus <pavel.kus@gmail.com>
 //
 // Hermes3D is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published
@@ -16,12 +17,10 @@
 // along with Hermes3D; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-/*
- * main.cc
- *
- * Test for H1 lobatto shapeset for Hex
- *
- */
+//
+// Test for Hcurl lobatto shapeset for Hex
+//
+
 
 #include "config.h"
 #ifdef WITH_PETSC
@@ -42,39 +41,33 @@ bool test_gradients_directly(Shapeset *shapeset);
 // main
 //
 int main(int argc, char *argv[]) {
+	_F_
 	int res = ERR_SUCCESS;
 
 #ifdef WITH_PETSC
 	PetscInitialize(&argc, &argv, (char *) PETSC_NULL, PETSC_NULL);
 #endif
 
-	H1ShapesetLobattoHex shapeset;
+	printf("Trying to initialize shapeset\n");
+	HcurlShapesetLobattoHex shapeset;
+	printf("Shapeset initialized\n");
 
 	try {
 		// I. linear independency
-		if (!test_lin_indep(&shapeset))
-			throw ERR_FAILURE;
-
+//		if (!test_lin_indep(&shapeset)) throw ERR_FAILURE;
 		// II. test zero fn. values
-		if (!test_zero_values(&shapeset))
-			throw ERR_FAILURE;
-
+//		if (!test_zero_values(&shapeset)) throw ERR_FAILURE;
 		// III. continuity on boundaries
-		if (!test_continuity(&shapeset))
-			throw ERR_FAILURE;
-
+//		if (!test_continuity(&shapeset)) throw ERR_FAILURE;
 		// IV. gradients
-		if (!test_gradients(&shapeset))
-			throw ERR_FAILURE;
-
+		// FIXME: implement a check that dx, dy, dz are gradients of shapefunctions
+//		if (!test_gradients(&shapeset)) throw ERR_FAILURE;
 		// V. computes gradients numericaly from fn values and compares
-		if (!test_gradients_directly(&shapeset))
-			throw ERR_FAILURE;
+		if (!test_gradients_directly(&shapeset)) throw ERR_FAILURE;
 
 		printf("Shapeset OK\n");
 	}
 	catch (int e) {
-		printf("Failed\n");
 		res = e;
 	}
 

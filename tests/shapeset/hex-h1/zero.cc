@@ -31,6 +31,7 @@
 
 // check vertex functions
 bool test_zero_values_of_vertex_fns(Shapeset *shapeset) {
+	_F_
 	const int num_vertices = 7;
 	// indexing[vertex] => { vertices to check where the function is zero (local indices) }
 	int vertices[][num_vertices] = {
@@ -86,9 +87,13 @@ bool test_zero_values_of_vertex_fns(Shapeset *shapeset) {
 		// edges
 		for (int i = 0; i < num_edges; i++) {
 			order1_t max_order = quad->get_edge_max_order(edges[vtx][i]);
+			int np = quad->get_edge_num_points(edges[vtx][i], max_order);
 			QuadPt3D *pts = quad->get_edge_points(edges[vtx][i], max_order);
-			for (int j = 0; j < quad->get_edge_num_points(max_order); j++) {
-				if (shapeset->get_fn_value(fn_idx, pts[j].x, pts[j].y, pts[j].z, 0) > EPS) {
+
+			double vals[np];
+			shapeset->get_fn_values(fn_idx, np, pts, 0, vals);
+			for (int j = 0; j < np; j++) {
+				if (vals[j] > EPS) {
 					ERROR("Vertex fn #%d (%d) is not zero at (% lf, %lf, %lf), edge %d.", vtx, fn_idx, pts[j].x, pts[j].y, pts[j].z, edges[vtx][i]);
 					return false;
 				}
@@ -98,9 +103,12 @@ bool test_zero_values_of_vertex_fns(Shapeset *shapeset) {
 		// faces
 		for (int i = 0; i < num_faces; i++) {
 			order2_t max_order = quad->get_face_max_order(faces[vtx][i]);
+			int np = quad->get_face_num_points(faces[vtx][i], max_order);
 			QuadPt3D *pts = quad->get_face_points(faces[vtx][i], max_order);
-			for (int j = 0; j < quad->get_face_num_points(faces[vtx][i], max_order); j++) {
-				if (shapeset->get_fn_value(fn_idx, pts[j].x, pts[j].y, pts[j].z, 0) > EPS) {
+			double vals[np];
+			shapeset->get_fn_values(fn_idx, np, pts, 0, vals);
+			for (int j = 0; j < np; j++) {
+				if (vals[j] > EPS) {
 					ERROR("Vertex fn #%d (%d) is not zero at (% lf, %lf, %lf), face %d.", vtx, fn_idx, pts[j].x, pts[j].y, pts[j].z, faces[vtx][i]);
 					return false;
 				}
@@ -115,6 +123,7 @@ bool test_zero_values_of_vertex_fns(Shapeset *shapeset) {
 
 // check edge functions
 bool test_zero_values_of_edge_fns(Shapeset *shapeset) {
+	_F_
 	const int num_vertices = 8;
 	// indexing[edge] => { vertices to check where the function is zero (local indices) }
 	int vertices[][num_vertices] = {
@@ -183,9 +192,12 @@ bool test_zero_values_of_edge_fns(Shapeset *shapeset) {
 				// edges
 				for (int i = 0; i < num_edges; i++) {
 					order1_t max_order = quad->get_edge_max_order(edges[edge][i]);
+					int np = quad->get_edge_num_points(edges[edge][i], max_order);
 					QuadPt3D *pts = quad->get_edge_points(edges[edge][i], max_order);
-					for (int j = 0; j < quad->get_edge_num_points(max_order); j++) {
-						if (shapeset->get_fn_value(edge_fn[fn], pts[j].x, pts[j].y, pts[j].z, 0) > EPS) {
+					double vals[np];
+					shapeset->get_fn_values(edge_fn[fn], np, pts, 0, vals);
+					for (int j = 0; j < np; j++) {
+						if (vals[j] > EPS) {
 							ERROR("Edge fn #%d is not zero at (% lf, %lf, %lf), edge %d.", edge_fn[fn], pts[j].x, pts[j].y, pts[j].z, edges[edge][i]);
 							return false;
 						}
@@ -195,9 +207,12 @@ bool test_zero_values_of_edge_fns(Shapeset *shapeset) {
 				// faces
 				for (int i = 0; i < num_faces; i++) {
 					order2_t max_order = quad->get_face_max_order(faces[edge][i]);
+					int np = quad->get_face_num_points(faces[edge][i], max_order);
 					QuadPt3D *pts = quad->get_face_points(faces[edge][i], max_order);
-					for (int j = 0; j < quad->get_face_num_points(faces[edge][i], max_order); j++) {
-						if (shapeset->get_fn_value(edge_fn[fn], pts[j].x, pts[j].y, pts[j].z, 0) > EPS) {
+					double vals[np];
+					shapeset->get_fn_values(edge_fn[fn], np, pts, 0, vals);
+					for (int j = 0; j < np; j++) {
+						if (vals[j] > EPS) {
 							ERROR("Edge fn #%d is not zero at (% lf, %lf, %lf), face %d.", edge_fn[fn], pts[j].x, pts[j].y, pts[j].z, faces[edge][i]);
 							return false;
 						}
@@ -215,6 +230,7 @@ bool test_zero_values_of_edge_fns(Shapeset *shapeset) {
 
 // check face functions
 bool test_zero_values_of_face_fns(Shapeset *shapeset) {
+	_F_
 	const int num_vertices = 8;
 	// indexing[face] => { vertices to check where the function is zero (local indices) }
 	int vertices[][num_vertices] = {
@@ -270,9 +286,12 @@ bool test_zero_values_of_face_fns(Shapeset *shapeset) {
 				// edges
 				for (int i = 0; i < num_edges; i++) {
 					order1_t max_order = quad->get_edge_max_order(edges[face][i]);
+					int np = quad->get_edge_num_points(edges[face][i], max_order);
 					QuadPt3D *pts = quad->get_edge_points(edges[face][i], max_order);
-					for (int j = 0; j < quad->get_edge_num_points(max_order); j++) {
-						if (shapeset->get_fn_value(face_fn[fn], pts[j].x, pts[j].y, pts[j].z, 0) > EPS) {
+					double vals[np];
+					shapeset->get_fn_values(face_fn[fn], np, pts, 0, vals);
+					for (int j = 0; j < np; j++) {
+						if (vals[j] > EPS) {
 							ERROR("Face fn #%d is not zero at (% lf, %lf, %lf), edge %d.", face_fn[fn], pts[j].x, pts[j].y, pts[j].z, edges[face][i]);
 							return false;
 						}
@@ -282,9 +301,12 @@ bool test_zero_values_of_face_fns(Shapeset *shapeset) {
 				// faces
 				for (int i = 0; i < num_faces; i++) {
 					order2_t max_order = quad->get_face_max_order(faces[face][i]);
+					int np = quad->get_face_num_points(faces[face][i], max_order);
 					QuadPt3D *pts = quad->get_face_points(faces[face][i], max_order);
-					for (int j = 0; j < quad->get_face_num_points(faces[face][i], max_order); j++) {
-						if (shapeset->get_fn_value(face_fn[fn], pts[j].x, pts[j].y, pts[j].z, 0) > EPS) {
+					double vals[np];
+					shapeset->get_fn_values(face_fn[fn], np, pts, 0, vals);
+					for (int j = 0; j < np; j++) {
+						if (vals[j] > EPS) {
 							ERROR("Face fn #%d is not zero at (% lf, %lf, %lf), face %d.", face_fn[fn], pts[j].x, pts[j].y, pts[j].z, faces[face][i]);
 							return false;
 						}
@@ -301,7 +323,7 @@ bool test_zero_values_of_face_fns(Shapeset *shapeset) {
 
 // check bubble functions
 bool test_zero_values_of_bubble_fns(Shapeset *shapeset) {
-
+	_F_
 	Quad3D *quad = get_quadrature(MODE);
 
 	order3_t order(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER);
@@ -322,24 +344,30 @@ bool test_zero_values_of_bubble_fns(Shapeset *shapeset) {
 		}
 
 		// edges
-		for (int i = 0; i < Hex::NUM_EDGES; i++) {
-			order1_t max_order = quad->get_edge_max_order(i);
-			QuadPt3D *pts = quad->get_edge_points(i, max_order);
-			for (int j = 0; j < quad->get_edge_num_points(max_order); j++) {
-				if (shapeset->get_fn_value(bubble_fn[fn], pts[j].x, pts[j].y, pts[j].z, 0) > EPS) {
-					ERROR("Bubble fn #%d is not zero at (% lf, %lf, %lf), edge %d.", bubble_fn[fn], pts[j].x, pts[j].y, pts[j].z, i);
+		for (int iedge = 0; iedge < Hex::NUM_EDGES; iedge++) {
+			order1_t max_order = quad->get_edge_max_order(iedge);
+			int np = quad->get_edge_num_points(iedge, max_order);
+			QuadPt3D *pts = quad->get_edge_points(iedge, max_order);
+			double vals[np];
+			shapeset->get_fn_values(bubble_fn[fn], np, pts, 0, vals);
+			for (int j = 0; j < np; j++) {
+				if (vals[j] > EPS) {
+					ERROR("Bubble fn #%d is not zero at (% lf, %lf, %lf), edge %d.", bubble_fn[fn], pts[j].x, pts[j].y, pts[j].z, iedge);
 					return false;
 				}
 			}
 		}
 
 		// faces
-		for (int i = 0; i < Hex::NUM_FACES; i++) {
-			order2_t max_order = quad->get_face_max_order(i);
-			QuadPt3D *pts = quad->get_face_points(i, max_order);
-			for (int j = 0; j < quad->get_face_num_points(i, max_order); j++) {
-				if (shapeset->get_fn_value(bubble_fn[fn], pts[j].x, pts[j].y, pts[j].z, 0) > EPS) {
-					ERROR("Bubble fn #%d is not zero at (% lf, %lf, %lf), face %d.", bubble_fn[fn], pts[j].x, pts[j].y, pts[j].z, i);
+		for (int iface = 0; iface < Hex::NUM_FACES; iface++) {
+			order2_t max_order = quad->get_face_max_order(iface);
+			int np = quad->get_face_num_points(iface, max_order);
+			QuadPt3D *pts = quad->get_face_points(iface, max_order);
+			double vals[np];
+			shapeset->get_fn_values(bubble_fn[fn], np, pts, 0, vals);
+			for (int j = 0; j < np; j++) {
+				if (vals[j] > EPS) {
+					ERROR("Bubble fn #%d is not zero at (% lf, %lf, %lf), face %d.", bubble_fn[fn], pts[j].x, pts[j].y, pts[j].z, iface);
 					return false;
 				}
 			}
@@ -352,6 +380,7 @@ bool test_zero_values_of_bubble_fns(Shapeset *shapeset) {
 }
 
 bool test_zero_values(Shapeset *shapeset) {
+	_F_
 	printf("II. function values\n");
 
 	if (!test_zero_values_of_vertex_fns(shapeset))

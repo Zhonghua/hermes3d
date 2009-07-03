@@ -30,6 +30,7 @@
 
 // check edge functions
 bool test_zero_values_of_edge_fns(Shapeset *shapeset) {
+	_F_
 	const int num_edges = 11;
 	// indexing[edge] => { edges to check where the function is zero (local indices) }
 	int edges[][num_edges] = {
@@ -77,7 +78,7 @@ bool test_zero_values_of_edge_fns(Shapeset *shapeset) {
 				for (int i = 0; i < num_edges; i++) {
 					int max_order = quad->get_edge_max_order(edges[iedge][i]);
 					QuadPt3D *pts = quad->get_edge_points(edges[iedge][i], max_order);
-					for (int j = 0; j < quad->get_edge_num_points(max_order); j++) {
+					for (int j = 0; j < quad->get_edge_num_points(iedge, max_order); j++) {
 						int comp = RefHex::get_edge_tangent_direction(edges[iedge][i]);
 						if (shapeset->get_fn_value(edge_fn[fn], pts[j].x, pts[j].y, pts[j].z, comp) > EPS) {
 							ERROR("Edge fn #%d is not zero at (% lf, %lf, %lf), edge %d, component %d.\n", edge_fn[fn], pts[j].x, pts[j].y, pts[j].z, edges[iedge][i], comp);
@@ -111,6 +112,7 @@ bool test_zero_values_of_edge_fns(Shapeset *shapeset) {
 
 // check face functions
 bool test_zero_values_of_face_fns(Shapeset *shapeset) {
+	_F_
 	const int num_edges = 12;
 	// indexing[face] => { edges to check where the function is zero (local indices) }
 	int edges[][num_edges] = {
@@ -147,7 +149,7 @@ bool test_zero_values_of_face_fns(Shapeset *shapeset) {
 				for (int i = 0; i < num_edges; i++) {
 					int max_order = quad->get_edge_max_order(edges[iface][i]);
 					QuadPt3D *pts = quad->get_edge_points(edges[iface][i], max_order);
-					for (int j = 0; j < quad->get_edge_num_points(max_order); j++) {
+					for (int j = 0; j < quad->get_edge_num_points(edges[iface][i], max_order); j++) {
 						int comp = RefHex::get_edge_tangent_direction(edges[iface][i]);
 						if (shapeset->get_fn_value(face_fn[fn], pts[j].x, pts[j].y, pts[j].z, comp) > EPS) {
 							ERROR("Face fn #%d is not zero at (% lf, %lf, %lf), edge %d.", face_fn[fn], pts[j].x, pts[j].y, pts[j].z, edges[iface][i]);
@@ -181,7 +183,7 @@ bool test_zero_values_of_face_fns(Shapeset *shapeset) {
 
 // check bubble functions
 bool test_zero_values_of_bubble_fns(Shapeset *shapeset) {
-
+	_F_
 	Quad3D *quad = get_quadrature(MODE);
 
 	order3_t order(MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER, MAX_ELEMENT_ORDER);
@@ -196,7 +198,7 @@ bool test_zero_values_of_bubble_fns(Shapeset *shapeset) {
 		for (int i = 0; i < Hex::NUM_EDGES; i++) {
 			int max_order = quad->get_edge_max_order(i);
 			QuadPt3D *pts = quad->get_edge_points(i, max_order);
-			for (int j = 0; j < quad->get_edge_num_points(max_order); j++) {
+			for (int j = 0; j < quad->get_edge_num_points(i, max_order); j++) {
 				int comp = RefHex::get_edge_tangent_direction(i);
 				if (shapeset->get_fn_value(bubble_fn[fn], pts[j].x, pts[j].y, pts[j].z, comp) > EPS) {
 					ERROR("Bubble fn #%d is not zero at (% lf, %lf, %lf), edge %d.", bubble_fn[fn], pts[j].x, pts[j].y, pts[j].z, i);
@@ -227,6 +229,7 @@ bool test_zero_values_of_bubble_fns(Shapeset *shapeset) {
 }
 
 bool test_zero_values(Shapeset *shapeset) {
+	_F_
 	printf("II. function values\n");
 
 	if (!test_zero_values_of_edge_fns(shapeset))

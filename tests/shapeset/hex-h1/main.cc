@@ -1,7 +1,6 @@
 // This file is part of Hermes3D
 //
-// Copyright (c) 2009 David Andrs <dandrs@unr.edu>
-// Copyright (c) 2009 Pavel Kus <pavel.kus@gmail.com>
+// Copyright (c) 2008 - 2009 David Andrs <dandrs@unr.edu>
 //
 // Hermes3D is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published
@@ -17,10 +16,12 @@
 // along with Hermes3D; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-//
-// Test for Hcurl lobatto shapeset for Hex
-//
-
+/*
+ * main.cc
+ *
+ * Test for H1 lobatto shapeset for Hex
+ *
+ */
 
 #include "config.h"
 #ifdef WITH_PETSC
@@ -41,15 +42,14 @@ bool test_gradients_directly(Shapeset *shapeset);
 // main
 //
 int main(int argc, char *argv[]) {
+	_F_
 	int res = ERR_SUCCESS;
 
 #ifdef WITH_PETSC
 	PetscInitialize(&argc, &argv, (char *) PETSC_NULL, PETSC_NULL);
 #endif
 
-	printf("Trying to initialize shapeset\n");
-	HcurlShapesetLobattoHex shapeset;
-	printf("Shapeset initialized\n");
+	H1ShapesetLobattoHex shapeset;
 
 	try {
 		// I. linear independency
@@ -66,6 +66,7 @@ int main(int argc, char *argv[]) {
 		printf("Shapeset OK\n");
 	}
 	catch (int e) {
+		printf("Test failed\n");
 		res = e;
 	}
 

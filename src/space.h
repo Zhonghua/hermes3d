@@ -80,6 +80,8 @@ public:
 
 	virtual Space *dup(Mesh *mesh) const = 0;
 
+	ESpaceType get_type() { return type; }
+
 	void set_bc_types(EBCType (*bc_type_callback)(int marker));
 	void set_bc_values(scalar (*bc_value_callback_by_coord)(int marker, double x, double y, double z));
 	void set_bc_values(scalar3 &(*bc_vec_value_callback_by_coord)(int marker, double x, double y, double z));
@@ -104,6 +106,7 @@ protected:
 public: //remove me
 	Mesh *mesh;
 	Shapeset *shapeset;
+	ESpaceType type;
 
 	int first_dof, next_dof, first_bubble;
 	int stride;

@@ -53,6 +53,8 @@ public:
 
 	virtual void set_active_element(Element *e);
 
+	ESpaceType get_sptype() { return sptype; }
+
 	Mesh *get_mesh() const { return mesh; }
 	RefMap *get_refmap() { update_refmap(); return refmap; }
 
@@ -62,6 +64,8 @@ protected:
 
 	int mode, seq;
 	bool noinc;
+
+	ESpaceType sptype;
 
 public:
 	/// For internal use only.

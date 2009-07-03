@@ -4797,6 +4797,7 @@ static shape_fn_t *lobatto_tetra_dz_table[] = {
 H1ShapesetLobattoTetra::H1ShapesetLobattoTetra() {
 	_F_
 #ifdef WITH_TETRA
+	type = H1;
 	mode = MODE_TETRAHEDRON;
 	num_components = 1;
 

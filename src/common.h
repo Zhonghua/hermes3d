@@ -74,6 +74,12 @@ enum EMode3D {
 	MODE_PRISM = 2
 };
 
+enum ESpaceType {
+	H1 = 1,
+	Hcurl = 2,
+	Hdiv = 3,
+	L2 = 4
+};
 
 // points
 struct Point1D {

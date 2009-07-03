@@ -32,6 +32,7 @@ HcurlSpace::HcurlSpace(Mesh *mesh, Shapeset *ss) :
 		Space(mesh, ss)
 {
 	_F_
+	this->type = Hcurl;
 }
 
 HcurlSpace::~HcurlSpace() {

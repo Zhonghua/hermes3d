@@ -247,6 +247,7 @@ static double calc_dz_value(int index, double x, double y, double z, int compone
 H1ShapesetSinHex::H1ShapesetSinHex() {
 	_F_
 #ifdef WITH_HEX
+	type = H1;
 	mode = MODE_HEXAHEDRON;
 	num_components = 1;
 

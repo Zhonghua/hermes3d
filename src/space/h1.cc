@@ -33,6 +33,7 @@ H1Space::H1Space(Mesh *mesh, Shapeset *ss) :
 	Space(mesh, ss)
 {
 	_F_
+	this->type = H1;
 }
 
 H1Space::~H1Space() {

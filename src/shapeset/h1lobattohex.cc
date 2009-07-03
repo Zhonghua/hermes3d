@@ -221,6 +221,7 @@ static void calc_dz_values(int index, int np, QuadPt3D *pt, int component, doubl
 H1ShapesetLobattoHex::H1ShapesetLobattoHex() {
 	_F_
 #ifdef WITH_HEX
+	type = H1;
 	mode = MODE_HEXAHEDRON;
 	num_components = 1;
 

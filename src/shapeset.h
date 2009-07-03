@@ -132,6 +132,7 @@ public:
 	Shapeset();
 	virtual ~Shapeset();
 
+	ESpaceType get_type() { return type; }
 	int get_mode() const { return mode; }
 	int get_num_components() const { return num_components; }
 
@@ -237,6 +238,7 @@ public:
 
 
 protected:
+	ESpaceType type;
 	int mode;
 	int num_components;
 

@@ -48,6 +48,7 @@
 // quadrature
 #include "quad.h"
 #include "quadstd.h"
+#include "forms.h"
 
 #include "refmap.h"
 #include "integrals/h1.h"
@@ -73,9 +74,10 @@
 #include "output/graph.h"
 
 #include "asmlist.h"
-#include "discretization.h"
 #include "solution.h"
 #include "filter.h"
+#include "weakform.h"
+#include "linproblem.h"
 
 // linear solvers
 #include "linsolver.h"

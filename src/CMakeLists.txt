@@ -6,10 +6,11 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})		# for config.h
 
 # source files for the hermes3d library
 set(SRC
-	discretization.cc
 	filter.cc
+	forms.cc
 	function.cc
 	mesh.cc
+	linproblem.cc
 	loader/mesh3d.cc
 	loader/hdf5.cc
 	matrix.cc
@@ -38,6 +39,7 @@ set(SRC
 	space/hcurl.cc
 	transform.cc
 	traverse.cc
+	weakform.cc
 	linsolver/pardiso.cc
 	linsolver/petsc.cc
 	linsolver/umfpack.cc

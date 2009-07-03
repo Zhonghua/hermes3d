@@ -21,7 +21,6 @@
 #include "common.h"
 #include "norm.h"
 #include "quad.h"
-#include "discretization.h"
 #include "refmap.h"
 #include "traverse.h"
 #include <common/callstack.h>

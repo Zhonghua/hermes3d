@@ -28,6 +28,8 @@
 #include <math.h>
 #include <cstdarg>
 #include <algorithm>			// std::min, std::max
+#include <vector>
+#include <set>
 
 #ifdef COMPLEX
 
@@ -55,6 +57,7 @@ typedef double scalar;
 
 #endif
 
+const int ANY = -1234;
 
 // 1D element modes
 enum EMode1D {

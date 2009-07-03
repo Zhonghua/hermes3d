@@ -156,6 +156,8 @@ macro(LIBRARY_SETTINGS BIN)
 
 	if(WITH_HDF5)
 	endif(WITH_HDF5)
+
+	target_link_libraries(${BIN} ${ADDITIONAL_LIBS})
 endmacro(LIBRARY_SETTINGS)
 
 

@@ -22,7 +22,6 @@
 //
 
 #include "../h3dconfig.h"
-#include "common.h"
 #include "lobatto.h"
 #include "h1lobattohex.h"
 #include <common/error.h>
@@ -488,20 +487,20 @@ CEDComb *H1ShapesetLobattoHex::calc_constrained_edge_face_combination(int ori, c
 
 	if (ori >= 4) dir = (dir == PART_ORI_VERT) ? PART_ORI_HORZ : PART_ORI_VERT; 			// turned face
 
-	// determine the interval of the face
-	double hi, lo;
-	double x0;
-	int epart;
-
+	double c;					// constant that the lin. combination is multiplies with
+	double **a, *b;				// matrix and rhs
+	int n, m;					// total number of functions on horz and vert edge
 	if (dir == PART_ORI_VERT) {
+		double hi, lo;
 		get_interval_part(rp.vert, lo, hi);
-		epart = face_to_edge_part(rp.horz);
+		int epart = face_to_edge_part(rp.horz);
+		double x0;
 		get_edge_part(epart, x0);
 
 		int horder = order.x;
 		int vorder = order.y;
 
-		int n = get_num_edge_fns(vorder);										// total number of functions on the edge
+		n = get_num_edge_fns(vorder);										// total number of functions on the edge
 		int *edge_fn_idx[] = {
 			get_edge_indices(0, 0, horder),										// indices of all functions on the edge
 			get_edge_indices(0, 0, vorder)										// indices of all functions on the edge
@@ -510,51 +509,33 @@ CEDComb *H1ShapesetLobattoHex::calc_constrained_edge_face_combination(int ori, c
 		double f_lo = get_value(FN, edge_fn_idx[1][n - 1], lo, -1.0, -1.0, 0);		// fn. values at endpoints of the part
 		double f_hi = get_value(FN, edge_fn_idx[1][n - 1], hi, -1.0, -1.0, 0);
 
-		double **a = new_matrix<double>(n, n);
-		MEM_CHECK(a);
-		double *b = new double[n];
-		MEM_CHECK(b);
+		a = new_matrix<double>(n, n); MEM_CHECK(a);
+		b = new double[n]; MEM_CHECK(b);
 		for (int i = 0; i < n; i++) {
 			// chebyshev point
 			double p = cos((i + 1) * M_PI / vorder);
 			double r = (p + 1.0) * 0.5;
 			double s = 1.0 - r;
 
-			// matrix row
 			for (int j = 0; j < n; j++)
 				a[i][j] = get_value(FN, edge_fn_idx[1][j], p, -1.0, -1.0, 0);
-
-			// rhs
 			b[i] = get_value(FN, edge_fn_idx[1][n - 1], lo*s + hi*r, -1.0, -1.0, 0) - f_lo*s - f_hi*r;	// depends on the ref. domain
 		}
 
-		// solve the system
-		double d;
-		int *iperm = new int[n];
-		MEM_CHECK(iperm);
-		ludcmp(a, n, iperm, &d);
-		lubksb(a, n, iperm, b);
-
-		int m = get_num_edge_fns(horder);											// total number of functions on the edge
-		double c = get_value(FN, edge_fn_idx[0][m - 1], x0, -1.0, -1.0, 0);
-		for (int i = 0; i < n; i++)
-			b[i] *= c;
-
-		// cleanup
-		delete [] iperm;
-		delete [] a;
-
-		return new CEDComb(n, b);
+		m = get_num_edge_fns(horder);											// total number of functions on the edge
+		c = get_value(FN, edge_fn_idx[0][m - 1], x0, -1.0, -1.0, 0);
 	}
 	else {
+		double hi, lo;
 		get_interval_part(rp.horz, lo, hi);
-		epart = face_to_edge_part(rp.vert);
+		int epart = face_to_edge_part(rp.vert);
+		double x0;
 		get_edge_part(epart, x0);
 
 		int horder = order.x;
 		int vorder = order.y;
 
-		int n = get_num_edge_fns(horder);										// total number of functions on the edge
+		n = get_num_edge_fns(horder);										// total number of functions on the edge
 		int *edge_fn_idx[] = {
 			get_edge_indices(0, 0, horder),										// indices of all functions on the edge
 			get_edge_indices(0, 0, vorder)										// indices of all functions on the edge
@@ -563,42 +544,38 @@ CEDComb *H1ShapesetLobattoHex::calc_constrained_edge_face_combination(int ori, c
 		double f_lo = get_value(FN, edge_fn_idx[0][n - 1], lo, -1.0, -1.0, 0);		// fn. values at endpoints of the part
 		double f_hi = get_value(FN, edge_fn_idx[0][n - 1], hi, -1.0, -1.0, 0);
 
-		double **a = new_matrix<double>(n, n);
-		MEM_CHECK(a);
-		double *b = new double[n];
-		MEM_CHECK(b);
+		a = new_matrix<double>(n, n); MEM_CHECK(a);
+		b = new double[n]; MEM_CHECK(b);
 		for (int i = 0; i < n; i++) {
 			// chebyshev point
 			double p = cos((i+1) * M_PI / horder);
 			double r = (p + 1.0) * 0.5;
 			double s = 1.0 - r;
 
-			// matrix row
 			for (int j = 0; j < n; j++)
 				a[i][j] = get_value(FN, edge_fn_idx[0][j], p, -1.0, -1.0, 0);
-
-			// rhs
 			b[i] = get_value(FN, edge_fn_idx[0][n - 1], lo*s + hi*r, -1.0, -1.0, 0) - f_lo*s - f_hi*r;
 		}
 
-		// solve the system
-		double d;
-		int *iperm = new int[n];
-		MEM_CHECK(iperm);
-		ludcmp(a, n, iperm, &d);
-		lubksb(a, n, iperm, b);
-
-		int m = get_num_edge_fns(vorder);											// total number of functions on the edge
-		double c = get_value(FN, edge_fn_idx[1][m - 1], x0, -1.0, -1.0, 0);
-		for (int i = 0; i < n; i++)
-			b[i] *= c;
-
-		// cleanup
-		delete [] iperm;
-		delete [] a;
-
-		return new CEDComb(n, b);
+		m = get_num_edge_fns(vorder);											// total number of functions on the edge
+		c = get_value(FN, edge_fn_idx[1][m - 1], x0, -1.0, -1.0, 0);
 	}
+
+	// solve the system
+	double d;
+	int *iperm = new int[n]; MEM_CHECK(iperm);
+	ludcmp(a, n, iperm, &d);
+	lubksb(a, n, iperm, b);
+
+	for (int i = 0; i < n; i++)
+		b[i] *= c;
+
+	// cleanup
+	delete [] iperm;
+	delete [] a;
+
+	return new CEDComb(n, b);
+
 #else
 	return NULL;
 #endif
@@ -715,4 +692,3 @@ CEDComb *H1ShapesetLobattoHex::calc_constrained_face_combination(int ori, const 
 	return NULL;
 #endif
 }
-

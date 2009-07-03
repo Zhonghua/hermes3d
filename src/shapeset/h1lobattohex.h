@@ -20,6 +20,7 @@
 #ifndef _H1_SHAPESET_LOBATTO_HEX_H_
 #define _H1_SHAPESET_LOBATTO_HEX_H_
 
+#include "common.h"
 #include "../shapeset.h"
 #include "../mesh.h"
 #include "../refdomain.h"
@@ -55,19 +56,12 @@ public:
 		return bubble_indices[order.get_idx()];
 	}
 
-	virtual int get_num_edge_fns(order1_t order) const {
-		if (order > 1) return (order - 1);
-		else return 0;
-	}
+	virtual int get_num_edge_fns(order1_t order) const { return (order > 1) ? order - 1 : 0; }
 
-	virtual int get_num_face_fns(order2_t order) const {
-		if (order.x > 1 && order.y > 1) return (order.x - 1) * (order.y - 1);
-		else return 0;
-	}
+	virtual int get_num_face_fns(order2_t order) const { return (order.x > 1 && order.y > 1) ? (order.x - 1) * (order.y - 1) : 0; }
 
 	virtual int get_num_bubble_fns(order3_t order) const {
-		if (order.x > 1 && order.y > 1 && order.z > 1) return (order.x - 1) * (order.y - 1) * (order.z - 1);
-		else return 0;
+		return (order.x > 1 && order.y > 1 && order.z > 1) ? (order.x - 1) * (order.y - 1) * (order.z - 1) : 0;
 	}
 
 	virtual int get_face_orientations(int face) const { return RefHex::get_face_orientations(face); }

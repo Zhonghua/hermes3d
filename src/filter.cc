@@ -108,7 +108,6 @@ void Filter::init() {
 
 	// misc init
 	num_components = 1;
-	order = 0;
 	memset(tables, 0, sizeof(tables));
 	memset(sln_sub, 0, sizeof(sln_sub));
 }
@@ -129,7 +128,11 @@ void Filter::set_active_element(Element *e) {
 		}
 	}
 
-	order.set_maximal();
+	switch (mode) {
+		case MODE_TETRAHEDRON: order = order3_t(MAX_QUAD_ORDER_TETRA); break;
+		case MODE_HEXAHEDRON: order = order3_t(MAX_QUAD_ORDER, MAX_QUAD_ORDER, MAX_QUAD_ORDER); break;
+		default: ERROR(ERR_NOT_IMPLEMENTED); break;
+	}
 }
 
 void Filter::free() {

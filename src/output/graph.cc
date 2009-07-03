@@ -1,21 +1,21 @@
-// This file is part of Hermes2D.
+// This file is part of Hermes3D.
 //
 // Copyright 2005-2008 Jakub Cerveny <jakub.cerveny@gmail.com>
 // Copyright 2006-2008 Lenka Dubcova <dubcova@gmail.com>
 // Copyright 2009 David Andrs <dandrs@unr.edu>
 //
-// Hermes2D is free software: you can redistribute it and/or modify
+// Hermes3D is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Hermes2D is distributed in the hope that it will be useful,
+// Hermes3D is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Hermes2D.  If not, see <http://www.gnu.org/licenses/>.
+// along with Hermes3D.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <common/error.h>
 #include <common/trace.h>

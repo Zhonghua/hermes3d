@@ -46,7 +46,6 @@ public:
 	Filter(MeshFunction *sln1, MeshFunction *sln2, MeshFunction *sln3, MeshFunction *sln4);
 	virtual ~Filter();
 
-	virtual void set_quad(Quad3D *quad);
 	virtual void set_active_element(Element *e);
 	virtual void free();
 

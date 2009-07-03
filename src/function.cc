@@ -58,29 +58,6 @@ Function<TYPE>::~Function() {
 }
 
 template<typename TYPE>
-void Function<TYPE>::set_quad(Quad3D *quad) {
-	_F_
-	int i;
-
-	// check to see if we already have the quadrature
-	for (i = 0; i < QUAD_COUNT; i++)
-		if (quads[i] == quad) {
-			cur_quad = i;
-			return;
-		}
-
-	// if not, add the quadrature to a free slot
-	for (i = 0; i < QUAD_COUNT; i++)
-		if (quads[i] == NULL) {
-			quads[i] = quad;
-			cur_quad = i;
-			return;
-		}
-
-	ERROR("too many quadratures.");
-}
-
-template<typename TYPE>
 typename Function<TYPE>::Node *Function<TYPE>::new_node(int mask, int num_points) {
 	_F_
 	// get the number of tables

@@ -113,13 +113,6 @@ void Filter::init() {
 	memset(sln_sub, 0, sizeof(sln_sub));
 }
 
-void Filter::set_quad(Quad3D *quad) {
-	_F_
-	MeshFunction::set_quad(quad);
-	for (int i = 0; i < num; i++)
-		sln[i]->set_quad(quad);
-}
-
 void Filter::set_active_element(Element *e) {
 	_F_
 	MeshFunction::set_active_element(e);

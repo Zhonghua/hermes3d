@@ -262,14 +262,6 @@ public:
 		return cur_node->values[component][b];
 	}
 
-	/// Sets the quadrature points in which the function will be evaluated. It is possible to switch
-	/// back and forth between different quadrature points: no precalculated values are freed.
-	/// @param quad [in] The quadrature points.
-	virtual void set_quad(Quad3D *quad);
-
-	/// @return The current quadrature points.
-	virtual Quad3D *get_quad() const { return quads[cur_quad]; }
-
 	/// Frees all precalculated tables.
 	virtual void free() = 0;
 

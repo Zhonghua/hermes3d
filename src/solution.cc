@@ -43,12 +43,6 @@ MeshFunction::~MeshFunction() {
 	delete refmap;
 }
 
-void MeshFunction::set_quad(Quad3D *quad) {
-	_F_
-	ScalarFunction::set_quad(quad);
-	refmap->set_quad(quad);
-}
-
 void MeshFunction::set_active_element(Element *e) {
 	_F_
 	element = e;
@@ -108,12 +102,6 @@ void Solution::set_zero_vector() {
 	MEM_CHECK(vec);
 	memset(vec, 0, sizeof(scalar) * ndofs);
 	owner = true;
-}
-
-void Solution::set_quad(Quad3D *quad) {
-	_F_
-	MeshFunction::set_quad(quad);
-	slave_pss->set_quad(quad);
 }
 
 void Solution::set_active_element(Element *e) {

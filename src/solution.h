@@ -51,7 +51,6 @@ public:
 	MeshFunction(Mesh *mesh);
 	virtual ~MeshFunction();
 
-	virtual void set_quad(Quad3D *quad);
 	virtual void set_active_element(Element *e);
 
 	Mesh *get_mesh() const { return mesh; }
@@ -90,7 +89,6 @@ public:
 	void set_solution_vector(scalar *vec, bool owner, scalar dir_coef = 1.0);
 	void set_zero_vector();
 
-	virtual void set_quad(Quad3D *quad);
 	virtual void set_active_element(Element *e);
 
 	void save_solution_vector(char *filename, int ndofs);

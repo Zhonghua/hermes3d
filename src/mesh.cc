@@ -2240,3 +2240,36 @@ void Mesh::regularize() {
 		}
 	}
 }
+
+void Mesh::refine_towards_boundary(int marker, int depth) {
+	_F_
+
+	if (depth == 0) return;
+
+	FOR_ALL_ACTIVE_ELEMENTS(eid, this) {
+		Element *e = elements[eid];
+
+		int split = SPLIT_NONE;
+		for (int iface = 0; iface < e->get_num_of_faces(); iface++) {
+			Word_t fid = get_facet_id(e, iface);
+			Facet *facet = facets[fid];
+
+			if (facet->type == Facet::OUTER) {
+				Boundary *bnd = boundaries[facet->right];
+				if (bnd->marker == marker) {
+					if (iface == 0 || iface == 1) split |= SPLIT_HEX_X;
+					else if (iface == 2 || iface == 3) split |= SPLIT_HEX_Y;
+					else if (iface == 4 || iface == 5) split |= SPLIT_HEX_Z;
+				}
+			}
+		}
+
+		int reft[] = {
+			REFT_HEX_NONE, REFT_HEX_X, REFT_HEX_Y, REFT_HEX_XY,
+			REFT_HEX_Z, REFT_HEX_XZ, REFT_HEX_YZ, REFT_HEX_XYZ
+		};
+		refine_element(eid, reft[split]);
+	}
+
+	refine_towards_boundary(marker, depth - 1);
+}

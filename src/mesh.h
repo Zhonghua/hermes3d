@@ -576,6 +576,10 @@ public:
 	/// Exactly 'depth' levels of refinements are performed.
 	void refine_by_criterion(int (*criterion)(Element* e), int depth);
 
+	/// Performs repeated refinements of elements touching a part of the
+	/// boundary marked by 'marker'.
+	void refine_towards_boundary(int marker, int depth);
+
 	/// Recursively removes all son elements of the given element and makes it active.
 	void unrefine_element(Word_t id);
 

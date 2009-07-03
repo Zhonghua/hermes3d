@@ -62,7 +62,6 @@ set(INC
 	discretization.h
 	h3dconfig.h
 	hermes3d.h
-	integrals/h1.h
 	matrix.h
 	linsolver.h
 	norm.h

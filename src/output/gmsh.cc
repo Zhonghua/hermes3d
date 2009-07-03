@@ -599,11 +599,17 @@ void GmshOutputEngine::out(Mesh *mesh) {
 	}
 	fprintf(this->out_file, "$EndNodes\n");
 
+	int n_edges = 0;
+	int n_faces = 0;
 	// elements
 	fprintf(this->out_file, "$Elements\n");
 	fprintf(this->out_file, "%ld\n", mesh->get_num_active_elements());
 	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
 		Element *element = mesh->elements[idx];
+
+		n_edges += element->get_num_of_edges();
+		n_faces += element->get_num_of_faces();
+
 		Word_t vtcs[element->get_num_of_vertices()];
 		element->get_vertices(vtcs);
 
@@ -629,19 +635,10 @@ void GmshOutputEngine::out(Mesh *mesh) {
 	}
 	fprintf(this->out_file, "$EndElements\n");
 
-	// count the number of edges/faces
-	int nedges = 0;
-	int nfaces = 0;
-	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
-		Element *element = mesh->elements[idx];
-		nedges += element->get_num_of_edges();
-		nfaces += element->get_num_of_faces();
-	}
-
 	// edges
 	// TODO: do not include edges twice or more
 	fprintf(this->out_file, "$Elements\n");
-	fprintf(this->out_file, "%d\n", nedges);
+	fprintf(this->out_file, "%d\n", n_edges);
 	FOR_ALL_ELEMENTS(idx, mesh) {
 		Element *element = mesh->elements[idx];
 		Word_t vtcs[Edge::NUM_VERTICES];
@@ -655,23 +652,20 @@ void GmshOutputEngine::out(Mesh *mesh) {
 	// faces
 	// TODO: do not include faces twice
 	fprintf(this->out_file, "$Elements\n");
-	fprintf(this->out_file, "%d\n", nfaces);
+	fprintf(this->out_file, "%d\n", n_faces);
 	FOR_ALL_ELEMENTS(idx, mesh) {
 		Element *element = mesh->elements[idx];
 		for (int iface = 0; iface < element->get_num_of_faces(); iface++) {
-			Word_t vtcs[element->get_face_num_of_vertices(iface)];
+			int nv = element->get_face_num_of_vertices(iface);
+			Word_t vtcs[nv];
 			element->get_face_vertices(iface, vtcs);
 			switch (element->get_face_mode(iface)) {
-				case MODE_QUAD:
-					fprintf(this->out_file, "%ld 3 0 %ld %ld %ld %ld\n",
-							mesh->get_facet_id(element, iface),
-							vtcs[0], vtcs[1], vtcs[2], vtcs[3]);
+				case MODE_TRIANGLE:
+					fprintf(this->out_file, "%ld 2 0 %ld %ld %ld\n", mesh->get_facet_id(element, iface), vtcs[0], vtcs[1], vtcs[2]);
 					break;
 
-				case MODE_TRIANGLE:
-					fprintf(this->out_file, "%ld 2 0 %ld %ld %ld\n",
-							mesh->get_facet_id(element, iface),
-							vtcs[0], vtcs[1], vtcs[2]);
+				case MODE_QUAD:
+					fprintf(this->out_file, "%ld 3 0 %ld %ld %ld %ld\n", mesh->get_facet_id(element, iface), vtcs[0], vtcs[1], vtcs[2], vtcs[3]);
 					break;
 			}
 		}

@@ -104,6 +104,8 @@ public:
    	virtual void get_element_assembly_list(Element *e, AsmList *al) = 0;
 	virtual void get_boundary_assembly_list(Element *e, int face, AsmList *al) = 0;
 
+	void dump();
+
 	/// Returns true if the space is ready for computation, false otherwise.
 	bool is_up_to_date() const { return was_assigned && mesh_seq == mesh->get_seq(); }
 
@@ -181,22 +183,7 @@ protected:
 			if (ced) ::free(baselist);
 		}
 
-		void dump(int id) {
-			printf("vtx #%d: ced = %d, ", id, ced);
-			if (ced) {
-				printf("ncomp = %d ", ncomponents);
-				for (int i = 0; i < ncomponents; i++) {
-					if (i > 0) printf(", ");
-					printf("(dof = %d, coef = " SCALAR_FMT ")", baselist[i].dof, SCALAR(baselist[i].coef));
-				}
-				printf(" ");
-			}
-			else {
-				printf("dof = %d, n = %d", dof, n);
-				printf(", bc_proj = " SCALAR_FMT, SCALAR(bc_proj));
-			}
-			printf("\n");
-		}
+		void dump(int id);
 	};
 
 	struct EdgeData : public NodeData {
@@ -231,44 +218,7 @@ protected:
 			}
 		}
 
-		void dump(int id) {
-			printf("edge #%d: ced = %d, ", id, ced);
-			if (ced) {
-				printf("edge_comp = %d", edge_ncomponents);
-				for (int i = 0; i < edge_ncomponents; i++) {
-					if (i > 0) printf(",");
-					printf(" (edge = %ld, ori = %d, part = %d, coef = " SCALAR_FMT ")", edge_baselist[i].edge_id, edge_baselist[i].ori,
-						edge_baselist[i].part.part, SCALAR(edge_baselist[i].coef));
-//						edge_baselist[i].part.part, edge_baselist[i].dof, edge_baselist[i].coef);
-				}
-				printf(", ");
-
-				printf("face_comp = %d", face_ncomponents);
-				for (int i = 0; i < face_ncomponents; i++) {
-					if (i > 0) printf(",");
-//					printf(" (face = %d, ori = %d, iface = %d, part = (ori = %d, fpart = %d, epart = %d), coef = %lf)",
-//						face_baselist[i].face_id, face_baselist[i].ori, face_baselist[i].iface,
-//						face_baselist[i].part.ori, face_baselist[i].part.fpart, face_baselist[i].part.epart,
-//						face_baselist[i].coef);
-					printf(" (face = %ld, ori = %d, iface = %d, part = (horz = %d, vert = %d), dir = %d, coef = " SCALAR_FMT ")",
-						face_baselist[i].face_id, face_baselist[i].ori, face_baselist[i].iface,
-						face_baselist[i].part.horz, face_baselist[i].part.vert, face_baselist[i].dir,
-						SCALAR(face_baselist[i].coef));
-				}
-			}
-			else {
-				printf("order = %d, dof = %d, n = %d", order, dof, n);
-				if (bc_proj != NULL) {
-					printf(", bc_proj = (");
-					for (int i = 0; i < n; i++) {
-						if (i > 0) printf(", ");
-						printf(SCALAR_FMT, SCALAR(bc_proj[i]));
-					}
-					printf(")");
-				}
-			}
-			printf("\n");
-		}
+		void dump(int id);
 	};
 
 	struct FaceData : public NodeData  {
@@ -296,24 +246,7 @@ protected:
 			delete [] bc_proj;
 		}
 
-		void dump(int id) {
-			printf("face #%d: ced = %d, ", id, ced);
-			if (ced) {
-				printf("part = (%d, %d), ori = %d, facet_id = %ld", part.horz, part.vert, ori, facet_id);
-			}
-			else {
-				printf("order = %s, dof = %d, n = %d", order.str(), dof, n);
-				if (bc_proj != NULL) {
-					printf(", bc_proj = (");
-					for (int i = 0; i < n; i++) {
-						if (i > 0) printf(", ");
-						printf(SCALAR_FMT, SCALAR(bc_proj[i]));
-					}
-					printf(")");
-				}
-			}
-			printf("\n");
-		}
+		void dump(int id);
 	};
 
 	struct ElementData {
@@ -327,11 +260,7 @@ protected:
 			n = -1;
 		}
 
-		void dump(int id) {
-			printf("elem #%d: ", id);
-			printf("order = %s, dof = %d, n = %d", order.str(), dof, n);
-			printf("\n");
-		}
+		void dump(int id);
 	};
 
 	ArrayPtr<VertexData> vn_data;					/// Vertex node hash table

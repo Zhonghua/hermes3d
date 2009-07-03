@@ -36,6 +36,82 @@
 	assert(mesh->elements.exists(id));
 
 
+void Space::VertexData::dump(int id) {
+	printf("vtx #%d: ced = %d, ", id, ced);
+	if (ced) {
+		printf("ncomp = %d ", ncomponents);
+		for (int i = 0; i < ncomponents; i++) {
+			if (i > 0) printf(", ");
+			printf("(dof = %d, coef = " SCALAR_FMT ")", baselist[i].dof, SCALAR(baselist[i].coef));
+		}
+		printf(" ");
+	}
+	else {
+		printf("dof = %d, n = %d", dof, n);
+		if (dof == DIRICHLET_DOF) printf(", bc_proj = " SCALAR_FMT, SCALAR(bc_proj));
+	}
+	printf("\n");
+}
+
+void Space::EdgeData::dump(int id) {
+	printf("edge #%d: ced = %d, ", id, ced);
+	if (ced) {
+		printf("edge_comp = %d", edge_ncomponents);
+		for (int i = 0; i < edge_ncomponents; i++) {
+			if (i > 0) printf(",");
+			printf(" (edge = %ld, ori = %d, part = %d, coef = " SCALAR_FMT ")", edge_baselist[i].edge_id, edge_baselist[i].ori,
+				edge_baselist[i].part.part, SCALAR(edge_baselist[i].coef));
+		}
+		printf(", ");
+
+		printf("face_comp = %d", face_ncomponents);
+		for (int i = 0; i < face_ncomponents; i++) {
+			if (i > 0) printf(",");
+			printf(" (face = %ld, ori = %d, iface = %d, part = (horz = %d, vert = %d), dir = %d, coef = " SCALAR_FMT ")",
+				face_baselist[i].face_id, face_baselist[i].ori, face_baselist[i].iface,
+				face_baselist[i].part.horz, face_baselist[i].part.vert, face_baselist[i].dir,
+				SCALAR(face_baselist[i].coef));
+		}
+	}
+	else {
+		printf("order = %d, dof = %d, n = %d", order, dof, n);
+		if (bc_proj != NULL) {
+			printf(", bc_proj = (");
+			for (int i = 0; i < n; i++) {
+				if (i > 0) printf(", ");
+				printf(SCALAR_FMT, SCALAR(bc_proj[i]));
+			}
+			printf(")");
+		}
+	}
+	printf("\n");
+}
+
+void Space::FaceData::dump(int id) {
+	printf("face #%d: ced = %d, ", id, ced);
+	if (ced) {
+		printf("part = (%d, %d), ori = %d, facet_id = %ld", part.horz, part.vert, ori, facet_id);
+	}
+	else {
+		printf("order = %s, dof = %d, n = %d", order.str(), dof, n);
+		if (bc_proj != NULL) {
+			printf(", bc_proj = (");
+			for (int i = 0; i < n; i++) {
+				if (i > 0) printf(", ");
+				printf(SCALAR_FMT, SCALAR(bc_proj[i]));
+			}
+			printf(")");
+		}
+	}
+	printf("\n");
+}
+
+void Space::ElementData::dump(int id) {
+	printf("elem #%d: ", id);
+	printf("order = %s, dof = %d, n = %d", order.str(), dof, n);
+	printf("\n");
+}
+
 Space::Space(Mesh *mesh, Shapeset *shapeset) :
 	mesh(mesh), shapeset(shapeset)
 {
@@ -2072,3 +2148,26 @@ void Space::calc_boundary_projections() {
 	}
 }
 
+void Space::dump() {
+	FOR_ALL_ACTIVE_ELEMENTS(eid, mesh) {
+		Element *e = mesh->elements[eid];
+
+		Word_t vtcs[Hex::NUM_VERTICES];
+		e->get_vertices(vtcs);
+		for (int iv = 0; iv < Hex::NUM_VERTICES; iv++) {
+			vn_data[vtcs[iv]]->dump(vtcs[iv]);
+		}
+
+		for (int iedge = 0; iedge < Hex::NUM_EDGES; iedge++) {
+			Word_t edge = mesh->get_edge_id(e, iedge);
+			en_data[edge]->dump(edge);
+		}
+
+		for (int iface = 0; iface < Hex::NUM_FACES; iface++) {
+			Word_t face = mesh->get_facet_id(e, iface);
+			fn_data[face]->dump(face);
+		}
+
+		elm_data[eid]->dump(eid);
+	}
+}

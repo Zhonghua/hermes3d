@@ -81,27 +81,6 @@ void ludcmp(double **a, int n, int *indx, double *d) {
 	delete [] vv;
 }
 
-
-void lubksb(double **a, int n, int *indx, double *b) {
-	_F_
-	int i, ip, j;
-	double sum;
-
-	for (i = 0; i < n; i++) {
-		ip = indx[i];
-		sum = b[ip];
-		b[ip] = b[i];
-		for (j = 0; j < i; j++) sum -= a[i][j]*b[j];
-		b[i] = sum;
-	}
-	for (i = n-1; i >= 0; i--) {
-		sum = b[i];
-		for (j = i+1; j < n; j++) sum -= a[i][j]*b[j];
-		b[i] = sum / a[i][i];
-	}
-}
-
-
 // choldc, cholsl - Cholesky decomposition and solution routines from
 // the book Numerical Recipes in C, adjusted to zero-based indexing
 

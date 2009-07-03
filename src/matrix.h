@@ -53,7 +53,26 @@ void ludcmp(double **a, int n, int *indx, double *d);
 /// and can be left in place for successive calls with different right-hand sides b. This routine takes
 /// into account the possibility that b will begin with many zero elements, so it is efficient for use
 /// in matrix inversion.
-void lubksb(double **a, int n, int* indx, double *b);
+template<typename T>
+void lubksb(double **a, int n, int *indx, T *b) {
+	int i, ip, j;
+	T sum;
+
+	for (i = 0; i < n; i++) {
+		ip = indx[i];
+		sum = b[ip];
+		b[ip] = b[i];
+		for (j = 0; j < i; j++) sum -= a[i][j]*b[j];
+		b[i] = sum;
+	}
+	for (i = n-1; i >= 0; i--) {
+		sum = b[i];
+		for (j = i+1; j < n; j++) sum -= a[i][j]*b[j];
+		b[i] = sum / a[i][i];
+	}
+}
+
+
 
 
 /// Given a positive-definite symmetric matrix a[n][n], this routine constructs its Cholesky

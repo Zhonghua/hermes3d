@@ -26,6 +26,14 @@
 
 /// TODO: move to common/shapeset?
 
+/// Combine parts on the face
+/// @return The combined part
+/// @param[in] part - the part on the face
+/// @param[in] finer_part - part that is added to the 'part'
+/// It can be either:
+///   0 - part stays the same),
+///   1 - combine with the lower part of the 'part',
+///   2 - combine with the higher part of the 'part'.
 int combine_face_part(int part, int finer_part) {
 	_F_
 	assert(finer_part == 0 || finer_part == 1 || finer_part == 2);
@@ -35,6 +43,9 @@ int combine_face_part(int part, int finer_part) {
 	else return get_higher_part(part);							// upper part
 }
 
+/// Get the part that is opposite to another part
+/// @return the opposite part to the 'part' param
+/// @param[in] part
 int opposite_part(int part) {
 	_F_
 	int n;
@@ -59,7 +70,6 @@ void get_interval_part(int part, double &lo, double &hi) {
 	hi = ((double) (part + 1) * n2 - 1.0);
 }
 
-///
 /// Get the position on the edge
 /// @param part[in] ID of the position on the edge (see PIC)
 /// @param x[out] position on the edge
@@ -76,14 +86,10 @@ void get_edge_part(int part, double &x) {
 	}
 }
 
-double get_edge_coef(int part) {
-	_F_
-	// FIXME: handle endpoints (i.e. part == 0, part == 1) separately (?)
-	double x;
-	get_edge_part(part, x);
-	return (x + 1.0) / 2.0;
-}
-
+/// Transform the edge part
+/// @return The transformed part
+/// @param[in] ori - the orientation of the edge
+/// @param[in] part - the part that is being transformed
 Part transform_edge_part(int ori, Part part) {
 	_F_
 	Part rp;
@@ -91,7 +97,10 @@ Part transform_edge_part(int ori, Part part) {
 	return rp;
 }
 
-
+/// Transform the face part
+/// @return The transformed part
+/// @param[in] ori - the orientation of the face
+/// @param[in] part - the part that is being transformed
 Part transform_face_part(int ori, Part part) {
 	_F_
 	// refer to Pavel Solin's gray book, p. 169 (?)
@@ -204,8 +213,8 @@ CEDComb *Shapeset::get_ced_comb(const CEDKey &key) {
 	else {
 		// combination does not exist yet => calculate it
 		if (key.type == CED_KEY_TYPE_EDGE)           comb = calc_constrained_edge_combination(key.ori, key.order, key.part);
-		else if (key.type == CED_KEY_TYPE_EDGE_FACE) comb = calc_constrained_edge_face_combination(key.ori, key.order, key.part, key.dir);
-		else if (key.type == CED_KEY_TYPE_FACE)      comb = calc_constrained_face_combination(key.ori, key.order, key.part);
+		else if (key.type == CED_KEY_TYPE_EDGE_FACE) comb = calc_constrained_edge_face_combination(key.ori, order2_t::from_int(key.order), key.part, key.dir);
+		else if (key.type == CED_KEY_TYPE_FACE)      comb = calc_constrained_face_combination(key.ori, order2_t::from_int(key.order), key.part);
 		else EXIT(ERR_FAILURE, "Unknown type of CED key.");
 
 		ced_comb.set(key, comb);
@@ -239,6 +248,25 @@ int *Shapeset::get_ced_indices(const CEDKey &key) {
 	return idx;
 }
 
+void Shapeset::get_constrained_values(int n, int index, int np, QuadPt3D *pt, int component, double *vals) {
+	_F_
+	assert(ced_key.exists(-1 - index));
+	CEDKey key = ced_key[-1 - index];
+
+	CEDComb *comb = get_ced_comb(key);
+	assert(comb != NULL);
+	int *idx = get_ced_indices(key);
+	assert(idx != NULL);
+
+	memset(vals, 0, np * sizeof(double));
+	double tmp[np];
+	for (int i = 0; i < comb->n; i++) {
+		get_values(n, idx[i], np, pt, component, tmp);
+		for (int j = 0; j < np; j++)
+			vals[j] += comb->coef[i] * tmp[j];
+	}
+}
+
 double Shapeset::get_constrained_value(int n, int index, double x, double y, double z, int component) {
 	_F_
 	assert(ced_key.exists(-1 - index));
@@ -249,11 +277,11 @@ double Shapeset::get_constrained_value(int n, int index, double x, double y, dou
 	int *idx = get_ced_indices(key);
 	assert(idx != NULL);
 
-	double sum = 0.0;
+	double val = 0.0;
 	for (int i = 0; i < comb->n; i++)
-		sum += comb->coef[i] * get_val(n, idx[i], x, y, z, component);
+		val += comb->coef[i] * get_value(n, idx[i], x, y, z, component);
 
-	return sum;
+	return val;
 }
 
 #ifdef PRELOADING

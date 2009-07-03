@@ -112,7 +112,7 @@ typename Function<TYPE>::Node *Function<TYPE>::new_node(int mask, int num_points
 
 	// allocate a node including its data part, init table pointers
 	int size = sizeof(Node) + sizeof(TYPE) * num_points * nt;
-	Node* node = (Node*) malloc(size);
+	Node *node = (Node *) malloc(size);
 	node->mask = mask;
 	node->size = size;
 	memset(node->values, 0, sizeof(node->values));
@@ -161,4 +161,3 @@ void Function<TYPE>::free_sub_tables(void **sub) {
 
 #undef CHECK_PARAMS
 #undef CHECK_TABLE
-

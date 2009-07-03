@@ -77,7 +77,7 @@ enum ECedKeyType {
 /// constrained key
 struct CEDKey {
 	unsigned type:2;			// see enum ECedKeyType
-	unsigned ori:4;			// orientation of a edge/face
+	unsigned ori:4;				// orientation of a edge/face
 	union {
 		unsigned face:4;		// index of a face
 		unsigned edge:4;		// index of an edge
@@ -201,10 +201,28 @@ public:
 
 	virtual int get_shape_type(int index) const = 0;
 
-	virtual double get_value(int n, int index, double x, double y, double z, int component) {
-		if (index >= 0) return get_val(n, index, x, y, z, component);
-		else return get_constrained_value(n, index, x, y, z, component);
-	}
+	/// Evaluate function in the set of points
+	/// @param[in] n
+	/// @param[in] index - Index of the function being evaluate
+	/// @param[in] np - The number of points in array 'pt'
+	/// @param[in] pt - Points where the function is evaluated
+	/// @param[in] component - The number of component of the evaluated function
+	/// @param[out] vals - The array of vakues (caller is responsible for freeing this memory)
+	virtual void get_values(int n, int index, int np, QuadPt3D *pt, int component, double *vals) = 0;
+
+	/// Evaluate function 'index' in points 'pt'
+	virtual double get_value(int n, int index, double x, double y, double z, int component) = 0;
+
+	inline void get_fn_values (int index, int np, QuadPt3D *pt, int component, double *vals) { get_values(FN,  index, np, pt, component, vals); }
+	inline void get_dx_values (int index, int np, QuadPt3D *pt, int component, double *vals) { get_values(DX,  index, np, pt, component, vals); }
+	inline void get_dy_values (int index, int np, QuadPt3D *pt, int component, double *vals) { get_values(DY,  index, np, pt, component, vals); }
+	inline void get_dz_values (int index, int np, QuadPt3D *pt, int component, double *vals) { get_values(DZ,  index, np, pt, component, vals); }
+	inline void get_dxx_values(int index, int np, QuadPt3D *pt, int component, double *vals) { get_values(DXX, index, np, pt, component, vals); }
+	inline void get_dyy_values(int index, int np, QuadPt3D *pt, int component, double *vals) { get_values(DYY, index, np, pt, component, vals); }
+	inline void get_dzz_values(int index, int np, QuadPt3D *pt, int component, double *vals) { get_values(DZZ, index, np, pt, component, vals); }
+	inline void get_dxy_values(int index, int np, QuadPt3D *pt, int component, double *vals) { get_values(DXY, index, np, pt, component, vals); }
+	inline void get_dxz_values(int index, int np, QuadPt3D *pt, int component, double *vals) { get_values(DXZ, index, np, pt, component, vals); }
+	inline void get_dyz_values(int index, int np, QuadPt3D *pt, int component, double *vals) { get_values(DYZ, index, np, pt, component, vals); }
 
 	inline double get_fn_value (int index, double x, double y, double z, int component) { return get_value(FN,  index, x, y, z, component); }
 	inline double get_dx_value (int index, double x, double y, double z, int component) { return get_value(DX,  index, x, y, z, component); }
@@ -222,15 +240,14 @@ protected:
 	int mode;
 	int num_components;
 
-	// FIXME: better name
-	virtual double get_val(int n, int index, double x, double y, double z, int component) = 0;
-
 	// CED
-	double get_constrained_value(int n, int index, double x, double y, double z, int component);
+	void   get_constrained_values(int n, int index, int np, QuadPt3D *pt, int component, double *vals);
+	double get_constrained_value (int n, int index, double x, double y, double z, int component);
 
-	virtual CEDComb *calc_constrained_edge_combination(int ori, int order, Part part) { return NULL; }
-	virtual CEDComb *calc_constrained_edge_face_combination(int ori, int order, Part part, int dir) { return NULL; }
-	virtual CEDComb *calc_constrained_face_combination(int ori, int order, Part part) { return NULL; }
+	order3_t get_ced_order(int index) const;
+	virtual CEDComb *calc_constrained_edge_combination(int ori, const order1_t &order, Part part) { return NULL; }
+	virtual CEDComb *calc_constrained_edge_face_combination(int ori, const order2_t &order, Part part, int dir) { return NULL; }
+	virtual CEDComb *calc_constrained_face_combination(int ori, const order2_t &order, Part part) { return NULL; }
 	void free_constrained_combinations();
 
 	Map<CEDKey, CEDComb *> ced_comb;			// mapping: CEDKey => CEDComb

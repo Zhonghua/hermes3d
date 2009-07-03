@@ -26,6 +26,7 @@
 #include "lobatto.h"
 
 //// RefMapShapesetTetra //////////////////////////////////////////////////////////////////////////
+
 #ifdef WITH_TETRA
 
 // shape functions for tetrahedron
@@ -85,6 +86,7 @@ static shape_fn_t *refmap_tetra_dz_table[] = { refmap_tetra_dz };
 
 RefMapShapesetTetra::RefMapShapesetTetra() {
 #ifdef WITH_TETRA
+	type = H1;
 	mode = MODE_TETRAHEDRON;
 	num_components = 1;
 
@@ -107,6 +109,7 @@ RefMapShapesetTetra::~RefMapShapesetTetra() {
 }
 
 //// RefMapShapesetHex ////////////////////////////////////////////////////////////////////////////
+
 #ifdef WITH_HEX
 
 // shape functions for hexahedron
@@ -188,6 +191,7 @@ static shape_fn_t *refmap_hex_dz_table[] = { refmap_hex_dz };
 RefMapShapesetHex::RefMapShapesetHex() {
 	_F_
 #ifdef WITH_HEX
+	type = H1;
 	mode = MODE_HEXAHEDRON;
 	num_components = 1;
 

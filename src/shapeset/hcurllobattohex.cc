@@ -64,121 +64,127 @@ struct hc_hex_index_t {
 };
 
 
-static void decompose(hc_hex_index_t ind, double point[3], int indices[3], int oris[3], int &which_legendre) {
+static void decompose(hc_hex_index_t ind, int indices[3], int ori[3], int &which_legendre) {
 	_F_
 	indices[0] = ind.x;
 	indices[1] = ind.y;
 	indices[2] = ind.z;
 
-	oris[0] = 0;
-	oris[1] = 0;
-	oris[2] = 0;
+	ori[0] = 0;
+	ori[1] = 0;
+	ori[2] = 0;
 
 	which_legendre = ind.l;
 
 	if (ind.type == SHFN_EDGE) {
 		assert(ind.ori == 0 || ind.ori == 1);
-		oris[ind.l] = ind.ori;
+		ori[ind.l] = ind.ori;
 	}
-	else if(ind.type == SHFN_FACE) {
+	else if (ind.type == SHFN_FACE) {
 		assert(ind.ori >= 0 && ind.ori <= 7);
 		int dir_1 = RefHex::get_face_tangent_direction(ind.ef, 0);
 		int dir_2 = RefHex::get_face_tangent_direction(ind.ef, 1);
 
-		if (ind.ori % 2 == 1) oris[dir_1] = 1;
-		if (ind.ori % 4 >= 2) oris[dir_2] = 1;
+		if (ind.ori % 2 == 1) ori[dir_1] = 1;
+		if (ind.ori % 4 >= 2) ori[dir_2] = 1;
 		if (ind.ori >= 4) {
 			std::swap(indices[dir_1], indices[dir_2]);
-			std::swap(oris[dir_1], oris[dir_2]);
+			std::swap(ori[dir_1], ori[dir_2]);
 			which_legendre = (which_legendre == dir_1) ? dir_2 : dir_1;
 		}
 	}
 	else {
 		assert(ind.ori == 0);
 	}
-
-	if (oris[0] == 1) point[0] = -point[0];
-	if (oris[1] == 1) point[1] = -point[1];
-	if (oris[2] == 1) point[2] = -point[2];
 }
 
-static double calc_fn_value(int index, double x, double y, double z, int component) {
+static void calc_fn_values(int index, int np, QuadPt3D *pt, int component, double *val) {
 	_F_
 	hc_hex_index_t ind(index);
 	int indices[3];
-	double point[3] = { x, y, z };
-	int oris[3];
+	int ori[3];
 	int which_legendre;
 
-	decompose(ind, point, indices, oris, which_legendre);
+	decompose(ind, indices, ori, which_legendre);
 
-	if (which_legendre != component) return 0.0;
+	if (which_legendre == component) {
+		for (int k = 0; k < np; k++) {
+			double point[3] = { pt[k].x, pt[k].y, pt[k].z };
 
-	double value = 1.0;
-	for (int i = 0; i < 3; i++) {
-		if (which_legendre == i)
-			value *= legendre_fn_tab_1d[indices[i]](point[i]);
-		else
-			value *= lobatto_fn_tab_1d[indices[i]](point[i]);
+			if (ori[0] == 1) point[0] = -point[0];
+			if (ori[1] == 1) point[1] = -point[1];
+			if (ori[2] == 1) point[2] = -point[2];
+
+			double value = 1.0;
+			for (int i = 0; i < 3; i++) {
+				if (which_legendre == i) value *= legendre_fn_tab_1d[indices[i]](point[i]);
+				else value *= lobatto_fn_tab_1d[indices[i]](point[i]);
+			}
+
+			if (ori[component] == 1) value = -value;
+			val[k] = value;
+		}
 	}
-
-	// for the sake of simplicity, recode orientations like this: 0 -> 1, 1 -> -1
-	for (int i = 0; i < 3; i++) oris[i] = (oris[i] == 0) ? 1 : -1;
-
-	if (oris[component] == -1) value = -value;
-
-	return value;
+	else {
+		for (int k = 0; k < np; k++)
+			val[k] = 0.0;
+	}
 }
 
-static double calc_der_value(int index, double x, double y, double z, int component, int which_der) {
+static void calc_der_values(int index, int np, QuadPt3D *pt, int component, int which_der, double *val) {
 	_F_
 	hc_hex_index_t ind(index);
 	int indices[3];
-	double point[3] = { x, y, z };
-	int oris[3];
+	int ori[3];
 	int which_legendre;
 
-	decompose(ind, point, indices, oris, which_legendre);
-
-	if (which_legendre != component) return 0.0;
-
-	double value = 1.0;
-	for (int i = 0; i < 3; i++) {
-		if (which_legendre == i) {
-			if (which_der == i)
-				value *= legendre_der_tab_1d[indices[i]](point[i]);
-			else
-				value *= legendre_fn_tab_1d[indices[i]](point[i]);
-		}
-		else {
-			if (which_der == i)
-				value *= lobatto_der_tab_1d[indices[i]](point[i]);
-			else
-				value *= lobatto_fn_tab_1d[indices[i]](point[i]);
-		}
-	}
+	decompose(ind, indices, ori, which_legendre);
 
 	// for the sake of simplicity, recode orientations like this: 0 -> 1, 1 -> -1
-	for (int i = 0; i < 3; i++) oris[i] = (oris[i] == 0) ? 1 : -1;
+	for (int i = 0; i < 3; i++)
+		ori[i] = (ori[i] == 0) ? 1 : -1;
 
-	value = oris[component] * oris[which_der] * value;
+	if (which_legendre == component) {
+		for (int k = 0; k < np; k++) {
+			double point[3] = { pt[k].x, pt[k].y, pt[k].z };
 
-	return value;
+			if (ori[0] == -1) point[0] = -point[0];
+			if (ori[1] == -1) point[1] = -point[1];
+			if (ori[2] == -1) point[2] = -point[2];
+
+			double value = 1.0;
+			for (int i = 0; i < 3; i++) {
+				if (which_legendre == i) {
+					if (which_der == i) value *= legendre_der_tab_1d[indices[i]](point[i]);
+					else value *= legendre_fn_tab_1d[indices[i]](point[i]);
+				}
+				else {
+					if (which_der == i) value *= lobatto_der_tab_1d[indices[i]](point[i]);
+					else value *= lobatto_fn_tab_1d[indices[i]](point[i]);
+				}
+			}
+
+			val[k] = ori[component] * ori[which_der] * value;
+		}
+	}
+	else {
+		for (int k = 0; k < np; k++) val[k] = 0.0;
+	}
 }
 
-static double calc_dx_value(int index, double x, double y, double z, int component) {
+static void calc_dx_values(int index, int np, QuadPt3D *pt, int component, double *val) {
 	_F_
-	return calc_der_value(index, x, y, z, component, 0);
+	return calc_der_values(index, np, pt, component, 0, val);
 }
 
-static double calc_dy_value(int index, double x, double y, double z, int component) {
+static void calc_dy_values(int index, int np, QuadPt3D *pt, int component, double *val) {
 	_F_
-	return calc_der_value(index, x, y, z, component, 1);
+	return calc_der_values(index, np, pt, component, 1, val);
 }
 
-static double calc_dz_value(int index, double x, double y, double z, int component) {
+static void calc_dz_values(int index, int np, QuadPt3D *pt, int component, double *val) {
 	_F_
-	return calc_der_value(index, x, y, z, component, 2);
+	return calc_der_values(index, np, pt, component, 2, val);
 }
 
 #endif
@@ -191,10 +197,10 @@ HcurlShapesetLobattoHex::HcurlShapesetLobattoHex() {
 	num_components = 3;
 
 	// fn, dx, dy, dz will be calculated on-the-fly
-	shape_table_deleg[FN]  = calc_fn_value;
-	shape_table_deleg[DX]  = calc_dx_value;
-	shape_table_deleg[DY]  = calc_dy_value;
-	shape_table_deleg[DZ]  = calc_dz_value;
+	shape_table_deleg[FN]  = calc_fn_values;
+	shape_table_deleg[DX]  = calc_dx_values;
+	shape_table_deleg[DY]  = calc_dy_values;
+	shape_table_deleg[DZ]  = calc_dz_values;
 	shape_table_deleg[DXY] = NULL;
 	shape_table_deleg[DXZ] = NULL;
 	shape_table_deleg[DYZ] = NULL;

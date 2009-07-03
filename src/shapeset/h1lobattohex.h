@@ -78,6 +78,19 @@ public:
 
 	virtual int get_shape_type(int index) const { return -1; }
 
+	virtual void get_values(int n, int index, int np, QuadPt3D *pt, int component, double *vals) {
+		if (index >= 0) shape_table_deleg[n](index, np, pt, component, vals);
+		else get_constrained_values(n, index, np, pt, component, vals);
+	}
+
+	virtual double get_value(int n, int index, double x, double y, double z, int component) {
+		QuadPt3D one(x, y, z, 1.0);
+		double val = 0.0;
+		if (index >= 0) shape_table_deleg[n](index, 1, &one, component, &val);
+		else val = get_constrained_value(n, index, x, y, z, component);
+		return val;
+	}
+
 protected:
 	// some constants
 	static const int NUM_EDGE_ORIS = 2;
@@ -95,17 +108,10 @@ protected:
 	void compute_face_indices(int face, int ori, order2_t order);
 	void compute_bubble_indices(order3_t order);
 
-	virtual double get_val(int n, int index, double x, double y, double z, int component) {
-		// use on-the-fly function
-		if (shape_table_deleg[n] == NULL) EXIT(ERR_FAILURE, "Missing a delegate function for calculating shape functions");
-		return shape_table_deleg[n](index, x, y, z, component);
-	}
-
-
 	/// --- put CED specific stuff here ---
-	virtual CEDComb *calc_constrained_edge_combination(int ori, int order, Part part);
-	virtual CEDComb *calc_constrained_edge_face_combination(int ori, int order, Part part, int dir);
-	virtual CEDComb *calc_constrained_face_combination(int ori, int order, Part part);
+	virtual CEDComb *calc_constrained_edge_combination(int ori, const order1_t &order, Part part);
+	virtual CEDComb *calc_constrained_edge_face_combination(int ori, const order2_t &order, Part part, int dir);
+	virtual CEDComb *calc_constrained_face_combination(int ori, const order2_t &order, Part part);
 };
 
 #undef CHECK_VERTEX

@@ -33,41 +33,31 @@ public:
 	virtual ~HcurlShapesetLobattoHex();
 
 	virtual int get_vertex_index(int vertex) const {
-		assert(false); //no vertex functions in hcurl
+		EXIT(ERR_FAILURE, "Hcurl shapeset do not have vertex functions");
 	}
 
 	virtual int *get_edge_indices(int edge, int ori, order1_t order) {
-//		CHECK_EDGE(edge); CHECK_EDGE_ORDER(order);
-//		if (order == -1) order = max_edge_order;
+		CHECK_EDGE(edge);
 		if (!edge_indices[edge][ori].exists(order)) compute_edge_indices(edge, ori, order);
 		return edge_indices[edge][ori][order];
 	}
 
 	virtual int *get_face_indices(int face, int ori, order2_t order) {
-//		CHECK_FACE(face);
-//		CHECK_FACE_ORDER(order);
+		CHECK_FACE(face);
 		if (!face_indices[face][ori].exists(order.get_idx())) compute_face_indices(face, ori, order);
 		return face_indices[face][ori][order.get_idx()];
 	}
 
 	virtual int *get_bubble_indices(order3_t order) {
-//		CHECK_ORDER(order);
 		if (!bubble_indices.exists(order.get_idx())) compute_bubble_indices(order);
 		return bubble_indices[order.get_idx()];
 	}
 
-	virtual int get_num_edge_fns(order1_t order) const {
-//		CHECK_EDGE_ORDER(order);
-		return (order + 1);
-	}
+	virtual int get_num_edge_fns(order1_t order) const { return (order + 1); }
 
-	virtual int get_num_face_fns(order2_t order) const {
-//		CHECK_FACE_ORDER(order);
-		return (order.x + 1) * order.y + order.x * (order.y + 1);
-	}
+	virtual int get_num_face_fns(order2_t order) const { return (order.x + 1) * order.y + order.x * (order.y + 1); }
 
 	virtual int get_num_bubble_fns(order3_t order) const {
-//		CHECK_ORDER(order);
 		return (order.x + 1) * order.y * order.z + order.x * (order.y + 1) * order.z + order.x * order.y * (order.z + 1);
 	}
 
@@ -77,10 +67,20 @@ public:
 
 	virtual order3_t get_order(int index) const;
 
-	virtual int get_shape_type(int index) const {
-		return -1;
+	virtual int get_shape_type(int index) const { return -1; }
+
+	virtual void get_values(int n, int index, int np, QuadPt3D *pt, int component, double *vals) {
+		if (index >= 0) shape_table_deleg[n](index, np, pt, component, vals);
+		else get_constrained_values(n, index, np, pt, component, vals);
 	}
 
+	virtual double get_value(int n, int index, double x, double y, double z, int component) {
+		QuadPt3D one(x, y, z, 1.0);
+		double val = 0.0;
+		if (index >= 0) shape_table_deleg[n](index, 1, &one, component, &val);
+		else val = get_constrained_value(n, index, x, y, z, component);
+		return val;
+	}
 
 protected:
 	// some constants
@@ -105,11 +105,6 @@ protected:
 
 
 protected:
-	virtual double get_val(int n, int index, double x, double y, double z, int component) {
-		if (shape_table_deleg[n] == NULL) EXIT(ERR_FAILURE, "Missing a delegate function for calculating shape functions");
-		return shape_table_deleg[n](index, x, y, z, component);
-	}
-
 	/// --- put CED specific stuff here ---
 	virtual CEDComb *calc_constrained_edge_combination(int ori, order1_t order, Part part);
 	virtual CEDComb *calc_constrained_edge_face_combination(int ori, order2_t order, Part part);
@@ -123,4 +118,3 @@ protected:
 #undef CHECK_FACE_ORI
 
 #endif
-

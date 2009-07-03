@@ -33,11 +33,11 @@
 #define CHECK_PARAMS \
 	if (component < 0 || component > num_components) \
 		ERROR("Invalid component. You are probably using scalar-valued shapeset for an Hcurl problem."); \
-	if (cur_node == NULL) ERROR("Invalid node. Did you call set_quad_order()?");
+	if (cur_node == NULL) ERROR("Invalid node. Did you call precalculate()?");
 
 #define CHECK_TABLE(n, msg) \
 	if (cur_node->values[component][n] == NULL) \
-		ERROR(msg " not precalculated for component %d. Did you call set_quad_order() with correct mask?", component);
+		ERROR(msg " not precalculated for component %d. Did you call precalculate() with correct mask?", component);
 
 #else
   #define CHECK_PARAMS
@@ -160,18 +160,6 @@ public:
 	/// @return The number of vector components of the function being represented by the class.
 	int get_num_components() const { return num_components; }
 
-	/// Activates an integration rule of the specified order. Subsequent calls to
-	/// get_values(), get_dx_values() etc. will be returning function values at these points.
-	/// 2param order [in] Integration rule order.
-	/// @param mask [in] A combination of one or more of the constants FN_VAL, FN_DX, FN_DY, FN_DZ,
-	///   FN_DXX, FN_DYY, FN_DZZ, FN_DXY, FN_DXZ, FN_DYZ specifying the values which should be precalculated.
-	///   The default is FN_VAL | FN_DX | FN_DY. You can also use FN_ALL to precalculate everything.
-	void set_quad_order(qorder_t order, int mask = FN_DEFAULT) {
-		pp_cur_node = (void **) JudyLIns(nodes, order, NULL);
-		cur_node = (Node *) *pp_cur_node;
-		if (cur_node == NULL || (cur_node->mask & mask) != mask) precalculate(order, mask);
-	}
-
 	/// @param component [in] The component of the function (0-2).
 	/// @return The values of the function at all points of the current integration rule.
 	TYPE *get_fn_values(int component = 0) {
@@ -269,8 +257,9 @@ public:
 	}
 
 	/// For internal use.
-	TYPE *get_values(int a, int b) {
-		return cur_node->values[a][b];
+	TYPE *get_values(int component, int b) {
+		CHECK_PARAMS;
+		return cur_node->values[component][b];
 	}
 
 	/// Sets the quadrature points in which the function will be evaluated. It is possible to switch
@@ -290,11 +279,11 @@ public:
 	/// Frees all precalculated tables.
 	virtual void free() = 0;
 
+	/// precalculates the current function at the current integration points.
+	virtual void precalculate(const int np, const QuadPt3D *pt, int mask) = 0;
+
 protected:
 	static const int QUAD_COUNT = 8;
-
-	/// precalculates the current function at the current integration points.
-	virtual void precalculate(qorder_t order, int mask) = 0;
 
 	order3_t order;			/// current function polynomial order
 	int num_components; 	/// number of vector components

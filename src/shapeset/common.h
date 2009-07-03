@@ -22,11 +22,13 @@
 
 #include "../common.h"
 
+struct QuadPt3D;
+
 // shape function
 typedef double (*shape_fn_t)(double, double, double);
 
 // shape function that is calculated on-the-fly
-typedef double (*shape_fn_deleg_t)(int, double, double, double, int);
+typedef void (*shape_fn_deleg_t)(int, int, QuadPt3D *, int, double *);
 
 // shape function in 1D (used by product-based shapesets)
 typedef double (*shape_fn_1d_t)(double);

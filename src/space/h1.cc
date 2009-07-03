@@ -216,34 +216,45 @@ void H1Space::calc_edge_boundary_projection(Element *elem, int iedge) {
 		int iidx = edge_fn_idx[i];
 		for (int j = i; j < num_fns; j++) {
 			int jidx = edge_fn_idx[j];
-
 			order3_t order = shapeset->get_order(iidx) + shapeset->get_order(jidx);
 			int edge_order = order.get_edge_order(iedge);
+
+			int np = quad->get_edge_num_points(iedge, edge_order);
 			QuadPt3D *pt = quad->get_edge_points(iedge, edge_order);
+			double vi[np], vj[np];
+			shapeset->get_fn_values(iidx, np, pt, 0, vi);
+			shapeset->get_fn_values(jidx, np, pt, 0, vj);
+
 			double value = 0.0;
-			for (int k = 0; k < quad->get_edge_num_points(edge_order); k++)
-				value += pt[k].w *
-					shapeset->get_fn_value(iidx, pt[k].x, pt[k].y, pt[k].z, 0) *
-					shapeset->get_fn_value(jidx, pt[k].x, pt[k].y, pt[k].z, 0);
+			for (int k = 0; k < np; k++)
+				value += pt[k].w * vi[k] * vj[k];
 			proj_mat[i][j] += value;
 		}
 
 		int order_rhs = quad->get_edge_max_order(iedge);
-		double *edge_phys_x = ref_map.get_edge_phys_x(iedge, order_rhs);
-		double *edge_phys_y = ref_map.get_edge_phys_y(iedge, order_rhs);
-		double *edge_phys_z = ref_map.get_edge_phys_z(iedge, order_rhs);
+		int np = quad->get_edge_num_points(iedge, order_rhs);
+		QuadPt3D *pt = quad->get_edge_points(iedge, order_rhs);
+
+		double *edge_phys_x = ref_map.get_phys_x(np, pt);
+		double *edge_phys_y = ref_map.get_phys_y(np, pt);
+		double *edge_phys_z = ref_map.get_phys_z(np, pt);
+
+		double v0[np], v1[np], vi[np];
+		shapeset->get_fn_values(vtx_fn_idx[0], np, pt, 0, v0);
+		shapeset->get_fn_values(vtx_fn_idx[1], np, pt, 0, v1);
+		shapeset->get_fn_values(iidx, np, pt, 0, vi);
 
 		scalar value = 0.0;
-		QuadPt3D *pt = quad->get_edge_points(iedge, order_rhs);
-		for (int k = 0; k < quad->get_edge_num_points(order_rhs); k++) {
-			scalar g =
-				vtx_fn_coef[0] * shapeset->get_fn_value(vtx_fn_idx[0], pt[k].x, pt[k].y, pt[k].z, 0) +
-				vtx_fn_coef[1] * shapeset->get_fn_value(vtx_fn_idx[1], pt[k].x, pt[k].y, pt[k].z, 0);
-			value += pt[k].w *
-				shapeset->get_fn_value(iidx, pt[k].x, pt[k].y, pt[k].z, 0) *
+		for (int k = 0; k < np; k++) {
+			scalar g = vtx_fn_coef[0] * v0[k] + vtx_fn_coef[1] * v1[k];
+			value += pt[k].w * vi[k] *
 				(bc_value_callback_by_coord(enode->marker, edge_phys_x[k], edge_phys_y[k], edge_phys_z[k]) - g);
 		}
 		proj_rhs[i] += value;
+
+		delete [] edge_phys_x;
+		delete [] edge_phys_y;
+		delete [] edge_phys_z;
 	}
 
 	double *chol_p = new double[num_fns];
@@ -349,34 +360,48 @@ void H1Space::calc_face_boundary_projection(Element *elem, int iface) {
 			order3_t order = shapeset->get_order(iidx) + shapeset->get_order(jidx);
 			order2_t face_order = order.get_face_order(iface);
 
+			int np = quad->get_face_num_points(iface, face_order);
 			QuadPt3D *pt = quad->get_face_points(iface, face_order);
+			double vi[np], vj[np];
+			shapeset->get_fn_values(iidx, np, pt, 0, vi);
+			shapeset->get_fn_values(jidx, np, pt, 0, vj);
+
 			double value = 0.0;
-			for (int k = 0; k < quad->get_face_num_points(iface, face_order); k++) {
-				value += pt[k].w *
-					shapeset->get_fn_value(iidx, pt[k].x, pt[k].y, pt[k].z, 0) *
-					shapeset->get_fn_value(jidx, pt[k].x, pt[k].y, pt[k].z, 0);
-			}
+			for (int k = 0; k < np; k++)
+				value += pt[k].w * vi[k] * vj[k];
 			proj_mat[i][j] += value;
 		}
 
 		order2_t order_rhs = quad->get_face_max_order(iface);
-		double *face_phys_x = ref_map.get_face_phys_x(iface, order_rhs);
-		double *face_phys_y = ref_map.get_face_phys_y(iface, order_rhs);
-		double *face_phys_z = ref_map.get_face_phys_z(iface, order_rhs);
+		int np = quad->get_face_num_points(iface, order_rhs);
+		QuadPt3D *pt = quad->get_face_points(iface, order_rhs);
+
+		double *face_phys_x = ref_map.get_phys_x(np, pt);
+		double *face_phys_y = ref_map.get_phys_y(np, pt);
+		double *face_phys_z = ref_map.get_phys_z(np, pt);
 
 		double value = 0.0;
-		QuadPt3D *pt = quad->get_face_points(iface, order_rhs);
-		for (int k = 0; k < quad->get_face_num_points(iface, order_rhs); k++) {
-			double g = 0.0; // lin. combination of vertex + edge functions
-			for (int l = 0; l < num_fns; l++)
-				g += coef[l] * shapeset->get_fn_value(fn_idx[l], pt[k].x, pt[k].y, pt[k].z, 0);
+		double g[np];		// lin. combination of vertex + edge functions
+		memset(g, 0, np * sizeof(double));
+		for (int l = 0; l < num_fns; l++) {
+			double fn[np];
+			shapeset->get_fn_values(fn_idx[l], np, pt, 0, fn);
+			for (int k = 0; k < np; k++)
+				g[k] += coef[l] * fn[k];
+		}
 
-			value += pt[k].w *
-				shapeset->get_fn_value(iidx, pt[k].x, pt[k].y, pt[k].z, 0) *
-				(bc_value_callback_by_coord(fnode->marker, face_phys_x[k], face_phys_y[k], face_phys_z[k]) - g);
+		double vi[np];
+		shapeset->get_fn_values(iidx, np, pt, 0, vi);
+		for (int k = 0; k < np; k++) {
+			value += pt[k].w * vi[k] *
+				(bc_value_callback_by_coord(fnode->marker, face_phys_x[k], face_phys_y[k], face_phys_z[k]) - g[k]);
 		}
 
 		proj_rhs[i] += value;
+
+		delete [] face_phys_x;
+		delete [] face_phys_y;
+		delete [] face_phys_z;
 	}
 
 	// solve the system using a precalculated Cholesky decomposed projection matrix

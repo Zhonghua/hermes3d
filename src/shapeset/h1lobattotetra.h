@@ -73,6 +73,17 @@ public:
 		return -1;
 	}
 
+	virtual void get_values(int n, int index, int np, QuadPt3D *pt, int component, double *vals) {
+		CHECK_COMPONENT(component);
+		for (int k = 0; k < np; k++)
+			vals[k] = shape_table[n][component][index](pt[k].x, pt[k].y, pt[k].z);
+	}
+
+	virtual double get_value(int n, int index, double x, double y, double z, int component) {
+		CHECK_COMPONENT(component);
+		return shape_table[n][component][index](x, y, z);
+	}
+
 protected:
 	shape_fn_t **shape_table[VALUE_TYPES];
 
@@ -91,11 +102,6 @@ protected:
 	int *face_count;
 	/// Number of bubble functions on reference element, indexing: [order]
 	int *bubble_count;
-
-	virtual double get_val(int n, int index, double x, double y, double z, int component) {
-		CHECK_COMPONENT(component);
-		return shape_table[n][component][index](x, y, z);
-	}
 };
 
 #undef CHECK_VERTEX

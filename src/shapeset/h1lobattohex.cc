@@ -131,7 +131,7 @@ static void decompose(h1_hex_index_t index, int indices[3], int ori[3], bool swa
 
 // -- functions that calculate values of fn, dx, dy, dz on the fly -- //
 
-static double calc_fn_value(int index, double x, double y, double z, int component) {
+static void calc_fn_values(int index, int np, QuadPt3D *pt, int component, double *val) {
 	_F_
 	h1_hex_index_t idx(index);
 	int indices[3];
@@ -139,15 +139,17 @@ static double calc_fn_value(int index, double x, double y, double z, int compone
 
 	decompose(idx, indices, oris);
 
-	if (oris[0] == 1) x = -x;
-	if (oris[1] == 1) y = -y;
-	if (oris[2] == 1) z = -z;
+	for (int k = 0; k < np; k++) {
+		double x = (oris[0] == 0) ? pt[k].x : -pt[k].x;
+		double y = (oris[1] == 0) ? pt[k].y : -pt[k].y;
+		double z = (oris[2] == 0) ? pt[k].z : -pt[k].z;
 
-	return lobatto_fn_tab_1d[indices[0]](x) * lobatto_fn_tab_1d[indices[1]](y) * lobatto_fn_tab_1d[indices[2]](z);
+		val[k] = lobatto_fn_tab_1d[indices[0]](x) * lobatto_fn_tab_1d[indices[1]](y) * lobatto_fn_tab_1d[indices[2]](z);
+	}
 }
 
 
-static double calc_dx_value(int index, double x, double y, double z, int component) {
+static void calc_dx_values(int index, int np, QuadPt3D *pt, int component, double *dx) {
 	_F_
 	h1_hex_index_t idx(index);
 	int indices[3];
@@ -158,18 +160,18 @@ static double calc_dx_value(int index, double x, double y, double z, int compone
 	for (int i = 0; i < 3; i++)
 		assert((oris[i] == 0) || (indices[i] >= 2));
 
-	if (oris[0] == 1) x = -x;
-	if (oris[1] == 1) y = -y;
-	if (oris[2] == 1) z = -z;
+	for (int k = 0; k < np; k++) {
+		double x = (oris[0] == 0) ? pt[k].x : -pt[k].x;
+		double y = (oris[1] == 0) ? pt[k].y : -pt[k].y;
+		double z = (oris[2] == 0) ? pt[k].z : -pt[k].z;
 
-	double dx = lobatto_der_tab_1d[indices[0]](x) * lobatto_fn_tab_1d[indices[1]](y) * lobatto_fn_tab_1d[indices[2]](z);
-	if (oris[0] == 1) dx = -dx;
-
-	return dx;
+		dx[k] = lobatto_der_tab_1d[indices[0]](x) * lobatto_fn_tab_1d[indices[1]](y) * lobatto_fn_tab_1d[indices[2]](z);
+		if (oris[0] == 1) dx[k] = -dx[k];
+	}
 }
 
 
-static double calc_dy_value(int index, double x, double y, double z, int component) {
+static void calc_dy_values(int index, int np, QuadPt3D *pt, int component, double *dy) {
 	_F_
 	h1_hex_index_t idx(index);
 	int indices[3];
@@ -180,18 +182,18 @@ static double calc_dy_value(int index, double x, double y, double z, int compone
 	for (int i = 0; i < 3; i++)
 		assert((oris[i] == 0) || (indices[i] >= 2));
 
-	if (oris[0] == 1) x = -x;
-	if (oris[1] == 1) y = -y;
-	if (oris[2] == 1) z = -z;
+	for (int k = 0; k < np; k++) {
+		double x = (oris[0] == 0) ? pt[k].x : -pt[k].x;
+		double y = (oris[1] == 0) ? pt[k].y : -pt[k].y;
+		double z = (oris[2] == 0) ? pt[k].z : -pt[k].z;
 
-	double dy = lobatto_fn_tab_1d[indices[0]](x) * lobatto_der_tab_1d[indices[1]](y) * lobatto_fn_tab_1d[indices[2]](z);
-	if (oris[1] == 1) dy = -dy;
-
-	return dy;
+		dy[k] = lobatto_fn_tab_1d[indices[0]](x) * lobatto_der_tab_1d[indices[1]](y) * lobatto_fn_tab_1d[indices[2]](z);
+		if (oris[1] == 1) dy[k] = -dy[k];
+	}
 }
 
 
-static double calc_dz_value(int index, double x, double y, double z, int component) {
+static void calc_dz_values(int index, int np, QuadPt3D *pt, int component, double *dz) {
 	_F_
 	h1_hex_index_t idx(index);
 	int indices[3];
@@ -202,14 +204,14 @@ static double calc_dz_value(int index, double x, double y, double z, int compone
 	for (int i = 0; i < 3; i++)
 		assert((oris[i] == 0) || (indices[i] >= 2));
 
-	if (oris[0] == 1) x = -x;
-	if (oris[1] == 1) y = -y;
-	if (oris[2] == 1) z = -z;
+	for (int k = 0; k < np; k++) {
+		double x = (oris[0] == 0) ? pt[k].x : -pt[k].x;
+		double y = (oris[1] == 0) ? pt[k].y : -pt[k].y;
+		double z = (oris[2] == 0) ? pt[k].z : -pt[k].z;
 
-	double dz = lobatto_fn_tab_1d[indices[0]](x) * lobatto_fn_tab_1d[indices[1]](y) * lobatto_der_tab_1d[indices[2]](z);
-	if (oris[2] == 1) dz = -dz;
-
-	return dz;
+		dz[k] = lobatto_fn_tab_1d[indices[0]](x) * lobatto_fn_tab_1d[indices[1]](y) * lobatto_der_tab_1d[indices[2]](z);
+		if (oris[2] == 1) dz[k] = -dz[k];
+	}
 }
 
 #endif
@@ -223,10 +225,10 @@ H1ShapesetLobattoHex::H1ShapesetLobattoHex() {
 	num_components = 1;
 
 	// fn, dx, dy, dz will be calculated on-the-fly
-	shape_table_deleg[FN]  = calc_fn_value;
-	shape_table_deleg[DX]  = calc_dx_value;
-	shape_table_deleg[DY]  = calc_dy_value;
-	shape_table_deleg[DZ]  = calc_dz_value;
+	shape_table_deleg[FN]  = calc_fn_values;
+	shape_table_deleg[DX]  = calc_dx_values;
+	shape_table_deleg[DY]  = calc_dy_values;
+	shape_table_deleg[DZ]  = calc_dz_values;
 	shape_table_deleg[DXY] = NULL;
 	shape_table_deleg[DXZ] = NULL;
 	shape_table_deleg[DYZ] = NULL;
@@ -425,10 +427,9 @@ void H1ShapesetLobattoHex::compute_bubble_indices(order3_t order) {
 //
 // constraints are calculated on egde 0
 //
-CEDComb *H1ShapesetLobattoHex::calc_constrained_edge_combination(int ori, int o, Part part) {
+CEDComb *H1ShapesetLobattoHex::calc_constrained_edge_combination(int ori, const order1_t &order, Part part) {
 	_F_
 #ifdef WITH_HEX
-	order1_t order = o;
 	Part rp = transform_edge_part(ori, part);
 
 	// determine the interval of the edge
@@ -479,10 +480,9 @@ CEDComb *H1ShapesetLobattoHex::calc_constrained_edge_combination(int ori, int o,
 //
 // constraints are calculated on face 5
 //
-CEDComb *H1ShapesetLobattoHex::calc_constrained_edge_face_combination(int ori, int o, Part part, int dir) {
+CEDComb *H1ShapesetLobattoHex::calc_constrained_edge_face_combination(int ori, const order2_t &order, Part part, int dir) {
 	_F_
 #ifdef WITH_HEX
-	order2_t order = order2_t::from_int(o);
 	Part rp = transform_face_part(ori, part);
 
 	if (ori >= 4) dir = (dir == PART_ORI_VERT) ? PART_ORI_HORZ : PART_ORI_VERT; 			// turned face
@@ -615,12 +615,9 @@ CEDComb *H1ShapesetLobattoHex::calc_constrained_edge_face_combination(int ori, i
 //  v_lo +-----------+
 //     h_lo  edge0  h_hi
 //
-CEDComb *H1ShapesetLobattoHex::calc_constrained_face_combination(int ori, int o, Part part) {
+CEDComb *H1ShapesetLobattoHex::calc_constrained_face_combination(int ori, const order2_t &order, Part part) {
 	_F_
 #ifdef WITH_HEX
-	order2_t order = order2_t::from_int(o);
-	order2_t old_order = order;
-
 	int n = get_num_face_fns(order);										// total number of functions on the face
 	int *fn_idx = get_face_indices(5, 0, order);							// indices of all functions on the face
 

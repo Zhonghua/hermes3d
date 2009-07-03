@@ -223,23 +223,18 @@ void SimpleFilter::init_components() {
 	num_components = (vec1 && vec2) ? 3 : 1;
 }
 
-void SimpleFilter::precalculate(qorder_t qord, int mask) {
+void SimpleFilter::precalculate(const int np, const QuadPt3D *pt, int mask) {
 	_F_
 	if (mask & (FN_DX | FN_DY | FN_DZ | FN_DXX | FN_DYY | FN_DZZ | FN_DXY | FN_DXZ | FN_DYZ)) {
 		ERROR("Filter not defined for derivatives.");
 		return;
 	}
 
-	Quad3D *quad = quads[cur_quad];
-
-	assert(qord.type == QOT_ELEMENT);
-	int np = quad->get_num_points(order3_t::from_int(qord.order));
 	Node *node = new_node(FN_VAL, np);
-	MEM_CHECK(node);
 
 	// precalculate all solutions
 	for (int i = 0; i < num; i++)
-		sln[i]->set_quad_order(qord, item[i]);
+		sln[i]->precalculate(np, pt, item[i]);
 
 	for (int j = 0; j < num_components; j++) {
 		// obtain corresponding tables
@@ -366,10 +361,3 @@ VonMisesFilter::VonMisesFilter(MeshFunction *sln1, MeshFunction *sln2, double la
 	this->item1 = item1;
 	this->item2 = item2;
 }
-
-void VonMisesFilter::precalculate(qorder_t order, int mask) {
-	_F_
-	// TODO: port to 3D
-	ERROR(ERR_NOT_IMPLEMENTED);
-}
-

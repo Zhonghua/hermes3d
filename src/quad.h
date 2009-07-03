@@ -198,55 +198,6 @@ protected:
 Quad3D *get_quadrature(EMode3D mode);
 
 
-//// Qorder ////
-//
-// quadrature order
-//
-
-#define QOT_ELEMENT						0
-#define QOT_FACE						1
-#define QOT_EDGE						2
-#define QOT_VERTEX						3
-
-struct qorder_t {
-	unsigned type:3;				// QOT_XXX
-	union {
-		unsigned edge: 4;			// the number of the local edge (if type == QOT_EDGE)
-		unsigned face: 4;			// the number of the local face (if type == QOT_FACE)
-	};
-	int order;						// order (has to be at least 32 bits long, since orderX_t types are designed to have such the length)
-
-	qorder_t(unsigned type) {
-		this->type = type;
-	}
-
-	qorder_t(unsigned type, order3_t order) {
-		this->type = type;
-		this->order = order.get_idx();
-	}
-
-	qorder_t(unsigned type, unsigned face, order2_t order) {
-		this->type = type;
-		this->face = face;
-		this->order = order.get_idx();
-	}
-
-	qorder_t(unsigned type, unsigned edge, order1_t order) {
-		this->type = type;
-		this->edge = edge;
-		this->order = order;
-	}
-
-	operator int() { return (((type << 4) | edge) << 25) | order; }
-};
-
-#define ELEM_QORDER(o)				qorder_t(QOT_ELEMENT, o)
-#define FACE_QORDER(f, o)			qorder_t(QOT_FACE, f, o)
-#define EDGE_QORDER(e, o)			qorder_t(QOT_EDGE, e, o)
-#define VTX_QORDER()				qorder_t(QOT_VERTEX)
-
-//
-
 #ifndef DEBUG_ORDER
 	#define LIMIT_TRI_ORDER(o)
 	#define LIMIT_QUAD_ORDER(o)

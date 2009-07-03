@@ -26,9 +26,6 @@
 ///
 /// @{
 
-double calc_error(double (*fn)(MeshFunction*, MeshFunction*, RefMap*, RefMap*), MeshFunction *sln1, MeshFunction *sln2);
-double calc_norm(double (*fn)(MeshFunction*, RefMap*), MeshFunction *sln);
-
 double h1_error(MeshFunction *sln1, MeshFunction *sln2);
 double h1_norm(MeshFunction *sln);
 

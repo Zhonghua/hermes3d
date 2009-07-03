@@ -86,6 +86,12 @@ public:
 		return 0;
 	}
 
+	virtual void get_values(int n, int index, int np, QuadPt3D *pt, int component, double *vals) {
+		CHECK_COMPONENT(component);
+		for (int k = 0; k < np; k++)
+			vals[k] = shape_table[n][component][index](pt[k].x, pt[k].y, pt[k].z);
+	}
+
 	virtual double get_value(int n, int index, double x, double y, double z, int component) {
 		CHECK_COMPONENT(component);
 		return shape_table[n][component][index](x, y, z);
@@ -96,11 +102,6 @@ protected:
 
 	/// Indices of vertex shape functions on reference element, indexing: [vertex shape fn index]
 	int  *vertex_indices;
-
-	virtual double get_val(int n, int index, double x, double y, double z, int component) {
-		CHECK_COMPONENT(component);
-		return shape_table[n][component][index](x, y, z);
-	}
 };
 
 
@@ -171,6 +172,12 @@ public:
 		return 0;
 	}
 
+	virtual void get_values(int n, int index, int np, QuadPt3D *pt, int component, double *vals) {
+		CHECK_COMPONENT(component);
+		for (int k = 0; k < np; k++)
+			vals[k] = shape_table[n][component][index](pt[k].x, pt[k].y, pt[k].z);
+	}
+
 	virtual double get_value(int n, int index, double x, double y, double z, int component) {
 		CHECK_COMPONENT(component);
 		return shape_table[n][component][index](x, y, z);
@@ -181,11 +188,6 @@ protected:
 
 	/// Indices of vertex shape functions on reference element, indexing: [vertex shape fn index]
 	int  *vertex_indices;
-
-	virtual double get_val(int n, int index, double x, double y, double z, int component) {
-		CHECK_COMPONENT(component);
-		return shape_table[n][component][index](x, y, z);
-	}
 };
 
 #undef CHECK_COMPONENT

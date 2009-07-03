@@ -91,6 +91,8 @@ public:
     SimpleFilter(void (*filter_fn)(int n, scalar *val1, scalar *val2, scalar *result), MeshFunction *sln1, MeshFunction *sln2, int item1 = FN_VAL, int item2 = FN_VAL);
     SimpleFilter(void (*filter_fn)(int n, scalar *val1, scalar *val2, scalar *val3, scalar *result), MeshFunction *sln1, MeshFunction *sln2, MeshFunction *sln3, int item1 = FN_VAL, int item2 = FN_VAL, int item3 = FN_VAL);
 
+	virtual void precalculate(const int np, const QuadPt3D *pt, int mask);
+
 protected:
 	int item[3];
 
@@ -99,8 +101,6 @@ protected:
 	void (*filter_fn_3)(int n, scalar *val1, scalar *val2, scalar *val3, scalar *result);
 
 	void init_components();
-	virtual void precalculate(qorder_t qord, int mask);
-
 };
 
 
@@ -177,8 +177,6 @@ public:
 protected:
 	double lambda, mu;
 	int cyl, item1, item2;
-
-	virtual void precalculate(qorder_t order, int mask);
 };
 
 #endif

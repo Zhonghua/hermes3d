@@ -162,19 +162,25 @@ void HcurlSpace::calc_edge_boundary_projection(Element *elem, int iedge) {
 	ref_map.set_active_element(elem);
 
 	Quad3D *quad = get_quadrature(elem->get_mode());
+	order1_t order_rhs = quad->get_edge_max_order(iedge);
+	int np = quad->get_edge_num_points(iedge, order_rhs);
+	QuadPt3D *pt = quad->get_edge_points(iedge, order_rhs);
 
-	int order_rhs = quad->get_edge_max_order(iedge);
-	double *edge_phys_x = ref_map.get_edge_phys_x(iedge, order_rhs);
-	double *edge_phys_y = ref_map.get_edge_phys_y(iedge, order_rhs);
-	double *edge_phys_z = ref_map.get_edge_phys_z(iedge, order_rhs);
+	double *edge_phys_x = ref_map.get_phys_x(np, pt);
+	double *edge_phys_y = ref_map.get_phys_y(np, pt);
+	double *edge_phys_z = ref_map.get_phys_z(np, pt);
 
-	for (int k = 0; k < quad->get_edge_num_points(order_rhs); k++) {
+	for (int k = 0; k < np; k++) {
 		// FIXME: use bc_vec_value_callback_by_coord
 		if (bc_value_callback_by_coord(enode->marker, edge_phys_x[k], edge_phys_y[k], edge_phys_z[k]) != 0.)
 			EXIT(ERR_NOT_IMPLEMENTED);  //projection of nonzero bc not implemented, see comment in .h
 	}
 
-	//save vector of zeros as a projection
+	delete [] edge_phys_x;
+	delete [] edge_phys_y;
+	delete [] edge_phys_z;
+
+	// save vector of zeros as a projection
 	enode->bc_proj = proj_rhs;
 }
 
@@ -197,11 +203,13 @@ void HcurlSpace::calc_face_boundary_projection(Element *elem, int iface) {
 	ref_map.set_active_element(elem);
 
 	Quad3D *quad = get_quadrature(elem->get_mode());
-
 	order2_t order_rhs = quad->get_face_max_order(iface);
-	double *face_phys_x = ref_map.get_face_phys_x(iface, order_rhs);
-	double *face_phys_y = ref_map.get_face_phys_y(iface, order_rhs);
-	double *face_phys_z = ref_map.get_face_phys_z(iface, order_rhs);
+	int np = quad->get_face_num_points(iface, order_rhs);
+	QuadPt3D *pt = quad->get_face_points(iface, order_rhs);
+
+	double *face_phys_x = ref_map.get_phys_x(np, pt);
+	double *face_phys_y = ref_map.get_phys_y(np, pt);
+	double *face_phys_z = ref_map.get_phys_z(np, pt);
 
 	for (int k = 0; k < quad->get_face_num_points(iface, order_rhs); k++) {
 		// FIXME: use bc_vec_value_callback_by_coord
@@ -209,7 +217,11 @@ void HcurlSpace::calc_face_boundary_projection(Element *elem, int iface) {
 			EXIT(ERR_NOT_IMPLEMENTED);  //projection of nonzero bc not implemented, see comment in .h
 	}
 
-	//save vector of zeros as a projection
+	delete [] face_phys_x;
+	delete [] face_phys_y;
+	delete [] face_phys_z;
+
+	// save vector of zeros as a projection
 	fnode->bc_proj = proj_rhs;
 }
 

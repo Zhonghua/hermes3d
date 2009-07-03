@@ -426,6 +426,58 @@ void VtkOutputEngine::out(MeshFunction *fn, const char *name, int item/* = FN_VA
 
 }
 
+void VtkOutputEngine::out(MeshFunction *fn1, MeshFunction *fn2, MeshFunction *fn3, const char *name, int item) {
+	_F_
+
+	if (!has_points) {
+		// calculate points where we will evaluate the function 'fn'
+		dump_points(fn1);
+		this->has_points = true;
+	}
+
+	MeshFunction *fn[] = { fn1, fn2, fn3 };
+
+	int comp[COMPONENTS];		// components to output
+	int nc;						// number of components to output
+
+	Mesh *mesh = fn1->get_mesh();
+
+	// header
+	fprintf(this->out_file, "\n");
+	fprintf(this->out_file, "VECTORS %s %s\n", name, "float");
+
+	// values
+	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
+		Element *element = mesh->elements[idx];
+		int mode = element->get_mode();
+
+		Vtk::OutputQuad *quad = output_quad[mode];
+		order3_t order = get_order(mode);
+		int np = quad->get_num_points(order);
+		QuadPt3D *pt = quad->get_points(order);
+		for (int i = 0; i < COMPONENTS; i++) {
+			fn[i]->set_active_element(element);
+			fn[i]->precalculate(np, pt, item);
+		}
+
+		int a = 0, b = 0;
+		mask_to_comp_val(item, a, b);
+		scalar *val[COMPONENTS];
+		for (int ic = 0; ic < COMPONENTS; ic++)
+			val[ic] = fn[ic]->get_values(0, b);
+
+		for (int i = 0; i < np; i++) {
+#ifndef COMPLEX
+			fprintf(this->out_file, "%e %e %e\n", val[0][i], val[1][i], val[2][i]);
+#else
+			fprintf(this->out_file, "%e %e %e\n", REAL(val[0][i]), REAL(val[1][i]), REAL(val[2][i]));
+#endif
+		}
+	}
+
+}
+
+
 void VtkOutputEngine::out(Mesh *mesh) {
 	_F_
 

@@ -499,6 +499,88 @@ void GmshOutputEngine::out(MeshFunction *fn, const char *name, int item/* = FN_V
 	fprintf(this->out_file, "};\n");
 }
 
+void GmshOutputEngine::out(MeshFunction *fn1, MeshFunction *fn2, MeshFunction *fn3, const char *name, int item) {
+	MeshFunction *fn[] = { fn1, fn2, fn3 };
+	Mesh *mesh = fn[0]->get_mesh();
+
+	// prepare
+	fprintf(this->out_file, "View \"%s\" {\n", name);
+
+	FOR_ALL_ACTIVE_ELEMENTS(idx, mesh) {
+		Element *element = mesh->elements[idx];
+		int mode = element->get_mode();
+		// FIXME: get order from the space
+		order3_t order;
+		switch (mode) {
+			case MODE_TETRAHEDRON: order = order3_t(1); break;
+			case MODE_HEXAHEDRON: order = order3_t(1, 1, 1); break;
+			case MODE_PRISM: EXIT(ERR_NOT_IMPLEMENTED); break;
+			default: EXIT(ERR_UNKNOWN_MODE); break;
+		}
+
+		Gmsh::OutputQuad *quad = output_quad[mode];
+		int subdiv_num = quad->get_subdiv_num(order);
+
+		for (int i = 0; i < COMPONENTS; i++) {
+			fn[i]->set_active_element(element);
+		}
+
+		int np2 = quad->get_num_points(order);
+		QuadPt3D *pt2 = quad->get_points(order);
+
+		RefMap *refmap = fn[0]->get_refmap();
+		double *phys_x = refmap->get_phys_x(np2, pt2);
+		double *phys_y = refmap->get_phys_y(np2, pt2);
+		double *phys_z = refmap->get_phys_z(np2, pt2);
+
+		for (int i = 0; i < COMPONENTS; i++)
+			fn[i]->precalculate(np2, pt2, item);
+
+		int a = 0, b = 0;
+		mask_to_comp_val(item, a, b);
+
+		scalar *val[COMPONENTS];
+		for (int i = 0; i < COMPONENTS; i++) {
+			val[i] = fn[i]->get_values(0, b);
+		}
+
+		int pt_idx = 0;
+		// iterate through sub-elements and output them
+		for (int i = 0; i < subdiv_num; i++) {
+			int np;
+			switch (mode) {
+				case MODE_TETRAHEDRON: np = Tetra::NUM_VERTICES; break;
+				case MODE_HEXAHEDRON: np = Hex::NUM_VERTICES; break;
+				case MODE_PRISM: EXIT(ERR_NOT_IMPLEMENTED); break;
+				default: EXIT(ERR_UNKNOWN_MODE); break;
+			}
+
+			// small buffers to hold values for one sub-element
+			Point3D phys_pt[np * COMPONENTS];
+			double v[COMPONENTS][np];
+			for (int j = 0; j < np; j++, pt_idx++) {
+				// physical coordinates of sub-element
+				phys_pt[j].x = phys_x[pt_idx];
+				phys_pt[j].y = phys_y[pt_idx];
+				phys_pt[j].z = phys_z[pt_idx];
+
+				for (int ic = 0; ic < COMPONENTS; ic++) {
+#ifndef COMPLEX
+					v[ic][j] = val[ic][pt_idx];
+#else
+					v[ic][j] = REAL(val[ic][pt_idx]);
+#endif
+				}
+			}
+
+			dump_vectors(mode, np, phys_pt, v[0], v[1], v[2]);
+		}
+	}
+
+	// finalize
+	fprintf(this->out_file, "};\n");
+}
+
 void GmshOutputEngine::out(Mesh *mesh) {
 	_F_
 	// see Gmsh documentation on details (http://www.geuz.org/gmsh/doc/texinfo/gmsh-full.html)

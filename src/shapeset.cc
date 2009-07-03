@@ -284,6 +284,58 @@ double Shapeset::get_constrained_value(int n, int index, double x, double y, dou
 	return val;
 }
 
+order3_t Shapeset::get_ced_order(int index) const {
+	_F_
+	assert(ced_key.exists(-1 - index));
+	CEDKey key = ced_key[-1 - index];
+
+	order3_t order;
+	if (key.type == CED_KEY_TYPE_EDGE || key.type == CED_KEY_TYPE_EDGE_FACE) {
+		int o;
+		if (key.type == CED_KEY_TYPE_EDGE_FACE) {
+			int dir;
+			if (key.ori < 4) dir = key.dir;
+			else dir = (key.dir == PART_ORI_VERT) ? PART_ORI_HORZ : PART_ORI_VERT; 			// turned face
+			order2_t fo = order2_t::from_int(key.order);
+			o = (dir == PART_ORI_HORZ) ? fo.x : fo.y;
+		}
+		else
+			o = key.order;
+
+		switch (key.edge) {
+			case  0: order = order3_t(o, 1, 1); break;
+			case  1: order = order3_t(1, o, 1); break;
+			case  2: order = order3_t(o, 1, 1); break;
+			case  3: order = order3_t(1, o, 1); break;
+			case  4: order = order3_t(1, 1, o); break;
+			case  5: order = order3_t(1, 1, o); break;
+			case  6: order = order3_t(1, 1, o); break;
+			case  7: order = order3_t(1, 1, o); break;
+			case  8: order = order3_t(o, 1, 1); break;
+			case  9: order = order3_t(1, o, 1); break;
+			case 10: order = order3_t(o, 1, 1); break;
+			case 11: order = order3_t(1, o, 1); break;
+			default: EXIT(ERR_FAILURE, "Invalid edge number %d. Can be 0 - 11.", key.edge); break;
+		}
+	}
+	else if (key.type == CED_KEY_TYPE_FACE) {
+		order2_t o = order2_t::from_int(key.order);
+
+		switch (key.face) {
+			case 0: order = order3_t(1, o.x, o.y); break;
+			case 1: order = order3_t(1, o.x, o.y); break;
+			case 2: order = order3_t(o.x, 1, o.y); break;
+			case 3: order = order3_t(o.x, 1, o.y); break;
+			case 4: order = order3_t(o.x, o.y, 1); break;
+			case 5: order = order3_t(o.x, o.y, 1); break;
+			default: EXIT(ERR_FAILURE, "Invalid face number %d. Can be 0 - 5.", key.face); break;
+		}
+		if (key.ori >= 4) order = turn_hex_face_order(key.face, order);		// face function is turned due to orientation
+	}
+
+	return order;
+}
+
 #ifdef PRELOADING
 
 bool Shapeset::load_prods(const char *file_name, double *&mat) {

@@ -322,7 +322,7 @@ void VtkOutputEngine::dump_points(MeshFunction *fn) {
 }
 
 
-void VtkOutputEngine::out(MeshFunction *fn, const char *name, int item/* = FN_VAL_0*/) {
+void VtkOutputEngine::out(MeshFunction *fn, const char *name, int item/* = FN_VAL*/) {
 	_F_
 	if (!has_points) {
 		// calculate points where we will evaluate the function 'fn'

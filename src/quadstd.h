@@ -41,6 +41,7 @@ public:
 	~QuadStdHex();
 
 	virtual QuadPt3D *get_points(order3_t order) {
+		CHECK_MODE;
 		if (!tables.exists(order.get_idx())) calc_table(order);
 		return tables[order.get_idx()];
 	}

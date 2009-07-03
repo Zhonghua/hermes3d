@@ -149,6 +149,8 @@ protected:
 // 3D quadratures
 //
 
+#define CHECK_MODE assert(order.type == mode)
+
 /// Numerical quadratures in 3D
 ///
 /// @ingroup quadratures
@@ -156,8 +158,8 @@ class Quad3D {
 public:
 	virtual ~Quad3D() { }
 
-	virtual QuadPt3D *get_points(order3_t order) { return tables[order.get_idx()]; }
-	virtual int get_num_points(order3_t order) { return np[order.get_idx()]; }
+	virtual QuadPt3D *get_points(order3_t order) { CHECK_MODE; return tables[order.get_idx()]; }
+	virtual int get_num_points(order3_t order) { CHECK_MODE; return np[order.get_idx()]; }
 
 	virtual QuadPt3D *get_edge_points(int edge, order1_t order) { return edge_tables[edge][order]; }
 	int get_edge_num_points(order1_t order) const { return np_edge[order]; }

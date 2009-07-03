@@ -4367,7 +4367,7 @@ QuadStdHex::~QuadStdHex() {
 void QuadStdHex::calc_table(order3_t order) {
 	_F_
 #ifdef WITH_HEX
-//	assert(order.type == mode);
+	assert(order.type == mode);
 	int idx = order.get_idx();
 	tables[idx] = new QuadPt3D[np[idx]];
 	MEM_CHECK(tables[idx]);
@@ -4445,7 +4445,7 @@ void QuadStdHex::calc_face_table(int face, order2_t order) {
 order3_t QuadStdHex::lower_order_same_accuracy(order3_t ord) {
 	_F_
 #ifdef WITH_HEX
-//	assert(ord.type == MODE_HEXAHEDRON);
+	assert(ord.type == MODE_HEXAHEDRON);
 	int x = (ord.x % 2) ? ord.x-- : ord.x;
 	int y = (ord.y % 2) ? ord.y-- : ord.y;
 	int z = (ord.x % 2) ? ord.z-- : ord.z;

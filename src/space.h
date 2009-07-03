@@ -55,12 +55,13 @@
 		for (Word_t (idx) = elm_data.first(); (idx) != INVALID_IDX; (idx) = elm_data.next((idx)))
 
 
-// Possible return values for bc_type_callback():
+/// Possible return values for bc_type_callback():
 enum EBCType {
-	BC_ESSENTIAL, ///< Essential (Dirichlet) BC
-	BC_NATURAL,   ///< Natural (Neumann, Newton) BC
-	BC_NONE       ///< Do-nothing BC
+	BC_ESSENTIAL, /// Essential (Dirichlet) BC
+	BC_NATURAL,   /// Natural (Neumann, Newton) BC
+	BC_NONE       /// Do-nothing BC
 };
+
 
 #define MARKER_UNDEFINED				-1
 
@@ -84,6 +85,7 @@ public:
 
 	void set_bc_types(EBCType (*bc_type_callback)(int marker));
 	void set_bc_values(scalar (*bc_value_callback_by_coord)(int marker, double x, double y, double z));
+	// TODO: different callback: void (*bc_vec_value_callback_by_coord)(int marker, double x, double y, double z, scalar3 &result)
 	void set_bc_values(scalar3 &(*bc_vec_value_callback_by_coord)(int marker, double x, double y, double z));
 
 	void set_element_order(Word_t eid, order3_t order);
@@ -106,7 +108,6 @@ public:
 	bool is_up_to_date() const { return was_assigned && mesh_seq == mesh->get_seq(); }
 
 protected:
-public: //remove me
 	Mesh *mesh;
 	Shapeset *shapeset;
 	ESpaceType type;
@@ -126,16 +127,16 @@ public: //remove me
 	struct BaseEdgeComponent {
 		Word_t edge_id;							/// ID of the constraining edge
 		int ori;								/// the orientation of the constraining edge
-		Part part;							/// part of the edge that is constrained
+		Part part;								/// part of the edge that is constrained
 		scalar coef;
 	};
 
 	struct BaseFaceComponent {
 		Word_t face_id;							/// ID of a constraining face
-		unsigned ori:3;						/// the orientation of constraining face
-		unsigned dir:1;						/// the orientation of ???
+		unsigned ori:3;							/// the orientation of constraining face
+		unsigned dir:1;							/// the orientation of ???
 		unsigned iface:4;						/// local number of constraining face
-		Part part;							/// part of the face that is constrained
+		Part part;								/// part of the face that is constrained
 		scalar coef;
 
 		BaseFaceComponent() {
@@ -199,11 +200,11 @@ public: //remove me
 	};
 
 	struct EdgeData : public NodeData {
-		unsigned ced:1;							/// 1 = is constrained
+		unsigned ced:1;								/// 1 = is constrained
 		union {
 			/// normal node
 			struct {
-				order1_t order;   						/// polynomial order
+				order1_t order;   					/// polynomial order
 				int dof;
 				int n;								/// number of DOFs
 			};
@@ -271,7 +272,7 @@ public: //remove me
 	};
 
 	struct FaceData : public NodeData  {
-		unsigned ced:1;							/// 1 = is constrained
+		unsigned ced:1;								/// 1 = is constrained
 		order2_t order;   							/// polynomial order
 		union {
 			struct {								/// normal node
@@ -316,7 +317,7 @@ public: //remove me
 	};
 
 	struct ElementData {
-		order3_t order;									/// Polynomial degree associated to the element node (interior).
+		order3_t order;								/// Polynomial degree associated to the element node (interior).
 		int dof;									/// The number of the first degree of freedom belonging to the node.
 		int n;										/// Total number of degrees of freedom belonging to the node.
 
@@ -333,7 +334,6 @@ public: //remove me
 		}
 	};
 
-public: // remove me
 	ArrayPtr<VertexData> vn_data;					/// Vertex node hash table
 	ArrayPtr<EdgeData> en_data;						/// Edge node hash table
 	ArrayPtr<FaceData> fn_data;						/// Face node hash table
@@ -371,17 +371,6 @@ public: // remove me
 	void free_data_tables();
 
 	// CED
-	struct EdgeInfo {
-		int part;						// part
-		double lo, hi;					// limits
-
-		EdgeInfo() {
-			this->part = 0;
-			this->lo = -1.0;
-			this->hi = 1.0;
-		}
-	};
-
 	struct FaceInfo {
 		Word_t elem_id;
 		int face;
@@ -426,10 +415,8 @@ public: // remove me
 	// update constraints
 	void uc_element(Word_t idx);
 	void uc_face(Word_t eid, int iface);
-	void uc_edge(Word_t eid, int iedge);
 
 	Array<FaceInfo *> fi_data;
-	Array<EdgeInfo *> ei_data;
 
 	VertexData *create_vertex_node_data(Word_t vid, bool ced);
 	EdgeData *create_edge_node_data(Word_t eid, bool ced);
@@ -444,8 +431,6 @@ public: // remove me
 	BaseEdgeComponent *merge_baselist(BaseEdgeComponent *l1, int n1, BaseEdgeComponent *l2, int n2, int &ncomponents, bool add);
 	BaseFaceComponent *merge_baselist(BaseFaceComponent *l1, int n1, BaseFaceComponent *l2, int n2, int &ncomponents, Word_t fid, bool add);
 
-//	BaseVertexComponent *add_baselist(BaseVertexComponent *l1, int n1, BaseVertexComponent *l2, int n2, int &ncomponents);
-
 	// all these work for hexahedra
 	void calc_vertex_vertex_ced(Word_t vtx1, Word_t vtx2);
 	void calc_vertex_edge_ced(Word_t vtx, Word_t edge_id, int ori, int part);
@@ -456,12 +441,12 @@ public: // remove me
 
 	void calc_mid_vertex_vertex_ced(Word_t mid, Word_t vtx1, Word_t vtx2, Word_t vtx3, Word_t vtx4);
 	void calc_mid_vertex_edge_ced(Word_t vtx, Word_t fmp, Word_t eid, int ori, int part);
-//	void calc_mid_vertex_edge_ced(Word_t vtx, Word_t eid[], int ori[], int part);
-//	void calc_mid_vertex_edge_ced(Word_t vtx, Word_t eid[], int ori[], int hpart, int vpart);
 	void calc_mid_edge_edge_ced(Word_t meid, Word_t eid[], int ori[], int epart, int part);
 
 public:
 	EBCType (*bc_type_callback)(int);
+
+	// value callbacks for dirichlet
 	scalar (*bc_value_callback_by_coord)(int marker, double x, double y, double z);
 	scalar3 &(*bc_vec_value_callback_by_coord)(int marker, double x, double y, double z);
 

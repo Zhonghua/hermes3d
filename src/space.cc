@@ -25,9 +25,6 @@
 #include <common/timer.h>
 #include <common/callstack.h>
 
-//#define ADD_ASMLIST_THRESHOLD					1e-13
-#define ADD_ASMLIST_THRESHOLD					0
-
 #define PRINTF(...)
 //#define PRINTF printf
 
@@ -61,10 +58,6 @@ Space::~Space() {
 	for (Word_t i = fi_data.first(); i != INVALID_IDX; i = fi_data.next(i))
 		delete fi_data[i];
 	fi_data.remove_all();
-
-	for (Word_t i = ei_data.first(); i != INVALID_IDX; i = ei_data.next(i))
-		delete ei_data[i];
-	ei_data.remove_all();
 }
 
 void Space::init_data_tables() {
@@ -327,7 +320,7 @@ void Space::get_edge_assembly_list(Element *elem, int iedge, AsmList *al) {
 	int ori = elem->get_edge_orientation(iedge);
 
 	if (enode->ced) {
-		// edge constrained by an edge
+		// an edge constrained by another edge
 		for (int i = 0; i < enode->edge_ncomponents; i++) {
 			BaseEdgeComponent *ecomp = enode->edge_baselist + i;
 			EdgeData *cng_enode = en_data[ecomp->edge_id]; 						// constraining edge node
@@ -352,7 +345,7 @@ void Space::get_edge_assembly_list(Element *elem, int iedge, AsmList *al) {
 				}
 			}
 		}
-		// edge constrained by face
+		// an edge constrained by a face
 		for (int i = 0; i < enode->face_ncomponents; i++) {
 			BaseFaceComponent *fcomp = enode->face_baselist + i;
 			FaceData *cng_fnode = fn_data[fcomp->face_id]; 						// constraining edge node
@@ -1578,54 +1571,6 @@ void Space::calc_face_face_ced(Word_t sfid, Word_t fid, int ori, int hpart, int 
 	PRINTF(" - part = (%d, %d)\n", hpart, vpart);
 }
 
-void Space::uc_edge(Word_t eid, int iedge) {
-	_F_
-	Element *elem = mesh->elements[eid];
-
-	Word_t edge_id = mesh->get_edge_id(elem, iedge);
-	assert(edge_id != INVALID_IDX);
-	if (!ei_data.exists(edge_id)) return;
-
-	EdgeInfo *ei = ei_data[edge_id];
-	assert(ei != NULL);
-
-	// vertices
-	Word_t vtcs[Edge::NUM_VERTICES];
-	elem->get_edge_vertices(iedge, vtcs);
-
-	Word_t sub_eid[2];
-	EdgeInfo *sei, *sub_ei[2];
-
-	Word_t emp;
-	emp = mesh->peek_midpoint(vtcs[0], vtcs[1]);
-
-	// edges
-	sub_eid[0] = mesh->get_edge_id(vtcs[0], emp);
-	sub_ei[0] = sei = new EdgeInfo();
-	MEM_CHECK(sei);
-	sei->part = get_lower_part(ei->part);
-	ei_data[sub_eid[0]] = sei;
-
-	sub_eid[1] = mesh->get_edge_id(emp, vtcs[1]);
-	sub_ei[1] = sei = new EdgeInfo();
-	MEM_CHECK(sei);
-	sei->part = get_higher_part(ei->part);
-	ei_data[sub_eid[1]] = sei;
-
-	// --- ////
-
-	// vertex
-	calc_vertex_vertex_ced(vtcs[0], vtcs[1]);
-
-	// edge by edge
-	Word_t cng_edge_id = mesh->get_edge_id(elem, iedge);
-	int cng_edge_ori = elem->get_edge_orientation(iedge);
-
-	calc_vertex_edge_ced(emp, cng_edge_id, cng_edge_ori, ei->part);
-
-	calc_edge_edge_ced(mesh->get_edge_id(vtcs[0], emp), cng_edge_id, cng_edge_ori, 1, sub_ei[0]->part);
-	calc_edge_edge_ced(mesh->get_edge_id(emp, vtcs[1]), cng_edge_id, cng_edge_ori, 2, sub_ei[1]->part);
-}
 
 void Space::uc_face(Word_t eid, int iface) {
 	_F_
@@ -1653,11 +1598,6 @@ void Space::uc_face(Word_t eid, int iface) {
 
 	int cng_face_id = mesh->get_facet_id(big_elem, fi->face);
 	int cng_face_ori = big_elem->get_face_orientation(iface);
-//	PRINTF(" - big_elem = %d, cng_face_ori = %d\n", fi->elem_id, cng_face_ori);
-
-//	Element *par_elem = mesh->elements[eid];
-//	int par_face_ori = par_elem->get_face_orientation(iface);
-//	PRINTF(" - par_elem = %d, par_face_ori = %d\n", eid, par_face_ori);
 
 	Word_t emp[4], fmp;		// four edge mid-points, one face mid-point
 	Word_t cng_edge_id;		// constraining edge id
@@ -2017,10 +1957,6 @@ int Space::assign_dofs(int first_dof, int stride) {
 		delete fi_data[i];
 	fi_data.remove_all();
 
-	for (Word_t i = ei_data.first(); i != INVALID_IDX; i = ei_data.next(i))
-		delete ei_data[i];
-	ei_data.remove_all();
-
 	// find constraints
 	FOR_ALL_BASE_ELEMENTS(idx, mesh)
 		fc_element(idx);
@@ -2056,21 +1992,15 @@ void Space::update_constraints() {
 				for (int ie = 0; ie < e->get_face_num_of_edges(iface); ie++) {
 					Word_t edge_id = mesh->get_edge_id(e, edge[ie]);
 					if (mesh->edges[edge_id].bnd == 0)
-						printf("edge #%ld should be boundary edge.\n", edge_id);
-					assert(mesh->edges[edge_id].bnd == 1);
+						EXIT(ERR_FAILURE, "edge #%ld should be boundary edge.\n", edge_id);
 				}
 			}
 		}
 	}
 
-	// TODO: free the items in the arrays
 	for (Word_t i = fi_data.first(); i != INVALID_IDX; i = fi_data.next(i))
 		delete fi_data[i];
 	fi_data.remove_all();
-
-	for (Word_t i = ei_data.first(); i != INVALID_IDX; i = ei_data.next(i))
-		delete ei_data[i];
-	ei_data.remove_all();
 
 	FOR_ALL_ELEMENTS(idx, mesh)
 		uc_element(idx);

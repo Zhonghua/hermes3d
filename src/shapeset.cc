@@ -165,9 +165,9 @@ int Shapeset::get_constrained_edge_index(int edge, int ori, order1_t order, Part
 	}
 }
 
-int Shapeset::get_constrained_edge_face_index(int edge, int ori, order2_t order, Part part, int dir) {
+int Shapeset::get_constrained_edge_face_index(int edge, int ori, order2_t order, Part part, int dir, int variant) {
 	_F_
-	CEDKey ck(CED_KEY_TYPE_EDGE_FACE, edge, order, ori, part, dir);
+	CEDKey ck(CED_KEY_TYPE_EDGE_FACE, edge, order, ori, part, dir, variant);
 	int fn_idx;
 	if (ced_id.lookup(ck, fn_idx))
 		return -1 - fn_idx;
@@ -180,9 +180,9 @@ int Shapeset::get_constrained_edge_face_index(int edge, int ori, order2_t order,
 	}
 }
 
-int Shapeset::get_constrained_face_index(int face, int ori, order2_t order, Part part) {
+int Shapeset::get_constrained_face_index(int face, int ori, order2_t order, Part part, int variant) {
 	_F_
-	CEDKey cedkey(CED_KEY_TYPE_FACE, face, order, ori, part);
+	CEDKey cedkey(CED_KEY_TYPE_FACE, face, order, ori, part, 0, variant);
 	int fn_idx;
 	if (ced_id.lookup(cedkey, fn_idx))
 		return -1 - fn_idx;
@@ -213,8 +213,8 @@ CEDComb *Shapeset::get_ced_comb(const CEDKey &key) {
 	else {
 		// combination does not exist yet => calculate it
 		if (key.type == CED_KEY_TYPE_EDGE)           comb = calc_constrained_edge_combination(key.ori, key.order, key.part);
-		else if (key.type == CED_KEY_TYPE_EDGE_FACE) comb = calc_constrained_edge_face_combination(key.ori, order2_t::from_int(key.order), key.part, key.dir);
-		else if (key.type == CED_KEY_TYPE_FACE)      comb = calc_constrained_face_combination(key.ori, order2_t::from_int(key.order), key.part);
+		else if (key.type == CED_KEY_TYPE_EDGE_FACE) comb = calc_constrained_edge_face_combination(key.ori, order2_t::from_int(key.order), key.part, key.dir, key.variant);
+		else if (key.type == CED_KEY_TYPE_FACE)      comb = calc_constrained_face_combination(key.ori, order2_t::from_int(key.order), key.part, key.variant);
 		else EXIT(ERR_FAILURE, "Unknown type of CED key.");
 
 		ced_comb.set(key, comb);

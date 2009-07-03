@@ -230,6 +230,25 @@ HcurlShapesetLobattoHex::~HcurlShapesetLobattoHex() {
 #endif
 }
 
+
+int HcurlShapesetLobattoHex::get_face_fn_variant(int index) const {
+	hc_hex_index_t ind(index);
+	switch (ind.ef) {
+		case 0:
+		case 1:
+			return ind.l == 1 ? PART_ORI_HORZ : PART_ORI_VERT;
+
+		case 2:
+		case 3:
+			return ind.l == 0 ? PART_ORI_HORZ : PART_ORI_VERT;
+
+		case 4:
+		case 5:
+			return ind.l == 0 ? PART_ORI_HORZ : PART_ORI_VERT;
+	}
+}
+
+
 order3_t HcurlShapesetLobattoHex::get_order(int index) const {
 	_F_
 #ifdef WITH_HEX
@@ -244,8 +263,51 @@ order3_t HcurlShapesetLobattoHex::get_order(int index) const {
 		return ord;
 	}
 	else {
-		EXIT(ERR_NOT_IMPLEMENTED);
-		return order3_t(-1);
+		assert(ced_key.exists(-1 - index));
+		CEDKey key = ced_key[-1 - index];
+
+		order3_t order;
+		if (key.type == CED_KEY_TYPE_EDGE || key.type == CED_KEY_TYPE_EDGE_FACE) {
+			int o;
+			if (key.type == CED_KEY_TYPE_EDGE_FACE) {
+				order2_t fo = order2_t::from_int(key.order);
+				o = (key.ori < 4) ? fo.x : fo.y;
+			}
+			else
+				o = key.order;
+
+			switch (key.edge) {
+				case  0: order = order3_t(o, 1, 1); break;
+				case  1: order = order3_t(1, o, 1); break;
+				case  2: order = order3_t(o, 1, 1); break;
+				case  3: order = order3_t(1, o, 1); break;
+				case  4: order = order3_t(1, 1, o); break;
+				case  5: order = order3_t(1, 1, o); break;
+				case  6: order = order3_t(1, 1, o); break;
+				case  7: order = order3_t(1, 1, o); break;
+				case  8: order = order3_t(o, 1, 1); break;
+				case  9: order = order3_t(1, o, 1); break;
+				case 10: order = order3_t(o, 1, 1); break;
+				case 11: order = order3_t(1, o, 1); break;
+				default: EXIT(ERR_FAILURE, "Invalid edge number %d. Can be 0 - 11.", key.edge); break;
+			}
+		}
+		else if (key.type == CED_KEY_TYPE_FACE) {
+			order2_t o = order2_t::from_int(key.order);
+
+			switch (key.face) {
+				case 0: order = order3_t(1, o.x, o.y); break;
+				case 1: order = order3_t(1, o.x, o.y); break;
+				case 2: order = order3_t(o.x, 1, o.y); break;
+				case 3: order = order3_t(o.x, 1, o.y); break;
+				case 4: order = order3_t(o.x, o.y, 1); break;
+				case 5: order = order3_t(o.x, o.y, 1); break;
+				default: EXIT(ERR_FAILURE, "Invalid face number %d. Can be 0 - 5.", key.face); break;
+			}
+			if (key.ori >= 4) order = turn_hex_face_order(key.face, order);		// face function is turned due to orientation
+		}
+
+		return order;
 	}
 #endif
 }
@@ -372,21 +434,282 @@ void HcurlShapesetLobattoHex::compute_bubble_indices(order3_t order) {
 #endif
 }
 
-CEDComb *HcurlShapesetLobattoHex::calc_constrained_edge_combination(int ori, order1_t order, Part part) {
+CEDComb *HcurlShapesetLobattoHex::calc_constrained_edge_combination(int ori, const order1_t &order, Part part) {
 	_F_
-	EXIT(ERR_NOT_IMPLEMENTED);
+#ifdef WITH_HEX
+	Part rp = transform_edge_part(ori, part);
+
+	// determine the interval of the edge
+	double hi, lo;
+	get_interval_part(rp.part, lo, hi);
+
+	int n = get_num_edge_fns(order);							// total number of functions on the edge
+	int *fn_idx = get_edge_indices(0, 0, order);				// indices of all functions on the edge
+
+	// in Hcurl, vectors has to be transformed when mapping to a different domain.
+	double trans = (hi - lo) / 2.0;
+
+	double **a = new_matrix<double>(n, n);
+	MEM_CHECK(a);
+	double *b = new double[n];
+	MEM_CHECK(b);
+	for (int i = 0; i < n; i++) {
+		// chebyshev point
+		double p = cos((i + 1) * M_PI / (n + 1));
+		double r = (p + 1.0) * 0.5;
+		double s = 1.0 - r;
+
+		// matrix row
+		for (int j = 0; j < n; j++)
+			a[i][j] = get_value(FN, fn_idx[j], p, -1.0, -1.0, 0);
+		b[i] = trans * get_value(FN, fn_idx[n - 1], lo*s + hi*r, -1.0, -1.0, 0);
+	}
+
+	// solve the system
+	double d;
+	int *iperm = new int[n];
+	MEM_CHECK(iperm);
+	ludcmp(a, n, iperm, &d);
+	lubksb(a, n, iperm, b);
+
+	// cleanup
+	delete [] iperm;
+	delete [] a;
+
+	return new CEDComb(n, b);
+#else
 	return NULL;
+#endif
 }
 
-CEDComb *HcurlShapesetLobattoHex::calc_constrained_edge_face_combination(int ori, order2_t order, Part part) {
+CEDComb *HcurlShapesetLobattoHex::calc_constrained_edge_face_combination(int ori, const order2_t &order, Part part, int dir, int variant) {
 	_F_
-	EXIT(ERR_NOT_IMPLEMENTED);
+#ifdef WITH_HEX
+	Part rp = transform_face_part(ori, part);
+
+	if (ori >= 4) dir = (dir == PART_ORI_VERT) ? PART_ORI_HORZ : PART_ORI_VERT; 			// turned face
+
+	int n, m;					// number of functions on horz and vert edge
+	double **a, *b;				// matrix and rhs
+	double c;
+	if (dir == PART_ORI_VERT) {
+		double hi, lo;
+		get_interval_part(rp.vert, lo, hi);
+		int epart = face_to_edge_part(rp.horz);
+		double x0;
+		get_edge_part(epart, x0);
+
+		int horder = order.x;
+		int vorder = order.y;
+
+		n = get_num_edge_fns(vorder);
+		if (dir == variant) {
+			// constraining face shape function goes the same direction as the edge
+			int *edge_fn_idx[] = {
+				get_edge_indices(0, 0, horder),
+				get_edge_indices(0, 0, vorder)
+			};
+
+			double trans = (hi - lo) / 2;
+
+			a = new_matrix<double>(n, n);
+			MEM_CHECK(a);
+			b = new double[n];
+			MEM_CHECK(b);
+			for (int i = 0; i < n; i++) {
+				// chebyshev point
+				double p = cos((i + 1) * M_PI / (vorder + 1));
+				double r = (p + 1.0) * 0.5;
+				double s = 1.0 - r;
+
+				for (int j = 0; j < n; j++)
+					a[i][j] = get_value(FN, edge_fn_idx[1][j], p, -1.0, -1.0, 0);
+				b[i] = trans * get_value(FN, edge_fn_idx[1][n - 1], lo*s + hi*r, -1.0, -1.0, 0);
+			}
+			c = lobatto_fn_tab_1d[horder](x0);
+		}
+		else {
+			b = new double[n];
+			MEM_CHECK(b);
+			memset(b, 0, n * sizeof(double));
+			return new CEDComb(n, b);
+		}
+	}
+	else {
+		double hi, lo;
+		get_interval_part(rp.horz, lo, hi);
+		int epart = face_to_edge_part(rp.vert);
+		double x0;
+		get_edge_part(epart, x0);
+
+		int horder = order.x;
+		int vorder = order.y;
+
+		n = get_num_edge_fns(horder);
+		if (dir == variant) {
+			int *edge_fn_idx[] = {
+				get_edge_indices(0, 0, horder),
+				get_edge_indices(0, 0, vorder)
+			};
+
+			double trans = (hi - lo) / 2;
+			a = new_matrix<double>(n, n); MEM_CHECK(a);
+			b = new double[n]; MEM_CHECK(b);
+			for (int i = 0; i < n; i++) {
+				// chebyshev point
+				double p = cos((i + 1) * M_PI / (horder + 1));
+				double r = (p + 1.0) * 0.5;
+				double s = 1.0 - r;
+
+				for (int j = 0; j < n; j++)
+					a[i][j] = get_value(FN, edge_fn_idx[0][j], p, -1.0, -1.0, 0);
+				b[i] = trans * get_value(FN, edge_fn_idx[0][n - 1], lo*s + hi*r, -1.0, -1.0, 0);
+			}
+			c = lobatto_fn_tab_1d[vorder](x0);
+		}
+		else {
+			double *b = new double[n];
+			MEM_CHECK(b);
+			memset(b, 0, n * sizeof(double));
+			return new CEDComb(n, b);
+		}
+	}
+
+	// solve the system
+	double d;
+	int *iperm = new int[n];
+	MEM_CHECK(iperm);
+	ludcmp(a, n, iperm, &d);
+	lubksb(a, n, iperm, b);
+
+	for (int i = 0; i < n; i++)
+		b[i] *= c;
+
+	return new CEDComb(n, b);
+#else
 	return NULL;
+#endif
 }
 
-CEDComb *HcurlShapesetLobattoHex::calc_constrained_face_combination(int ori, order2_t order, Part part) {
+CEDComb *HcurlShapesetLobattoHex::calc_constrained_face_combination(int ori, const order2_t &order, Part part, int variant) {
 	_F_
-	EXIT(ERR_NOT_IMPLEMENTED);
-	return NULL;
-}
+#ifdef WITH_HEX
+	int n = get_num_face_fns(order);					// total number of functions on the face
+	int *fn_idx = get_face_indices(5, 0, order);		// indices of all functions on the face
 
+	int cng_idx;										// the index of a constraining function
+	int comp;											// the component of the constraining function
+	for (int i = 0; i < n; i++) {
+		order2_t face_order = get_order(fn_idx[i]).get_face_order(5);
+		if ((face_order.x == order.x) && (face_order.y == order.y) && (get_face_fn_variant(fn_idx[i]) == variant)) {
+			cng_idx = fn_idx[i];
+			hc_hex_index_t ind(cng_idx);
+			comp = ind.l;
+		}
+	}
+
+	Part rp = transform_face_part(ori, part);
+
+	double h_hi, h_lo, v_hi, v_lo;
+	get_interval_part(rp.horz, h_lo, h_hi);				// determine the horizontal interval of the face
+	get_interval_part(rp.vert, v_lo, v_hi);				// determine the vertical interval of the face
+
+	int horder = order.x;
+	int vorder = order.y;
+
+	int h_num_cheb, v_num_cheb;			// number of chebychev points in each direction
+	if (variant == 0) {
+		h_num_cheb = horder + 1;
+		v_num_cheb = vorder - 1;
+	}
+	else {
+		h_num_cheb = horder - 1;
+		v_num_cheb = vorder + 1;
+	}
+
+	double h_trans = (h_hi - h_lo) / 2;
+	double v_trans = (v_hi - v_lo) / 2;
+
+	// in Hcurl, vectors has to be transformed, when mapping to different domain.
+	double trans;
+	if (variant == 0) trans = h_trans;
+	else trans = v_trans;
+
+	double f_edge[4] = { 0, 0, 0, 0 };
+	if (variant == 0) {
+		f_edge[0] = lobatto_fn_tab_1d[vorder](v_lo);
+		f_edge[2] = lobatto_fn_tab_1d[vorder](v_hi);
+	}
+	else {
+		f_edge[1] = lobatto_fn_tab_1d[horder](h_hi);
+		f_edge[3] = lobatto_fn_tab_1d[horder](h_lo);
+	}
+
+	Part hpart;
+	Part vpart;
+	hpart.part = rp.horz;
+	vpart.part = rp.vert;
+	int ced_edge_idx[4];
+	ced_edge_idx[0] = get_constrained_edge_index( 8, 0, horder, hpart);
+	ced_edge_idx[1] = get_constrained_edge_index( 9, 0, vorder, vpart);
+	ced_edge_idx[2] = get_constrained_edge_index(10, 0, horder, hpart);
+	ced_edge_idx[3] = get_constrained_edge_index(11, 0, vorder, vpart);
+
+	double **a = new_matrix<double>(n, n);
+	MEM_CHECK(a);
+	double *b = new double[n];
+	MEM_CHECK(b);
+	memset(b, 0, n * sizeof(double));
+
+	for (int row = 0; row < n; row++) {
+		order2_t face_order = get_order(fn_idx[row]).get_face_order(5);
+		if ((get_face_fn_variant(fn_idx[row]) == variant) && (face_order.x <= horder) && (face_order.y <= vorder)) {
+			// the function is involved in CED
+			double hp = cos((face_order.x + 1) * M_PI / (h_num_cheb + 1));
+			double hr = (hp + 1.0) * 0.5;
+			double hs = 1.0 - hr;
+
+			double vp = cos((face_order.y + 1) * M_PI / (v_num_cheb + 1));
+			double vr = (vp + 1.0) * 0.5;
+			double vs = 1.0 - vr;
+
+			for (int k = 0; k < n; k++)
+				a[row][k] = get_value(FN, fn_idx[k], hp, vp, 1.0, comp);
+			b[row] = get_value(FN, cng_idx, h_lo * hs + h_hi * hr, v_lo * vs + v_hi * vr, 1.0, comp);
+			// subtract residual of edge functions
+			if (variant == 0) {
+				b[row] -= f_edge[0] * get_constrained_value(FN, ced_edge_idx[0], hp, -1.0, 1.0, comp) / h_trans * vs;
+				b[row] -= f_edge[2] * get_constrained_value(FN, ced_edge_idx[2], hp,  1.0, 1.0, comp) / h_trans * vr;
+			}
+			else {
+				b[row] -= f_edge[1] * get_constrained_value(FN, ced_edge_idx[1],  1.0, vp, 1.0, comp) / v_trans * hr;
+				b[row] -= f_edge[3] * get_constrained_value(FN, ced_edge_idx[3], -1.0, vp, 1.0, comp) / v_trans * hs;
+			}
+			b[row] *= trans;
+		}
+		else {
+			// function is not involved in CED
+			// put 1.0 on diagonal and set rhs to 0.0 which will result in the zero coefficient in the linear combination for CED
+			for (int k = 0; k < n; k++)
+				a[row][k] = 0;
+			a[row][row] = 1.0;
+			b[row] = 0.0;
+		}
+	}
+
+	// solve the system
+	double d;
+	int *iperm = new int[n];
+	MEM_CHECK(iperm);
+	ludcmp(a, n, iperm, &d);
+	lubksb(a, n, iperm, b);
+
+	// cleanup
+	delete [] iperm;
+	delete [] a;
+
+	return new CEDComb(n, b);
+#else
+	return NULL;
+#endif
+}

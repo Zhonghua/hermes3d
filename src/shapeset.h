@@ -83,6 +83,7 @@ struct CEDKey {
 		unsigned edge:4;		// index of an edge
 	};
 	unsigned dir:1;
+	unsigned variant:1;			// variant of the function (in Hcurl we need to distinguish between two variants of face functions)
 	int order;					// order of an edge/face function
 	Part part;					// part of the edge/face
 
@@ -98,13 +99,14 @@ struct CEDKey {
 		this->dir = dir;
 	}
 
-	CEDKey(unsigned type, unsigned num, order2_t order, unsigned ori, Part part, int dir = 0) {
+	CEDKey(unsigned type, unsigned num, order2_t order, unsigned ori, Part part, int dir = 0, int variant = 0) {
 		this->type = type;
 		this->ori = ori;
 		this->face = num;
 		this->order = order.get_idx();
 		this->part = part;
 		this->dir = dir;
+		this->variant = variant;
 	}
 };
 
@@ -173,6 +175,10 @@ public:
 	/// @return The number of possbile orientations on an edge
 	virtual int get_edge_orientations() const = 0;
 
+	/// Returns the variant of a face function
+	/// It is needed only in Hcurl-derived shapesets where we need to distinguish between to variants
+	/// of shape functions, other shapesets are returning 0
+	virtual int get_face_fn_variant(int index) const { return 0; }
 
 	virtual order3_t get_order(int index) const = 0;
 
@@ -190,7 +196,7 @@ public:
 	/// @param[in] order The polynomial order on the edge.
 	/// @param[in] ori The orientation of the edge function.
 	/// @param[in] part The 'part' of an edge
-	virtual int get_constrained_edge_face_index(int edge, int ori, order2_t order, Part part, int dir);
+	virtual int get_constrained_edge_face_index(int edge, int ori, order2_t order, Part part, int dir, int variant = 0);
 
 	/// Get index of a constrained face function.
 	/// @return The index of a constrained face function.
@@ -198,7 +204,7 @@ public:
 	/// @param[in] order The polynomial order on the face.
 	/// @param[in] ori The orientation of the face function.
 	/// @param[in] part The 'part' of an face
-	virtual int get_constrained_face_index(int face, int ori, order2_t order, Part part);
+	virtual int get_constrained_face_index(int face, int ori, order2_t order, Part part, int variant = 0);
 
 	virtual int get_shape_type(int index) const = 0;
 
@@ -248,8 +254,8 @@ protected:
 
 	order3_t get_ced_order(int index) const;
 	virtual CEDComb *calc_constrained_edge_combination(int ori, const order1_t &order, Part part) { return NULL; }
-	virtual CEDComb *calc_constrained_edge_face_combination(int ori, const order2_t &order, Part part, int dir) { return NULL; }
-	virtual CEDComb *calc_constrained_face_combination(int ori, const order2_t &order, Part part) { return NULL; }
+	virtual CEDComb *calc_constrained_edge_face_combination(int ori, const order2_t &order, Part part, int dir, int variant = 0) { return NULL; }
+	virtual CEDComb *calc_constrained_face_combination(int ori, const order2_t &order, Part part, int variant = 0) { return NULL; }
 	void free_constrained_combinations();
 
 	Map<CEDKey, CEDComb *> ced_comb;			// mapping: CEDKey => CEDComb

@@ -65,6 +65,8 @@ public:
 
 	virtual int get_edge_orientations() const { return RefHex::get_edge_orientations(); }
 
+	virtual int get_face_fn_variant(int index) const;
+
 	virtual order3_t get_order(int index) const;
 
 	virtual int get_shape_type(int index) const { return -1; }
@@ -105,10 +107,10 @@ protected:
 
 
 protected:
-	/// --- put CED specific stuff here ---
-	virtual CEDComb *calc_constrained_edge_combination(int ori, order1_t order, Part part);
-	virtual CEDComb *calc_constrained_edge_face_combination(int ori, order2_t order, Part part);
-	virtual CEDComb *calc_constrained_face_combination(int ori, order2_t order, Part part);
+	// CED stuff
+	virtual CEDComb *calc_constrained_edge_combination(int ori, const order1_t &order, Part part);
+	virtual CEDComb *calc_constrained_edge_face_combination(int ori, const order2_t &order, Part part, int dir, int variant = 0);
+	virtual CEDComb *calc_constrained_face_combination(int ori, const order2_t &order, Part part, int variant = 0);
 };
 
 #undef CHECK_VERTEX

@@ -20,6 +20,8 @@
 #ifndef SHAPESET_LOBATTO_H_
 #define SHAPESET_LOBATTO_H_
 
+#include "common.h"
+
 /// Kernel functions
 
 #define phi0(x) (-2.0 * 1.22474487139158904909864203735)

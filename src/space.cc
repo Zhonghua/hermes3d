@@ -435,7 +435,7 @@ void Space::get_edge_assembly_list(Element *elem, int iedge, AsmList *al) {
 				if (cng_fnode->dof >= 0) {
 					for (int j = 0, dof = cng_fnode->dof; j < cng_fnode->n; j++, dof += stride) {
 						order2_t order = shapeset->get_order(indices[j]).get_face_order(fcomp->iface);
-						int idx = shapeset->get_constrained_edge_face_index(iedge, fcomp->ori, order, fcomp->part, fcomp->dir);
+						int idx = shapeset->get_constrained_edge_face_index(iedge, fcomp->ori, order, fcomp->part, fcomp->dir, shapeset->get_face_fn_variant(indices[j]));
 						assert(dof >= first_dof && dof < next_dof);
 						al->add(idx, dof, fcomp->coef);
 					}
@@ -443,7 +443,7 @@ void Space::get_edge_assembly_list(Element *elem, int iedge, AsmList *al) {
 				else {
 					for (int j = 0; j < cng_fnode->n; j++) {
 						order2_t order = shapeset->get_order(indices[j]).get_face_order(fcomp->iface);
-						int idx = shapeset->get_constrained_edge_face_index(iedge, fcomp->ori, order, fcomp->part, fcomp->dir);
+						int idx = shapeset->get_constrained_edge_face_index(iedge, fcomp->ori, order, fcomp->part, fcomp->dir, shapeset->get_face_fn_variant(indices[j]));
 						al->add(idx, DIRICHLET_DOF, fcomp->coef * cng_fnode->bc_proj[j]);
 					}
 				}
@@ -483,7 +483,7 @@ void Space::get_face_assembly_list(Element *elem, int iface, AsmList *al) {
 				if (cng_fnode->dof >= 0) {
 					for (int j = 0, dof = cng_fnode->dof; j < cng_fnode->n; j++, dof += stride) {
 						order2_t order = shapeset->get_order(indices[j]).get_face_order(iface);
-						int idx = shapeset->get_constrained_face_index(iface, fnode->ori, order, fnode->part);
+						int idx = shapeset->get_constrained_face_index(iface, fnode->ori, order, fnode->part, shapeset->get_face_fn_variant(indices[j]));
 						assert(dof == DIRICHLET_DOF || (dof >= first_dof && dof < next_dof));
 						al->add(idx, dof, 1.0);
 					}
@@ -1413,7 +1413,7 @@ void Space::calc_vertex_face_ced(Word_t vtx, Word_t fid, int ori, int iface, int
 				Part part;
 				part.horz = hpart;
 				part.vert = vpart;
-				int idx = shapeset->get_constrained_face_index(2, ori, order, part);
+				int idx = shapeset->get_constrained_face_index(2, ori, order, part, shapeset->get_face_fn_variant(indices[j]));
 
 				baselist[j].dof = dof;
 				baselist[j].coef = shapeset->get_fn_value(idx, 0.0, -1.0, 0.0,  0);

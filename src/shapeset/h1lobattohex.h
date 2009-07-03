@@ -104,8 +104,8 @@ protected:
 
 	/// --- put CED specific stuff here ---
 	virtual CEDComb *calc_constrained_edge_combination(int ori, const order1_t &order, Part part);
-	virtual CEDComb *calc_constrained_edge_face_combination(int ori, const order2_t &order, Part part, int dir);
-	virtual CEDComb *calc_constrained_face_combination(int ori, const order2_t &order, Part part);
+	virtual CEDComb *calc_constrained_edge_face_combination(int ori, const order2_t &order, Part part, int dir, int variant = 0);
+	virtual CEDComb *calc_constrained_face_combination(int ori, const order2_t &order, Part part, int variant = 0);
 };
 
 #undef CHECK_VERTEX
@@ -115,4 +115,3 @@ protected:
 #undef CHECK_FACE_ORI
 
 #endif
-

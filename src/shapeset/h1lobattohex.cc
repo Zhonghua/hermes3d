@@ -480,7 +480,7 @@ CEDComb *H1ShapesetLobattoHex::calc_constrained_edge_combination(int ori, const 
 //
 // constraints are calculated on face 5
 //
-CEDComb *H1ShapesetLobattoHex::calc_constrained_edge_face_combination(int ori, const order2_t &order, Part part, int dir) {
+CEDComb *H1ShapesetLobattoHex::calc_constrained_edge_face_combination(int ori, const order2_t &order, Part part, int dir, int variant) {
 	_F_
 #ifdef WITH_HEX
 	Part rp = transform_face_part(ori, part);
@@ -593,7 +593,7 @@ CEDComb *H1ShapesetLobattoHex::calc_constrained_edge_face_combination(int ori, c
 //  v_lo +-----------+
 //     h_lo  edge0  h_hi
 //
-CEDComb *H1ShapesetLobattoHex::calc_constrained_face_combination(int ori, const order2_t &order, Part part) {
+CEDComb *H1ShapesetLobattoHex::calc_constrained_face_combination(int ori, const order2_t &order, Part part, int variant) {
 	_F_
 #ifdef WITH_HEX
 	int n = get_num_face_fns(order);										// total number of functions on the face

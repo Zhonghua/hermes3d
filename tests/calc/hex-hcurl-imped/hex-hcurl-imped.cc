@@ -172,36 +172,18 @@ res_t bilinear_form(int n, double *wt, fn_t<ct> *u, fn_t<ct> *v, geom_t<ct> *e, 
 		hcurl_int_u_v<ct, res_t>(n, wt, u, v, e);
 }
 
-
-/*
-template<typename f_t, typename ct, typename res_t>
-res_t bilinear_form(int n, double *wt, f_t *u, f_t *v, geom_t<ct> *e, user_data_t<f_t> *data) {
-	return
-		hcurl_int_curl_u_curl_v(n, wt, u, v, e) -
-		hcurl_int_u_v(n, wt, u, v, e);
-}
-*/
-
-//template<typename f_t, typename ct, typename res_t>
-//res_t linear_form(int n, double *wt, f_t *v, geom_t<ct> *e) { //, user_data_t<f_t> *data) {
 template<typename ct, typename res_t>
 res_t linear_form(int n, double *wt, fn_t<ct> *v, geom_t<ct> *e, user_data_t<res_t> *data) {
 	return hcurl_int_F_v<ct, res_t>(n, wt, f, v, e);
 }
 
-//template<typename f_t, typename ct, typename res_t>
-//res_t bilinear_form_surf(int n, double *wt, f_t *u, f_t *v, face_t *fp, geom_t<ct> *e) {//, user_data_t<f_t> *data) {
 template<typename ct, typename res_t>
-res_t bilinear_form_surf(int n, double *wt, fn_t<ct> *u, fn_t<ct> *v, face_t *fp, geom_t<ct> *e, user_data_t<res_t> *data) {
-	return -imag * hcurl_surf_int_u_v<ct, res_t>(n, wt, u, v, fp, e);
+res_t bilinear_form_surf(int n, double *wt, fn_t<ct> *u, fn_t<ct> *v, geom_t<ct> *e, user_data_t<res_t> *data) {
+	return -imag * hcurl_int_u_v<ct, res_t>(n, wt, u, v, e);
 }
 
-// TODO: make a function that does n x u x n (put that in integrals/hcurl.h - if not on a better place)
-
-//template<typename f_t, typename ct, typename res_t>
-//res_t linear_form_surf(int n, double *wt, f_t *v, face_t *fp, geom_t<ct> *e) { //, user_data_t<f_t> *data) {
 template<typename ct, typename res_t>
-res_t linear_form_surf(int n, double *wt, fn_t<ct> *v, face_t *fp, geom_t<ct> *e, user_data_t<res_t> *data) {
+res_t linear_form_surf(int n, double *wt, fn_t<ct> *v, geom_t<ct> *e, user_data_t<res_t> *data) {
 	res_t result = 0.0;
 	for (int i = 0; i < n; i++) {
 		res_t ev[3], dx[3], dy[3], dz[3];

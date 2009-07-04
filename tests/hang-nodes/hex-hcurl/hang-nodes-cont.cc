@@ -37,8 +37,8 @@
 #define END_BLOCK						}
 
 
-#define X2_Y2_Z2
-//#define FN4
+//#define X2_Y2_Z2
+#define FN4
 
 // general polynomial function satisfying perfect conductor bc
 // exact solution has zero tangential component on the boundary on the domain (-1, 1)^3
@@ -396,8 +396,7 @@ int main(int argc, char **args) {
 #if defined FN4
 	order3_t o(4, 4, 4);
 #elif defined X2_Y2_Z2
-	order3_t o(1, 1, 1);
-//	order3_t o(2, 2, 2);
+	order3_t o(2, 2, 2);
 #endif
 	printf("  - Setting uniform order to (%d, %d, %d)\n", o.x, o.y, o.z);
 	space.set_uniform_order(o);
@@ -429,7 +428,7 @@ int main(int argc, char **args) {
 	LinProblem lp(&wf);
 	lp.set_spaces(1, &space);
 
-//	lp.assemble(&mat, &rhs);
+	lp.assemble(&mat, &rhs);
 
 #if 0 //def OUTPUT_DIR
 	{
@@ -447,20 +446,12 @@ int main(int argc, char **args) {
 
 	try {
 		Solution sln(&mesh);
-#if 0
+#if 1
 		// solve the stiffness matrix
-//		bool solved = solver.solve();
+		bool solved = solver.solve();
+		if (!solved) throw ERR_FAILURE;
 
-//		if (!solved) throw ERR_FAILURE;
-
-//		sln.set_fe_solution(&space, solver.get_solution());
-
-//		{
-//			double *s = solver.get_solution();
-//			for (int i = 0; i < 6; i++)
-//			for (int i = 0; i < ndofs; i++)
-//				printf("x[% 3d] = % lf\n", i, s[i]);
-//		}
+		sln.set_fe_solution(&space, solver.get_solution());
 
 		ExactSolution exsln(&mesh, exact_solution);
 		// norm
@@ -540,7 +531,6 @@ int main(int argc, char **args) {
 		}
 #endif
 
-//		return 0;
 #if 1
 		ContQuad my_quad;
 		RefMap ref_map(&mesh);

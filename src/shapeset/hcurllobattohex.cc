@@ -574,12 +574,12 @@ CEDComb *HcurlShapesetLobattoHex::calc_constrained_face_combination(int ori, con
 
 	int h_num_cheb, v_num_cheb;			// number of chebychev points in each direction
 	if (variant == 0) {
-		h_num_cheb = horder + 1;
-		v_num_cheb = vorder - 1;
+		h_num_cheb = horder + 2;
+		v_num_cheb = vorder;
 	}
 	else {
-		h_num_cheb = horder - 1;
-		v_num_cheb = vorder + 1;
+		h_num_cheb = horder;
+		v_num_cheb = vorder + 2;
 	}
 
 	double h_trans = (h_hi - h_lo) / 2;
@@ -620,16 +620,31 @@ CEDComb *HcurlShapesetLobattoHex::calc_constrained_face_combination(int ori, con
 		order2_t face_order = get_order(fn_idx[row]).get_face_order(5);
 		if ((get_face_fn_variant(fn_idx[row]) == variant) && (face_order.x <= horder) && (face_order.y <= vorder)) {
 			// the function is involved in CED
-			double hp = cos((face_order.x + 1) * M_PI / (h_num_cheb + 1));
+			int i, j;
+			if (variant == 0) {
+				i = face_order.x + 1;
+				j = face_order.y - 1;
+			}
+			else {
+				i = face_order.x - 1;
+				j = face_order.y + 1;
+			}
+
+			double hp = cos(i * M_PI / h_num_cheb);
 			double hr = (hp + 1.0) * 0.5;
 			double hs = 1.0 - hr;
 
-			double vp = cos((face_order.y + 1) * M_PI / (v_num_cheb + 1));
+			double vp = cos(j * M_PI / v_num_cheb);
 			double vr = (vp + 1.0) * 0.5;
 			double vs = 1.0 - vr;
 
-			for (int k = 0; k < n; k++)
-				a[row][k] = get_value(FN, fn_idx[k], hp, vp, 1.0, comp);
+			for (int k = 0; k < n; k++) {
+				order2_t kfn_ord = get_order(fn_idx[k]).get_face_order(5);
+				if ((get_face_fn_variant(fn_idx[k]) == variant) && (kfn_ord.x <= horder) && (kfn_ord.y <= vorder))
+					a[row][k] = get_value(FN, fn_idx[k], hp, vp, 1.0, comp);
+				else
+					a[row][k] = 0.0;
+			}
 			b[row] = get_value(FN, cng_idx, h_lo * hs + h_hi * hr, v_lo * vs + v_hi * vr, 1.0, comp);
 			// subtract residual of edge functions
 			if (variant == 0) {

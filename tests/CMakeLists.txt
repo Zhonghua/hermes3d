@@ -3,6 +3,7 @@
 #
 include(common.cmake)
 
+add_subdirectory(adapt)
 add_subdirectory(calc)
 add_subdirectory(hang-nodes)
 add_subdirectory(judy-templates)

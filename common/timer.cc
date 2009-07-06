@@ -51,7 +51,8 @@ Timer::~Timer() {
 	delete [] name;
 }
 
-void Timer::start() {
+void Timer::start(bool rst) {
+	if (rst) reset();
 	gettimeofday(&this->st, NULL);
 }
 

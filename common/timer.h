@@ -33,7 +33,8 @@ public:
 	virtual ~Timer();				// destructor
 
 	/// start the timer
-	void start();
+	/// @param[in] rst - Reset timer of true
+	void start(bool rst = true);
 	/// stop the timer
 	void stop();
 	/// reset the timer

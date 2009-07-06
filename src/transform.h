@@ -89,4 +89,12 @@ protected:
 	int top;       					/// stack top
 };
 
+/// Transform points using a transformation
+///
+/// @param[in] np - the number of points to transform
+/// @param[in] pt - the array points to transform
+/// @param[in] trf - transformation to use
+/// @param[out] tpt - the array of points to store the result
+void transform_points(const int np, const QuadPt3D *pt, const Trf *trf, QuadPt3D *tpt);
+
 #endif

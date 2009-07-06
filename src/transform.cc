@@ -146,3 +146,12 @@ void Transformable::set_transform(uint64 idx) {
 	for (int k = i - 1; k >= 0; k--)
 		push_transform(son[k]);
 }
+
+void transform_points(const int np, const QuadPt3D *pt, const Trf *tr, QuadPt3D *tpt) {
+	_F_
+	for (int k = 0; k < np; k++) {
+		tpt[k].x = tr->m[0] * pt[k].x + tr->t[0];
+		tpt[k].y = tr->m[1] * pt[k].y + tr->t[1];
+		tpt[k].z = tr->m[2] * pt[k].z + tr->t[2];
+	}
+}

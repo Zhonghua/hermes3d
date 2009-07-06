@@ -62,9 +62,6 @@ typedef double (*shape_fn_1d_t)(double);
 #define lambda2dz(x,y,z) (0.0)
 #define lambda3dz(x,y,z) (1.0 / 2.0)
 
-// macros for working with shape function indices
-#define GET_ORI_FROM_INDEX(index) ((index) & 0x07)
-#define GET_IDX_FROM_INDEX(index) ((index) >> 3)
 
 // validation macros
 #define CHECK_ORDER(o)  			assert((o) >= 0 && (o) <= max_order)

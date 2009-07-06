@@ -93,8 +93,9 @@ sfn_t *init_fn(ShapeFunction *shfn, RefMap *rm, const int np, const QuadPt3D *pt
 	_F_
 
 	sfn_t *u = new sfn_t; MEM_CHECK(u);
+	u->nc = shfn->get_num_components();
 	shfn->precalculate(np, pt, FN_DEFAULT);
-	if (shfn->get_type() == H1) {
+	if (u->nc == 1) {
 		u->fn = new double [np]; MEM_CHECK(u->fn);
 		u->dx = new double [np]; MEM_CHECK(u->dx);
 		u->dy = new double [np]; MEM_CHECK(u->dy);
@@ -113,17 +114,31 @@ sfn_t *init_fn(ShapeFunction *shfn, RefMap *rm, const int np, const QuadPt3D *pt
 		}
 		delete [] m;
 	}
-	else if (shfn->get_type() == Hcurl) {
+	else if (u->nc == 3) {
 		u->fn0 = new double [np]; MEM_CHECK(u->fn0);
 		u->fn1 = new double [np]; MEM_CHECK(u->fn1);
 		u->fn2 = new double [np]; MEM_CHECK(u->fn2);
+
+		double *fn[3];
+		for (int c = 0; c < 3; c++)
+			fn[c] = shfn->get_fn_values(c);
+
+		double3x3 *irm = rm->get_inv_ref_map(np, pt);
+		for (int i = 0; i < np; i++) {
+			u->fn0[i] = fn[0][i] * irm[i][0][0] + fn[1][i] * irm[i][0][1] + fn[2][i] * irm[i][0][2];
+			u->fn1[i] = fn[0][i] * irm[i][1][0] + fn[1][i] * irm[i][1][1] + fn[2][i] * irm[i][1][2];
+			u->fn2[i] = fn[0][i] * irm[i][2][0] + fn[1][i] * irm[i][2][1] + fn[2][i] * irm[i][2][2];
+		}
+		delete [] irm;
+	}
+
+	if (shfn->get_type() == Hcurl) {
 		u->curl0 = new double [np]; MEM_CHECK(u->curl0);
 		u->curl1 = new double [np]; MEM_CHECK(u->curl1);
 		u->curl2 = new double [np]; MEM_CHECK(u->curl2);
 
-		double *fn[3], *dx[3], *dy[3], *dz[3];
+		double *dx[3], *dy[3], *dz[3];
 		for (int c = 0; c < 3; c++) {
-			fn[c] = shfn->get_fn_values(c);
 			dx[c] = shfn->get_dx_values(c);
 			dy[c] = shfn->get_dy_values(c);
 			dz[c] = shfn->get_dz_values(c);
@@ -131,25 +146,16 @@ sfn_t *init_fn(ShapeFunction *shfn, RefMap *rm, const int np, const QuadPt3D *pt
 
 		// NOTE: are we able to work with transformed jacobian here?
 		double *jac = rm->get_jacobian(np, pt, false);
-		double3x3 *irm = rm->get_inv_ref_map(np, pt);
 		double3x3 *m = rm->get_ref_map(np, pt);
 		for (int i = 0; i < np; i++) {
-			u->fn0[i] = fn[0][i] * irm[i][0][0] + fn[1][i] * irm[i][0][1] + fn[2][i] * irm[i][0][2];
-			u->fn1[i] = fn[0][i] * irm[i][1][0] + fn[1][i] * irm[i][1][1] + fn[2][i] * irm[i][1][2];
-			u->fn2[i] = fn[0][i] * irm[i][2][0] + fn[1][i] * irm[i][2][1] + fn[2][i] * irm[i][2][2];
-
 			double curl[3] = { dy[2][i] - dz[1][i], dz[0][i] - dx[2][i], dx[1][i] - dy[0][i] };
 			u->curl0[i] = (curl[0] * m[i][0][0] + curl[1] * m[i][0][1] + curl[2] * m[i][0][2]) / jac[i];
 			u->curl1[i] = (curl[0] * m[i][1][0] + curl[1] * m[i][1][1] + curl[2] * m[i][1][2]) / jac[i];
 			u->curl2[i] = (curl[0] * m[i][2][0] + curl[1] * m[i][2][1] + curl[2] * m[i][2][2]) / jac[i];
 		}
 
-		delete [] irm;
 		delete [] m;
 		delete [] jac;
-	}
-	else {
-		ERROR(ERR_NOT_IMPLEMENTED);
 	}
 
 	return u;
@@ -160,8 +166,9 @@ sfn_t *init_fn(ShapeFunction *shfn, RefMap *rm, int iface, const int np, const Q
 	_F_
 
 	sfn_t *u = new sfn_t; MEM_CHECK(u);
+	u->nc = shfn->get_num_components();
 	shfn->precalculate(np, pt, FN_DEFAULT);
-	if (shfn->get_type() == H1) {
+	if (u->nc == 1) {
 		u->fn = new double [np]; MEM_CHECK(u->fn);
 		u->dx = new double [np]; MEM_CHECK(u->dx);
 		u->dy = new double [np]; MEM_CHECK(u->dy);
@@ -180,7 +187,8 @@ sfn_t *init_fn(ShapeFunction *shfn, RefMap *rm, int iface, const int np, const Q
 		}
 		delete [] m;
 	}
-	else if (shfn->get_type() == Hcurl) {
+
+	if (shfn->get_type() == Hcurl) {
 		double *nx, *ny, *nz;
 		rm->calc_face_normal(iface, np, pt, nx, ny, nz);
 
@@ -211,9 +219,6 @@ sfn_t *init_fn(ShapeFunction *shfn, RefMap *rm, int iface, const int np, const Q
 		delete [] ny;
 		delete [] nz;
 	}
-	else {
-		ERROR(ERR_NOT_IMPLEMENTED);
-	}
 
 	return u;
 }
@@ -222,8 +227,9 @@ mfn_t *init_fn(MeshFunction *f, RefMap *rm, const int np, const QuadPt3D *pt) {
 	_F_
 
 	mfn_t *u = new mfn_t;
-	if (f->get_sptype() == H1) {
-		f->precalculate(np, pt, FN_DEFAULT);
+	u->nc = f->get_num_components();
+	f->precalculate(np, pt, FN_DEFAULT);
+	if (u->nc == 1) {
 		u->fn = new scalar [np]; MEM_CHECK(u->fn);
 		u->dx = new scalar [np]; MEM_CHECK(u->dx);
 		u->dy = new scalar [np]; MEM_CHECK(u->dy);
@@ -234,10 +240,8 @@ mfn_t *init_fn(MeshFunction *f, RefMap *rm, const int np, const QuadPt3D *pt) {
 		memcpy(u->dy, f->get_dy_values(), np * sizeof(scalar));
 		memcpy(u->dz, f->get_dz_values(), np * sizeof(scalar));
 	}
-	else if (f->get_sptype() == Hcurl) {
-		assert(false);			// TODO: implement me!
-		// NOTE: should we set up dx{0..3}, dy{0..3}, dz{0..3} for Hcurl functions or calc curl{0..3}
-
+	else if (u->nc == 3) {
+		// FN
 		u->fn0 = new scalar [np]; MEM_CHECK(u->fn0);
 		u->fn1 = new scalar [np]; MEM_CHECK(u->fn1);
 		u->fn2 = new scalar [np]; MEM_CHECK(u->fn2);
@@ -245,6 +249,33 @@ mfn_t *init_fn(MeshFunction *f, RefMap *rm, const int np, const QuadPt3D *pt) {
 		memcpy(u->fn0, f->get_fn_values(0), np * sizeof(scalar));
 		memcpy(u->fn1, f->get_fn_values(1), np * sizeof(scalar));
 		memcpy(u->fn2, f->get_fn_values(2), np * sizeof(scalar));
+
+		// DX
+		u->dx0 = new scalar [np]; MEM_CHECK(u->dx0);
+		u->dx1 = new scalar [np]; MEM_CHECK(u->dx1);
+		u->dx2 = new scalar [np]; MEM_CHECK(u->dx2);
+
+		memcpy(u->dx0, f->get_dx_values(0), np * sizeof(scalar));
+		memcpy(u->dx1, f->get_dx_values(1), np * sizeof(scalar));
+		memcpy(u->dx2, f->get_dx_values(2), np * sizeof(scalar));
+
+		// DY
+		u->dy0 = new scalar [np]; MEM_CHECK(u->dy0);
+		u->dy1 = new scalar [np]; MEM_CHECK(u->dy1);
+		u->dy2 = new scalar [np]; MEM_CHECK(u->dy2);
+
+		memcpy(u->dy0, f->get_dy_values(0), np * sizeof(scalar));
+		memcpy(u->dy1, f->get_dy_values(1), np * sizeof(scalar));
+		memcpy(u->dy2, f->get_dy_values(2), np * sizeof(scalar));
+
+		// DZ
+		u->dz0 = new scalar [np]; MEM_CHECK(u->dz0);
+		u->dz1 = new scalar [np]; MEM_CHECK(u->dz1);
+		u->dz2 = new scalar [np]; MEM_CHECK(u->dz2);
+
+		memcpy(u->dz0, f->get_dz_values(0), np * sizeof(scalar));
+		memcpy(u->dz1, f->get_dz_values(1), np * sizeof(scalar));
+		memcpy(u->dz2, f->get_dz_values(2), np * sizeof(scalar));
 	}
 	else {
 		ERROR(ERR_NOT_IMPLEMENTED);

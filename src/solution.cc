@@ -195,7 +195,6 @@ void Solution::set_exact(exact_fn_t exactfn) {
 	exact_fn = exactfn;
 	num_components = 1;
 	type = EXACT;
-	sptype = H1;
 	num_dofs = -1;
 }
 
@@ -206,7 +205,6 @@ void Solution::set_exact(exact_vec_fn_t exactfn) {
 	exact_vec_fn = exactfn;
 	num_components = 3;
 	type = EXACT;
-	sptype = Hcurl;
 	num_dofs = -1;
 }
 
@@ -218,7 +216,6 @@ void Solution::set_const(scalar c) {
 	cnst[1] = cnst[2] = 0.0;
 	num_components = 1;
 	type = CONST;
-	sptype = H1;
 	num_dofs = -1;
 }
 
@@ -231,20 +228,17 @@ void Solution::set_const(scalar c0, scalar c1, scalar c2) {
 	cnst[2] = c2;
 	num_components = 3;
 	type = CONST;
-	sptype = Hcurl;
 	num_dofs = -1;
 }
 
 void Solution::set_zero() {
 	_F_
 	set_const(0.0);
-	sptype = H1;
 }
 
 void Solution::set_zero_3() {
 	_F_
 	set_const(0.0, 0.0, 0.0);
-	sptype = Hcurl;
 }
 
 // differentiates the mono coefs by x

@@ -66,11 +66,12 @@ inline ord_t pow(const ord_t &a, const double &b) { return ord_t((int) ceil(fabs
 template<typename T>
 class fn_t {
 public:
+	int nc;							// number of components
 	T *fn;							// function values
 	T *dx, *dy, *dz;				// derivatives
 
 	T *fn0, *fn1, *fn2;				// components of function values
-	T *dx0, *dx1, *dx2;				// componenets of derivatives
+	T *dx0, *dx1, *dx2;				// components of derivatives
 	T *dy0, *dy1, *dy2;
 	T *dz0, *dz1, *dz2;
 

@@ -131,26 +131,22 @@ set(INC_INTEGRALS
 
 
 macro(LIBRARY_SETTINGS BIN)
+	target_link_libraries(${BIN} ${BLAS_LIBRARIES})
 	if(WITH_PETSC)
 		include_directories(${PETSC_INCLUDE_DIRS})
 		target_link_libraries(${BIN} ${PETSC_LIBRARIES})
 		target_link_libraries(${BIN} ${PETSC_LIBS})
-
-       	target_link_libraries(${BIN} ${BLAS_LIBRARIES})
-   	    target_link_libraries(${BIN} ${LAPACK_LIBRARIES})
-   	endif(WITH_PETSC)
+		target_link_libraries(${BIN} ${LAPACK_LIBRARIES})
+	endif(WITH_PETSC)
 
 	if(WITH_UMFPACK)
 		include_directories(${UMFPACK_INCLUDE_DIR} ${AMD_INCLUDE_DIR})
 		target_link_libraries(${BIN} ${UMFPACK_LIBRARY} ${AMD_LIBRARY})
-
-       	target_link_libraries(${BIN} ${BLAS_LIBRARIES})
-   	    target_link_libraries(${BIN} ${LAPACK_LIBRARIES})
+		target_link_libraries(${BIN} ${LAPACK_LIBRARIES})
 	endif(WITH_UMFPACK)
 
 	if(WITH_PARDISO)
 		target_link_libraries(${BIN} ${PARDISO_LIBRARY})
-		target_link_libraries(${BIN} ${BLAS_LIBRARIES})
 		target_link_libraries(${BIN} ${LAPACK_LIBRARIES})
 	endif(WITH_PARDISO)
 
@@ -163,14 +159,14 @@ endmacro(LIBRARY_SETTINGS)
 
 # real version
 if(REAL) 
-    add_library(${HERMES_REAL_BIN} SHARED ${SRC})
+	add_library(${HERMES_REAL_BIN} SHARED ${SRC})
 	LIBRARY_SETTINGS(${HERMES_REAL_BIN})
 endif(REAL)
 
 # complex version
 if(COMPLEX)
-    add_library(${HERMES_CPLX_BIN} SHARED ${SRC})
-    set_target_properties(${HERMES_CPLX_BIN} PROPERTIES COMPILE_FLAGS -DCOMPLEX)
+	add_library(${HERMES_CPLX_BIN} SHARED ${SRC})
+	set_target_properties(${HERMES_CPLX_BIN} PROPERTIES COMPILE_FLAGS -DCOMPLEX)
 	LIBRARY_SETTINGS(${HERMES_CPLX_BIN})
 endif(COMPLEX)
 
@@ -197,10 +193,10 @@ install(FILES ${INC_INTEGRALS} DESTINATION include/${PROJECT_NAME}/integrals)
 
 # install library
 if(REAL)
-    install(TARGETS ${HERMES_REAL_BIN} LIBRARY DESTINATION lib/${PROJECT_NAME})
+	install(TARGETS ${HERMES_REAL_BIN} LIBRARY DESTINATION lib/${PROJECT_NAME})
 endif(REAL)
 
 if(COMPLEX)
-    install(TARGETS ${HERMES_CPLX_BIN} LIBRARY DESTINATION lib/${PROJECT_NAME})
+	install(TARGETS ${HERMES_CPLX_BIN} LIBRARY DESTINATION lib/${PROJECT_NAME})
 endif(COMPLEX)
 

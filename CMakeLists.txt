@@ -8,8 +8,6 @@ set(DEBUG       NO)
 set(DEBUG_ORDER NO)
 set(PROFILING   NO)
 
-# Hermes3D related
-
 # real/complex version of the library
 set(REAL        YES)
 set(COMPLEX     NO)
@@ -36,41 +34,41 @@ set(DOXYGEN_CONFIG_FILE ${PROJECT_SOURCE_DIR}/doc/Doxyfile)
 
 # allow to override default values via CMake.vars 
 if(EXISTS ${PROJECT_SOURCE_DIR}/CMake.vars)
-    include(CMake.vars)
+	include(CMake.vars)
 endif(EXISTS ${PROJECT_SOURCE_DIR}/CMake.vars)
 
 # sanity checks
 
 # need at least real or complex version
 if(REAL)
-    list(APPEND VERS "real")
+	list(APPEND VERS "real")
 endif(REAL)
 if(COMPLEX)
-    list(APPEND VERS "complex")
+	list(APPEND VERS "complex")
 endif(COMPLEX)
 
 list(LENGTH VERS VERS_LEN)
 if(VERS_LEN GREATER 0)
-    message(STATUS "Will build versions: ${VERS}")
+	message(STATUS "Will build versions: ${VERS}")
 else(VERS_LEN GREATER 0)
 	message(FATAL_ERROR "No versions specified. Re-run with REAL and/or COMPLEX set to YES")
 endif(VERS_LEN GREATER 0)
 
 if(WITH_TETRA)
-    list(APPEND ELEMTYPES "tetra")
+	list(APPEND ELEMTYPES "tetra")
 endif(WITH_TETRA)
 if(WITH_HEX)
-    list(APPEND ELEMTYPES "hex")
+	list(APPEND ELEMTYPES "hex")
 endif(WITH_HEX)
 if(WITH_PRISM)
-    list(APPEND ELEMTYPES "prism")
+	list(APPEND ELEMTYPES "prism")
 endif(WITH_PRISM)
 
 list(LENGTH ELEMTYPES ELEMTYPES_LEN)
 if(ELEMTYPES_LEN GREATER 0)
-    message(STATUS "Will build with element types: ${ELEMTYPES}")
+	message(STATUS "Will build with element types: ${ELEMTYPES}")
 else(ELEMTYPES_LEN GREATER 0)
-    message(FATAL_ERROR "No element types selected. Re-run with WITH_TETRA, WITH_HEX or WITH_PRISM set to YES")
+	message(FATAL_ERROR "No element types selected. Re-run with WITH_TETRA, WITH_HEX or WITH_PRISM set to YES")
 endif(ELEMTYPES_LEN GREATER 0)
 
 # set internal library-wide variables
@@ -81,18 +79,18 @@ set(MESHES_DIR ${PROJECT_SOURCE_DIR}/meshes)
 # internals regarding build type
 if(DEBUG)
 	if(REAL)
-	    set(HERMES_REAL_BIN hermes3d-debug)
+		set(HERMES_REAL_BIN hermes3d-debug)
 	endif(REAL)
 	if(COMPLEX) 
-	    set(HERMES_CPLX_BIN hermes3d-cplx-debug)
+		set(HERMES_CPLX_BIN hermes3d-cplx-debug)
 	endif(COMPLEX)
 	set(CMAKE_BUILD_TYPE Debug)
 else(DEBUG)
 	if(REAL)
-	    set(HERMES_REAL_BIN hermes3d)
+		set(HERMES_REAL_BIN hermes3d)
 	endif(REAL)
 	if(COMPLEX)
-	    set(HERMES_CPLX_BIN hermes3d-cplx)
+		set(HERMES_CPLX_BIN hermes3d-cplx)
 	endif(COMPLEX)
 	set(CMAKE_BUILD_TYPE Release)
 endif(DEBUG)
@@ -100,14 +98,13 @@ endif(DEBUG)
 # If using PETSc or UMFPack, we need to enable Fortran support and look for BLAS and LAPACK
 if(WITH_PETSC OR WITH_UMFPACK OR WITH_PARDISO)
 	enable_language(Fortran)
-	find_package(BLAS REQUIRED)
 	find_package(LAPACK REQUIRED)
 endif(WITH_PETSC OR WITH_UMFPACK OR WITH_PARDISO)
 
 
 # find necessary packages
 find_package(JUDY REQUIRED)
-
+find_package(BLAS REQUIRED)
 
 # linear solvers
 if(WITH_PETSC)
@@ -115,7 +112,7 @@ if(WITH_PETSC)
 endif(WITH_PETSC)
 
 if(WITH_UMFPACK)
-    find_package(UMFPACK REQUIRED)
+	find_package(UMFPACK REQUIRED)
 endif(WITH_UMFPACK)
 
 if(WITH_PARDISO)
@@ -138,15 +135,15 @@ endif(WITH_METIS)
 
 
 if(WITH_HDF5)
-    find_package(HDF5 REQUIRED)
+	find_package(HDF5 REQUIRED)
 endif(WITH_HDF5)
 
 if(WITH_MPI)
-    find_package(MPI REQUIRED)
+	find_package(MPI REQUIRED)
 endif(WITH_MPI)
 
 if(WITH_GLUT)
-    find_package(GLUT REQUIRED)
+	find_package(GLUT REQUIRED)
 endif(WITH_GLUT)
 
 include_directories(${PROJECT_SOURCE_DIR})
@@ -154,14 +151,14 @@ include_directories(${PROJECT_SOURCE_DIR})
 #
 add_subdirectory(src)
 if(WITH_TESTS)
-    enable_testing()
-    add_subdirectory(tests)
+	enable_testing()
+	add_subdirectory(tests)
 endif(WITH_TESTS)
 if(WITH_EXAMPLES)
-    add_subdirectory(examples)
+	add_subdirectory(examples)
 endif(WITH_EXAMPLES)
 if(WITH_TOOLS)
-    add_subdirectory(tools)
+	add_subdirectory(tools)
 endif(WITH_TOOLS)
 
 if(WITH_PYTHON)
@@ -176,21 +173,21 @@ add_subdirectory(doc)
 
 add_custom_target(doc)
 add_custom_command(
-    SOURCE    ${DOXYGEN_CONFIG_FILE}
-    COMMAND   ${DOXYGEN_BINARY}
-    ARGS      ${DOXYGEN_CONFIG_FILE}
-    TARGET    doc
-    OUTPUTS   ${PROJECT_BINARY_DIR}/doc/html
+	SOURCE    ${DOXYGEN_CONFIG_FILE}
+	COMMAND   ${DOXYGEN_BINARY}
+	ARGS      ${DOXYGEN_CONFIG_FILE}
+	TARGET    doc
+	OUTPUTS   ${PROJECT_BINARY_DIR}/doc/html
 )
 
 add_custom_command(
-    SOURCE    doc
-    TARGET    doc
-    DEPENDS   ${PROJECT_BINARY_DIR}/doc/html
+	SOURCE    doc
+	TARGET    doc
+	DEPENDS   ${PROJECT_BINARY_DIR}/doc/html
 )
 
 add_custom_target(test-quick
-    COMMAND   /usr/bin/ctest -E \"hnnd|qorder|lobatto|hex-h1-1face\"
+	COMMAND   /usr/bin/ctest -E \"hnnd|qorder|lobatto|hex-h1-1face\"
 )
 
 # -- package --------
@@ -207,14 +204,14 @@ set(CPACK_SYSTEM_NAME "linux")
 set(CPACK_SOURCE_GENERATOR "TBZ2")
 set(CPACK_SOURCE_PACKAGE_FILE_NAME "hermes3d-${VERSION}")
 set(CPACK_SOURCE_IGNORE_FILES 
-    "${PROJECT_SOURCE_DIR}/.hg/"
-    "${PROJECT_SOURCE_DIR}/.settings/"
-    "${PROJECT_SOURCE_DIR}/.hgignore"
-    "${PROJECT_SOURCE_DIR}/.project"
-    "${PROJECT_SOURCE_DIR}/.cproject"
-    "${PROJECT_SOURCE_DIR}/build/"
-    "${PROJECT_SOURCE_DIR}/CMake.vars$"
-    "${PROJECT_SOURCE_DIR}/utils/"
+	"${PROJECT_SOURCE_DIR}/.hg/"
+	"${PROJECT_SOURCE_DIR}/.settings/"
+	"${PROJECT_SOURCE_DIR}/.hgignore"
+	"${PROJECT_SOURCE_DIR}/.project"
+	"${PROJECT_SOURCE_DIR}/.cproject"
+	"${PROJECT_SOURCE_DIR}/build/"
+	"${PROJECT_SOURCE_DIR}/CMake.vars$"
+	"${PROJECT_SOURCE_DIR}/utils/"
 )
 
 include(CPack)

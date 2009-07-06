@@ -56,7 +56,6 @@
 
 static ShapeFunction *ref_map_pss[] = { REFMAP_PSS_TETRA, REFMAP_PSS_HEX, NULL };
 
-
 // RefMap /////////////////////////////////////////////////////////////////////////////////////////
 
 RefMap::RefMap() {
@@ -258,9 +257,7 @@ double *RefMap::get_phys_x(const int np, const QuadPt3D *pt) {
 	for (int i = 0; i < n_coefs; i++) {
 		pss->set_active_shape(indices[i]);
 		pss->precalculate(np, pt, FN_DEFAULT);
-		double *fn = pss->get_fn_values();
-		for (int j = 0; j < np; j++)
-			x[j] += coefs[i].x * fn[j];
+		blas_axpy(np, coefs[i].x, pss->get_fn_values(), 1, x, 1);
 	}
 
 	return x;
@@ -276,9 +273,7 @@ double *RefMap::get_phys_y(const int np, const QuadPt3D *pt) {
 	for (int i = 0; i < n_coefs; i++) {
 		pss->set_active_shape(indices[i]);
 		pss->precalculate(np, pt, FN_DEFAULT);
-		double *fn = pss->get_fn_values();
-		for (int j = 0; j < np; j++)
-			y[j] += coefs[i].y * fn[j];
+		blas_axpy(np, coefs[i].y, pss->get_fn_values(), 1, y, 1);
 	}
 
 	return y;
@@ -294,9 +289,7 @@ double *RefMap::get_phys_z(const int np, const QuadPt3D *pt) {
 	for (int i = 0; i < n_coefs; i++) {
 		pss->set_active_shape(indices[i]);
 		pss->precalculate(np, pt, FN_DEFAULT);
-		double *fn = pss->get_fn_values();
-		for (int j = 0; j < np; j++)
-			z[j] += coefs[i].z * fn[j];
+		blas_axpy(np, coefs[i].z, pss->get_fn_values(), 1, z, 1);
 	}
 
 	return z;

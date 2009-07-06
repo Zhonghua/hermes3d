@@ -45,6 +45,27 @@ typedef complex complex2[2];
 #define SCALAR_FMT			"(%lf, %lf)"
 #define SCALAR(a)			std::real(a), std::imag(a)
 
+// BLAS-related function
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+extern int zscal_(int *, double *, double *, int *);
+extern int zaxpy_(int *, double *, double *, int *, double *, int *);
+extern int zcopy_(int *,           double *, int *, double *, int *);
+
+#ifdef __cplusplus
+}
+#endif
+
+/// x <- alpha * x
+inline void blas_scal(int n, double alpha, double *x, int incx) { zscal_(&n, &alpha, x, &incx); }
+/// y <- alpha * x + y
+inline void blas_axpy(int n, double alpha, double *x, int incx, double *y, int incy) { zaxpy_(&n, &alpha, x, &incx, y, &incy); }
+/// y <- x
+inline void blas_copy(int n, double *x, int incx, double *y, int incy) { zcopy_(&n, x, &incx, y, &incx); }
+
 #else
 
 typedef double scalar;
@@ -54,6 +75,27 @@ typedef double scalar;
 #define ABS(a)				(fabs(a))
 #define SCALAR_FMT			"%lf"
 #define SCALAR(a)			(a)
+
+// BLAS-related function
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+extern int dscal_(int *, double *, double *, int *);
+extern int daxpy_(int *, double *, double *, int *, double *, int *);
+extern int dcopy_(int *,           double *, int *, double *, int *);
+
+#ifdef __cplusplus
+}
+#endif
+
+/// x <- alpha * x
+inline void blas_scal(int n, double alpha, double *x, int incx) { dscal_(&n, &alpha, x, &incx); }
+/// y <- alpha * x + y
+inline void blas_axpy(int n, double alpha, double *x, int incx, double *y, int incy) { daxpy_(&n, &alpha, x, &incx, y, &incy); }
+/// y <- x
+inline void blas_copy(int n, double *x, int incx, double *y, int incy) { dcopy_(&n, x, &incx, y, &incx); }
 
 #endif
 

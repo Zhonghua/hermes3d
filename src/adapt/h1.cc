@@ -371,9 +371,6 @@ void H1Adapt::get_optimal_refinement(Mesh *mesh, Element *e, order3_t order, Sol
 	for (i = k = 0; i < n; i++) {
 		Cand *c = cand + i;
 
-		Timer t("");
-		t.start();
-
 		c->error = 0.0;
 		switch (c->split) {
 			case REFT_HEX_NONE:
@@ -427,8 +424,6 @@ void H1Adapt::get_optimal_refinement(Mesh *mesh, Element *e, order3_t order, Sol
 		}
 		c->error = sqrt(c->error);
 		c->dofs = get_dof_count(c->split, c->p);
-
-		t.stop();
 
 		if (!i || c->error <= cand[0].error) {
 			avg += log10(c->error);

@@ -327,11 +327,13 @@ void H1Space::calc_face_boundary_projection(Element *elem, int iface) {
 				BaseEdgeComponent *ecomp = enode->edge_baselist + 0;
 				EdgeData *cng_enode = en_data[ecomp->edge_id]; 						// constraining edge node
 
-				int *indices = shapeset->get_edge_indices(local_face_edge[edge], ecomp->ori, cng_enode->order);
-				for (int j = 0; j < cng_enode->n; j++, m++) {
-					int order = shapeset->get_order(indices[j]).get_edge_order(local_face_edge[edge]);
-					fn_idx[m] = shapeset->get_constrained_edge_index(local_face_edge[edge], ecomp->ori, order, ecomp->part);
-					coef[m] = cng_enode->bc_proj[j];
+				if (cng_enode->n > 0) {
+					int *indices = shapeset->get_edge_indices(local_face_edge[edge], ecomp->ori, cng_enode->order);
+					for (int j = 0; j < cng_enode->n; j++, m++) {
+						int order = shapeset->get_order(indices[j]).get_edge_order(local_face_edge[edge]);
+						fn_idx[m] = shapeset->get_constrained_edge_index(local_face_edge[edge], ecomp->ori, order, ecomp->part);
+						coef[m] = cng_enode->bc_proj[j];
+					}
 				}
 		}
 		else {

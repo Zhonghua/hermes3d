@@ -85,4 +85,8 @@
 #include "linsolver/pardiso.h"
 #include "linsolver/petsc.h"
 
+// adapt
+#include "adapt/h1.h"
+#include "adapt/h1proj.h"
+
 #endif

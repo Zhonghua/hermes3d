@@ -20,6 +20,8 @@
 #define _TRANSFORM_H_
 
 #include "mesh.h"
+#include "quad.h"
+
 
 // 3D transform
 struct Trf {
@@ -87,6 +89,11 @@ protected:
 
 	Trf stack[STACK_SIZE];					/// transformation matrix stack
 	int top;       					/// stack top
+
+	static Trf hex_trf[];
+	static Trf tetra_trf[];
+
+	friend class Projection;
 };
 
 /// Transform points using a transformation

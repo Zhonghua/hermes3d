@@ -34,12 +34,12 @@
 #include <common/callstack.h>
 
 // TODO: Transformations for tetras
-static Trf tetra_trf[] = {
+Trf Transformable::tetra_trf[] = {
 	{ { 1, 1, 1 }, { 0, 0, 0 } }			// no transformation
 };
 
 // transformations for hexahedrons
-static Trf hex_trf[] = {
+Trf Transformable::hex_trf[] = {
 	// 8 sub elements (XYZ)
 	{ { 0.5, 0.5, 0.5 }, { -0.5, -0.5, -0.5 } },
 	{ { 0.5, 0.5, 0.5 }, {  0.5, -0.5, -0.5 } },

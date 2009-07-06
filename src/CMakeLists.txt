@@ -41,6 +41,9 @@ set(SRC
 	linsolver/pardiso.cc
 	linsolver/petsc.cc
 	linsolver/umfpack.cc
+	adapt/h1.cc
+	adapt/proj.cc
+	adapt/h1proj.cc
 	${HERMES_COMMON_DIR}/callstack.cc
 	${HERMES_COMMON_DIR}/trace.cc
 	${HERMES_COMMON_DIR}/error.cc
@@ -129,6 +132,12 @@ set(INC_INTEGRALS
 	integrals/hcurl.h
 )
 
+set(INC_ADAPT
+	adapt/proj.h
+	adapt/h1proj.h
+	adapt/h1.h
+)
+
 
 macro(LIBRARY_SETTINGS BIN)
 	target_link_libraries(${BIN} ${BLAS_LIBRARIES})
@@ -190,6 +199,7 @@ install(FILES ${INC_LOADER}    DESTINATION include/${PROJECT_NAME}/loader)
 install(FILES ${INC_LINSOLVER} DESTINATION include/${PROJECT_NAME}/linsolver)
 install(FILES ${INC_OUTPUT}    DESTINATION include/${PROJECT_NAME}/output)
 install(FILES ${INC_INTEGRALS} DESTINATION include/${PROJECT_NAME}/integrals)
+install(FILES ${INC_ADAPT}     DESTINATION include/${PROJECT_NAME}/adapt)
 
 # install library
 if(REAL)

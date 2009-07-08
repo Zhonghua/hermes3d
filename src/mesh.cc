@@ -810,6 +810,7 @@ void Mesh::copy(const Mesh &mesh) {
 
 	nbase = mesh.nbase;
 	nactive = mesh.nactive;
+	seq = mesh.seq;
 }
 
 void Mesh::copy_base(const Mesh &mesh) {
@@ -868,6 +869,7 @@ void Mesh::copy_base(const Mesh &mesh) {
 	}
 
 	this->nbase = this->nactive = mesh.nbase;
+	this->seq = g_mesh_seq++;
 }
 
 Word_t Mesh::get_facet_id(Element *e, int face_num) const {

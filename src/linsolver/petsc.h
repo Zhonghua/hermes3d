@@ -40,6 +40,7 @@ public:
 
 	virtual void alloc();
 	virtual void free();
+	virtual void set_zero();
 	virtual void update(int m, int n, scalar v);
 	virtual void update(int m, int n, scalar **mat, int *rows, int *cols);
 	virtual bool dump(FILE *file, const char *var_name, EMatrixDumpFormat fmt = DF_MATLAB_SPARSE);
@@ -63,6 +64,7 @@ public:
 
 	virtual void alloc(int ndofs);
 	virtual void free();
+	virtual void set_zero();
 	virtual void update(int idx, scalar y);
 	virtual void update(int n, int *idx, scalar *y);
 	virtual bool dump(FILE *file, const char *var_name, EMatrixDumpFormat fmt = DF_MATLAB_SPARSE);

@@ -75,6 +75,13 @@ void PetscMatrix::free() {
 #endif
 }
 
+void PetscMatrix::set_zero() {
+	_F_
+#ifdef WITH_PETSC
+	MatZeroEntries(matrix);
+#endif
+}
+
 void PetscMatrix::update(int m, int n, scalar v) {
 	_F_
 #ifdef WITH_PETSC
@@ -136,6 +143,13 @@ void PetscVector::free() {
 #ifdef WITH_PETSC
 	if (inited) VecDestroy(vec);
 	inited = false;
+#endif
+}
+
+void PetscVector::set_zero() {
+	_F_
+#ifdef WITH_PETSC
+	VecZeroEntries(vec);
 #endif
 }
 

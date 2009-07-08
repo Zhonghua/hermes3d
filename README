@@ -41,6 +41,10 @@ To get output files that can be viewed in a visualizer, you need to say:
 
 set(OUTPUT_DIR /path/where/the/files/will/be/stored)
 
+To view the files:
+# gmsh my-file.gmsh (for gmsh)
+# paraview --data=my-file.vtk (for VTK)
+
 
 Debugging
 ---------

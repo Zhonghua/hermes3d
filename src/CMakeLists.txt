@@ -142,7 +142,7 @@ set(INC_ADAPT
 macro(LIBRARY_SETTINGS BIN)
 	target_link_libraries(${BIN} ${BLAS_LIBRARIES})
 	if(WITH_PETSC)
-		include_directories(${PETSC_INCLUDE_DIRS})
+		include_directories(${PETSC_INCLUDE_DIR})
 		target_link_libraries(${BIN} ${PETSC_LIBRARIES})
 		target_link_libraries(${BIN} ${PETSC_LIBS})
 		target_link_libraries(${BIN} ${LAPACK_LIBRARIES})

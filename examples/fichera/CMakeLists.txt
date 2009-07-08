@@ -10,12 +10,11 @@ add_executable(${PROJECT_NAME}
 	${HERMES_COMMON_DIR}/error.cc
 )
 
-# Judy
-include_directories(${JUDY_INCLUDE_DIR})
+include_directories(${TESTS_INCLUDE_DIRS})
 include_directories(${hermes3d_SOURCE_DIR})
 
 target_link_libraries(${PROJECT_NAME} ${HERMES_REAL_BIN})
-target_link_libraries(${PROJECT_NAME} ${JUDY_LIBRARY}) 
+target_link_libraries(${PROJECT_NAME} ${TESTS_LIBRARIES})
 
 configure_file(
 	${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake

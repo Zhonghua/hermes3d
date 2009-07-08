@@ -59,11 +59,6 @@ protected:
 			this->index = index;
 			this->order = order;
 		}
-
-		fn_key_t(void *ptr, int order) {
-			this->index = (int) ptr;
-			this->order = order;
-		}
 	};
 
 	struct FnCache {

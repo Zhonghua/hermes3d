@@ -28,6 +28,8 @@
 
 //// MeshFunction //////////////////////////////////////////////////////////////////////////////////
 
+static int g_mfn_seq = 0;
+
 MeshFunction::MeshFunction(Mesh *mesh) :
 	ScalarFunction()
 {
@@ -36,7 +38,7 @@ MeshFunction::MeshFunction(Mesh *mesh) :
 	this->refmap = new RefMap(mesh);
 	MEM_CHECK(this->refmap);
 	this->element = NULL;		// this comes with Transformable
-	this->seq = 0;
+	this->seq = g_mfn_seq++;
 	this->noinc = false;
 }
 
@@ -142,6 +144,7 @@ void Solution::assign(Solution *sln) {
 	sptype = sln->sptype;
 	type = sln->type;
 	num_components = sln->num_components;
+	seq = sln->seq;
 
 	sln->type = UNDEF;
 }
@@ -186,6 +189,7 @@ void Solution::copy(const Solution *sln) {
 		cnst[1] = sln->cnst[1];
 		cnst[2] = sln->cnst[2];
 	}
+	seq = sln->seq;
 }
 
 void Solution::set_exact(exact_fn_t exactfn) {
@@ -196,6 +200,7 @@ void Solution::set_exact(exact_fn_t exactfn) {
 	num_components = 1;
 	type = EXACT;
 	num_dofs = -1;
+	seq = g_mfn_seq++;
 }
 
 void Solution::set_exact(exact_vec_fn_t exactfn) {
@@ -206,6 +211,7 @@ void Solution::set_exact(exact_vec_fn_t exactfn) {
 	num_components = 3;
 	type = EXACT;
 	num_dofs = -1;
+	seq = g_mfn_seq++;
 }
 
 void Solution::set_const(scalar c) {
@@ -217,6 +223,7 @@ void Solution::set_const(scalar c) {
 	num_components = 1;
 	type = CONST;
 	num_dofs = -1;
+	seq = g_mfn_seq++;
 }
 
 void Solution::set_const(scalar c0, scalar c1, scalar c2) {
@@ -229,6 +236,7 @@ void Solution::set_const(scalar c0, scalar c1, scalar c2) {
 	num_components = 3;
 	type = CONST;
 	num_dofs = -1;
+	seq = g_mfn_seq++;
 }
 
 void Solution::set_zero() {
@@ -572,6 +580,7 @@ void Solution::set_fe_solution(Space *space, scalar *vec, double dir) {
 	}
 
 	init_dxdydz_buffer();
+	seq = g_mfn_seq++;
 }
 
 // sets all elements of y[] to num

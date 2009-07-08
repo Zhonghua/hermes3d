@@ -73,6 +73,8 @@ public:
 		{ ScalarFunction::force_transform(mf->get_transform(), mf->get_ctm()); }
 	void update_refmap()
 		{ refmap->force_transform(sub_idx, ctm); }
+
+	friend class LinProblem;
 };
 
 

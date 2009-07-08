@@ -360,7 +360,7 @@ void LinProblem::init_ext_fns(user_data_t<scalar> &ud, std::vector<MeshFunction 
 	ud.nf = ext.size();
 	mfn_t *ext_fn = new mfn_t[ud.nf];
 	for (int i = 0; i < ud.nf; i++) {
-		fn_key_t key(ext[i], order);
+		fn_key_t key(ext[i]->seq, order);
 		mfn_t *efn = NULL;
 		if (!fn_cache.ext.lookup(key, efn)) {
 			efn = init_fn(ext[i], rm, np, pt);

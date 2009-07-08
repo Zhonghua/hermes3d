@@ -16,7 +16,7 @@
 // along with Hermes3D; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-#include "../config.h"
+#include "../h3dconfig.h"
 #include "../function.h"
 #include "../solution.h"
 //#include "../shapeset/h1sinhex.h"

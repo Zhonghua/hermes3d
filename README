@@ -30,6 +30,18 @@ To run all tests (warning: takes very long time to finish):
 
 $ make test
 
+Examples
+--------
+
+To build examples, you need to say (in global CMake.vars):
+
+set(WITH_EXAMPLES YES)
+
+To get output files that can be viewed in a visualizer, you need to say:
+
+set(OUTPUT_DIR /path/where/the/files/will/be/stored)
+
+
 Debugging
 ---------
 

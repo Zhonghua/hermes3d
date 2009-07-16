@@ -32,6 +32,8 @@ set(DEV_TESTS NO)
 set(DOXYGEN_BINARY doxygen)
 set(DOXYGEN_CONFIG_FILE ${PROJECT_SOURCE_DIR}/doc/Doxyfile)
 
+set(SPHINX_BUILD_BIN sphinx-build)
+
 # allow to override default values via CMake.vars 
 if(EXISTS ${PROJECT_SOURCE_DIR}/CMake.vars)
 	include(CMake.vars)
@@ -171,20 +173,23 @@ endif(WITH_PYTHON)
 # doc
 add_subdirectory(doc)
 
-add_custom_target(doc)
+add_custom_target(doc DEPENDS ${PROJECT_BINARY_DIR}/doc/xml/index.xml)
 add_custom_command(
-	SOURCE    ${DOXYGEN_CONFIG_FILE}
-	COMMAND   ${DOXYGEN_BINARY}
-	ARGS      ${DOXYGEN_CONFIG_FILE}
 	TARGET    doc
-	OUTPUTS   ${PROJECT_BINARY_DIR}/doc/html
+	COMMAND   ${SPHINX_BUILD_BIN} -N -b html ${PROJECT_SOURCE_DIR}/doc ${PROJECT_BINARY_DIR}/doc/html
+)
+
+add_custom_target(tex DEPENDS ${PROJECT_BINARY_DIR}/doc/xml/index.xml)
+add_custom_command(
+	TARGET    tex
+	COMMAND   ${SPHINX_BUILD_BIN} -N -b latex ${PROJECT_SOURCE_DIR}/doc ${PROJECT_BINARY_DIR}/doc/tex
 )
 
 add_custom_command(
-	SOURCE    doc
-	TARGET    doc
-	DEPENDS   ${PROJECT_BINARY_DIR}/doc/html
+	OUTPUT    ${PROJECT_BINARY_DIR}/doc/xml/index.xml
+	COMMAND   ${DOXYGEN_BINARY} ${DOXYGEN_CONFIG_FILE}
 )
+
 
 add_custom_target(test-quick
 	COMMAND   /usr/bin/ctest -E \"hnnd|qorder|lobatto|hex-h1-1face\"

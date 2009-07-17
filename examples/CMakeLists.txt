@@ -8,6 +8,7 @@ include (../tests/common.cmake)
 if(WITH_HEX)
     # H1
 	if(REAL)
+		add_subdirectory(elastostatics)
 		add_subdirectory(fichera)
 		add_subdirectory(heat-conduction)
 	endif(REAL)

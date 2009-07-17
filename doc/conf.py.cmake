@@ -201,7 +201,8 @@ latex_preamble = \
   '\\usepackage{bm}\n'+\
   '\\usepackage{amsfonts}\n'+\
   '\\usepackage{amssymb}\n'+\
-  '\\newcommand{\\grad}{\\nabla}\n'
+  '\\newcommand{\\grad}{\\nabla}\n'+\
+  '\\def\\dd#1#2{{{\\partial #1}\over{\\partial #2}}}\n'
 
 # Documents to append as an appendix to all manuals.
 #latex_appendices = []

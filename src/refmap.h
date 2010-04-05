@@ -120,7 +120,7 @@ protected:
 	order3_t inv_ref_order;
 
 	int n_coefs;					// # of coeffs in 'indices' array
-	int indices[70];				// FIXME: magic number
+	int indices[8 + 12*2 + 6*4 + 8];	// 8 vertices + 12 cubic edges + 6 bicubic faces + bubbles
 
 	Vertex *coefs;
 	Vertex vertex[8];				// max number of vertices (hex has 8 vertices, other elements have less)

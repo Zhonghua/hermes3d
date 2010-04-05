@@ -27,7 +27,7 @@
 #if defined GMSH
 	GmshOutputEngine output(stdout);
 #elif defined VTK
-	VtkOutputEngine output(stdout, 1);
+	VtkOutputEngine output(stdout, 5);
 #endif
 
 
@@ -211,6 +211,13 @@ int main(int argc, char **args)
 	Mesh mesh;
 	Mesh3DReader mesh_loader;
 	if (!mesh_loader.load(args[2], &mesh)) die("Loading mesh file '%s'\n", args[2]);
+
+	////
+	Element *e = mesh.elements[1];
+	e->cm = new CurvMap();
+	e->cm->update_refmap_coefs(&mesh, e);
+
+	////
 
 	if (strcmp(type, "sln") == 0) {
 		// Testing on Exact solution which always gives the same value (values from Solution may differ by epsilon)

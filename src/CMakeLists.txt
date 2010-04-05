@@ -5,6 +5,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})		# for config.h
 # source files for the hermes3d library
 set(SRC
 	hermes3d.cc
+	curved.cc
 	filter.cc
 	forms.cc
 	function.cc

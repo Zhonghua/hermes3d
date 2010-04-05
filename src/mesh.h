@@ -27,7 +27,7 @@
 
 class Space;
 class MeshLoader;
-
+struct CurvMap;
 
 #include "common.h"
 
@@ -282,6 +282,8 @@ public:
 	virtual Word_t get_son(int son_idx) { return INVALID_IDX; }
 	virtual int get_num_sons() { return -1; }
 
+	bool is_curved() const { return cm != NULL; }
+
 public:
 	Word_t id;							// id of an element
 	int marker;
@@ -290,6 +292,8 @@ public:
 	unsigned used:1;					// 1 is used, otherwise unused
 
 	int reft;							// refinement
+
+	CurvMap *cm;						/// curved mapping, NULL if not curvilinear
 
 protected:
 	int iro_cache;						// inverse refmap order - cached

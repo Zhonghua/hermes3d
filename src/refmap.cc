@@ -32,7 +32,10 @@
 
 #include "shapeset/common.h"
 #include "shapeset/refmapss.h"
+//#include "shapeset/h1lobattohex.h"
 #include "determinant.h"
+
+#include "curved.h"
 
 //
 
@@ -48,6 +51,7 @@
 
 #ifdef WITH_HEX
 	static RefMapShapesetHex 		ref_map_shapeset_hex;
+//	static H1ShapesetLobattoHex 	ref_map_shapeset_hex;
 	static ShapeFunction			ref_map_pss_hex(&ref_map_shapeset_hex);
 	#define REFMAP_SHAPESET_HEX		&ref_map_shapeset_hex
 	#define REFMAP_PSS_HEX			&ref_map_pss_hex
@@ -99,27 +103,98 @@ void RefMap::set_active_element(Element *e) {
 	// prepare the shapes and coefficients of the reference map
 	Shapeset *shapeset = this->pss->get_shapeset();
 	int i, k = 0;
-	for (i = 0; i < nvertices; i++)
+	for (i = 0; i < nvertices; i++) {
 		indices[k++] = shapeset->get_vertex_index(i);
+		vertex[i] = *mesh->vertices[e->get_vertex(i)];
+	}
 
-	// straight element
-	for (int iv = 0; iv < nvertices; iv++)
-		vertex[iv] = *mesh->vertices[e->get_vertex(iv)];
-	coefs = vertex;
-	n_coefs = nvertices;
+	if (e->cm == NULL) {
+		// straight element
+		coefs = vertex;
+		n_coefs = nvertices;
+	}
+	else {
+//		printf("idx =\n");
+
+		// curvilinear element - edge, face and bubble shapes
+		for (int iedge = 0; iedge < e->get_num_edges(); iedge++) {
+			order1_t oe = e->cm->order.get_edge_order(iedge);
+			// FIXME: hex-specific
+			int *edge_idxs = ref_map_shapeset_hex.get_edge_indices(iedge, 0, oe);
+			for (int j = 0; j < ref_map_shapeset_hex.get_num_edge_fns(oe); j++) {
+				indices[k++] = edge_idxs[j];
+//				printf(" %d", indices[k - 1]);
+			}
+		}
+//		printf("\n");
+
+		for (int iface = 0; iface < e->get_num_faces(); iface++) {
+			order2_t of = e->cm->order.get_face_order(iface);
+			// FIXME: hex-specific
+			int *face_idxs = ref_map_shapeset_hex.get_face_indices(iface, 0, of);
+			for (int j = 0; j < ref_map_shapeset_hex.get_num_face_fns(of); j++) {
+				indices[k++] = face_idxs[j];
+//				printf(" %d", indices[k - 1]);
+			}
+		}
+//		printf("\n");
+
+		int *bubble_idxs = ref_map_shapeset_hex.get_bubble_indices(e->cm->order);
+		for (int j = 0; j < ref_map_shapeset_hex.get_num_bubble_fns(e->cm->order); j++) {
+			indices[k++] = bubble_idxs[j];
+//			printf(" %d", indices[k - 1]);
+		}
+//		printf("\n");
+
+		coefs = e->cm->coefs;
+		n_coefs = e->cm->nc;
+//		n_coefs = k;
+
+//		printf("%lf %d\n", pow(4, 3), k);
+//		die("A");
+
+
+		for (int i = 0; i < n_coefs; i++) {
+//			printf(" %d", indices[i]);
+//			printf("[%lf, %lf, %lf] - ", coefs[i].x, coefs[i].y, coefs[i].z);
+//			printf("[%lf, %lf, %lf]\n", e->cm->coefs[i].x, e->cm->coefs[i].y, e->cm->coefs[i].z);
+		}
+//		printf("\n");
+//		die("A");
+	}
 
 	// calculate the order of the reference map
 	switch (mode) {
-		case MODE_TETRAHEDRON: ref_order = order3_t(0); break;
-		case MODE_HEXAHEDRON:  ref_order = order3_t(1, 1, 1); break;
-		case MODE_PRISM: EXIT(ERR_NOT_IMPLEMENTED); break;
+		case MODE_TETRAHEDRON:
+			assert(e->cm == NULL);
+			ref_order = order3_t(0);
+			break;
+
+		case MODE_HEXAHEDRON:
+			if (e->cm == NULL) ref_order = order3_t(1, 1, 1);
+			else ref_order = order3_t(3, 3, 3);  	// (3, 3, 3) since we use bicubic plates
+			break;
+
+		case MODE_PRISM:
+			EXIT(ERR_NOT_IMPLEMENTED);
+			break;
 	}
 
 	// calculate the order of the inverse reference map
 	switch (mode) {
-		case MODE_TETRAHEDRON: inv_ref_order = order3_t(0); break;
-		case MODE_HEXAHEDRON:  inv_ref_order = order3_t(1, 1, 1); break;
-		case MODE_PRISM: EXIT(ERR_NOT_IMPLEMENTED); break;
+		case MODE_TETRAHEDRON:
+			assert(e->cm == NULL);
+			inv_ref_order = order3_t(0);
+			break;
+
+		case MODE_HEXAHEDRON:
+			if (e->cm == NULL) inv_ref_order = order3_t(1, 1, 1);
+			else inv_ref_order = order3_t(3, 3, 3);  	// (3, 3, 3) since we use bicubic plates
+			break;
+
+		case MODE_PRISM:
+			EXIT(ERR_NOT_IMPLEMENTED);
+			break;
 	}
 
 	// constant inverse reference map
@@ -325,15 +400,15 @@ double *RefMap::get_face_jacobian(int iface, const int np, const QuadPt3D *pt, b
 			pss->precalculate(np, pt, FN_DEFAULT);
 			pss->get_dx_dy_dz_values(dx, dy, dz);
 			for (int j = 0; j < np; j++) {
-				m[j][0][0] += vertex[face_vertices[i]].x * dx[j];
-				m[j][0][1] += vertex[face_vertices[i]].x * dy[j];
-				m[j][0][2] += vertex[face_vertices[i]].x * dz[j];
-				m[j][1][0] += vertex[face_vertices[i]].y * dx[j];
-				m[j][1][1] += vertex[face_vertices[i]].y * dy[j];
-				m[j][1][2] += vertex[face_vertices[i]].y * dz[j];
-				m[j][2][0] += vertex[face_vertices[i]].z * dx[j];
-				m[j][2][1] += vertex[face_vertices[i]].z * dy[j];
-				m[j][2][2] += vertex[face_vertices[i]].z * dz[j];
+				m[j][0][0] += coefs[face_vertices[i]].x * dx[j];
+				m[j][0][1] += coefs[face_vertices[i]].x * dy[j];
+				m[j][0][2] += coefs[face_vertices[i]].x * dz[j];
+				m[j][1][0] += coefs[face_vertices[i]].y * dx[j];
+				m[j][1][1] += coefs[face_vertices[i]].y * dy[j];
+				m[j][1][2] += coefs[face_vertices[i]].y * dz[j];
+				m[j][2][0] += coefs[face_vertices[i]].z * dx[j];
+				m[j][2][1] += coefs[face_vertices[i]].z * dy[j];
+				m[j][2][2] += coefs[face_vertices[i]].z * dz[j];
 			}
 		}
 

@@ -175,6 +175,8 @@ Element::Element() {
 	active = true;
 	used = 1;
 	reft = 0;
+
+	cm = NULL;
 }
 
 Element::Element(const Element &o) {
@@ -186,6 +188,8 @@ Element::Element(const Element &o) {
 	active = o.active;
 	used = o.used;
 	reft = o.reft;
+
+	cm = o.cm;			// FIXME: deep copy?
 }
 
 Element::~Element() {

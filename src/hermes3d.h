@@ -37,6 +37,7 @@
 
 // mesh
 #include "mesh.h"
+#include "curved.h"
 
 // mesh loaders
 #include "meshloader.h"

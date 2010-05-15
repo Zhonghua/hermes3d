@@ -1,0 +1,79 @@
+Hermes3D
+========
+
+Compilation
+------------
+
+$ cmake .
+$ make
+
+If you have cmake text-based UI installed, you can do:
+
+$ ccmake .
+  press C  
+  customize your build
+  press C
+  press G
+$ make
+
+Hermes3D build configuration scripts will look for required libraries on default include and system
+paths. If you packages are installed elsewhere, you need to specify their paths. Consult either
+online documetation (http://hpfem.org/hermes3d/doc/install.html) or cmake/FindXYX.cmake files for
+exact names. These values have to be put into CMake.var file located in your build directory. 
+
+Intel C Compiler
+----------------
+
+To use Intel C compiler
+
+$ export CC=/path/to/icc
+$ export CXX=/path/to/icpc
+$ cmake .
+$ make
+
+NOTE: version 10.0.026 did not work for me (some compatibility issues with STL), 10.1.022 works ok
+
+
+Tests
+-----
+
+To enable tests, say 'set(WITH_TESTS YES)' in your CMake.vars.
+To run the tests, type:
+
+$ make test
+
+To run quick tests, type:
+
+$ make test-quick
+
+Note: To run developer tests, say 'set(DEV_TESTS YES)' in CMake.vars. This is needed to run only if
+the lowest internals are changed. Developers test suite includes hundreds of tests for hanging
+nodes. These will run for several hours in case of H1 space, Hcurl ones take days. These test do not
+have to be run every time.
+
+
+Examples
+--------
+
+To build examples, type (supposed you enabled examples during the configuration):
+
+$ make examples
+
+To get output files that can be viewed in a visualizer, you need to say:
+
+set(OUTPUT_DIR /path/where/the/files/will/be/stored)
+
+To view the files:
+# gmsh my-file.gmsh (for gmsh)
+# paraview --data=my-file.vtk (for VTK)
+
+
+Debugging
+---------
+
+If you need to debug the build, use:
+
+cmake -DCMAKE_VERBOSE_MAKEFILE=ON .
+
+Then the make will print the exact commands that are executed.
+
